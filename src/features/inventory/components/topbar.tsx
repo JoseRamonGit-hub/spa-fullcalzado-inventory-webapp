@@ -17,7 +17,7 @@ export function Topbar({ search, onSearchChange, stockFilter, onStockFilterChang
           <span className="w-1.5 h-1.5 rounded-full bg-primary" />
           <h2 className="font-semibold text-sm text-foreground whitespace-nowrap">Inventario</h2>
         </div>
-        <InputGroup className="h-10 md:h-7 flex-1 md:max-w-xs">
+        <InputGroup className="h-8 flex-1 md:max-w-xs">
           <InputGroupInput
             placeholder="Buscar código o descripción..."
             className="text-sm md:text-xs"
@@ -31,7 +31,7 @@ export function Topbar({ search, onSearchChange, stockFilter, onStockFilterChang
       </div>
       <div className="shrink-0">
         <NativeSelect
-          className="h-10 md:h-7 text-sm md:text-xs min-w-28"
+          className="h-8 text-sm md:text-xs min-w-28"
           value={stockFilter}
           onChange={(e) => onStockFilterChange?.(e.target.value)}
         >

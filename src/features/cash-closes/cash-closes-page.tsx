@@ -7,6 +7,7 @@ import { columns } from "./components/columns";
 import { Button } from "@/components/ui/button";
 import { Lock, Hash, DollarSign, Banknote, ShoppingCart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { cashClosesService } from "@/services/cashClosesService";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -102,16 +103,28 @@ export function CashClosesPage() {
             Resumen del Día — {today}
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {summaryItems.map((item) => (
-              <div key={item.label} className="flex items-center gap-2.5">
-                <item.icon className="h-4 w-4 text-primary shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground truncate">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4">
+            {summaryItems.map((item, i) => (
+              <div
+                key={item.label}
+                className={cn(
+                  "flex flex-col gap-1.5 px-2 sm:px-4 min-w-0 border-border/50",
+                  i % 2 !== 0 ? "border-l" : "", // odd index (2nd column on mobile) gets left border
+                  "md:border-l", // all get left border on desktop EXCEPT the first one
+                  i === 0 ? "md:border-l-0 pl-0" : "", // first item globally gets no left border and no left pad
+                  i === 2 ? "border-l-0 pl-0 md:border-l md:pl-4" : "", // 3rd item is first in new row on mobile
+                  i === summaryItems.length - 1 ? "pr-0" : "",
+                )}
+              >
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <item.icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider truncate">
                     {item.label}
                   </p>
-                  <p className="text-lg font-bold tabular-nums leading-tight">{item.value}</p>
                 </div>
+                <p className="text-sm sm:text-lg font-bold tabular-nums leading-none truncate" title={item.value}>
+                  {item.value}
+                </p>
               </div>
             ))}
           </div>

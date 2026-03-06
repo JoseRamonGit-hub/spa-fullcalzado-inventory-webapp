@@ -9,7 +9,7 @@ export function Topbar() {
           <span className="w-1.5 h-1.5 rounded-full bg-primary" />
           <h2 className="font-semibold text-sm text-foreground whitespace-nowrap">Movimientos</h2>
         </div>
-        <InputGroup className="h-7 max-w-xs">
+        <InputGroup className="h-8 max-w-xs">
           <InputGroupInput placeholder="Buscar movimientos..." className="text-xs" />
           <InputGroupAddon>
             <Search className="h-3.5 w-3.5" />

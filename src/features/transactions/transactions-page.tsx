@@ -5,6 +5,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./components/columns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, DollarSign, Banknote } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function TransactionsPage() {
   const { data: transactions, isLoading, isError } = useTransactions();
@@ -86,16 +87,23 @@ export function TransactionsPage() {
       <div className="flex flex-col flex-1 overflow-auto custom-scrollbar">
         {/* Flat metrics — no nested cards */}
         <div className="px-3 md:px-4 py-3 border-b">
-          <div className="grid grid-cols-3 gap-4">
-            {metricItems.map((m) => (
-              <div key={m.label} className="flex items-center gap-2.5">
-                <m.icon className="h-4 w-4 text-primary shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground truncate">
-                    {m.label}
-                  </p>
-                  <p className="text-lg font-bold tabular-nums leading-tight">{m.value}</p>
+          <div className="grid grid-cols-3 divide-x divide-border/50">
+            {metricItems.map((m, i) => (
+              <div
+                key={m.label}
+                className={cn(
+                  "flex flex-col gap-1.5 px-2 sm:px-4 min-w-0",
+                  i === 0 ? "pl-0" : "",
+                  i === metricItems.length - 1 ? "pr-0" : "",
+                )}
+              >
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <m.icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider truncate">{m.label}</p>
                 </div>
+                <p className="text-sm sm:text-lg font-bold tabular-nums leading-none truncate" title={m.value}>
+                  {m.value}
+                </p>
               </div>
             ))}
           </div>

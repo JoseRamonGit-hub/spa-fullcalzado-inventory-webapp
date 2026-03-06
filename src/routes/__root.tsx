@@ -26,7 +26,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
       <TooltipProvider>
         <Outlet />
         <Toaster />
