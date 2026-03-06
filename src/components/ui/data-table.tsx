@@ -55,7 +55,7 @@ export function DataTable<TData, TValue>({
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-b bg-muted/30 hover:bg-muted/30">
+            <TableRow key={headerGroup.id} className="border-b border-border bg-muted/50 hover:bg-muted/50">
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
@@ -71,11 +71,11 @@ export function DataTable<TData, TValue>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, index) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={`border-b border-border/50 hover:bg-accent/40 transition-colors ${onRowClick ? "cursor-pointer" : ""}`}
+                className={`border-b border-border/40 hover:bg-table-hover transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (

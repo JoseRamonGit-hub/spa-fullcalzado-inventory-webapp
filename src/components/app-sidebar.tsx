@@ -60,9 +60,10 @@ function UserInitials({ name }: { name: string }) {
 
   return (
     <div
-      className="flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold text-primary-foreground shrink-0"
+      className="flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold shrink-0"
       style={{
-        background: "linear-gradient(135deg, oklch(0.55 0.2 270), oklch(0.45 0.18 280))",
+        background: "linear-gradient(135deg, oklch(0.65 0.16 55), oklch(0.52 0.14 55))",
+        color: "oklch(0.99 0.002 75)",
       }}
     >
       {initials}
@@ -86,23 +87,24 @@ export function AppSidebar() {
   const user = useAuthStore((state) => state.user);
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="hidden md:flex">
+    <Sidebar variant="inset" collapsible="icon" className="hidden md:flex">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link to="/inventory">
                 <div
-                  className="flex aspect-square size-8 items-center justify-center rounded-lg text-white"
+                  className="flex aspect-square size-8 items-center justify-center rounded-lg"
                   style={{
-                    background: "linear-gradient(135deg, oklch(0.55 0.2 270), oklch(0.45 0.18 280))",
+                    background: "linear-gradient(135deg, oklch(0.65 0.16 55), oklch(0.52 0.14 55))",
+                    color: "oklch(0.99 0.002 75)",
                   }}
                 >
                   <ShoppingBag className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold text-sm">ShoeStock</span>
-                  <span className="text-[11px] text-muted-foreground">Inventario</span>
+                  <span className="font-semibold text-sm text-sidebar-foreground">Full Calzado</span>
+                  <span className="text-[11px] text-sidebar-foreground/50">Inventario</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -112,7 +114,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40">
             Plataforma
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -123,7 +125,7 @@ export function AppSidebar() {
                     <Link
                       to={item.url}
                       activeProps={{
-                        className: "bg-sidebar-accent text-primary font-medium",
+                        className: "bg-sidebar-accent text-sidebar-primary font-medium",
                       }}
                     >
                       <item.icon className="size-4" />
@@ -136,10 +138,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator className="mx-0" />
+        <SidebarSeparator className="mx-0 bg-sidebar-border" />
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40">
             Acciones Rápidas
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -148,7 +150,7 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   tooltip="Registrar Ingreso"
                   onClick={() => setIngresoOpen(true)}
-                  className="text-muted-foreground hover:text-primary hover:bg-primary/5"
+                  className="text-sidebar-foreground/70 hover:text-sidebar-primary hover:bg-sidebar-primary/10"
                 >
                   <PackagePlus className="size-4" />
                   <span>Registrar Ingreso</span>
@@ -158,7 +160,7 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   tooltip="Registrar Venta"
                   onClick={() => setVentaOpen(true)}
-                  className="text-muted-foreground hover:text-success hover:bg-success/5"
+                  className="text-sidebar-foreground/70 hover:text-emerald-400 hover:bg-emerald-400/10"
                 >
                   <ShoppingCart className="size-4" />
                   <span>Registrar Venta</span>
@@ -177,7 +179,7 @@ export function AppSidebar() {
                   <Link
                     to="/settings"
                     activeProps={{
-                      className: "bg-sidebar-accent text-primary font-medium",
+                      className: "bg-sidebar-accent text-sidebar-primary font-medium",
                     }}
                   >
                     <Settings className="size-4" />
@@ -190,15 +192,17 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="group-data-[collapsible=icon]:hidden">
             <SidebarMenuButton asChild tooltip={user?.fullname || "Usuario"}>
               <div className="flex items-center w-full gap-2">
                 <UserInitials name={user?.fullname || "U"} />
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-medium text-xs">{user?.fullname || "Usuario"}</span>
-                  <span className="truncate text-[11px] text-muted-foreground">{user?.email || ""}</span>
+                  <span className="truncate font-medium text-xs text-sidebar-foreground">
+                    {user?.fullname || "Usuario"}
+                  </span>
+                  <span className="truncate text-[11px] text-sidebar-foreground/50">{user?.email || ""}</span>
                 </div>
               </div>
             </SidebarMenuButton>
@@ -207,7 +211,7 @@ export function AppSidebar() {
             <SidebarMenuButton
               onClick={handleLogOut}
               tooltip="Cerrar sesión"
-              className="text-muted-foreground hover:text-destructive"
+              className="text-sidebar-foreground/50 hover:text-red-400 hover:bg-red-400/10"
             >
               <LogOut className="size-4" />
               <span>Cerrar sesión</span>

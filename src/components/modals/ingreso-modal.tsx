@@ -247,7 +247,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
                           setSearch("");
                           setFilteredSearch("");
                         }}
-                        className="w-full flex items-center gap-2 px-2.5 py-1.5 text-left hover:bg-accent transition-colors"
+                        className="w-full flex bg-card items-center gap-2 px-2.5 py-1.5 text-left hover:bg-accent transition-colors"
                       >
                         <span className="product-code text-xs">{p.code}</span>
                         <span className="text-sm truncate flex-1">{p.description}</span>

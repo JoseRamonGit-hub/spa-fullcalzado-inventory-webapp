@@ -55,8 +55,8 @@ function AppLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="overflow-hidden">
-        <header className="flex topbar-height shrink-0 items-center justify-between gap-2 border-b bg-background/95 backdrop-blur-sm px-3 md:px-4">
+      <SidebarInset className="overflow-hidden bg-card shadow-sm">
+        <header className="flex topbar-height shrink-0 items-center justify-between gap-2 border-b border-border bg-card/80 backdrop-blur-sm px-3 md:px-4">
           <div className="flex items-center gap-1.5">
             <SidebarTrigger className="hidden md:inline-flex" />
             {/* Desktop-only action buttons */}
@@ -64,7 +64,7 @@ function AppLayout() {
               variant="ghost"
               size="sm"
               onClick={() => setIngresoOpen(true)}
-              className="hidden md:inline-flex h-7 gap-1.5 text-xs px-2 text-foreground hover:text-primary hover:bg-primary/5"
+              className="hidden md:inline-flex h-7 gap-1.5 text-xs px-2 text-foreground hover:text-primary hover:bg-primary/8"
             >
               <PackagePlus className="h-3.5 w-3.5" />
               <span>Ingreso</span>
@@ -74,7 +74,7 @@ function AppLayout() {
               variant="ghost"
               size="sm"
               onClick={() => setVentaOpen(true)}
-              className="hidden md:inline-flex h-7 gap-1.5 text-xs px-2 text-foreground hover:text-primary hover:bg-primary/5"
+              className="hidden md:inline-flex h-7 gap-1.5 text-xs px-2 text-foreground hover:text-primary hover:bg-primary/8"
             >
               <ShoppingCart className="h-3.5 w-3.5" />
               <span>Venta</span>
@@ -107,7 +107,7 @@ function AppLayout() {
           </div>
         </header>
 
-        <div className="flex flex-1 flex-col overflow-hidden pb-[var(--bottombar-height)] md:pb-0">
+        <div className="flex flex-1 flex-col overflow-hidden pb-(--bottombar-height) md:pb-0">
           <Outlet />
         </div>
       </SidebarInset>

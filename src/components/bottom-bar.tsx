@@ -23,11 +23,11 @@ export function BottomBar() {
         to={url}
         className={cn(
           "flex flex-col items-center justify-center gap-0.5 w-[56px] h-full py-1 transition-colors relative",
-          isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
+          isActive ? "text-primary" : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80",
         )}
       >
         {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />}
-        <Icon className={cn("w-6 h-6", isActive && "stroke-[2.5]")} />
+        <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5]")} />
         <span className={cn("text-[9px] leading-none mt-0.5", isActive ? "font-bold" : "font-medium")}>{title}</span>
       </Link>
     );
@@ -35,7 +35,10 @@ export function BottomBar() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t bg-background/95 backdrop-blur-md bottombar-height pb-safe">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-sidebar-border bottombar-height pb-safe"
+        style={{ background: "var(--sidebar)", color: "var(--sidebar-foreground)" }}
+      >
         <div className="grid grid-cols-5 items-center justify-items-center h-full px-1">
           {/* Item 1: Inventario */}
           {renderNavItem("Inventario", "/inventory", Package)}
@@ -47,8 +50,7 @@ export function BottomBar() {
           <div className="flex flex-col items-center justify-center w-full h-full relative">
             <button
               onClick={() => setActionDrawerOpen(true)}
-              className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 -mt-6 active:scale-95 transition-transform"
-              style={{ minWidth: 48, minHeight: 48 }}
+              className="flex items-center justify-center w-[52px] h-[52px] rounded-full bg-primary text-primary-foreground fab-glow -mt-7 active:scale-95 transition-transform"
               aria-label="Nueva acción"
             >
               <Plus className="w-7 h-7 stroke-[2.5]" />
@@ -61,10 +63,10 @@ export function BottomBar() {
           {/* Item 5: Menú Escalable */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex flex-col items-center justify-center gap-0.5 w-[56px] h-full py-1 text-muted-foreground hover:text-foreground transition-colors"
+            className="flex flex-col items-center justify-center gap-0.5 w-[56px] h-full py-1 text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-colors"
             aria-label="Abrir menú"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5" />
             <span className="text-[9px] leading-none mt-0.5 font-medium">Menú</span>
           </button>
         </div>

@@ -27,7 +27,7 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "code",
     header: "Código",
-    cell: ({ row }) => <span className="product-code font-medium">{row.getValue("code")}</span>,
+    cell: ({ row }) => <span className="product-code font-bold">{row.getValue("code")}</span>,
   },
   {
     accessorKey: "description",
@@ -75,16 +75,7 @@ export const columns: ColumnDef<Product>[] = [
       const isActive = row.getValue("active");
       return (
         <div className="text-center">
-          <Badge
-            variant={isActive ? "default" : "secondary"}
-            className={
-              isActive
-                ? "bg-success/15 text-success hover:bg-success/20 border-0 text-[11px] px-1.5 py-0"
-                : "text-[11px] px-1.5 py-0"
-            }
-          >
-            {isActive ? "Activo" : "Inactivo"}
-          </Badge>
+          <Badge variant={isActive ? "success" : "secondary"}>{isActive ? "Activo" : "Inactivo"}</Badge>
         </div>
       );
     },

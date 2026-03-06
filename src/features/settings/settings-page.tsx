@@ -51,7 +51,7 @@ export function SettingsPage() {
             <div className="space-y-2.5">
               <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                 <span className="text-xs text-muted-foreground">Nombre</span>
-                <span className="text-sm font-medium">ShoeStock</span>
+                <span className="text-sm font-medium">Full Calzado</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                 <span className="text-xs text-muted-foreground">Versión</span>

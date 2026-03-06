@@ -10,14 +10,7 @@ export const columns: ColumnDef<InventoryMovementWithRelations>[] = [
       const type = row.getValue("type");
       return (
         <div className="text-center">
-          <Badge
-            variant="secondary"
-            className={
-              type === "entry"
-                ? "bg-success/15 text-success hover:bg-success/20 border-0 text-[11px] px-1.5 py-0"
-                : "bg-destructive/15 text-destructive hover:bg-destructive/20 border-0 text-[11px] px-1.5 py-0"
-            }
-          >
+          <Badge variant={type === "entry" ? "success" : "destructive"}>
             {type === "entry" ? "Entrada" : "Salida"}
           </Badge>
         </div>
