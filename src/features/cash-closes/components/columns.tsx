@@ -5,19 +5,20 @@ export const columns: ColumnDef<CashClose>[] = [
   {
     accessorKey: "date",
     header: "Fecha",
+    cell: ({ row }) => <span className="tabular-nums font-medium">{row.getValue("date")}</span>,
   },
   {
     accessorKey: "total_transactions",
     header: () => <div className="text-right">Transacciones</div>,
     cell: ({ row }) => {
-      return <div className="text-right">{row.getValue("total_transactions")}</div>;
+      return <div className="text-right tabular-nums">{row.getValue("total_transactions")}</div>;
     },
   },
   {
     accessorKey: "total_units_sold",
     header: () => <div className="text-right">Unidades</div>,
     cell: ({ row }) => {
-      return <div className="text-right">{row.getValue("total_units_sold")}</div>;
+      return <div className="text-right tabular-nums">{row.getValue("total_units_sold")}</div>;
     },
   },
   {
@@ -29,7 +30,7 @@ export const columns: ColumnDef<CashClose>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(price);
-      return <div className="text-right font-medium">${formatted}</div>;
+      return <div className="text-right tabular-nums font-medium">${formatted}</div>;
     },
   },
   {
@@ -41,7 +42,7 @@ export const columns: ColumnDef<CashClose>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(price);
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="text-right tabular-nums font-medium">{formatted}</div>;
     },
   },
   {
@@ -53,11 +54,12 @@ export const columns: ColumnDef<CashClose>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(price);
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="text-right tabular-nums text-muted-foreground">{formatted}</div>;
     },
   },
   {
     accessorKey: "closed_by",
     header: "Cerrado por",
+    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("closed_by")}</span>,
   },
 ];

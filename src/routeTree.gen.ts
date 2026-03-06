@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppMovementsRouteImport } from './routes/_app/movements'
 import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
 import { Route as AppCashClosesRouteImport } from './routes/_app/cash-closes'
@@ -29,6 +30,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/_auth/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMovementsRoute = AppMovementsRouteImport.update({
   id: '/movements',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/cash-closes': typeof AppCashClosesRoute
   '/inventory': typeof AppInventoryRoute
   '/movements': typeof AppMovementsRoute
+  '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
 }
 export interface FileRoutesByTo {
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/cash-closes': typeof AppCashClosesRoute
   '/inventory': typeof AppInventoryRoute
   '/movements': typeof AppMovementsRoute
+  '/settings': typeof AppSettingsRoute
   '/login': typeof AuthLoginRoute
 }
 export interface FileRoutesById {
@@ -67,13 +75,26 @@ export interface FileRoutesById {
   '/_app/cash-closes': typeof AppCashClosesRoute
   '/_app/inventory': typeof AppInventoryRoute
   '/_app/movements': typeof AppMovementsRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/_auth/login': typeof AuthLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cash-closes' | '/inventory' | '/movements' | '/login'
+  fullPaths:
+    | '/'
+    | '/cash-closes'
+    | '/inventory'
+    | '/movements'
+    | '/settings'
+    | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cash-closes' | '/inventory' | '/movements' | '/login'
+  to:
+    | '/'
+    | '/cash-closes'
+    | '/inventory'
+    | '/movements'
+    | '/settings'
+    | '/login'
   id:
     | '__root__'
     | '/'
@@ -81,6 +102,7 @@ export interface FileRouteTypes {
     | '/_app/cash-closes'
     | '/_app/inventory'
     | '/_app/movements'
+    | '/_app/settings'
     | '/_auth/login'
   fileRoutesById: FileRoutesById
 }
@@ -113,6 +135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/movements': {
       id: '/_app/movements'
       path: '/movements'
@@ -141,12 +170,14 @@ interface AppRouteChildren {
   AppCashClosesRoute: typeof AppCashClosesRoute
   AppInventoryRoute: typeof AppInventoryRoute
   AppMovementsRoute: typeof AppMovementsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCashClosesRoute: AppCashClosesRoute,
   AppInventoryRoute: AppInventoryRoute,
   AppMovementsRoute: AppMovementsRoute,
+  AppSettingsRoute: AppSettingsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

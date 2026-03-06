@@ -3,15 +3,16 @@ import { Search } from "lucide-react";
 
 export function Topbar() {
   return (
-    <div className="flex topbar-height items-center px-4 justify-between bg-background border-b gap-2">
-      <div className="basis-full items-center gap-2 flex">
-        <h2 className="font-bold text-sm uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-          Cierres de Caja
-        </h2>
-        <InputGroup className="h-7 w-full max-w-sm">
-          <InputGroupInput placeholder="Buscar cierres..." />
+    <div className="flex topbar-height items-center px-3 md:px-4 justify-between bg-background border-b gap-2">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <h2 className="font-semibold text-sm text-foreground whitespace-nowrap">Cierres de Caja</h2>
+        </div>
+        <InputGroup className="h-7 max-w-xs">
+          <InputGroupInput placeholder="Buscar cierres..." className="text-xs" />
           <InputGroupAddon>
-            <Search />
+            <Search className="h-3.5 w-3.5" />
           </InputGroupAddon>
         </InputGroup>
       </div>
