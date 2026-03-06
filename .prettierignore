@@ -1,0 +1,17 @@
+# Ignore artifacts:
+build
+coverage
+
+# Ignore all HTML files:
+**/*.html
+
+routeTree.gen.ts
+.env
+node_modules
+.vscode
+.idea
+.DS_Store
+.prettierignore
+.gitignore
+.prettierrc
+.eslintrc.js
