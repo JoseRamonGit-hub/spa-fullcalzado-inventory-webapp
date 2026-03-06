@@ -20,6 +20,7 @@ import {
   PackagePlus,
   ShoppingCart,
   Settings,
+  Tags,
 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useLogout } from "@/features/auth/login/hooks";
@@ -36,6 +37,11 @@ const navItems = [
     title: "Movimientos",
     url: "/movements",
     icon: ArrowLeftRight,
+  },
+  {
+    title: "Ventas",
+    url: "/transactions",
+    icon: Tags,
   },
   {
     title: "Cierres de Caja",
@@ -130,7 +136,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator />
+        <SidebarSeparator className="mx-0" />
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/70">
@@ -190,7 +196,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild tooltip={user?.fullname || "Usuario"}>
               <div className="flex items-center w-full gap-2">
                 <UserInitials name={user?.fullname || "U"} />
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-medium text-xs">{user?.fullname || "Usuario"}</span>
                   <span className="truncate text-[11px] text-muted-foreground">{user?.email || ""}</span>
                 </div>

@@ -60,7 +60,7 @@ export function DataTable<TData, TValue>({
                 return (
                   <TableHead
                     key={header.id}
-                    className="h-8 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap"
+                    className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap"
                   >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
@@ -79,7 +79,7 @@ export function DataTable<TData, TValue>({
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="px-3 py-1.5 text-sm whitespace-nowrap">
+                  <TableCell key={cell.id} className="px-2.5 py-1 text-[13px] whitespace-nowrap">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

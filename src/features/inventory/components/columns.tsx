@@ -27,7 +27,7 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "code",
     header: "Código",
-    cell: ({ row }) => <span className="product-code">{row.getValue("code")}</span>,
+    cell: ({ row }) => <span className="product-code font-medium">{row.getValue("code")}</span>,
   },
   {
     accessorKey: "description",

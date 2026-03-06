@@ -2,40 +2,39 @@ import * as React from "react";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "next-themes";
 
-const TanStackRouterDevtools =
-	import.meta.env.PROD
-		? () => null
-		: React.lazy(() =>
-			import("@tanstack/react-router-devtools").then((res) => ({
-				default: res.TanStackRouterDevtools,
-			})),
-		);
+const TanStackRouterDevtools = import.meta.env.PROD
+  ? () => null
+  : React.lazy(() =>
+      import("@tanstack/react-router-devtools").then((res) => ({
+        default: res.TanStackRouterDevtools,
+      })),
+    );
 
-const ReactQueryDevtools =
-	import.meta.env.PROD
-		? () => null
-		: React.lazy(() =>
-			import("@tanstack/react-query-devtools").then((res) => ({
-				default: res.ReactQueryDevtools,
-			})),
-		);
+const ReactQueryDevtools = import.meta.env.PROD
+  ? () => null
+  : React.lazy(() =>
+      import("@tanstack/react-query-devtools").then((res) => ({
+        default: res.ReactQueryDevtools,
+      })),
+    );
 
 export const Route = createRootRoute({
-	component: RootComponent,
+  component: RootComponent,
 });
 
 function RootComponent() {
-	return (
-		<React.Fragment>
-			<TooltipProvider>
-				<Outlet />
-				<Toaster />
-			</TooltipProvider>
-			<React.Suspense fallback={null}>
-				<TanStackRouterDevtools position="bottom-right" />
-				<ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
-			</React.Suspense>
-		</React.Fragment>
-	);
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <TooltipProvider>
+        <Outlet />
+        <Toaster />
+      </TooltipProvider>
+      <React.Suspense fallback={null}>
+        <TanStackRouterDevtools position="bottom-right" />
+        <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+      </React.Suspense>
+    </ThemeProvider>
+  );
 }

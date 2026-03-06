@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Package, ArrowLeftRight, ReceiptText, Plus, Settings } from "lucide-react";
+import { Package, ArrowLeftRight, ReceiptText, Plus, Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -22,14 +22,14 @@ const navItems = [
 
 const rightItems = [
   {
+    title: "Ventas",
+    url: "/transactions",
+    icon: Tags,
+  },
+  {
     title: "Cierres",
     url: "/cash-closes",
     icon: ReceiptText,
-  },
-  {
-    title: "Ajustes",
-    url: "/settings",
-    icon: Settings,
   },
 ];
 

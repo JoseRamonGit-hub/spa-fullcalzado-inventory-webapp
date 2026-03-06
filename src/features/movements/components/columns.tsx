@@ -38,7 +38,7 @@ export const columns: ColumnDef<InventoryMovementWithRelations>[] = [
     id: "products_code",
     accessorFn: (row) => row.products?.code,
     header: "Código",
-    cell: ({ row }) => <span className="product-code">{row.getValue("products_code")}</span>,
+    cell: ({ row }) => <span className="product-code font-medium">{row.getValue("products_code")}</span>,
   },
   {
     id: "products_description",

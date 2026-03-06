@@ -15,64 +15,67 @@ export function SettingsPage() {
         </div>
       </div>
 
-      <div className="p-4 md:p-6 space-y-6 max-w-2xl">
-        {/* User info */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            <User className="w-3.5 h-3.5" />
-            Información del Usuario
+      <div className="p-4 md:p-6 space-y-6 max-w-5xl">
+        {/* Grid layout for desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* User info — flat design */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <User className="w-3.5 h-3.5" />
+              Información del Usuario
+            </div>
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                <span className="text-xs text-muted-foreground">Nombre</span>
+                <span className="text-sm font-medium">{user?.fullname || "—"}</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                <span className="text-xs text-muted-foreground">Email</span>
+                <span className="text-sm font-medium">{user?.email || "—"}</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5">
+                <span className="text-xs text-muted-foreground">Rol</span>
+                <span className="text-xs uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                  {user?.role || "—"}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="p-4 rounded-lg border bg-card space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Nombre</span>
-              <span className="text-sm font-medium">{user?.fullname || "—"}</span>
+
+          {/* App info — flat design */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <Globe className="w-3.5 h-3.5" />
+              Información de la App
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Email</span>
-              <span className="text-sm font-medium">{user?.email || "—"}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Rol</span>
-              <span className="text-xs uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
-                {user?.role || "—"}
-              </span>
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                <span className="text-xs text-muted-foreground">Nombre</span>
+                <span className="text-sm font-medium">ShoeStock</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                <span className="text-xs text-muted-foreground">Versión</span>
+                <span className="text-sm font-mono tabular-nums">0.1.0</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                <span className="text-xs text-muted-foreground">Hosting</span>
+                <span className="text-sm font-medium">Vercel</span>
+              </div>
+              <div className="flex justify-between items-center py-1.5">
+                <span className="text-xs text-muted-foreground">Backend</span>
+                <span className="text-sm font-medium">Supabase</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Exchange rate module */}
+        {/* Exchange rate module — full width */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             <Settings className="w-3.5 h-3.5" />
             Tasa de Cambio
           </div>
           <ExchangeRateSection />
-        </div>
-
-        {/* App info */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            <Globe className="w-3.5 h-3.5" />
-            Información de la App
-          </div>
-          <div className="p-4 rounded-lg border bg-card space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Nombre</span>
-              <span className="text-sm font-medium">ShoeStock</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Versión</span>
-              <span className="text-sm font-mono tabular-nums">0.1.0</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Hosting</span>
-              <span className="text-sm font-medium">Vercel</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Backend</span>
-              <span className="text-sm font-medium">Supabase</span>
-            </div>
-          </div>
         </div>
       </div>
     </section>
