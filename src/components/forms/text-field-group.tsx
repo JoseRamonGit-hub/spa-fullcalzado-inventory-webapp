@@ -1,16 +1,16 @@
-import { useFieldContext } from "@/hooks/form"
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "../ui/input-group"
-import { FieldWrapper, FormFieldProps } from "./field-wrapper"
-import { Eye, EyeOff } from "lucide-react"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { useFieldContext } from "@/hooks/form";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "../ui/input-group";
+import { FieldWrapper, type FormFieldProps } from "./field-wrapper";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type TextFieldGroupProps = FormFieldProps &
   React.ComponentProps<"input"> & {
-    leftAddon?: React.ReactNode
-    rightAddon?: React.ReactNode
-    passwordEye?: boolean
-  }
+    leftAddon?: React.ReactNode;
+    rightAddon?: React.ReactNode;
+    passwordEye?: boolean;
+  };
 
 export function TextFieldGroup({
   label,
@@ -22,10 +22,10 @@ export function TextFieldGroup({
   passwordEye,
   ...props
 }: TextFieldGroupProps) {
-  const field = useFieldContext<string>()
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+  const field = useFieldContext<string>();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <FieldWrapper label={label} description={description} action={action} descriptionBelow={descriptionBelow}>
@@ -55,5 +55,5 @@ export function TextFieldGroup({
         )}
       </InputGroup>
     </FieldWrapper>
-  )
+  );
 }
