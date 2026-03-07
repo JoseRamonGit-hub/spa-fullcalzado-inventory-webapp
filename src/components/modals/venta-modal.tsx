@@ -212,7 +212,7 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
                   <span className="tabular-nums font-semibold">{fmtCurrency(totalUsd, "$")}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Total VES</span>
+                  <span className="text-muted-foreground">Total Bs</span>
                   <span className="tabular-nums font-semibold">{fmtCurrency(totalVes, "Bs ")}</span>
                 </div>
               </div>

@@ -95,7 +95,7 @@ export function CashClosesPage() {
     { label: "Transacciones", value: String(todayMetrics.count), icon: Hash },
     { label: "Uds. Vendidas", value: String(todayMetrics.units), icon: ShoppingCart },
     { label: "Total USD", value: `$${fmtCurrency(todayMetrics.totalUsd)}`, icon: DollarSign },
-    { label: "Total VES", value: `Bs ${fmtVes(todayMetrics.totalVes)}`, icon: Banknote },
+    { label: "Total Bs", value: `Bs ${fmtVes(todayMetrics.totalVes)}`, icon: Banknote },
   ];
 
   return (

@@ -1,36 +1,20 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import type { User } from "@/types"
-import { authService } from "@/services/authService"
+import { create } from "zustand";
+import type { User } from "@/types";
 
 interface AuthState {
-  user: User | null
-  isAuthenticated: boolean
-  restoreSession: () => Promise<void>
-  isAdmin: () => boolean
-  getRole: () => User["role"] | null
+  user: User | null;
+  isAuthenticated: boolean;
+  isInitialized: boolean;
+  setAuth: (user: User) => void;
+  clearAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      isAuthenticated: false,
+export const useAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  isAuthenticated: false,
+  isInitialized: false,
 
-      restoreSession: async () => {
-        if (get().user) return
-        const profile = await authService.getSession()
-        if (profile) {
-          set({ user: profile, isAuthenticated: true })
-        }
-      },
+  setAuth: (user) => set({ user, isAuthenticated: true, isInitialized: true }),
 
-      isAdmin: () => get().user?.role === "admin",
-      getRole: () => get().user?.role ?? null,
-    }),
-    {
-      name: "auth-storage",
-    },
-  ),
-)
-
+  clearAuth: () => set({ user: null, isAuthenticated: false, isInitialized: true }),
+}));

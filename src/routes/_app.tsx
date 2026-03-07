@@ -1,9 +1,9 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppSidebar } from "../components/app-sidebar";
 import { BottomBar } from "../components/bottom-bar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { DollarSign, PackagePlus, ShoppingCart, Moon, Sun } from "lucide-react";
+import { PackagePlus, ShoppingCart, Moon, Sun } from "lucide-react";
 import { IngresoModal } from "@/components/modals/ingreso-modal";
 import { VentaModal } from "@/components/modals/venta-modal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
@@ -13,6 +13,14 @@ import { useTheme } from "next-themes";
 import { useAuthStore } from "@/features/auth/store";
 
 export const Route = createFileRoute("/_app")({
+  beforeLoad: () => {
+    // Root route already ran getAuthenticatedProfile() and hydrated the store.
+    // This guard is a lightweight synchronous check — no network call needed.
+    const { isAuthenticated } = useAuthStore.getState();
+    if (!isAuthenticated) {
+      throw redirect({ to: "/login" });
+    }
+  },
   component: AppLayout,
 });
 
@@ -100,10 +108,13 @@ function AppLayout() {
               <span className="sr-only">Toggle theme</span>
             </Button>
 
-            {/* BCV rate */}
-            <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-[11px] text-muted-foreground hidden sm:inline font-medium">BCV</span>
-            <span className="text-xs font-mono tabular-nums font-medium text-foreground">{rateDisplay}</span>
+            <div className="flex items-center gap-1.5 rounded-md bg-primary/8 border border-primary/20 px-2 py-0.5">
+              <span className="text-[10px] text-primary/70 font-semibold uppercase tracking-wider hidden sm:inline">
+                TASA
+              </span>
+              <span className="text-sm font-mono tabular-nums font-bold text-primary leading-none">{rateDisplay}</span>
+              <span className="text-[10px] text-primary/60 font-medium hidden sm:inline">Bs/$</span>
+            </div>
           </div>
         </header>
 

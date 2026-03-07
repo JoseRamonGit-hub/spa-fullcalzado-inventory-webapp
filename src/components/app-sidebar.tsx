@@ -9,23 +9,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
-import {
-  ReceiptText,
-  ArrowLeftRight,
-  LogOut,
-  Package,
-  ShoppingBag,
-  PackagePlus,
-  ShoppingCart,
-  Settings,
-  Tags,
-} from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { ReceiptText, ArrowLeftRight, LogOut, Package, ShoppingBag, Settings, Tags } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useLogout } from "@/features/auth/login/hooks";
 import { useAuthStore } from "@/features/auth/store";
-import { useModalStore } from "@/hooks/useModalStore";
 
 const navItems = [
   {
@@ -72,17 +60,9 @@ function UserInitials({ name }: { name: string }) {
 }
 
 export function AppSidebar() {
-  const navigate = useNavigate();
-  const { mutate } = useLogout();
-  const { setIngresoOpen, setVentaOpen } = useModalStore();
+  const { mutate: logout } = useLogout();
 
-  const handleLogOut = () => {
-    mutate(undefined, {
-      onSuccess: () => {
-        navigate({ to: "/login" });
-      },
-    });
-  };
+  const handleLogOut = () => logout();
 
   const user = useAuthStore((state) => state.user);
 
@@ -134,38 +114,6 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator className="mx-0 bg-sidebar-border" />
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40">
-            Acciones Rápidas
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Registrar Ingreso"
-                  onClick={() => setIngresoOpen(true)}
-                  className="text-sidebar-foreground/70 hover:text-sidebar-primary hover:bg-sidebar-primary/10"
-                >
-                  <PackagePlus className="size-4" />
-                  <span>Registrar Ingreso</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Registrar Venta"
-                  onClick={() => setVentaOpen(true)}
-                  className="text-sidebar-foreground/70 hover:text-emerald-400 hover:bg-emerald-400/10"
-                >
-                  <ShoppingCart className="size-4" />
-                  <span>Registrar Venta</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

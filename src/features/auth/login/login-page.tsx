@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "./hooks";
@@ -10,21 +9,11 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const navigate = useNavigate();
   const { mutate, isPending } = useLogin();
 
-  const handleSubmit = (e: React.SubmitEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutate(
-      { email, password },
-      {
-        onSuccess: (result) => {
-          if (result.success) {
-            navigate({ to: "/inventory" });
-          }
-        },
-      },
-    );
+    mutate({ email, password });
   };
 
   return (

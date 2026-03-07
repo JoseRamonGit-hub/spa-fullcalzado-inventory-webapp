@@ -1,10 +1,13 @@
 import "react";
 import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/features/auth/store";
+import { queryClient } from "@/lib/queryClient";
 
-// Create a new router instance
+// Create router
 const router = createRouter({ routeTree });
 
 // Register the router instance for type safety
@@ -14,8 +17,30 @@ declare module "@tanstack/react-router" {
   }
 }
 
-// Create a client
-const queryClient = new QueryClient();
+/**
+ * Lightweight auth state listener.
+ *
+ * Responsibilities are intentionally minimal:
+ * - Login   → handled by useLogin hook (sets store + navigates)
+ * - Logout  → handled by useLogout hook (clears store + cache + navigates)
+ * - Initial → handled by __root.tsx beforeLoad (hydrates store)
+ *
+ * This listener only handles TOKEN_REFRESHED to keep the user profile
+ * in sync when Supabase silently refreshes the JWT.
+ */
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === "TOKEN_REFRESHED" && session?.user) {
+    try {
+      const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();
+
+      if (profile) {
+        useAuthStore.getState().setAuth(profile);
+      }
+    } catch {
+      // Non-critical — profile stays as-is
+    }
+  }
+});
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>

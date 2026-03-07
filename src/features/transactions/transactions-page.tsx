@@ -78,7 +78,7 @@ export function TransactionsPage() {
       icon: DollarSign,
     },
     {
-      label: "Total VES Hoy",
+      label: "Total Bs Hoy",
       value: `Bs ${fmtVes(metrics.totalVes)}`,
       icon: Banknote,
     },

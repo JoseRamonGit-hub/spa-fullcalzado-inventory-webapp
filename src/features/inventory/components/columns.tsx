@@ -94,7 +94,7 @@ export const columns: ColumnDef<Product>[] = [
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
+            className="h-5 w-7 p-0 text-muted-foreground hover:text-primary"
             onClick={(e) => {
               e.stopPropagation();
               meta?.onEdit?.(product);
@@ -105,7 +105,7 @@ export const columns: ColumnDef<Product>[] = [
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+            className="h-5 w-7 p-0 text-muted-foreground hover:text-destructive"
             onClick={(e) => {
               e.stopPropagation();
               meta?.onDelete?.(product);
