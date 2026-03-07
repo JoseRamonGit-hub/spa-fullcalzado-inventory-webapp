@@ -46,15 +46,19 @@ export function BottomBar() {
           {/* Item 2: Ventas */}
           {renderNavItem("Ventas", "/transactions", Tags)}
 
-          {/* Item 3: FAB Central */}
+          {/* Item 3: FAB Central — The Protagonist */}
           <div className="flex flex-col items-center justify-center w-full h-full relative">
-            <button
-              onClick={() => setActionDrawerOpen(true)}
-              className="flex items-center justify-center w-[52px] h-[52px] rounded-full bg-primary text-primary-foreground fab-glow -mt-7 active:scale-95 transition-transform"
-              aria-label="Nueva acción"
-            >
-              <Plus className="w-7 h-7 stroke-[2.5]" />
-            </button>
+            <div className="relative -mt-8">
+              {/* Pulsing ring */}
+              <span className="absolute inset-0 rounded-full bg-primary/30 fab-ping" />
+              <button
+                onClick={() => setActionDrawerOpen(true)}
+                className="relative flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground fab-glow active:scale-95 transition-transform"
+                aria-label="Nueva acción"
+              >
+                <Plus className="w-7 h-7 stroke-3" />
+              </button>
+            </div>
           </div>
 
           {/* Item 4: Movimientos */}

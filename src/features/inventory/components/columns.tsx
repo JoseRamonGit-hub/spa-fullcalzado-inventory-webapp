@@ -32,7 +32,9 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "description",
     header: "Descripción",
-    cell: ({ row }) => <span className="truncate max-w-[200px] inline-block">{row.getValue("description")}</span>,
+    cell: ({ row }) => (
+      <span className="truncate max-w-[180px] md:max-w-[280px] block">{row.getValue("description")}</span>
+    ),
   },
   {
     accessorKey: "stock",

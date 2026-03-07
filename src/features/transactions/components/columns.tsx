@@ -34,7 +34,7 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
     accessorFn: (row) => row.products?.description,
     header: "Producto",
     cell: ({ row }) => (
-      <span className="truncate max-w-[200px] inline-block">{row.getValue("products_description")}</span>
+      <span className="truncate max-w-[160px] md:max-w-[240px] block">{row.getValue("products_description")}</span>
     ),
   },
   {

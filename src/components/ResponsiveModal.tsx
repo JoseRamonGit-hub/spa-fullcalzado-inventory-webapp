@@ -22,7 +22,7 @@ export function ResponsiveModal({ open, onOpenChange, title, description, childr
             <DrawerTitle className="text-sm font-bold uppercase tracking-wide">{title}</DrawerTitle>
             {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
           </DrawerHeader>
-          <div className="p-4 overflow-y-auto max-h-[70dvh]">{children}</div>
+          <div className="px-4 py-2 overflow-y-auto max-h-[75dvh] custom-scrollbar">{children}</div>
         </DrawerContent>
       </Drawer>
     );

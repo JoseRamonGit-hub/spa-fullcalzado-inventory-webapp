@@ -6,7 +6,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./components/columns";
 import { Button } from "@/components/ui/button";
 import { Lock, Hash, DollarSign, Banknote, ShoppingCart } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { cn } from "@/lib/utils";
 import { cashClosesService } from "@/services/cashClosesService";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -63,12 +63,18 @@ export function CashClosesPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-col flex-1">
+      <section className="flex flex-col flex-1 overflow-hidden">
         <Topbar />
-        <div className="p-4 space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-7 w-full" />
-          ))}
+        <div className="flex flex-col flex-1 overflow-auto custom-scrollbar">
+          <MetricsSkeleton count={4} />
+          <div className="flex flex-col flex-1">
+            <div className="px-3 md:px-4 pt-3 pb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Cierres Anteriores
+              </h3>
+            </div>
+            <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
+          </div>
         </div>
       </section>
     );

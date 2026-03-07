@@ -129,7 +129,7 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-11"
+                className="h-11 bg-card"
                 autoComplete="email"
               />
             </div>
@@ -148,7 +148,7 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-11 pr-11"
+                  className="h-11 pr-11 bg-card"
                   autoComplete="current-password"
                 />
                 <button

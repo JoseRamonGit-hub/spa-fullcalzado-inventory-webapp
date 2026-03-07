@@ -6,6 +6,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { PackageOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMemo } from "react";
@@ -16,6 +17,7 @@ interface DataTableProps<TData, TValue> {
   emptyMessage?: string;
   onRowClick?: (row: TData) => void;
   meta?: Record<string, unknown>;
+  isLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -24,6 +26,7 @@ export function DataTable<TData, TValue>({
   emptyMessage = "No hay resultados.",
   onRowClick,
   meta,
+  isLoading,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -53,7 +56,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="overflow-auto flex-1 custom-scrollbar">
       <Table>
-        <TableHeader>
+        <TableHeader className="px-10!">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="border-b border-border bg-muted/50 hover:bg-muted/50">
               {headerGroup.headers.map((header) => {
@@ -70,7 +73,9 @@ export function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {isLoading ? (
+            <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
+          ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row, index) => (
               <TableRow
                 key={row.id}

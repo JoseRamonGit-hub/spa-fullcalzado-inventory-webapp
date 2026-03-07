@@ -3,7 +3,6 @@ import { useProducts } from "./hooks";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./components/columns";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EditProductModal } from "./components/edit-product-modal";
 import { DeleteProductModal } from "./components/delete-product-modal";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -78,18 +77,14 @@ export function InventoryPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-col flex-1">
+      <section className="flex flex-col flex-1 overflow-hidden">
         <Topbar
           search={search}
           onSearchChange={handleSearchChange}
           stockFilter={stockFilter}
           onStockFilterChange={setStockFilter}
         />
-        <div className="p-4 space-y-2">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-8 w-full" />
-          ))}
-        </div>
+        <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
       </section>
     );
   }
