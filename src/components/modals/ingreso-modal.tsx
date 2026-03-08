@@ -147,13 +147,13 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
   return (
     <ResponsiveModal open={open} onOpenChange={handleOpenChange} title="Registrar Ingreso">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="mb-4 grid w-full grid-cols-2">
           <TabsTrigger value="new" className="text-xs">
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
             Nuevo Producto
           </TabsTrigger>
           <TabsTrigger value="stock" className="text-xs">
-            <PackagePlus className="h-3.5 w-3.5 mr-1.5" />
+            <PackagePlus className="mr-1.5 h-3.5 w-3.5" />
             Aumentar Stock
           </TabsTrigger>
         </TabsList>
@@ -162,7 +162,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
         <TabsContent value="new">
           <form onSubmit={handleNewProductSubmit} className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Código</label>
+              <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Código</label>
               <Input
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
@@ -173,7 +173,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Descripción</label>
+              <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Descripción</label>
               <Input
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
@@ -184,7 +184,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Precio USD</label>
+                <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Precio USD</label>
                 <Input
                   type="number"
                   step="0.01"
@@ -197,7 +197,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Stock</label>
+                <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Stock</label>
                 <Input
                   type="number"
                   min="1"
@@ -210,7 +210,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full h-9 gap-2" disabled={createProduct.isPending}>
+            <Button type="submit" className="h-9 w-full gap-2" disabled={createProduct.isPending}>
               <PackagePlus className="h-4 w-4" />
               {createProduct.isPending ? "Guardando..." : "Guardar"}
             </Button>
@@ -221,11 +221,11 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
         <TabsContent value="stock">
           <form onSubmit={handleStockSubmit} className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Producto</label>
+              <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Producto</label>
               {!productId ? (
                 <div className="space-y-1.5">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
                     <Input
                       placeholder="Buscar por código o descripción..."
                       value={search}
@@ -234,9 +234,9 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
                       autoFocus
                     />
                   </div>
-                  <div className="max-h-32 overflow-y-auto border rounded-md divide-y custom-scrollbar">
+                  <div className="custom-scrollbar max-h-32 divide-y overflow-y-auto rounded-md border">
                     {filtered.length === 0 && (
-                      <div className="p-2 text-xs text-muted-foreground text-center">No se encontraron productos</div>
+                      <div className="text-muted-foreground p-2 text-center text-xs">No se encontraron productos</div>
                     )}
                     {filtered.slice(0, 15).map((p) => (
                       <button
@@ -247,19 +247,19 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
                           setSearch("");
                           setFilteredSearch("");
                         }}
-                        className="w-full flex bg-card items-center gap-2 px-2.5 py-1.5 text-left hover:bg-accent transition-colors"
+                        className="bg-card hover:bg-accent flex w-full items-center gap-2 px-2.5 py-1.5 text-left transition-colors"
                       >
                         <span className="product-code text-xs">{p.code}</span>
-                        <span className="text-sm truncate flex-1">{p.description}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums">Stock: {p.stock}</span>
+                        <span className="flex-1 truncate text-sm">{p.description}</span>
+                        <span className="text-muted-foreground text-xs tabular-nums">Stock: {p.stock}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 p-2 border rounded-md bg-accent/50">
+                <div className="bg-accent/50 flex items-center gap-2 rounded-md border p-2">
                   <span className="product-code text-xs">{selectedProduct?.code}</span>
-                  <span className="text-sm truncate flex-1">{selectedProduct?.description}</span>
+                  <span className="flex-1 truncate text-sm">{selectedProduct?.description}</span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -274,7 +274,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                 Cantidad a agregar
               </label>
               <Input
@@ -291,7 +291,7 @@ export function IngresoModal({ open, onOpenChange }: IngresoModalProps) {
 
             <Button
               type="submit"
-              className="w-full h-9 gap-2"
+              className="h-9 w-full gap-2"
               disabled={!productId || !quantity || stockIncreaseMutation.isPending}
             >
               <PackagePlus className="h-4 w-4" />

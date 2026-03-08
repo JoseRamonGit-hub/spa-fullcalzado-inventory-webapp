@@ -61,19 +61,19 @@ export function ExchangeRateSection() {
   return (
     <div className="space-y-4">
       {/* Current rate display */}
-      <div className="flex items-center gap-3 p-4 rounded-lg border bg-card">
-        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-          <DollarSign className="w-5 h-5 text-primary" />
+      <div className="bg-card flex items-center gap-3 rounded-lg border p-4">
+        <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+          <DollarSign className="text-primary h-5 w-5" />
         </div>
         <div className="flex-1">
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Tasa Activa</p>
-          <p className="text-2xl font-bold tabular-nums font-mono">
+          <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Tasa Activa</p>
+          <p className="font-mono text-2xl font-bold tabular-nums">
             {currentRate?.rate ? fmtRate(currentRate.rate) : "—"}{" "}
-            <span className="text-sm font-normal text-muted-foreground">Bs/$</span>
+            <span className="text-muted-foreground text-sm font-normal">Bs/$</span>
           </p>
         </div>
         {currentRate?.source && (
-          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold">
+          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
             {currentRate.source}
           </span>
         )}
@@ -88,11 +88,11 @@ export function ExchangeRateSection() {
           placeholder="Nueva tasa (ej. 78.50)"
           value={newRate}
           onChange={(e) => setNewRate(e.target.value)}
-          className="h-10 text-sm tabular-nums flex-1"
+          className="h-10 flex-1 text-sm tabular-nums"
           required
         />
-        <Button type="submit" disabled={updateRate.isPending || !newRate} className="h-10 px-4 gap-2">
-          <TrendingUp className="w-4 h-4" />
+        <Button type="submit" disabled={updateRate.isPending || !newRate} className="h-10 gap-2 px-4">
+          <TrendingUp className="h-4 w-4" />
           <span className="hidden sm:inline">Actualizar</span>
         </Button>
       </form>
@@ -102,24 +102,24 @@ export function ExchangeRateSection() {
         <button
           type="button"
           onClick={() => setShowHistory(!showHistory)}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
         >
-          <History className="w-3.5 h-3.5" />
+          <History className="h-3.5 w-3.5" />
           {showHistory ? "Ocultar historial" : "Ver historial de cambios"}
         </button>
 
         {showHistory && history && (
-          <div className="mt-2 max-h-48 overflow-y-auto border rounded-md divide-y custom-scrollbar">
-            {history.length === 0 && <div className="p-3 text-xs text-muted-foreground text-center">Sin historial</div>}
+          <div className="custom-scrollbar mt-2 max-h-48 divide-y overflow-y-auto rounded-md border">
+            {history.length === 0 && <div className="text-muted-foreground p-3 text-center text-xs">Sin historial</div>}
             {history.map((entry) => (
               <div key={entry.id} className="flex items-center justify-between px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm tabular-nums font-semibold">{fmtRate(entry.rate)}</span>
-                  <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
+                  <span className="font-mono text-sm font-semibold tabular-nums">{fmtRate(entry.rate)}</span>
+                  <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium tracking-wider uppercase">
                     {entry.source}
                   </span>
                 </div>
-                <span className="text-[11px] text-muted-foreground">{fmtDate(entry.updated_at!)}</span>
+                <span className="text-muted-foreground text-[11px]">{fmtDate(entry.updated_at!)}</span>
               </div>
             ))}
           </div>

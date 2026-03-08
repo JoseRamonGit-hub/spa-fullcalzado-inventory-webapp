@@ -8,7 +8,7 @@ export function MovementsPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-col flex-1 overflow-hidden">
+      <section className="flex flex-1 flex-col overflow-hidden">
         <Topbar />
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
       </section>
@@ -17,17 +17,17 @@ export function MovementsPage() {
 
   if (isError) {
     return (
-      <section className="flex flex-col flex-1">
+      <section className="flex flex-1 flex-col">
         <Topbar />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-destructive">Error al cargar los movimientos.</p>
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-destructive text-sm">Error al cargar los movimientos.</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="flex flex-col flex-1 overflow-hidden">
+    <section className="flex flex-1 flex-col overflow-hidden">
       <Topbar />
       <DataTable columns={columns} data={movements || []} emptyMessage="No hay movimientos registrados." />
     </section>

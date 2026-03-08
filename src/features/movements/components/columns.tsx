@@ -20,12 +20,12 @@ export const columns: ColumnDef<InventoryMovementWithRelations>[] = [
   {
     accessorKey: "date",
     header: "Fecha",
-    cell: ({ row }) => <span className="tabular-nums text-muted-foreground">{row.getValue("date")}</span>,
+    cell: ({ row }) => <span className="text-muted-foreground tabular-nums">{row.getValue("date")}</span>,
   },
   {
     accessorKey: "time",
     header: "Hora",
-    cell: ({ row }) => <span className="tabular-nums text-muted-foreground">{row.getValue("time")}</span>,
+    cell: ({ row }) => <span className="text-muted-foreground tabular-nums">{row.getValue("time")}</span>,
   },
   {
     id: "products_code",
@@ -38,14 +38,14 @@ export const columns: ColumnDef<InventoryMovementWithRelations>[] = [
     accessorFn: (row) => row.products?.description,
     header: "Producto",
     cell: ({ row }) => (
-      <span className="truncate max-w-[160px] md:max-w-[240px] block">{row.getValue("products_description")}</span>
+      <span className="block max-w-[160px] truncate md:max-w-[240px]">{row.getValue("products_description")}</span>
     ),
   },
   {
     accessorKey: "quantity",
     header: () => <div className="text-right">Cant.</div>,
     cell: ({ row }) => {
-      return <div className="text-right tabular-nums font-medium">{row.getValue("quantity")}</div>;
+      return <div className="text-right font-medium tabular-nums">{row.getValue("quantity")}</div>;
     },
   },
   {

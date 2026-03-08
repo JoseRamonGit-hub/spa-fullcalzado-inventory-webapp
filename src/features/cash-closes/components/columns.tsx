@@ -5,7 +5,7 @@ export const columns: ColumnDef<CashClose>[] = [
   {
     accessorKey: "date",
     header: "Fecha",
-    cell: ({ row }) => <span className="tabular-nums font-medium">{row.getValue("date")}</span>,
+    cell: ({ row }) => <span className="font-medium tabular-nums">{row.getValue("date")}</span>,
   },
   {
     accessorKey: "total_transactions",
@@ -30,7 +30,7 @@ export const columns: ColumnDef<CashClose>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(price);
-      return <div className="text-right tabular-nums font-medium">${formatted}</div>;
+      return <div className="text-right font-medium tabular-nums">${formatted}</div>;
     },
   },
   {
@@ -42,7 +42,7 @@ export const columns: ColumnDef<CashClose>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(price);
-      return <div className="text-right tabular-nums font-medium">{formatted}</div>;
+      return <div className="text-right font-medium tabular-nums">{formatted}</div>;
     },
   },
   {
@@ -54,7 +54,7 @@ export const columns: ColumnDef<CashClose>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(price);
-      return <div className="text-right tabular-nums text-muted-foreground">{formatted}</div>;
+      return <div className="text-muted-foreground text-right tabular-nums">{formatted}</div>;
     },
   },
   {

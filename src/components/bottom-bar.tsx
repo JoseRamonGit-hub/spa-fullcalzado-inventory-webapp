@@ -22,13 +22,13 @@ export function BottomBar() {
         key={title}
         to={url}
         className={cn(
-          "flex flex-col items-center justify-center gap-0.5 w-[56px] h-full py-1 transition-colors relative",
+          "relative flex h-full w-[56px] flex-col items-center justify-center gap-0.5 py-1 transition-colors",
           isActive ? "text-primary" : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80",
         )}
       >
-        {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />}
-        <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5]")} />
-        <span className={cn("text-[9px] leading-none mt-0.5", isActive ? "font-bold" : "font-medium")}>{title}</span>
+        {isActive && <span className="bg-primary absolute top-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full" />}
+        <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />
+        <span className={cn("mt-0.5 text-[9px] leading-none", isActive ? "font-bold" : "font-medium")}>{title}</span>
       </Link>
     );
   };
@@ -36,10 +36,10 @@ export function BottomBar() {
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-sidebar-border bottombar-height pb-safe"
+        className="border-sidebar-border bottombar-height pb-safe fixed right-0 bottom-0 left-0 z-50 border-t md:hidden"
         style={{ background: "var(--sidebar)", color: "var(--sidebar-foreground)" }}
       >
-        <div className="grid grid-cols-5 items-center justify-items-center h-full px-1">
+        <div className="grid h-full grid-cols-5 items-center justify-items-center px-1">
           {/* Item 1: Inventario */}
           {renderNavItem("Inventario", "/inventory", Package)}
 
@@ -47,16 +47,16 @@ export function BottomBar() {
           {renderNavItem("Ventas", "/transactions", Tags)}
 
           {/* Item 3: FAB Central — The Protagonist */}
-          <div className="flex flex-col items-center justify-center w-full h-full relative">
+          <div className="relative flex h-full w-full flex-col items-center justify-center">
             <div className="relative -mt-8">
               {/* Pulsing ring */}
-              <span className="absolute inset-0 rounded-full bg-primary/30 fab-ping" />
+              <span className="bg-primary/30 fab-ping absolute inset-0 rounded-full" />
               <button
                 onClick={() => setActionDrawerOpen(true)}
-                className="relative flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground fab-glow active:scale-95 transition-transform"
+                className="bg-primary text-primary-foreground fab-glow relative flex h-14 w-14 items-center justify-center rounded-full transition-transform active:scale-95"
                 aria-label="Nueva acción"
               >
-                <Plus className="w-7 h-7 stroke-3" />
+                <Plus className="h-7 w-7 stroke-3" />
               </button>
             </div>
           </div>
@@ -67,11 +67,11 @@ export function BottomBar() {
           {/* Item 5: Menú Escalable */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex flex-col items-center justify-center gap-0.5 w-[56px] h-full py-1 text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-colors"
+            className="text-sidebar-foreground/50 hover:text-sidebar-foreground/80 flex h-full w-[56px] flex-col items-center justify-center gap-0.5 py-1 transition-colors"
             aria-label="Abrir menú"
           >
-            <Menu className="w-5 h-5" />
-            <span className="text-[9px] leading-none mt-0.5 font-medium">Menú</span>
+            <Menu className="h-5 w-5" />
+            <span className="mt-0.5 text-[9px] leading-none font-medium">Menú</span>
           </button>
         </div>
       </nav>
@@ -82,40 +82,40 @@ export function BottomBar() {
       {/* Action Drawer for Ingreso / Venta */}
       <Drawer open={actionDrawerOpen} onOpenChange={setActionDrawerOpen}>
         <DrawerContent>
-          <DrawerHeader className="border-b pb-3">
-            <DrawerTitle className="text-sm font-bold uppercase tracking-wide">¿Qué deseas hacer?</DrawerTitle>
+          <DrawerHeader className="bg-card border-b">
+            <DrawerTitle className="text-sm font-bold tracking-wide uppercase">¿Qué desea hacer?</DrawerTitle>
           </DrawerHeader>
-          <div className="p-4 flex flex-col gap-3">
+          <div className="flex flex-col gap-3 p-4 pb-10">
             <Button
               variant="outline"
-              className="w-full h-14 gap-3 text-base justify-start px-4"
+              className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
               onClick={() => {
                 setActionDrawerOpen(false);
                 setIngresoOpen(true);
               }}
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                <PackagePlus className="w-5 h-5 text-primary" />
+              <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                <PackagePlus className="text-primary h-5 w-5" />
               </div>
               <div className="flex flex-col items-start">
-                <span className="font-semibold text-sm">Registrar Ingreso</span>
-                <span className="text-xs text-muted-foreground">Agregar productos al inventario</span>
+                <span className="text-sm font-semibold">Registrar Ingreso</span>
+                <span className="text-muted-foreground text-xs">Agregar productos al inventario</span>
               </div>
             </Button>
             <Button
               variant="outline"
-              className="w-full h-14 gap-3 text-base justify-start px-4"
+              className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
               onClick={() => {
                 setActionDrawerOpen(false);
                 setVentaOpen(true);
               }}
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-success/10">
-                <ShoppingCart className="w-5 h-5 text-success" />
+              <div className="bg-success/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                <ShoppingCart className="text-success h-5 w-5" />
               </div>
               <div className="flex flex-col items-start">
-                <span className="font-semibold text-sm">Registrar Venta</span>
-                <span className="text-xs text-muted-foreground">Vender un producto del inventario</span>
+                <span className="text-sm font-semibold">Registrar Venta</span>
+                <span className="text-muted-foreground text-xs">Vender un producto del inventario</span>
               </div>
             </Button>
           </div>

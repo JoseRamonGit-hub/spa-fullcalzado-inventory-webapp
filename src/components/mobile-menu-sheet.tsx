@@ -24,12 +24,12 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="right">
-      <DrawerContent className="w-[85vw] sm:max-w-sm h-full rounded-none border-l flex flex-col after:hidden">
-        <DrawerHeader className="p-4  border-b text-left">
+      <DrawerContent className="flex h-full w-[85vw] flex-col rounded-none border-l after:hidden sm:max-w-sm">
+        <DrawerHeader className="border-b p-4 text-left">
           <DrawerTitle className="sr-only">Menú Principal</DrawerTitle>
           <div className="flex items-center gap-3">
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold text-lg"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold"
               style={{
                 background: "linear-gradient(135deg, oklch(0.65 0.16 55), oklch(0.52 0.14 55))",
                 color: "oklch(0.99 0.002 75)",
@@ -37,11 +37,11 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
             >
               {user?.fullname?.charAt(0) || "U"}
             </div>
-            <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-sm font-semibold truncate">{user?.fullname || "Usuario"}</span>
-              <span className="text-[11px] text-muted-foreground truncate">{user?.email || ""}</span>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-sm font-semibold">{user?.fullname || "Usuario"}</span>
+              <span className="text-muted-foreground truncate text-[11px]">{user?.email || ""}</span>
             </div>
-            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/12 text-primary font-semibold shrink-0">
+            <span className="bg-primary/12 text-primary shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
               {user?.role || "—"}
             </span>
           </div>
@@ -49,7 +49,7 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
 
         <div className="flex-1 overflow-auto py-2">
           <div className="px-4 py-2">
-            <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            <h4 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">
               Navegación
             </h4>
             <nav className="flex flex-col gap-1">
@@ -60,7 +60,7 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
                     key={item.url}
                     to={item.url}
                     onClick={() => onOpenChange(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors ${
+                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors ${
                       isActive
                         ? "bg-primary/10 text-primary font-semibold"
                         : "text-foreground hover:bg-accent hover:text-foreground font-medium"
@@ -74,21 +74,21 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
             </nav>
           </div>
 
-          <div className="px-4 pt-4 pb-2 mt-2 border-t">
-            <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Sistema</h4>
+          <div className="mt-2 border-t px-4 pt-4 pb-2">
+            <h4 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">Sistema</h4>
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="flex w-full items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-foreground hover:bg-accent font-medium text-left"
+                className="text-foreground hover:bg-accent flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left font-medium transition-colors"
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                <span className="text-sm flex-1">Modo {theme === "dark" ? "Claro" : "Oscuro"}</span>
+                <span className="flex-1 text-sm">Modo {theme === "dark" ? "Claro" : "Oscuro"}</span>
               </button>
 
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="flex w-full items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-destructive hover:bg-destructive/10 font-medium text-left"
+                className="text-destructive hover:bg-destructive/10 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left font-medium transition-colors"
               >
                 <LogOut className="h-5 w-5" />
                 <span className="text-sm">Cerrar Sesión</span>

@@ -13,14 +13,14 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
   {
     accessorKey: "date",
     header: "Fecha",
-    cell: ({ row }) => <span className="tabular-nums font-medium">{row.getValue("date")}</span>,
+    cell: ({ row }) => <span className="font-medium tabular-nums">{row.getValue("date")}</span>,
   },
   {
     accessorKey: "time",
     header: "Hora",
     cell: ({ row }) => {
       const time = row.getValue("time") as string;
-      return <span className="tabular-nums text-muted-foreground">{formatTime12h(time)}</span>;
+      return <span className="text-muted-foreground tabular-nums">{formatTime12h(time)}</span>;
     },
   },
   {
@@ -34,13 +34,13 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
     accessorFn: (row) => row.products?.description,
     header: "Producto",
     cell: ({ row }) => (
-      <span className="truncate max-w-[160px] md:max-w-[240px] block">{row.getValue("products_description")}</span>
+      <span className="block max-w-[160px] truncate md:max-w-[240px]">{row.getValue("products_description")}</span>
     ),
   },
   {
     accessorKey: "quantity",
     header: () => <div className="text-right">Cant.</div>,
-    cell: ({ row }) => <div className="text-right tabular-nums font-medium">{row.getValue("quantity")}</div>,
+    cell: ({ row }) => <div className="text-right font-medium tabular-nums">{row.getValue("quantity")}</div>,
   },
   {
     accessorKey: "price_usd",
@@ -53,7 +53,7 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(total);
-      return <div className="text-right tabular-nums font-medium">${formatted}</div>;
+      return <div className="text-right font-medium tabular-nums">${formatted}</div>;
     },
   },
   {
@@ -67,7 +67,7 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(total);
-      return <div className="text-right tabular-nums text-muted-foreground">Bs {formatted}</div>;
+      return <div className="text-muted-foreground text-right tabular-nums">Bs {formatted}</div>;
     },
   },
   {

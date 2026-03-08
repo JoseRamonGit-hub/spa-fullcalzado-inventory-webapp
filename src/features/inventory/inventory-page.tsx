@@ -77,7 +77,7 @@ export function InventoryPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-col flex-1 overflow-hidden">
+      <section className="flex flex-1 flex-col overflow-hidden">
         <Topbar
           search={search}
           onSearchChange={handleSearchChange}
@@ -91,22 +91,22 @@ export function InventoryPage() {
 
   if (isError) {
     return (
-      <section className="flex flex-col flex-1">
+      <section className="flex flex-1 flex-col">
         <Topbar
           search={search}
           onSearchChange={handleSearchChange}
           stockFilter={stockFilter}
           onStockFilterChange={setStockFilter}
         />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-destructive">Error al cargar el inventario.</p>
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-destructive text-sm">Error al cargar el inventario.</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="flex flex-col flex-1 overflow-hidden">
+    <section className="flex flex-1 flex-col overflow-hidden">
       <Topbar
         search={search}
         onSearchChange={handleSearchChange}
@@ -144,38 +144,38 @@ export function InventoryPage() {
       <Drawer open={!!mobileActionProduct} onOpenChange={(open) => !open && setMobileActionProduct(null)}>
         <DrawerContent>
           <DrawerHeader className="border-b pb-3">
-            <DrawerTitle className="text-sm font-bold uppercase tracking-wide">
+            <DrawerTitle className="text-sm font-bold tracking-wide uppercase">
               {mobileActionProduct?.code} — {mobileActionProduct?.description}
             </DrawerTitle>
           </DrawerHeader>
-          <div className="p-4 flex flex-col gap-3">
+          <div className="flex flex-col gap-3 p-4">
             <Button
               variant="outline"
-              className="w-full h-14 gap-3 text-base justify-start px-4"
+              className="h-14 w-full justify-start gap-3 px-4 text-base"
               onClick={() => {
                 const p = mobileActionProduct!;
                 setMobileActionProduct(null);
                 setEditProduct(p);
               }}
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                <Pencil className="w-5 h-5 text-primary" />
+              <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                <Pencil className="text-primary h-5 w-5" />
               </div>
-              <span className="font-semibold text-sm">Editar Producto</span>
+              <span className="text-sm font-semibold">Editar Producto</span>
             </Button>
             <Button
               variant="outline"
-              className="w-full h-14 gap-3 text-base justify-start px-4 border-destructive/30"
+              className="border-destructive/30 h-14 w-full justify-start gap-3 px-4 text-base"
               onClick={() => {
                 const p = mobileActionProduct!;
                 setMobileActionProduct(null);
                 setDeleteProduct(p);
               }}
             >
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-destructive/10">
-                <Trash2 className="w-5 h-5 text-destructive" />
+              <div className="bg-destructive/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                <Trash2 className="text-destructive h-5 w-5" />
               </div>
-              <span className="font-semibold text-sm text-destructive">Eliminar Producto</span>
+              <span className="text-destructive text-sm font-semibold">Eliminar Producto</span>
             </Button>
           </div>
         </DrawerContent>

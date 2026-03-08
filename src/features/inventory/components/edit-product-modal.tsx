@@ -57,11 +57,11 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
     <ResponsiveModal open={open} onOpenChange={handleOpenChange} title="Editar Producto">
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Código</label>
+          <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Código</label>
           <Input value={code} onChange={(e) => setCode(e.target.value)} className="h-9 text-sm" required />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Descripción</label>
+          <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Descripción</label>
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -71,7 +71,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Precio USD</label>
+            <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Precio USD</label>
             <Input
               type="number"
               step="0.01"
@@ -83,7 +83,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Stock</label>
+            <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Stock</label>
             <Input
               type="number"
               min="0"
@@ -95,7 +95,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-9 gap-2" disabled={updateProduct.isPending}>
+        <Button type="submit" className="h-9 w-full gap-2" disabled={updateProduct.isPending}>
           <Pencil className="h-4 w-4" />
           {updateProduct.isPending ? "Guardando..." : "Guardar Cambios"}
         </Button>

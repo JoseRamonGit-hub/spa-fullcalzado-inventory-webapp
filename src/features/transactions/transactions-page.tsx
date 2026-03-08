@@ -40,13 +40,13 @@ export function TransactionsPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-col flex-1 overflow-hidden">
+      <section className="flex flex-1 flex-col overflow-hidden">
         <Topbar />
-        <div className="flex flex-col flex-1 overflow-auto custom-scrollbar">
+        <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
           <MetricsSkeleton count={3} />
-          <div className="flex flex-col flex-1">
-            <div className="px-3 md:px-4 pt-3 pb-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Histórico</h3>
+          <div className="flex flex-1 flex-col">
+            <div className="px-3 pt-3 pb-2 md:px-4">
+              <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Histórico</h3>
             </div>
             <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
           </div>
@@ -57,10 +57,10 @@ export function TransactionsPage() {
 
   if (isError) {
     return (
-      <section className="flex flex-col flex-1">
+      <section className="flex flex-1 flex-col">
         <Topbar />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-destructive">Error al cargar las ventas.</p>
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-destructive text-sm">Error al cargar las ventas.</p>
         </div>
       </section>
     );
@@ -85,27 +85,27 @@ export function TransactionsPage() {
   ];
 
   return (
-    <section className="flex flex-col flex-1 overflow-hidden">
+    <section className="flex flex-1 flex-col overflow-hidden">
       <Topbar />
 
-      <div className="flex flex-col flex-1 overflow-auto custom-scrollbar">
+      <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
         {/* Flat metrics — no nested cards */}
-        <div className="px-3 md:px-4 py-3 border-b">
-          <div className="grid grid-cols-3 divide-x divide-border/50">
+        <div className="border-b px-3 py-3 md:px-4">
+          <div className="divide-border/50 grid grid-cols-3 divide-x">
             {metricItems.map((m, i) => (
               <div
                 key={m.label}
                 className={cn(
-                  "flex flex-col gap-1.5 px-2 sm:px-4 min-w-0",
+                  "flex min-w-0 flex-col gap-1.5 px-2 sm:px-4",
                   i === 0 ? "pl-0" : "",
                   i === metricItems.length - 1 ? "pr-0" : "",
                 )}
               >
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <m.icon className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider truncate">{m.label}</p>
+                <div className="text-muted-foreground flex items-center gap-1.5">
+                  <m.icon className="text-primary h-3.5 w-3.5 shrink-0" />
+                  <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{m.label}</p>
                 </div>
-                <p className="text-sm sm:text-lg font-bold tabular-nums leading-none truncate" title={m.value}>
+                <p className="truncate text-sm leading-none font-bold tabular-nums sm:text-lg" title={m.value}>
                   {m.value}
                 </p>
               </div>
@@ -114,9 +114,9 @@ export function TransactionsPage() {
         </div>
 
         {/* Historical table */}
-        <div className="flex flex-col flex-1">
-          <div className="px-3 md:px-4 pt-3 pb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Histórico</h3>
+        <div className="flex flex-1 flex-col">
+          <div className="px-3 pt-3 pb-2 md:px-4">
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Histórico</h3>
           </div>
           <DataTable columns={columns} data={transactions || []} emptyMessage="No hay ventas registradas." />
         </div>

@@ -186,14 +186,14 @@
   }
 
   .kbd {
-    @apply inline-flex items-center justify-center rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground;
+    @apply border-border bg-muted text-muted-foreground inline-flex items-center justify-center rounded border px-1.5 py-0.5 text-[10px] font-medium;
     font-family: var(--font-mono);
     line-height: 1;
     min-width: 1.25rem;
   }
 
   .product-code {
-    @apply font-semibold text-primary;
+    @apply text-primary font-semibold;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     letter-spacing: 0.03em;

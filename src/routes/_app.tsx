@@ -63,8 +63,8 @@ function AppLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="overflow-hidden bg-card shadow-sm">
-        <header className="flex topbar-height shrink-0 items-center justify-between gap-2 border-b border-border bg-card/80 backdrop-blur-sm px-3 md:px-4">
+      <SidebarInset className="bg-card overflow-hidden shadow-sm">
+        <header className="topbar-height border-border bg-card/80 flex shrink-0 items-center justify-between gap-2 border-b px-3 backdrop-blur-sm md:px-4">
           <div className="flex items-center gap-1.5">
             <SidebarTrigger className="hidden md:inline-flex" />
             {/* Desktop-only action buttons */}
@@ -72,7 +72,7 @@ function AppLayout() {
               variant="ghost"
               size="sm"
               onClick={() => setIngresoOpen(true)}
-              className="hidden md:inline-flex h-7 gap-1.5 text-xs px-2 text-foreground hover:text-primary hover:bg-primary/8"
+              className="text-foreground hover:text-primary hover:bg-primary/8 hidden h-7 gap-1.5 px-2 text-xs md:inline-flex"
             >
               <PackagePlus className="h-3.5 w-3.5" />
               <span>Ingreso</span>
@@ -82,7 +82,7 @@ function AppLayout() {
               variant="ghost"
               size="sm"
               onClick={() => setVentaOpen(true)}
-              className="hidden md:inline-flex h-7 gap-1.5 text-xs px-2 text-foreground hover:text-primary hover:bg-primary/8"
+              className="text-foreground hover:text-primary hover:bg-primary/8 hidden h-7 gap-1.5 px-2 text-xs md:inline-flex"
             >
               <ShoppingCart className="h-3.5 w-3.5" />
               <span>Venta</span>
@@ -91,10 +91,10 @@ function AppLayout() {
 
             {/* Mobile-only: user name + role */}
             <div className="flex items-center gap-1.5 md:hidden">
-              <span className="text-xs font-medium text-foreground truncate max-w-[120px]">
+              <span className="text-foreground max-w-[120px] truncate text-xs font-medium">
                 {user?.fullname || "Usuario"}
               </span>
-              <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+              <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
                 {user?.role || "—"}
               </span>
             </div>
@@ -103,17 +103,17 @@ function AppLayout() {
           <div className="flex items-center gap-1.5">
             {/* Theme toggle */}
             <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-7 w-7 p-0">
-              <Sun className="h-3.5 w-3.5 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-3.5 w-3.5 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+              <Sun className="h-3.5 w-3.5 scale-100 rotate-0 transition-transform dark:scale-0 dark:-rotate-90" />
+              <Moon className="absolute h-3.5 w-3.5 scale-0 rotate-90 transition-transform dark:scale-100 dark:rotate-0" />
               <span className="sr-only">Toggle theme</span>
             </Button>
 
-            <div className="flex items-center gap-1.5 rounded-md bg-primary/8 border border-primary/20 px-2 py-0.5">
-              <span className="text-[10px] text-primary/70 font-semibold uppercase tracking-wider hidden sm:inline">
+            <div className="bg-primary/8 border-primary/20 flex items-center gap-1.5 rounded-md border px-2 py-0.5">
+              <span className="text-primary/70 hidden text-[10px] font-semibold tracking-wider uppercase sm:inline">
                 TASA
               </span>
-              <span className="text-sm font-mono tabular-nums font-bold text-primary leading-none">{rateDisplay}</span>
-              <span className="text-[10px] text-primary/60 font-medium hidden sm:inline">Bs/$</span>
+              <span className="text-primary font-mono text-sm leading-none font-bold tabular-nums">{rateDisplay}</span>
+              <span className="text-primary/60 hidden text-[10px] font-medium sm:inline">Bs/$</span>
             </div>
           </div>
         </header>

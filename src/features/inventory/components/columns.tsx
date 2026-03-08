@@ -9,7 +9,7 @@ const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
   const { data: exchangeRate, isLoading } = useExchangeRate();
 
   if (isLoading) {
-    return <div className="text-right text-muted-foreground text-sm">...</div>;
+    return <div className="text-muted-foreground text-right text-sm">...</div>;
   }
 
   const rate = exchangeRate?.rate || 0;
@@ -20,7 +20,7 @@ const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
     maximumFractionDigits: 2,
   }).format(priceBs);
 
-  return <div className="text-right tabular-nums text-muted-foreground">Bs {formatted}</div>;
+  return <div className="text-muted-foreground text-right tabular-nums">Bs {formatted}</div>;
 };
 
 export const columns: ColumnDef<Product>[] = [
@@ -33,7 +33,7 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "description",
     header: "Descripción",
     cell: ({ row }) => (
-      <span className="truncate max-w-[180px] md:max-w-[280px] block">{row.getValue("description")}</span>
+      <span className="block max-w-[180px] truncate md:max-w-[280px]">{row.getValue("description")}</span>
     ),
   },
   {
@@ -42,7 +42,7 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const stock = row.getValue("stock") as number;
       return (
-        <div className="text-right tabular-nums font-medium">
+        <div className="text-right font-medium tabular-nums">
           <span className={stock === 0 ? "text-destructive" : stock <= 3 ? "text-warning" : "text-foreground"}>
             {stock}
           </span>
@@ -94,7 +94,7 @@ export const columns: ColumnDef<Product>[] = [
           <Button
             variant="ghost"
             size="sm"
-            className="h-5 w-7 p-0 text-muted-foreground hover:text-primary"
+            className="text-muted-foreground hover:text-primary h-5 w-7 p-0"
             onClick={(e) => {
               e.stopPropagation();
               meta?.onEdit?.(product);
@@ -105,7 +105,7 @@ export const columns: ColumnDef<Product>[] = [
           <Button
             variant="ghost"
             size="sm"
-            className="h-5 w-7 p-0 text-muted-foreground hover:text-destructive"
+            className="text-muted-foreground hover:text-destructive h-5 w-7 p-0"
             onClick={(e) => {
               e.stopPropagation();
               meta?.onDelete?.(product);

@@ -63,13 +63,13 @@ export function CashClosesPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-col flex-1 overflow-hidden">
+      <section className="flex flex-1 flex-col overflow-hidden">
         <Topbar />
-        <div className="flex flex-col flex-1 overflow-auto custom-scrollbar">
+        <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
           <MetricsSkeleton count={4} />
-          <div className="flex flex-col flex-1">
-            <div className="px-3 md:px-4 pt-3 pb-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="flex flex-1 flex-col">
+            <div className="px-3 pt-3 pb-2 md:px-4">
+              <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Cierres Anteriores
               </h3>
             </div>
@@ -82,10 +82,10 @@ export function CashClosesPage() {
 
   if (isError) {
     return (
-      <section className="flex flex-col flex-1">
+      <section className="flex flex-1 flex-col">
         <Topbar />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-destructive">Error al cargar los cierres de caja.</p>
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-destructive text-sm">Error al cargar los cierres de caja.</p>
         </div>
       </section>
     );
@@ -99,36 +99,36 @@ export function CashClosesPage() {
   ];
 
   return (
-    <section className="flex flex-col flex-1 overflow-hidden">
+    <section className="flex flex-1 flex-col overflow-hidden">
       <Topbar />
 
-      <div className="flex flex-col flex-1 overflow-auto custom-scrollbar">
+      <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
         {/* Today's summary — flat design */}
-        <div className="px-3 md:px-4 py-3 border-b space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="space-y-3 border-b px-3 py-3 md:px-4">
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             Resumen del Día — {today}
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-4">
+          <div className="grid grid-cols-2 gap-y-4 md:grid-cols-4">
             {summaryItems.map((item, i) => (
               <div
                 key={item.label}
                 className={cn(
-                  "flex flex-col gap-1.5 px-2 sm:px-4 min-w-0 border-border/50",
+                  "border-border/50 flex min-w-0 flex-col gap-1.5 px-2 sm:px-4",
                   i % 2 !== 0 ? "border-l" : "", // odd index (2nd column on mobile) gets left border
                   "md:border-l", // all get left border on desktop EXCEPT the first one
-                  i === 0 ? "md:border-l-0 pl-0" : "", // first item globally gets no left border and no left pad
+                  i === 0 ? "pl-0 md:border-l-0" : "", // first item globally gets no left border and no left pad
                   i === 2 ? "border-l-0 pl-0 md:border-l md:pl-4" : "", // 3rd item is first in new row on mobile
                   i === summaryItems.length - 1 ? "pr-0" : "",
                 )}
               >
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <item.icon className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider truncate">
+                <div className="text-muted-foreground flex items-center gap-1.5">
+                  <item.icon className="text-primary h-3.5 w-3.5 shrink-0" />
+                  <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
                     {item.label}
                   </p>
                 </div>
-                <p className="text-sm sm:text-lg font-bold tabular-nums leading-none truncate" title={item.value}>
+                <p className="truncate text-sm leading-none font-bold tabular-nums sm:text-lg" title={item.value}>
                   {item.value}
                 </p>
               </div>
@@ -138,7 +138,7 @@ export function CashClosesPage() {
           <Button
             onClick={handleClose}
             disabled={closeMutation.isPending || !user}
-            className="w-full h-8 gap-2 text-xs font-semibold"
+            className="h-8 w-full gap-2 text-xs font-semibold"
           >
             <Lock className="h-3.5 w-3.5" />
             {closeMutation.isPending ? "PROCESANDO..." : "CIERRE DE DÍA"}
@@ -146,9 +146,9 @@ export function CashClosesPage() {
         </div>
 
         {/* Previous closes */}
-        <div className="flex flex-col flex-1">
-          <div className="px-3 md:px-4 pt-3 pb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cierres Anteriores</h3>
+        <div className="flex flex-1 flex-col">
+          <div className="px-3 pt-3 pb-2 md:px-4">
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Cierres Anteriores</h3>
           </div>
           <DataTable columns={columns} data={cashCloses || []} emptyMessage="No hay cierres de caja registrados." />
         </div>

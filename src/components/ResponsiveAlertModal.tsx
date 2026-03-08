@@ -55,7 +55,7 @@ export function ResponsiveAlertModal({
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent>
           <DrawerHeader className="text-left">
-            <DrawerTitle className="text-sm font-bold uppercase tracking-wide">{title}</DrawerTitle>
+            <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             <DrawerDescription className="text-xs">{description}</DrawerDescription>
           </DrawerHeader>
           <DrawerFooter className="flex-row gap-2">

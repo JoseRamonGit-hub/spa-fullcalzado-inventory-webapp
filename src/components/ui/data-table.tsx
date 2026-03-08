@@ -54,16 +54,16 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="overflow-auto flex-1 custom-scrollbar">
+    <div className="custom-scrollbar flex-1 overflow-auto">
       <Table>
         <TableHeader className="px-10!">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-b border-border bg-muted/50 hover:bg-muted/50">
+            <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
                     key={header.id}
-                    className="h-7 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap"
+                    className="text-muted-foreground h-7 px-2.5 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
                   >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
@@ -80,7 +80,7 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={`border-b border-border/40 hover:bg-table-hover transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
+                className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
@@ -93,7 +93,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-32 text-center">
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                <div className="text-muted-foreground flex flex-col items-center gap-2">
                   <PackageOpen className="h-8 w-8 opacity-40" />
                   <span className="text-sm">{emptyMessage}</span>
                 </div>

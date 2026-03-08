@@ -19,10 +19,10 @@ export function ResponsiveModal({ open, onOpenChange, title, description, childr
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className={className}>
           <DrawerHeader className="border-b" style={{ borderColor: "var(--border-color)" }}>
-            <DrawerTitle className="text-sm font-bold uppercase tracking-wide">{title}</DrawerTitle>
+            <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
           </DrawerHeader>
-          <div className="px-4 py-2 overflow-y-auto max-h-[75dvh] custom-scrollbar">{children}</div>
+          <div className="custom-scrollbar max-h-[75dvh] overflow-y-auto px-4 py-2">{children}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -30,12 +30,12 @@ export function ResponsiveModal({ open, onOpenChange, title, description, childr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`p-0 gap-0 ${className ?? ""}`} showCloseButton>
-        <DialogHeader className="px-4 pt-4 pb-2 border-b" style={{ borderColor: "var(--border-color)" }}>
-          <DialogTitle className="text-sm font-bold uppercase tracking-wide">{title}</DialogTitle>
+      <DialogContent className={`gap-0 p-0 ${className ?? ""}`} showCloseButton>
+        <DialogHeader className="border-b px-4 pt-4 pb-2" style={{ borderColor: "var(--border-color)" }}>
+          <DialogTitle className="text-sm font-bold tracking-wide uppercase">{title}</DialogTitle>
           {description && <DialogDescription className="text-xs">{description}</DialogDescription>}
         </DialogHeader>
-        <div className="p-4 max-h-[75dvh] overflow-y-auto">{children}</div>
+        <div className="max-h-[75dvh] overflow-y-auto p-4">{children}</div>
       </DialogContent>
     </Dialog>
   );

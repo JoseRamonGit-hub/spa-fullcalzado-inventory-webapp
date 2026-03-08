@@ -34,7 +34,7 @@ export function TableSkeleton({ columnCount, rowCount = 8 }: TableSkeletonProps)
   return (
     <>
       {Array.from({ length: rowCount }).map((_, rowIndex) => (
-        <TableRow key={rowIndex} className={`border-b border-border/40 ${rowIndex % 2 === 1 ? "bg-table-stripe" : ""}`}>
+        <TableRow key={rowIndex} className={`border-border/40 border-b ${rowIndex % 2 === 1 ? "bg-table-stripe" : ""}`}>
           {Array.from({ length: columnCount }).map((_, colIndex) => (
             <TableCell key={colIndex} className="px-2.5 py-1 whitespace-nowrap">
               <Skeleton className={`h-4 rounded ${getWidth(colIndex, columnCount)}`} />

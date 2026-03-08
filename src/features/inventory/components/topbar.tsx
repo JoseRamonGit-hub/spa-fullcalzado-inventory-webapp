@@ -11,11 +11,11 @@ interface TopbarProps {
 
 export function Topbar({ search, onSearchChange, stockFilter, onStockFilterChange }: TopbarProps) {
   return (
-    <div className="flex topbar-height items-center px-3 md:px-4 justify-between bg-background border-b gap-2">
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-          <h2 className="font-semibold text-sm text-foreground whitespace-nowrap">Inventario</h2>
+    <div className="topbar-height bg-background flex items-center justify-between gap-2 border-b px-3 md:px-4">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span className="bg-primary h-1.5 w-1.5 rounded-full" />
+          <h2 className="text-foreground text-sm font-semibold whitespace-nowrap">Inventario</h2>
         </div>
         <div className="bg-card rounded-md">
           <InputGroup className="h-8 flex-1 md:max-w-xs">
@@ -33,7 +33,7 @@ export function Topbar({ search, onSearchChange, stockFilter, onStockFilterChang
       </div>
       <div className="shrink-0">
         <NativeSelect
-          className="h-8 text-sm md:text-xs min-w-28"
+          className="h-8 min-w-28 text-sm md:text-xs"
           value={stockFilter}
           onChange={(e) => onStockFilterChange?.(e.target.value)}
         >
