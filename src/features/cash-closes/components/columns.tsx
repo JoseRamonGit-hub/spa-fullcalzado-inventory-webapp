@@ -27,7 +27,7 @@ export const columns: ColumnDef<CashClose>[] = [
     header: () => <div className="text-right">USD</div>,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("total_usd"));
-      return <div className="text-right font-medium tabular-nums">${formatCurrencyUSD(price)}</div>;
+      return <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(price)}</div>;
     },
   },
   {

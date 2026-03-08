@@ -42,7 +42,7 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
       const price = parseFloat(row.getValue("price_usd"));
       const qty = row.original.quantity;
       const total = price * qty;
-      return <div className="text-right font-medium tabular-nums">${formatCurrencyUSD(total)}</div>;
+      return <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(total)}</div>;
     },
   },
   {
@@ -52,7 +52,7 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
       const price = parseFloat(row.getValue("price_ves"));
       const qty = row.original.quantity;
       const total = price * qty;
-      return <div className="text-muted-foreground text-right tabular-nums">Bs {formatCurrencyVES(total)}</div>;
+      return <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(total)}</div>;
     },
   },
   {

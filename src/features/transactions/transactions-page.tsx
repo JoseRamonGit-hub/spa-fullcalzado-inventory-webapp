@@ -63,12 +63,12 @@ export function TransactionsPage() {
     },
     {
       label: "Total USD Hoy",
-      value: `$${formatCurrencyUSD(metrics.totalUsd)}`,
+      value: formatCurrencyUSD(metrics.totalUsd),
       icon: DollarSign,
     },
     {
       label: "Total Bs Hoy",
-      value: `Bs ${formatCurrencyVES(metrics.totalVes)}`,
+      value: formatCurrencyVES(metrics.totalVes),
       icon: Banknote,
     },
   ];

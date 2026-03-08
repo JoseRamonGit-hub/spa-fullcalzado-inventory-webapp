@@ -1,4 +1,6 @@
 const currencyUsdFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
@@ -31,7 +33,7 @@ export function formatCurrencyUSD(value: number): string {
 }
 
 export function formatCurrencyVES(value: number): string {
-  return currencyVesFormatter.format(value);
+  return `Bs ${currencyVesFormatter.format(value)}`;
 }
 
 export function formatDate(date: Date | string | number): string {

@@ -16,7 +16,7 @@ const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
   const rate = exchangeRate?.rate || 0;
   const priceBs = priceUsd * rate;
 
-  return <div className="text-muted-foreground text-right tabular-nums">Bs {formatCurrencyVES(priceBs)}</div>;
+  return <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(priceBs)}</div>;
 };
 
 export const columns: ColumnDef<Product>[] = [
@@ -51,7 +51,7 @@ export const columns: ColumnDef<Product>[] = [
     header: () => <div className="text-right">USD</div>,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("price_usd"));
-      return <div className="text-right font-medium tabular-nums">${formatCurrencyUSD(price)}</div>;
+      return <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(price)}</div>;
     },
   },
   {

@@ -89,8 +89,8 @@ export function CashClosesPage() {
   const summaryItems = [
     { label: "Transacciones", value: String(todayMetrics.count), icon: Hash },
     { label: "Uds. Vendidas", value: String(todayMetrics.units), icon: ShoppingCart },
-    { label: "Total USD", value: `$${formatCurrencyUSD(todayMetrics.totalUsd)}`, icon: DollarSign },
-    { label: "Total Bs", value: `Bs ${formatCurrencyVES(todayMetrics.totalVes)}`, icon: Banknote },
+    { label: "Total USD", value: formatCurrencyUSD(todayMetrics.totalUsd), icon: DollarSign },
+    { label: "Total Bs", value: formatCurrencyVES(todayMetrics.totalVes), icon: Banknote },
   ];
 
   return (
