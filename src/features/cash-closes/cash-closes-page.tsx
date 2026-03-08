@@ -36,10 +36,6 @@ export function CashClosesPage() {
     );
   }, [todayTxs]);
 
-  const fmtCurrency = (value: number) => formatCurrencyUSD(value);
-
-  const fmtVes = (value: number) => formatCurrencyVES(value);
-
   const closeMutation = useMutation({
     mutationFn: (userId: string) => cashClosesService.generateDailyCashClose(userId),
     onSuccess: () => {
@@ -93,8 +89,8 @@ export function CashClosesPage() {
   const summaryItems = [
     { label: "Transacciones", value: String(todayMetrics.count), icon: Hash },
     { label: "Uds. Vendidas", value: String(todayMetrics.units), icon: ShoppingCart },
-    { label: "Total USD", value: `$${fmtCurrency(todayMetrics.totalUsd)}`, icon: DollarSign },
-    { label: "Total Bs", value: `Bs ${fmtVes(todayMetrics.totalVes)}`, icon: Banknote },
+    { label: "Total USD", value: `$${formatCurrencyUSD(todayMetrics.totalUsd)}`, icon: DollarSign },
+    { label: "Total Bs", value: `Bs ${formatCurrencyVES(todayMetrics.totalVes)}`, icon: Banknote },
   ];
 
   return (

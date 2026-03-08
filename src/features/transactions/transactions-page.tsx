@@ -27,9 +27,6 @@ export function TransactionsPage() {
     );
   }, [todayTxs]);
 
-  const fmtCurrency = (value: number) => formatCurrencyUSD(value);
-  const fmtVes = (value: number) => formatCurrencyVES(value);
-
   if (isLoading) {
     return (
       <section className="flex flex-1 flex-col overflow-hidden">
@@ -66,12 +63,12 @@ export function TransactionsPage() {
     },
     {
       label: "Total USD Hoy",
-      value: `$${fmtCurrency(metrics.totalUsd)}`,
+      value: `$${formatCurrencyUSD(metrics.totalUsd)}`,
       icon: DollarSign,
     },
     {
       label: "Total Bs Hoy",
-      value: `Bs ${fmtVes(metrics.totalVes)}`,
+      value: `Bs ${formatCurrencyVES(metrics.totalVes)}`,
       icon: Banknote,
     },
   ];

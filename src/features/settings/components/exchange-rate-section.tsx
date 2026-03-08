@@ -17,10 +17,6 @@ export function ExchangeRateSection() {
   const [newRate, setNewRate] = useState("");
   const [showHistory, setShowHistory] = useState(false);
 
-  const fmtRate = (rate: number) => formatCurrencyVES(rate);
-
-  const fmtDate = (dateStr: string) => formatDateTime(dateStr);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRate || !user) return;
@@ -56,7 +52,7 @@ export function ExchangeRateSection() {
         <div className="flex-1">
           <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Tasa Activa</p>
           <p className="font-mono text-2xl font-bold tabular-nums">
-            {currentRate?.rate ? fmtRate(currentRate.rate) : "—"}{" "}
+            {currentRate?.rate ? formatCurrencyVES(currentRate.rate) : "—"}{" "}
             <span className="text-muted-foreground text-sm font-normal">Bs/$</span>
           </p>
         </div>
@@ -102,12 +98,12 @@ export function ExchangeRateSection() {
             {history.map((entry) => (
               <div key={entry.id} className="flex items-center justify-between px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-semibold tabular-nums">{fmtRate(entry.rate)}</span>
+                  <span className="font-mono text-sm font-semibold tabular-nums">{formatCurrencyVES(entry.rate)}</span>
                   <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium tracking-wider uppercase">
                     {entry.source}
                   </span>
                 </div>
-                <span className="text-muted-foreground text-[11px]">{fmtDate(entry.updated_at!)}</span>
+                <span className="text-muted-foreground text-[11px]">{formatDateTime(entry.updated_at!)}</span>
               </div>
             ))}
           </div>
