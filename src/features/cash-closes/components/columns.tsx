@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { CashClose } from "@/types";
+import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 export const columns: ColumnDef<CashClose>[] = [
   {
@@ -26,11 +27,7 @@ export const columns: ColumnDef<CashClose>[] = [
     header: () => <div className="text-right">USD</div>,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("total_usd"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(price);
-      return <div className="text-right font-medium tabular-nums">${formatted}</div>;
+      return <div className="text-right font-medium tabular-nums">${formatCurrencyUSD(price)}</div>;
     },
   },
   {
@@ -38,11 +35,7 @@ export const columns: ColumnDef<CashClose>[] = [
     header: () => <div className="text-right">VES</div>,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("total_ves"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(price);
-      return <div className="text-right font-medium tabular-nums">{formatted}</div>;
+      return <div className="text-right font-medium tabular-nums">{formatCurrencyVES(price)}</div>;
     },
   },
   {
@@ -50,11 +43,7 @@ export const columns: ColumnDef<CashClose>[] = [
     header: () => <div className="text-right">Tasa</div>,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("exchange_rate"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(price);
-      return <div className="text-muted-foreground text-right tabular-nums">{formatted}</div>;
+      return <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(price)}</div>;
     },
   },
   {

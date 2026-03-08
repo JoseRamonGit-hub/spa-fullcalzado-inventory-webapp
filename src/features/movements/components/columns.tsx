@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { InventoryMovementWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { formatTime12h } from "@/utils/formatters";
 
 export const columns: ColumnDef<InventoryMovementWithRelations>[] = [
   {
@@ -25,7 +26,7 @@ export const columns: ColumnDef<InventoryMovementWithRelations>[] = [
   {
     accessorKey: "time",
     header: "Hora",
-    cell: ({ row }) => <span className="text-muted-foreground tabular-nums">{row.getValue("time")}</span>,
+    cell: ({ row }) => <span className="text-muted-foreground tabular-nums">{formatTime12h(row.getValue("time") as string)}</span>,
   },
   {
     id: "products_code",

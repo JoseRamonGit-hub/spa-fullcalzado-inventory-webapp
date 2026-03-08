@@ -6,6 +6,7 @@ import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useExchangeRateHistory, useUpdateExchangeRate } from "@/features/settings/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { toast } from "sonner";
+import { formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
 export function ExchangeRateSection() {
   const { data: currentRate } = useExchangeRate();
@@ -16,22 +17,9 @@ export function ExchangeRateSection() {
   const [newRate, setNewRate] = useState("");
   const [showHistory, setShowHistory] = useState(false);
 
-  const fmtRate = (rate: number) =>
-    new Intl.NumberFormat("es-VE", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
-    }).format(rate);
+  const fmtRate = (rate: number) => formatCurrencyVES(rate);
 
-  const fmtDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("es-VE", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const fmtDate = (dateStr: string) => formatDateTime(dateStr);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

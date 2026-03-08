@@ -12,6 +12,7 @@ import { cashClosesService } from "@/services/cashClosesService";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store";
+import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
 export function CashClosesPage() {
   const { data: cashCloses, isLoading, isError } = useCashCloses();
@@ -35,11 +36,9 @@ export function CashClosesPage() {
     );
   }, [todayTxs]);
 
-  const fmtCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+  const fmtCurrency = (value: number) => formatCurrencyUSD(value);
 
-  const fmtVes = (value: number) =>
-    new Intl.NumberFormat("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+  const fmtVes = (value: number) => formatCurrencyVES(value);
 
   const closeMutation = useMutation({
     mutationFn: (userId: string) => cashClosesService.generateDailyCashClose(userId),
@@ -59,7 +58,7 @@ export function CashClosesPage() {
     });
   };
 
-  const today = new Date().toLocaleDateString("es-VE", { day: "2-digit", month: "short", year: "numeric" });
+  const today = formatDate(new Date());
 
   if (isLoading) {
     return (

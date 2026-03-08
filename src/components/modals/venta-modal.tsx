@@ -9,6 +9,7 @@ import { useAuthStore } from "@/features/auth/store";
 import { transactionsService } from "@/services/transactionsService";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 interface VentaModalProps {
   open: boolean;
@@ -101,11 +102,8 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
     onOpenChange(open);
   };
 
-  const fmtCurrency = (value: number, prefix: string) =>
-    `${prefix}${new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value)}`;
+  const fmtCurrencyUSD = (value: number) => `$${formatCurrencyUSD(value)}`;
+  const fmtCurrencyVES = (value: number) => `Bs ${formatCurrencyVES(value)}`;
 
   return (
     <ResponsiveModal open={open} onOpenChange={handleOpenChange} title="Registrar Venta">
@@ -143,7 +141,7 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
                 >
                   <span className="product-code text-xs">{p.code}</span>
                   <span className="flex-1 truncate text-sm">{p.description}</span>
-                  <span className="text-muted-foreground text-xs tabular-nums">{fmtCurrency(p.price_usd, "$")}</span>
+                  <span className="text-muted-foreground text-xs tabular-nums">{fmtCurrencyUSD(p.price_usd)}</span>
                   <span className="text-muted-foreground text-xs tabular-nums">[{p.stock}]</span>
                 </button>
               ))}
@@ -172,7 +170,7 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
               </div>
               <div className="text-muted-foreground flex gap-4 text-xs">
                 <span>
-                  Precio: <strong className="text-foreground tabular-nums">{fmtCurrency(priceUsd, "$")}</strong>
+                  Precio: <strong className="text-foreground tabular-nums">{fmtCurrencyUSD(priceUsd)}</strong>
                 </span>
                 <span>
                   Stock: <strong className="text-foreground tabular-nums">{selectedProduct?.stock}</strong>
@@ -209,11 +207,11 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Total USD</span>
-                  <span className="font-semibold tabular-nums">{fmtCurrency(totalUsd, "$")}</span>
+                  <span className="font-semibold tabular-nums">{fmtCurrencyUSD(totalUsd)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Total Bs</span>
-                  <span className="font-semibold tabular-nums">{fmtCurrency(totalVes, "Bs ")}</span>
+                  <span className="font-semibold tabular-nums">{fmtCurrencyVES(totalVes)}</span>
                 </div>
               </div>
             )}

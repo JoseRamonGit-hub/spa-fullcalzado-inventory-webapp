@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { Pencil, Trash2 } from "lucide-react";
+import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
   const { data: exchangeRate, isLoading } = useExchangeRate();
@@ -15,12 +16,7 @@ const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
   const rate = exchangeRate?.rate || 0;
   const priceBs = priceUsd * rate;
 
-  const formatted = new Intl.NumberFormat("es-VE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(priceBs);
-
-  return <div className="text-muted-foreground text-right tabular-nums">Bs {formatted}</div>;
+  return <div className="text-muted-foreground text-right tabular-nums">Bs {formatCurrencyVES(priceBs)}</div>;
 };
 
 export const columns: ColumnDef<Product>[] = [
@@ -55,11 +51,7 @@ export const columns: ColumnDef<Product>[] = [
     header: () => <div className="text-right">USD</div>,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("price_usd"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(price);
-      return <div className="text-right font-medium tabular-nums">${formatted}</div>;
+      return <div className="text-right font-medium tabular-nums">${formatCurrencyUSD(price)}</div>;
     },
   },
   {
