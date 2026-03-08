@@ -6,6 +6,8 @@ const currencyUsdFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const currencyVesFormatter = new Intl.NumberFormat("es-VE", {
+  style: "currency",
+  currency: "VES",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
@@ -33,7 +35,7 @@ export function formatCurrencyUSD(value: number): string {
 }
 
 export function formatCurrencyVES(value: number): string {
-  return `Bs ${currencyVesFormatter.format(value)}`;
+  return currencyVesFormatter.format(value);
 }
 
 export function formatDate(date: Date | string | number): string {
