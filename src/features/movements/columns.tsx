@@ -1,6 +1,6 @@
 import type { InventoryMovementWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { formatDate, formatTime12h } from "@/utils/formatters";
+import { formatDate, formatTime } from "@/utils/formatters";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 
 const columHelper = createColumnHelper<InventoryMovementWithRelations>();
@@ -21,11 +21,15 @@ export const columns = [
   }),
   columHelper.accessor("date", {
     header: "Fecha",
-    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatDate(getValue())}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground tabular-nums">{formatDate(row.original.created_at)}</span>
+    ),
   }),
   columHelper.accessor("time", {
     header: "Hora",
-    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatTime12h(getValue())}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
+    ),
   }),
   columHelper.accessor("products.code", {
     header: "Código",

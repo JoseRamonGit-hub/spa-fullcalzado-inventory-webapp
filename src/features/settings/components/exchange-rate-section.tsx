@@ -52,8 +52,7 @@ export function ExchangeRateSection() {
         <div className="flex-1">
           <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Tasa Activa</p>
           <p className="font-mono text-2xl font-bold tabular-nums">
-            {currentRate?.rate ? formatCurrencyVES(currentRate.rate) : "—"}{" "}
-            <span className="text-muted-foreground text-sm font-normal">Bs/$</span>
+            {currentRate?.rate ? formatCurrencyVES(currentRate.rate) : "—"}
           </p>
         </div>
         {currentRate?.source && (

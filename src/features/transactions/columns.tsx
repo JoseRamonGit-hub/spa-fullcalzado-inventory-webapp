@@ -1,17 +1,19 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
-import { formatTime12h, formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
+import { formatTime, formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<TransactionWithRelations>();
 
 export const columns = [
   columnHelper.accessor("date", {
     header: "Fecha",
-    cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue())}</span>,
+    cell: ({ row }) => <span className="font-medium tabular-nums">{formatDate(row.original.created_at)}</span>,
   }),
   columnHelper.accessor("time", {
     header: "Hora",
-    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatTime12h(getValue())}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
+    ),
   }),
   columnHelper.accessor("products.code", {
     header: "Código",

@@ -5,7 +5,7 @@ import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/format
 const columHelper = createColumnHelper<CashClose>();
 
 export const columns = [
-  columHelper.accessor("date", {
+  columHelper.accessor("closed_at", {
     header: "Fecha",
     cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue())}</span>,
   }),
