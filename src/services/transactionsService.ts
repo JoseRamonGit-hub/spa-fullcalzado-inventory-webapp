@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { TransactionWithRelations, TransactionInsert } from "@/types/index";
+import { formatDateForBackend } from "@/utils/formatters";
 
 const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as const;
 
@@ -18,7 +19,7 @@ export const transactionsService = {
   },
 
   getToday: async (): Promise<TransactionWithRelations[]> => {
-    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Caracas" });
+    const today = formatDateForBackend(new Date());
 
     const { data, error } = await supabase
       .from("transactions")

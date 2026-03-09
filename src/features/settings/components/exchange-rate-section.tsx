@@ -6,6 +6,7 @@ import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useExchangeRateHistory, useUpdateExchangeRate } from "@/features/settings/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { toast } from "sonner";
+import { formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
 export function ExchangeRateSection() {
   const { data: currentRate } = useExchangeRate();
@@ -15,23 +16,6 @@ export function ExchangeRateSection() {
 
   const [newRate, setNewRate] = useState("");
   const [showHistory, setShowHistory] = useState(false);
-
-  const fmtRate = (rate: number) =>
-    new Intl.NumberFormat("es-VE", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
-    }).format(rate);
-
-  const fmtDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("es-VE", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +52,7 @@ export function ExchangeRateSection() {
         <div className="flex-1">
           <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Tasa Activa</p>
           <p className="font-mono text-2xl font-bold tabular-nums">
-            {currentRate?.rate ? fmtRate(currentRate.rate) : "—"}{" "}
+            {currentRate?.rate ? formatCurrencyVES(currentRate.rate) : "—"}{" "}
             <span className="text-muted-foreground text-sm font-normal">Bs/$</span>
           </p>
         </div>
@@ -114,12 +98,12 @@ export function ExchangeRateSection() {
             {history.map((entry) => (
               <div key={entry.id} className="flex items-center justify-between px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-semibold tabular-nums">{fmtRate(entry.rate)}</span>
+                  <span className="font-mono text-sm font-semibold tabular-nums">{formatCurrencyVES(entry.rate)}</span>
                   <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium tracking-wider uppercase">
                     {entry.source}
                   </span>
                 </div>
-                <span className="text-muted-foreground text-[11px]">{fmtDate(entry.updated_at!)}</span>
+                <span className="text-muted-foreground text-[11px]">{formatDateTime(entry.updated_at!)}</span>
               </div>
             ))}
           </div>

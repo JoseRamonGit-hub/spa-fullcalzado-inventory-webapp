@@ -11,6 +11,7 @@ import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/features/auth/store";
+import { formatCurrencyUSD } from "@/utils/formatters";
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: () => {
@@ -52,10 +53,7 @@ function AppLayout() {
   }, [handleKeyDown]);
 
   const rateDisplay = exchangeRate?.rate
-    ? new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(exchangeRate.rate)
+    ? formatCurrencyUSD(exchangeRate.rate)
     : "—";
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");

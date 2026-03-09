@@ -1,13 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
-
-function formatTime12h(time: string): string {
-  const [h, m] = time.split(":");
-  const hour = parseInt(h);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${String(hour12).padStart(2, "0")}:${m} ${ampm}`;
-}
+import { formatTime12h, formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 export const columns: ColumnDef<TransactionWithRelations>[] = [
   {
@@ -49,11 +42,7 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
       const price = parseFloat(row.getValue("price_usd"));
       const qty = row.original.quantity;
       const total = price * qty;
-      const formatted = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(total);
-      return <div className="text-right font-medium tabular-nums">${formatted}</div>;
+      return <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(total)}</div>;
     },
   },
   {
@@ -63,11 +52,7 @@ export const columns: ColumnDef<TransactionWithRelations>[] = [
       const price = parseFloat(row.getValue("price_ves"));
       const qty = row.original.quantity;
       const total = price * qty;
-      const formatted = new Intl.NumberFormat("es-VE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(total);
-      return <div className="text-muted-foreground text-right tabular-nums">Bs {formatted}</div>;
+      return <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(total)}</div>;
     },
   },
   {

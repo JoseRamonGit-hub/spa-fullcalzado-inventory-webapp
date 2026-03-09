@@ -6,6 +6,7 @@ import { columns } from "./components/columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { ShoppingCart, DollarSign, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 export function TransactionsPage() {
   const { data: transactions, isLoading, isError } = useTransactions();
@@ -25,18 +26,6 @@ export function TransactionsPage() {
       { count: 0, totalUsd: 0, totalVes: 0 },
     );
   }, [todayTxs]);
-
-  const fmtCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-
-  const fmtVes = (value: number) =>
-    new Intl.NumberFormat("es-VE", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
 
   if (isLoading) {
     return (
@@ -74,12 +63,12 @@ export function TransactionsPage() {
     },
     {
       label: "Total USD Hoy",
-      value: `$${fmtCurrency(metrics.totalUsd)}`,
+      value: formatCurrencyUSD(metrics.totalUsd),
       icon: DollarSign,
     },
     {
       label: "Total Bs Hoy",
-      value: `Bs ${fmtVes(metrics.totalVes)}`,
+      value: formatCurrencyVES(metrics.totalVes),
       icon: Banknote,
     },
   ];

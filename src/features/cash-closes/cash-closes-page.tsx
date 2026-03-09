@@ -12,6 +12,7 @@ import { cashClosesService } from "@/services/cashClosesService";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store";
+import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
 export function CashClosesPage() {
   const { data: cashCloses, isLoading, isError } = useCashCloses();
@@ -35,12 +36,6 @@ export function CashClosesPage() {
     );
   }, [todayTxs]);
 
-  const fmtCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-
-  const fmtVes = (value: number) =>
-    new Intl.NumberFormat("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-
   const closeMutation = useMutation({
     mutationFn: (userId: string) => cashClosesService.generateDailyCashClose(userId),
     onSuccess: () => {
@@ -59,7 +54,7 @@ export function CashClosesPage() {
     });
   };
 
-  const today = new Date().toLocaleDateString("es-VE", { day: "2-digit", month: "short", year: "numeric" });
+  const today = formatDate(new Date());
 
   if (isLoading) {
     return (
@@ -94,8 +89,8 @@ export function CashClosesPage() {
   const summaryItems = [
     { label: "Transacciones", value: String(todayMetrics.count), icon: Hash },
     { label: "Uds. Vendidas", value: String(todayMetrics.units), icon: ShoppingCart },
-    { label: "Total USD", value: `$${fmtCurrency(todayMetrics.totalUsd)}`, icon: DollarSign },
-    { label: "Total Bs", value: `Bs ${fmtVes(todayMetrics.totalVes)}`, icon: Banknote },
+    { label: "Total USD", value: formatCurrencyUSD(todayMetrics.totalUsd), icon: DollarSign },
+    { label: "Total Bs", value: formatCurrencyVES(todayMetrics.totalVes), icon: Banknote },
   ];
 
   return (
