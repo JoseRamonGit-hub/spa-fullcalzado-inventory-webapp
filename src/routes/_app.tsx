@@ -11,7 +11,7 @@ import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/features/auth/store";
-import { formatCurrencyUSD } from "@/utils/formatters";
+import { formatCurrencyVES } from "@/utils/formatters";
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: () => {
@@ -52,9 +52,7 @@ function AppLayout() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const rateDisplay = exchangeRate?.rate
-    ? formatCurrencyUSD(exchangeRate.rate)
-    : "—";
+  const rateDisplay = exchangeRate?.rate ? formatCurrencyVES(exchangeRate.rate) : "—";
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
@@ -111,7 +109,6 @@ function AppLayout() {
                 TASA
               </span>
               <span className="text-primary font-mono text-sm leading-none font-bold tabular-nums">{rateDisplay}</span>
-              <span className="text-primary/60 hidden text-[10px] font-medium sm:inline">Bs/$</span>
             </div>
           </div>
         </header>

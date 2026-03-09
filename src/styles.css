@@ -177,6 +177,10 @@
 
 /* ─── Component utilities ───────────────────────────────────── */
 @layer components {
+  .max-w-table-row {
+    @apply max-w-[280px] md:max-w-sm;
+  }
+
   .topbar-height {
     @apply h-(--topbar-height);
   }

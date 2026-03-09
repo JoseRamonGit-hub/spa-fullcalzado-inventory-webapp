@@ -82,7 +82,7 @@ export function BottomBar() {
       {/* Action Drawer for Ingreso / Venta */}
       <Drawer open={actionDrawerOpen} onOpenChange={setActionDrawerOpen}>
         <DrawerContent>
-          <DrawerHeader className="bg-card border-b">
+          <DrawerHeader className="border-b">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">¿Qué desea hacer?</DrawerTitle>
           </DrawerHeader>
           <div className="flex flex-col gap-3 p-4 pb-10">

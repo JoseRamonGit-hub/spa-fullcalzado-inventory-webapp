@@ -6,8 +6,7 @@ const currencyUsdFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const currencyVesFormatter = new Intl.NumberFormat("es-VE", {
-  style: "currency",
-  currency: "VES",
+  style: "decimal",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
@@ -35,7 +34,8 @@ export function formatCurrencyUSD(value: number): string {
 }
 
 export function formatCurrencyVES(value: number): string {
-  return currencyVesFormatter.format(value);
+  const formmattedAmount = `${currencyVesFormatter.format(value)} Bs.`;
+  return formmattedAmount;
 }
 
 export function formatDate(date: Date | string | number): string {
@@ -54,11 +54,16 @@ export function formatDateForBackend(date: Date | string | number): string {
 }
 
 export function formatTime12h(time: string): string {
-  if (!time) return "";
-  const [h, m] = time.split(":");
-  const hour = parseInt(h);
-  if (isNaN(hour)) return time;
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${String(hour12).padStart(2, "0")}:${m} ${ampm}`;
+  if (!time) return time;
+
+  const hour24 = parseInt(time.slice(0, 2), 10);
+  const minute = time.slice(3, 5);
+
+  if (isNaN(hour24) || !minute) return time;
+
+  const ampm = hour24 >= 12 ? "p. m." : "a. m.";
+  const hour12 = hour24 % 12 || 12;
+  const formattedHour = hour12 < 10 ? `0${hour12}` : hour12;
+
+  return `${formattedHour}:${minute} ${ampm}`;
 }

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTransactions, useTodayTransactions } from "./hooks";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./components/columns";
+import { columns } from "./columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { ShoppingCart, DollarSign, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,6 @@
 import { useMovements } from "./hooks";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./components/columns";
+import { columns } from "./columns";
 import { Topbar } from "./components/topbar";
 
 export function MovementsPage() {

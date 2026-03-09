@@ -18,7 +18,7 @@ export function ResponsiveModal({ open, onOpenChange, title, description, childr
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className={className}>
-          <DrawerHeader className="border-b" style={{ borderColor: "var(--border-color)" }}>
+          <DrawerHeader className="border-b">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
           </DrawerHeader>
@@ -31,7 +31,7 @@ export function ResponsiveModal({ open, onOpenChange, title, description, childr
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`gap-0 p-0 ${className ?? ""}`} showCloseButton>
-        <DialogHeader className="border-b px-4 pt-4 pb-2" style={{ borderColor: "var(--border-color)" }}>
+        <DialogHeader className="border-b px-4 pt-4 pb-2">
           <DialogTitle className="text-sm font-bold tracking-wide uppercase">{title}</DialogTitle>
           {description && <DialogDescription className="text-xs">{description}</DialogDescription>}
         </DialogHeader>

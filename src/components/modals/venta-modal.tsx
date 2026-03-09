@@ -199,8 +199,8 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
             {qty > 0 && (
               <div className="bg-muted/30 space-y-1 rounded-md border p-3">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Tasa BCV</span>
-                  <span className="font-medium tabular-nums">{rate.toFixed(2)} Bs/$</span>
+                  <span className="text-muted-foreground">Tasa</span>
+                  <span className="font-medium tabular-nums">{formatCurrencyVES(rate)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Total USD</span>

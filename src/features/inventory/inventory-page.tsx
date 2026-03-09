@@ -2,7 +2,7 @@ import { useState, useTransition, useCallback, useMemo } from "react";
 import { useProducts } from "./hooks";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./components/columns";
+import { columns } from "./columns";
 import { EditProductModal } from "./components/edit-product-modal";
 import { DeleteProductModal } from "./components/delete-product-modal";
 import { useIsMobile } from "@/hooks/use-mobile";

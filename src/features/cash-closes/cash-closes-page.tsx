@@ -3,7 +3,7 @@ import { useCashCloses } from "./hooks";
 import { useTodayTransactions } from "@/features/transactions/hooks";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./components/columns";
+import { columns } from "./columns";
 import { Button } from "@/components/ui/button";
 import { Lock, Hash, DollarSign, Banknote, ShoppingCart } from "lucide-react";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
@@ -88,7 +88,7 @@ export function CashClosesPage() {
 
   const summaryItems = [
     { label: "Transacciones", value: String(todayMetrics.count), icon: Hash },
-    { label: "Uds. Vendidas", value: String(todayMetrics.units), icon: ShoppingCart },
+    { label: "Unidades Vendidas", value: String(todayMetrics.units), icon: ShoppingCart },
     { label: "Total USD", value: formatCurrencyUSD(todayMetrics.totalUsd), icon: DollarSign },
     { label: "Total Bs", value: formatCurrencyVES(todayMetrics.totalVes), icon: Banknote },
   ];

@@ -41,14 +41,11 @@ export const Route = createRootRoute({
       const profile = await authService.getAuthenticatedProfile();
       if (profile) {
         setAuth(profile);
-        // Force React Query to refetch with the rehydrated session.
-        // Without this, reopening the browser shows stale/empty data.
         queryClient.invalidateQueries();
       } else {
         clearAuth();
       }
     } catch {
-      // Network error, Supabase down, etc. — default to logged out
       clearAuth();
     }
   },

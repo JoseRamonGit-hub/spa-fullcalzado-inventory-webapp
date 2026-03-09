@@ -1,10 +1,12 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import type { Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { Pencil, Trash2 } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
+
+const columHelper = createColumnHelper<Product>();
 
 const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
   const { data: exchangeRate, isLoading } = useExchangeRate();
@@ -19,62 +21,45 @@ const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
   return <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(priceBs)}</div>;
 };
 
-export const columns: ColumnDef<Product>[] = [
-  {
-    accessorKey: "code",
+export const columns = [
+  columHelper.accessor("code", {
     header: "Código",
-    cell: ({ row }) => <span className="product-code font-bold">{row.getValue("code")}</span>,
-  },
-  {
-    accessorKey: "description",
+    cell: ({ getValue }) => <span className="product-code font-bold">{getValue()}</span>,
+  }),
+  columHelper.accessor("description", {
     header: "Descripción",
-    cell: ({ row }) => (
-      <span className="block max-w-[180px] truncate md:max-w-[280px]">{row.getValue("description")}</span>
-    ),
-  },
-  {
-    accessorKey: "stock",
+    cell: ({ getValue }) => <span className="max-w-table-row block truncate">{getValue()}</span>,
+  }),
+  columHelper.accessor("stock", {
     header: () => <div className="text-right">Stock</div>,
-    cell: ({ row }) => {
-      const stock = row.getValue("stock") as number;
-      return (
-        <div className="text-right font-medium tabular-nums">
-          <span className={stock === 0 ? "text-destructive" : stock <= 3 ? "text-warning" : "text-foreground"}>
-            {stock}
-          </span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "price_usd",
+    cell: ({ getValue }) => (
+      <div className="text-right font-medium tabular-nums">
+        <span className={getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground"}>
+          {getValue()}
+        </span>
+      </div>
+    ),
+  }),
+  columHelper.accessor("price_usd", {
     header: () => <div className="text-right">USD</div>,
-    cell: ({ row }) => {
-      const price = parseFloat(row.getValue("price_usd"));
-      return <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(price)}</div>;
-    },
-  },
-  {
-    id: "price_bs",
+    cell: ({ getValue }) => <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</div>,
+  }),
+  columHelper.display({
+    id: "price_ves",
     header: () => <div className="text-right">VES</div>,
     cell: ({ row }) => {
-      const price = parseFloat(row.getValue("price_usd"));
-      return <PriceBsCell priceUsd={price} />;
+      return <PriceBsCell priceUsd={row.original.price_usd} />;
     },
-  },
-  {
-    accessorKey: "active",
+  }),
+  columHelper.accessor("active", {
     header: () => <div className="text-center">Estado</div>,
-    cell: ({ row }) => {
-      const isActive = row.getValue("active");
-      return (
-        <div className="text-center">
-          <Badge variant={isActive ? "success" : "secondary"}>{isActive ? "Activo" : "Inactivo"}</Badge>
-        </div>
-      );
-    },
-  },
-  {
+    cell: ({ getValue }) => (
+      <div className="text-center">
+        <Badge variant={getValue() ? "success" : "secondary"}>{getValue() ? "Activo" : "Inactivo"}</Badge>
+      </div>
+    ),
+  }),
+  columHelper.display({
     id: "actions",
     header: () => <div className="text-center">Acciones</div>,
     meta: { hideOnMobile: true },
@@ -108,5 +93,5 @@ export const columns: ColumnDef<Product>[] = [
         </div>
       );
     },
-  },
+  }),
 ];
