@@ -1,4 +1,4 @@
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -94,4 +94,4 @@ export const columns = [
       );
     },
   }),
-];
+] as ColumnDef<Product>[];

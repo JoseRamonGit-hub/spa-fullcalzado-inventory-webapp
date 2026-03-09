@@ -1,7 +1,7 @@
 import type { InventoryMovementWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, formatTime12h } from "@/utils/formatters";
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 
 const columHelper = createColumnHelper<InventoryMovementWithRelations>();
 
@@ -43,4 +43,4 @@ export const columns = [
     header: "Usuario",
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
   }),
-];
+] as ColumnDef<InventoryMovementWithRelations>[];

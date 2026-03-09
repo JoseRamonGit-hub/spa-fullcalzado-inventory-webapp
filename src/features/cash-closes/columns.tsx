@@ -1,5 +1,5 @@
 import type { CashClose } from "@/types";
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
 const columHelper = createColumnHelper<CashClose>();
@@ -29,4 +29,4 @@ export const columns = [
     header: "Cerrado por",
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
   }),
-];
+] as ColumnDef<CashClose>[];

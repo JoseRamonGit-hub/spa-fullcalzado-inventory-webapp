@@ -1,4 +1,4 @@
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
 import { formatTime12h, formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
@@ -45,4 +45,4 @@ export const columns = [
     header: "Vendedor",
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
   }),
-];
+] as ColumnDef<TransactionWithRelations>[];
