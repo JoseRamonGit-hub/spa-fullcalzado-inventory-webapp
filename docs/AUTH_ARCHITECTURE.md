@@ -2,7 +2,7 @@
 
 ## Principio Fundamental
 
-> **Supabase es la fuente de verdad de la sesión.** El estado local (Zustand) es un espejo sincronizado.
+> **Supabase es la fuente de verdad de la sesión.** El estado local (Zustand con `persist`) es un caché de acceso instantáneo y soporte offline, que se sincroniza con el servidor en segundo plano de manera robusta.
 
 ---
 
@@ -10,51 +10,46 @@
 
 ### 1. Inicio de la App (Carga / Refresh)
 
-```
+```text
 __root.tsx beforeLoad
-  ├── ¿isInitialized? → Sí → Saltar (ya se validó)
-  └── No → authService.getAuthenticatedProfile()
-             ├── getUser() → server-validated JWT
-             ├── query users table → profile
-             └── setAuth(profile) ó clearAuth()
+  ├── ¿isInitialized? 
+  │   ├── No (Primera vez) → Bloquea render y hace `validateSession()`
+  │   └── Sí (Hydrated) → Inicia render instantáneo y lanza `validateSession()` en background.
+  │
+  └── validateSession() = authService.getAuthenticatedProfile()
+             ├── getSession() → Fast path (retorna null si no hay JWT local)
+             ├── getUser() → Server-validated JWT (lanza error si la red falla)
+             └── Si hay perfil: setAuth(profile). Si es inválido: clearAuth().
+                 *En caso 'offline' (falla la red), NO hace clearAuth y respeta la sesión en disco.
 ```
 
-- `getUser()` valida el JWT contra el servidor de Supabase (NO confiamos en `getSession()`)
-- Si falla (red caída, token expirado), se hace `clearAuth()` → el usuario ve `/login`
-- **Solo ocurre una vez** por carga completa de página
+- La hidratación es visualmente instantánea gracias al `localStorage` en Zustand.
+- `getUser()` valida la integridad contra Supabase para detectar si el token expiró/fue revocado. Si falla la red, toleramos la lectura local proveyendo la mejor experiencia *Offline-First*.
 
 ### 2. Login
 
-```
+```text
 useLogin (hooks.ts)
   ├── authService.login(email, password)
   │   ├── supabase.auth.signInWithPassword()
   │   └── query users table → profile
-  ├── setAuth(profile) → Zustand actualizado
+  ├── setAuth(profile) → Zustand actualizado en disco
   └── router.navigate("/inventory")
 ```
 
-### 3. Logout — LA PARTE CRÍTICA
+### 3. Logout y Sincronizaciones Externas (Seguridad multinivel)
 
-```
-useLogout (hooks.ts) ─── SOLO dispara ───→ authService.logout()
-                                            │
-                                            ▼
-                                supabase.auth.signOut({ scope: 'local' })
-                                            │
-                                            ▼ (Supabase siempre limpia localStorage)
-                                            │
-                                onAuthStateChange → SIGNED_OUT
-                                            │
-                                 ┌──────────┴──────────┐
-                                 │                     │
-                            clearAuth()         queryClient.clear()
-                                 │
-                        router.navigate("/login")
+```text
+useLogout (hooks.ts) 
+  ├── authService.logout() → supabase.auth.signOut({ scope: 'local' }) (falla sin red)
+  └── onSettled() → clearAuth() + navigate("/login")  (Garantía síncrona UI)
+
+Supabase onAuthStateChange (main.tsx)
+  ├── SIGNED_OUT → (Logout en otros tabs o externo) clearAuth() + navigate("/login")
+  └── TOKEN_REFRESHED → query profile + setAuth(profile) (Silencioso para JWT)
 ```
 
-> **REGLA DE ORO:** `useLogout` NO hace limpieza local, NO navega. Solo dispara `signOut()`.
-> La limpieza y navegación ocurre **exclusivamente** en `onAuthStateChange` de `main.tsx`.
+> **DOBLE CAPA DE LIMPIEZA:** `useLogout` hace limpieza explícita y síncrona asegurando que el cierre de sesión *funcione incluso si no hay red*. A la vez, el listener de `onAuthStateChange` actúa como capa de control estricto que vigila que si la sesión finaliza en otra pestaña o por otro factor, el cliente actual desconectará correctamente sin quedarse colgado.
 
 ### 4. Guardias de Ruta (Route Guards)
 
@@ -64,70 +59,24 @@ useLogout (hooks.ts) ─── SOLO dispara ───→ authService.logout()
 | `_auth.tsx` | `isAuthenticated === true` → redirect `/inventory` | Síncrono (lee Zustand) |
 | `index.tsx` | Redirect inteligente basado en `isAuthenticated`   | Síncrono (lee Zustand) |
 
-**Ningún guard hace llamada de red.** Todos leen del store que ya fue hidratado por `__root.tsx`.
+**Ningún guard hace petición de red.** Todos leen del store, lo cual es instantáneo gracias a `persist`.
 
 ---
 
-## Errores Comunes a Evitar
+## Patrones Opcionales e Importantes
 
-### ❌ NO hagas cleanup local en el hook de logout
+### ✅ SÍ persistir el auth con Zustand `persist`
 
-```typescript
-// MAL — causa race condition con onAuthStateChange
-export function useLogout() {
-  return useMutation({
-    mutationFn: () => authService.logout(),
-    onSettled: async () => {
-      clearAuth(); // ← DUPLICADO
-      await router.navigate("/login"); // ← COMPITE CON onAuthStateChange
-    },
-  });
-}
-```
+Aunque Supabase guarda la sesión `JWT`, persistir el `User` (el perfil del sistema) usando el middleware `persist` previene los llamados a base de datos de "hidratación" por cada recarga y detiene flasheos en blanco de la interfaz. Los "zombies" *(tokens no válidos mostrándose como vivos)* son prevenidos por la sincronización obligatoria asincrónica ejecutada en `__root.tsx` apenas entra el usuario. 
+
+### ❌ NO uses SOLO `getSession()` para validar la sesión definitiva
 
 ```typescript
-// BIEN — fire-and-forget
-export function useLogout() {
-  return useMutation({
-    mutationFn: () => authService.logout(),
-    // onAuthStateChange maneja TODO el cleanup
-  });
-}
-```
+// MAL — Solo lee la galleta local sin ver si se revocó.
+const { data: { session } } = await supabase.auth.getSession();
 
-### ❌ NO uses `getSession()` para validar sesión
-
-```typescript
-// MAL — getSession() lee el JWT local sin validar
-const {
-  data: { session },
-} = await supabase.auth.getSession();
-
-// BIEN — getUser() valida contra el servidor
-const {
-  data: { user },
-} = await supabase.auth.getUser();
-```
-
-### ❌ NO persistir estado auth con Zustand `persist`
-
-El store es **in-memory only**. La sesión real la persiste Supabase internamente (localStorage).
-Si usas `persist()` de Zustand, puedes crear "sesiones zombie" donde el estado local dice que hay sesión pero Supabase ya la revocó.
-
-### ❌ NO hacer múltiples llamadas de red en guards de rutas
-
-```typescript
-// MAL — cada ruta llama a getUser()
-beforeLoad: async () => {
-  const profile = await authService.getAuthenticatedProfile();
-  // ...
-};
-
-// BIEN — solo __root.tsx llama a getUser(), el resto lee el store
-beforeLoad: () => {
-  const { isAuthenticated } = useAuthStore.getState();
-  if (!isAuthenticated) throw redirect({ to: "/login" });
-};
+// BIEN — Utilizar un combo: getSession para early return, y getUser para verificar el truth de servidor.
+const { data: { user } } = await supabase.auth.getUser();
 ```
 
 ---
@@ -137,14 +86,14 @@ beforeLoad: () => {
 | Archivo                        | Responsabilidad                                      |
 | ------------------------------ | ---------------------------------------------------- |
 | `lib/supabase.ts`              | Client singleton con `persistSession: true`          |
-| `main.tsx`                     | `onAuthStateChange` — único listener de eventos auth |
-| `__root.tsx`                   | Hidratación inicial via `getUser()`                  |
-| `features/auth/store.ts`       | Zustand store (in-memory, sin persist)               |
-| `services/authService.ts`      | login, logout, getAuthenticatedProfile               |
-| `features/auth/login/hooks.ts` | useLogin, useLogout (React Query mutations)          |
+| `main.tsx`                     | Listener global para `SIGNED_OUT` y refreshs         |
+| `__root.tsx`                   | Validaciones síncronas / background sync (Offline)   |
+| `features/auth/store.ts`       | Zustand store, persistido en Storage.                |
+| `services/authService.ts`      | Capa interactiva resilente para login y profile      |
+| `features/auth/login/hooks.ts` | Consumo para Mutation con cache/clear explícito      |
 | `routes/_app.tsx`              | Guard: protege rutas autenticadas                    |
 | `routes/_auth.tsx`             | Guard: protege rutas públicas (login)                |
-| `routes/index.tsx`             | Redirect inteligente `/` → `/inventory` o `/login`   |
+| `routes/index.tsx`             | Redirect inteligente `/`                             |
 
 ---
 

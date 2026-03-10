@@ -29,6 +29,16 @@ declare module "@tanstack/react-router" {
  * in sync when Supabase silently refreshes the JWT.
  */
 supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === "SIGNED_OUT") {
+    // Session was terminated (user logged out, session expired, or revoked)
+    useAuthStore.getState().clearAuth();
+    queryClient.clear();
+    
+    // Kick user out of protected routes immediately
+    router.navigate({ to: "/login", replace: true });
+    return;
+  }
+
   if (event === "TOKEN_REFRESHED" && session?.user) {
     try {
       const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();

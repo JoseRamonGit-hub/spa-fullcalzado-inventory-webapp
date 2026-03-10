@@ -19,6 +19,14 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+Object.defineProperty(window, "localStorage", { value: localStorageMock });
+
 // ─── Mock del cliente Supabase ────────────────────────────────
 //
 // `vi.mock("@/lib/supabase", ...)` le dice a Vitest:
@@ -36,6 +44,7 @@ vi.mock("@/lib/supabase", () => ({
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
       getUser: vi.fn(),
+      getSession: vi.fn(),
       onAuthStateChange: vi.fn(() => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       })),

@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { authService } from "@/services/authService";
 import { useAuthStore } from "@/features/auth/store";
-import { queryClient } from "@/lib/queryClient";
 
 const TanStackRouterDevtools = import.meta.env.PROD
   ? () => null
@@ -34,19 +33,28 @@ export const Route = createRootRoute({
   beforeLoad: async () => {
     const { isInitialized, setAuth, clearAuth } = useAuthStore.getState();
 
-    // Already hydrated by a previous beforeLoad (client-side navigation)
-    if (isInitialized) return;
-
-    try {
-      const profile = await authService.getAuthenticatedProfile();
-      if (profile) {
-        setAuth(profile);
-        queryClient.invalidateQueries();
-      } else {
-        clearAuth();
+    const validateSession = async () => {
+      try {
+        const profile = await authService.getAuthenticatedProfile();
+        if (profile) {
+          setAuth(profile);
+        } else {
+          clearAuth();
+        }
+      } catch (error) {
+        // Network error (handled by authService throwing) => DO NOT clearAuth.
+        // The user keeps their persisted session offline.
+        console.warn("Autenticación en segundo plano falló (offline)", error);
       }
-    } catch {
-      clearAuth();
+    };
+
+    if (!isInitialized) {
+      // First load ever (no local storage state yet)
+      await validateSession();
+    } else {
+      // Already hydrated from localStorage persist.
+      // Do a background sync so rendering is not blocked and network issues don't log them out.
+      validateSession();
     }
   },
   component: RootComponent,

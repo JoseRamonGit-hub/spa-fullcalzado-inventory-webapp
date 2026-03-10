@@ -47,6 +47,7 @@ import type { User } from "@/types";
 const mockSignIn = vi.mocked(supabase.auth.signInWithPassword);
 const mockSignOut = vi.mocked(supabase.auth.signOut);
 const mockGetUser = vi.mocked(supabase.auth.getUser);
+const mockGetSession = vi.mocked(supabase.auth.getSession);
 const mockFrom = vi.mocked(supabase.from);
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -197,6 +198,10 @@ describe("Auth Service", () => {
   describe("getAuthenticatedProfile()", () => {
     it("retorna el profile cuando hay sesión válida", async () => {
       // ARRANGE
+      mockGetSession.mockResolvedValueOnce({
+        data: { session: {} as any },
+        error: null,
+      });
       mockGetUser.mockResolvedValueOnce({
         data: { user: { id: "user-123" } as any },
         error: null,
@@ -211,7 +216,26 @@ describe("Auth Service", () => {
       expect(mockGetUser).toHaveBeenCalledTimes(1);
     });
 
-    it("retorna null cuando no hay sesión", async () => {
+    it("retorna null cuando no hay sesión local", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        data: { session: null },
+        error: null,
+      });
+
+      const profile = await authService.getAuthenticatedProfile();
+
+      expect(profile).toBeNull();
+      // getUser should not be called if there's no local session
+      expect(mockGetUser).not.toHaveBeenCalled();
+    });
+
+    it("retorna null cuando hay sesión pero no está autenticado en SSR", async () => {
+      // Pasa el primer check de sesión
+      mockGetSession.mockResolvedValueOnce({
+        data: { session: {} as any },
+        error: null,
+      });
+      // Falla el segundo de validación real
       mockGetUser.mockResolvedValueOnce({
         data: { user: null },
         error: { message: "Not authenticated" } as any,
@@ -222,7 +246,12 @@ describe("Auth Service", () => {
       expect(profile).toBeNull();
     });
 
-    it("retorna null cuando el JWT expiró", async () => {
+    it("retorna null cuando el JWT expiró durante la validación", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        data: { session: {} as any },
+        error: null,
+      });
+      
       mockGetUser.mockResolvedValueOnce({
         data: { user: null },
         error: { message: "JWT expired" } as any,

@@ -55,19 +55,30 @@ export const authService = {
     });
   },
 
-  /**
-   * Verify the current session with the Supabase server (network-validated)
-   * and return the app user profile, or null if no valid session exists.
-   *
-   * Uses `getUser()` (not `getSession()`) so the JWT is always server-verified.
-   */
   getAuthenticatedProfile: async (): Promise<User | null> => {
+    // 1. Fast path: check if we have a local session. If not, don't hit the network.
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) return null;
+
+    // 2. Validate session with the server. This guarantees the JWT is not revoked.
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
 
-    if (error || !user) return null;
+    if (error) {
+      // If it's a network error (fetch failed, offline), we throw it so the caller
+      // can decide not to log the user out on offline scenarios.
+      if (error.status === 0 || error.message.includes("Failed to fetch")) {
+        throw error;
+      }
+      return null;
+    }
+
+    if (!user) return null;
 
     const { data: profile } = await supabase.from("users").select("*").eq("id", user.id).single();
 
