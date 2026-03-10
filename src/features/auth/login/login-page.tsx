@@ -1,32 +1,31 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useLogin } from "./hooks";
-import { ShoppingBag, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { ShoppingBag, ArrowRight } from "lucide-react";
+import { useAppForm } from "@/hooks/form";
 
 export function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-
   const { mutate, isPending } = useLogin();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutate({ email, password });
-  };
+  const form = useAppForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      mutate(value);
+    },
+  });
 
   return (
-    <div className="bg-muted flex min-h-dvh flex-col items-center justify-center p-6 md:p-10">
+    <div className="bg-background flex min-h-dvh flex-col items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-4xl">
         <div className="flex flex-col gap-6">
-          <Card className="overflow-hidden p-0">
+          <Card className="border-border/50 overflow-hidden p-0 shadow-xl">
             <CardContent className="grid p-0 md:min-h-[480px] md:grid-cols-2">
               {/* ── Decorative panel (desktop only) ── */}
               <div
-                className="relative hidden flex-col items-start justify-end overflow-hidden p-10 md:flex"
+                className="bg-sidebar relative hidden flex-col items-start justify-end overflow-hidden p-10 md:flex"
                 style={{
                   background: "linear-gradient(160deg, oklch(0.22 0.02 55), oklch(0.16 0.015 55), oklch(0.12 0.01 55))",
                 }}
@@ -52,14 +51,14 @@ export function LoginPage() {
 
                 {/* Branding */}
                 <div className="relative z-10 max-w-xs">
-                  <h2 className="mb-4 text-3xl leading-[1.1] font-bold tracking-tight text-white">
+                  <h2 className="mb-4 text-3xl leading-[1.1] font-bold tracking-tight text-white/95">
                     Gestión de
                     <br />
-                    <span style={{ color: "oklch(0.75 0.14 55)" }}>Inventario</span>
+                    <span className="text-primary">Inventario</span>
                     <br />
                     Inteligente
                   </h2>
-                  <p className="mb-6 text-sm leading-relaxed text-white/50">
+                  <p className="mb-6 text-sm leading-relaxed text-balance text-white/60">
                     Control total de tu stock de calzado: productos, movimientos, ventas y cierres de caja en un solo
                     lugar.
                   </p>
@@ -67,7 +66,7 @@ export function LoginPage() {
                     {["Inventario en Tiempo Real", "Registro de Ventas", "Reportes de Caja"].map((f) => (
                       <span
                         key={f}
-                        className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/60"
+                        className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70 backdrop-blur-sm"
                       >
                         {f}
                       </span>
@@ -77,83 +76,100 @@ export function LoginPage() {
               </div>
 
               {/* ── Form panel ── */}
-              <form onSubmit={handleSubmit} className="p-6 md:p-8">
-                <div className="flex flex-col gap-6">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
+                className="bg-card relative flex flex-col justify-center p-6 md:p-10"
+              >
+                <div className="flex flex-col gap-8">
                   {/* Header */}
-                  <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="flex flex-col items-center gap-3 text-center">
                     <div
-                      className="mb-1 inline-flex h-11 w-11 items-center justify-center rounded-xl"
+                      className="mb-2 inline-flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm ring-1 ring-black/5"
                       style={{
-                        background: "linear-gradient(135deg, oklch(0.65 0.16 55), oklch(0.52 0.14 55))",
+                        background: "linear-gradient(135deg, oklch(0.60 0.16 55), oklch(0.50 0.14 55))",
                       }}
                     >
-                      <ShoppingBag className="h-5 w-5 text-white" />
+                      <ShoppingBag className="h-7 w-7 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold">Bienvenido</h1>
+                    <h1 className="text-foreground text-2xl font-bold tracking-tight">Bienvenido de nuevo</h1>
                     <p className="text-muted-foreground text-sm text-balance">
                       Ingresa tus credenciales para acceder al sistema
                     </p>
                   </div>
 
-                  {/* Email */}
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Correo Electrónico</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="tu@correo.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="h-10 bg-white"
-                      autoComplete="email"
-                    />
-                  </div>
+                  <div className="grid gap-5">
+                    {/* Email */}
+                    <form.AppField
+                      name="email"
+                      validators={{
+                        onChange: ({ value }) => {
+                          if (!value) return "El correo es requerido";
+                          if (!/^\S+@\S+\.\S+$/.test(value)) return "Correo electrónico inválido";
+                          return undefined;
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <field.TextField
+                          label="Correo Electrónico"
+                          type="email"
+                          placeholder="admin@fullcalzado.com"
+                          autoComplete="email"
+                        />
+                      )}
+                    </form.AppField>
 
-                  {/* Password */}
-                  <div className="grid gap-2">
-                    <Label htmlFor="password">Contraseña</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="h-10 bg-white pr-11"
-                        autoComplete="current-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="text-muted-foreground hover:text-foreground absolute top-0 right-0 inline-flex h-10 w-11 items-center justify-center rounded-r-md transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                    {/* Password */}
+                    <form.AppField
+                      name="password"
+                      validators={{
+                        onChange: ({ value }) => (!value ? "La contraseña es requerida" : undefined),
+                      }}
+                    >
+                      {(field) => (
+                        <field.TextFieldGroup
+                          label="Contraseña"
+                          type="password"
+                          placeholder="••••••••"
+                          passwordEye={true}
+                          autoComplete="current-password"
+                        />
+                      )}
+                    </form.AppField>
                   </div>
 
                   {/* Submit */}
-                  <Button type="submit" className="h-10 w-full gap-2 text-sm font-semibold" disabled={isPending}>
-                    {isPending ? (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Iniciando...
-                      </span>
-                    ) : (
-                      <>
-                        Entrar
-                        <ArrowRight className="h-4 w-4" />
-                      </>
+                  <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+                    {([canSubmit, isSubmitting]) => (
+                      <Button
+                        type="submit"
+                        className="group mt-2 h-12 w-full gap-2 text-sm font-semibold transition-all hover:shadow-md hover:brightness-110 active:scale-[0.98]"
+                        disabled={!canSubmit || isPending || isSubmitting}
+                      >
+                        {isPending || isSubmitting ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            Iniciando...
+                          </span>
+                        ) : (
+                          <>
+                            Entrar al panel
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          </>
+                        )}
+                      </Button>
                     )}
-                  </Button>
+                  </form.Subscribe>
                 </div>
               </form>
             </CardContent>
           </Card>
 
-          <p className="text-muted-foreground/50 text-center text-[10px]">
+          <p className="text-muted-foreground/40 text-center text-[11px] font-medium tracking-wider uppercase">
             Full Calzado &copy; {new Date().getFullYear()} — Cuantiva
           </p>
         </div>

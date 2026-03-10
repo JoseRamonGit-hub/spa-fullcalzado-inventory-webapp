@@ -33,7 +33,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     // Session was terminated (user logged out, session expired, or revoked)
     useAuthStore.getState().clearAuth();
     queryClient.clear();
-    
+
     // Kick user out of protected routes immediately
     router.navigate({ to: "/login", replace: true });
     return;

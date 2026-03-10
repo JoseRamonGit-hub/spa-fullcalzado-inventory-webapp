@@ -251,7 +251,7 @@ describe("Auth Service", () => {
         data: { session: {} as any },
         error: null,
       });
-      
+
       mockGetUser.mockResolvedValueOnce({
         data: { user: null },
         error: { message: "JWT expired" } as any,
