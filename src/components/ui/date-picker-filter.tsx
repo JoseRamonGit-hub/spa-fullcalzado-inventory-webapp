@@ -95,6 +95,7 @@ export function DatePickerFilter({
             toDate={new Date()}
             initialFocus
             className="rounded-t-md"
+            locale={es}
             disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
             classNames={{
               root: "w-fit",
