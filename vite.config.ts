@@ -6,6 +6,9 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    allowedHosts: ["pattern-administration-aspect-orbit.trycloudflare.com"],
+  },
   plugins: [
     tanstackRouter({
       target: "react",

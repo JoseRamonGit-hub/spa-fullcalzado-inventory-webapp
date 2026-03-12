@@ -1,6 +1,14 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+} from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface ResponsiveModalProps {
   open: boolean;
@@ -8,16 +16,31 @@ interface ResponsiveModalProps {
   title: string;
   description?: string;
   children: React.ReactNode;
-  className?: string;
+  avoidCloseFromOutsideClick?: boolean;
+  avoidCloseFromEsc?: boolean;
+  dialogClassName?: string;
+  drawerClassName?: string;
+  descriptionSrOnly?: boolean;
 }
 
-export function ResponsiveModal({ open, onOpenChange, title, description, children, className }: ResponsiveModalProps) {
+export function ResponsiveModal({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  avoidCloseFromOutsideClick,
+  avoidCloseFromEsc,
+  dialogClassName,
+  drawerClassName,
+  descriptionSrOnly,
+}: ResponsiveModalProps) {
   const isMobile = useIsMobile();
 
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className={className}>
+        <DrawerContent className={drawerClassName} onInteractOutside={(e) => e.preventDefault()}>
           <DrawerHeader className="border-b">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
@@ -30,12 +53,21 @@ export function ResponsiveModal({ open, onOpenChange, title, description, childr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`gap-0 p-0 ${className ?? ""}`} showCloseButton>
+      <DialogContent
+        className={`gap-0 p-0 ${dialogClassName ?? ""}`}
+        showCloseButton
+        onInteractOutside={avoidCloseFromOutsideClick ? (e) => e.preventDefault() : undefined}
+        onEscapeKeyDown={avoidCloseFromEsc ? (e) => e.preventDefault() : undefined}
+      >
         <DialogHeader className="border-b px-4 pt-4 pb-2">
           <DialogTitle className="text-sm font-bold tracking-wide uppercase">{title}</DialogTitle>
-          {description && <DialogDescription className="text-xs">{description}</DialogDescription>}
+          {description && (
+            <DialogDescription className={cn("text-xs", descriptionSrOnly && "sr-only")}>
+              {description}
+            </DialogDescription>
+          )}
         </DialogHeader>
-        <div className="max-h-[75dvh] overflow-y-auto p-4">{children}</div>
+        <DialogBody className="max-h-[75dvh]">{children}</DialogBody>
       </DialogContent>
     </Dialog>
   );

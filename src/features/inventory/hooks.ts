@@ -37,6 +37,16 @@ export function useUpdateProduct() {
   });
 }
 
+export function useCreateManyProducts() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: ProductInsert[]) => productsService.createMany(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
   return useMutation({

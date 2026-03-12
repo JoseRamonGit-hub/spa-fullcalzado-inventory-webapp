@@ -4,8 +4,8 @@ import { BottomBar } from "../components/bottom-bar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { PackagePlus, ShoppingCart, Moon, Sun } from "lucide-react";
-import { IngresoModal } from "@/components/modals/ingreso-modal";
-import { VentaModal } from "@/components/modals/venta-modal";
+import { InModal } from "@/components/modals/in-modal";
+import { OutModal } from "@/components/modals/out-modal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
@@ -71,7 +71,7 @@ function AppLayout() {
               className="text-foreground hover:text-primary hover:bg-primary/8 hidden h-7 gap-1.5 px-2 text-xs md:inline-flex"
             >
               <PackagePlus className="h-3.5 w-3.5" />
-              <span>Ingreso</span>
+              <span>Carga de Inventario</span>
               <kbd className="kbd hidden lg:inline-flex">Ctrl+I</kbd>
             </Button>
             <Button
@@ -120,8 +120,8 @@ function AppLayout() {
 
       <BottomBar />
 
-      <IngresoModal open={ingresoOpen} onOpenChange={setIngresoOpen} />
-      <VentaModal open={ventaOpen} onOpenChange={setVentaOpen} />
+      <InModal open={ingresoOpen} onOpenChange={setIngresoOpen} />
+      <OutModal open={ventaOpen} onOpenChange={setVentaOpen} />
     </SidebarProvider>
   );
 }

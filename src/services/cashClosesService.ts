@@ -15,6 +15,6 @@ export const cashClosesService = {
     });
 
     if (error) throw new Error(error.message);
-    return data as unknown as CashClose;
+    return data;
   },
 };

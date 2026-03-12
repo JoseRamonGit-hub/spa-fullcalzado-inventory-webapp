@@ -54,54 +54,59 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="custom-scrollbar flex-1 overflow-auto">
-      <Table>
-        <TableHeader className="px-10!">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className="text-muted-foreground h-7 px-2.5 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
-                  >
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
-          ) : table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, index) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
-                onClick={() => onRowClick?.(row.original)}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="px-2.5 py-1 text-[13px] whitespace-nowrap">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+    <div className="custom-scrollbar h-full flex-1 overflow-auto">
+      <div className="max-h-64 min-h-64 w-full">
+        <Table>
+          <TableHeader className="px-10!">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className="text-muted-foreground h-7 px-2.5 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
+                    >
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-32 text-center">
-                <div className="text-muted-foreground flex flex-col items-center gap-2">
-                  <PackageOpen className="h-8 w-8 opacity-40" />
-                  <span className="text-sm">{emptyMessage}</span>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody className="">
+            {isLoading ? (
+              <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row, index) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
+                  onClick={() => onRowClick?.(row.original)}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className="h-8 overflow-hidden px-2.5 py-0.5 text-[13px] whitespace-nowrap"
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={columns.length} className="h-56 text-center">
+                  <div className="text-muted-foreground flex flex-col items-center gap-2">
+                    <PackageOpen className="h-8 w-8 opacity-40" />
+                    <span className="text-sm">{emptyMessage}</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
