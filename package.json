@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "npm run supabase:env && vite --host",
     "build": "npm run generate-routes && tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write ./src",
@@ -12,7 +12,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "generate-routes": "tsr generate",
-    "watch-routes": "tsr watch"
+    "watch-routes": "tsr watch",
+    "supabase:env": "supabase status -o env | grep -E 'API_URL|PUBLISHABLE_KEY' | sed 's/API_URL/VITE_SUPABASE_URL/' | sed 's/UBLISHABLE_KEY/VITE_SUPABASE_ANON_KEY/' >.env.development",
+    "supabase:start": "supabase start"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
