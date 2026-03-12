@@ -8,8 +8,7 @@ export const inventoryMovementsService = {
     const { data, error } = await supabase
       .from("inventory_movements")
       .select(MOVEMENT_SELECT)
-      .order("date", { ascending: false })
-      .order("time", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
     return data as unknown as InventoryMovementWithRelations[];
