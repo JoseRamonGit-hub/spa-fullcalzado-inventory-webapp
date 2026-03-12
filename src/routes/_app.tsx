@@ -4,7 +4,7 @@ import { BottomBar } from "../components/bottom-bar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { PackagePlus, ShoppingCart, Moon, Sun } from "lucide-react";
-import { IngresoModal } from "@/components/modals/ingreso-modal";
+import { InModal } from "@/components/modals/in-modal";
 import { VentaModal } from "@/components/modals/venta-modal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useEffect, useCallback } from "react";
@@ -120,7 +120,7 @@ function AppLayout() {
 
       <BottomBar />
 
-      <IngresoModal open={ingresoOpen} onOpenChange={setIngresoOpen} />
+      <InModal open={ingresoOpen} onOpenChange={setIngresoOpen} />
       <VentaModal open={ventaOpen} onOpenChange={setVentaOpen} />
     </SidebarProvider>
   );

@@ -23,6 +23,13 @@ export const productsService = {
     return data;
   },
 
+  createMany: async (payload: ProductInsert[]): Promise<Product[]> => {
+    const { data, error } = await supabase.from("products").insert(payload).select();
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
   update: async (id: string, payload: ProductUpdate): Promise<Product> => {
     const { data, error } = await supabase.from("products").update(payload).eq("id", id).select().single();
 
