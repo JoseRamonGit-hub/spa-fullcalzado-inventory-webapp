@@ -11,13 +11,13 @@ export const inventoryMovementsService = {
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
-    return data as unknown as InventoryMovementWithRelations[];
+    return data;
   },
 
   create: async (payload: InventoryMovementInsert): Promise<InventoryMovementWithRelations> => {
     const { data, error } = await supabase.from("inventory_movements").insert(payload).select(MOVEMENT_SELECT).single();
 
     if (error) throw new Error(error.message);
-    return data as unknown as InventoryMovementWithRelations;
+    return data;
   },
 };

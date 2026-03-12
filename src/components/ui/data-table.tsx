@@ -72,7 +72,7 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="min-h-80!">
           {isLoading ? (
             <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
           ) : table.getRowModel().rows?.length ? (
@@ -91,8 +91,8 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-32 text-center">
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={columns.length} className="h-80 text-center">
                 <div className="text-muted-foreground flex flex-col items-center gap-2">
                   <PackageOpen className="h-8 w-8 opacity-40" />
                   <span className="text-sm">{emptyMessage}</span>

@@ -72,9 +72,9 @@ export function StockIncreaseForm({ onSuccess }: StockIncreaseFormProps) {
       });
 
       toast.promise(promise, {
-        loading: "Registrando ingreso...",
+        loading: "Registrando carga de inventario...",
         success: "Stock actualizado correctamente",
-        error: "Error al registrar el ingreso",
+        error: "Error al registrar el carga de inventario",
       });
 
       await promise;

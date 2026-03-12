@@ -79,7 +79,7 @@ export function BottomBar() {
       {/* Mobile Menu Sheet (Scalable container) */}
       <MobileMenuSheet open={menuOpen} onOpenChange={setMenuOpen} />
 
-      {/* Action Drawer for Ingreso / Venta */}
+      {/* Action Drawer for Carga de inventario / Venta */}
       <Drawer open={actionDrawerOpen} onOpenChange={setActionDrawerOpen}>
         <DrawerContent>
           <DrawerHeader className="border-b">

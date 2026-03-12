@@ -71,7 +71,7 @@ function AppLayout() {
               className="text-foreground hover:text-primary hover:bg-primary/8 hidden h-7 gap-1.5 px-2 text-xs md:inline-flex"
             >
               <PackagePlus className="h-3.5 w-3.5" />
-              <span>Ingreso</span>
+              <span>Carga de Inventario</span>
               <kbd className="kbd hidden lg:inline-flex">Ctrl+I</kbd>
             </Button>
             <Button

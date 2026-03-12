@@ -8,16 +8,27 @@ interface ResponsiveModalProps {
   title: string;
   description?: string;
   children: React.ReactNode;
-  className?: string;
+  avoidCloseFromOutsideClick?: boolean;
+  dialogClassName?: string;
+  drawerClassName?: string;
 }
 
-export function ResponsiveModal({ open, onOpenChange, title, description, children, className }: ResponsiveModalProps) {
+export function ResponsiveModal({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  avoidCloseFromOutsideClick,
+  dialogClassName,
+  drawerClassName,
+}: ResponsiveModalProps) {
   const isMobile = useIsMobile();
 
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className={className}>
+        <DrawerContent className={drawerClassName}>
           <DrawerHeader className="border-b">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
@@ -30,7 +41,11 @@ export function ResponsiveModal({ open, onOpenChange, title, description, childr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`gap-0 p-0 ${className ?? ""}`} showCloseButton>
+      <DialogContent
+        className={`gap-0 p-0 ${dialogClassName ?? ""}`}
+        showCloseButton
+        onInteractOutside={avoidCloseFromOutsideClick ? (e) => e.preventDefault() : undefined}
+      >
         <DialogHeader className="border-b px-4 pt-4 pb-2">
           <DialogTitle className="text-sm font-bold tracking-wide uppercase">{title}</DialogTitle>
           {description && <DialogDescription className="text-xs">{description}</DialogDescription>}

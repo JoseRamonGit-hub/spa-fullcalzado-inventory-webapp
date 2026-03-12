@@ -15,7 +15,7 @@ export const transactionsService = {
       .limit(500);
 
     if (error) throw new Error(error.message);
-    return data as unknown as TransactionWithRelations[];
+    return data;
   },
 
   getToday: async (): Promise<TransactionWithRelations[]> => {
@@ -28,13 +28,13 @@ export const transactionsService = {
       .order("time", { ascending: false });
 
     if (error) throw new Error(error.message);
-    return data as unknown as TransactionWithRelations[];
+    return data;
   },
 
   create: async (payload: TransactionInsert): Promise<TransactionWithRelations> => {
     const { data, error } = await supabase.from("transactions").insert(payload).select(TRANSACTION_SELECT).single();
 
     if (error) throw new Error(error.message);
-    return data as unknown as TransactionWithRelations;
+    return data;
   },
 };
