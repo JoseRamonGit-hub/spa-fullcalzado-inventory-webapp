@@ -122,6 +122,11 @@ function DialogDescription({ className, ...props }: React.ComponentProps<typeof 
   );
 }
 
+const DialogBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("flex-1 overflow-y-auto px-6 py-6", className)} {...props} />
+);
+DialogBody.displayName = "DialogBody";
+
 export {
   Dialog,
   DialogClose,
@@ -133,4 +138,5 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  DialogBody,
 };

@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useTransition, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useProducts } from "@/features/inventory/hooks";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useAuthStore } from "@/features/auth/store";
 import { useCreateManyTransactions } from "@/features/transactions/hooks";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingSaleColumns, type PendingSale } from "./columns";
+import { ProductSearchInput, type ProductSearchResult } from "@/components/product-search-input";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
@@ -20,12 +20,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  ArrowLeft,
-  Search,
-  ShoppingCart,
-  PackageSearch,
-} from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
@@ -35,7 +30,6 @@ interface OutModalProps {
 }
 
 export function OutModal({ open, onOpenChange }: OutModalProps) {
-  const { data: products } = useProducts();
   const { data: exchangeRate } = useExchangeRate();
   const user = useAuthStore((s) => s.user);
   const createMany = useCreateManyTransactions();
@@ -46,36 +40,20 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
   const [pendingSales, setPendingSales] = useState<PendingSale[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // ── Product selection ──
-  const [selectedProductId, setSelectedProductId] = useState("");
+  // ── Product selection (shared component) ──
+  const [selectedProduct, setSelectedProduct] = useState<ProductSearchResult | null>(null);
   const [quantity, setQuantity] = useState("");
-  const [search, setSearch] = useState("");
-  const [filteredSearch, setFilteredSearch] = useState("");
-  const [, startTransition] = useTransition();
 
-  const selectedProduct = useMemo(
-    () => products?.find((p) => p.id === selectedProductId),
-    [products, selectedProductId],
-  );
-
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearch(value);
-      startTransition(() => setFilteredSearch(value));
-    },
-    [],
-  );
-
-  const filtered = useMemo(() => {
-    if (!products) return [];
-    const q = filteredSearch.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.active &&
-        p.stock > 0 &&
-        (p.code.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)),
-    );
-  }, [products, filteredSearch]);
+  // Focus quantity input automatically when a product is selected
+  const qtyInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (selectedProduct) {
+      requestAnimationFrame(() => {
+        qtyInputRef.current?.focus();
+        qtyInputRef.current?.select();
+      });
+    }
+  }, [selectedProduct]);
 
   const qty = parseInt(quantity) || 0;
   const priceUsd = selectedProduct?.price_usd ?? 0;
@@ -102,10 +80,8 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
       };
 
       setPendingSales((prev) => [...prev, newSale]);
-      setSelectedProductId("");
+      setSelectedProduct(null);
       setQuantity("");
-      setSearch("");
-      setFilteredSearch("");
     },
     [selectedProduct, qty, isOverStock, priceUsd, priceVes],
   );
@@ -116,14 +92,8 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
   }, []);
 
   // ── Derived totals ──
-  const grandTotalUsd = useMemo(
-    () => pendingSales.reduce((acc, s) => acc + s.totalUsd, 0),
-    [pendingSales],
-  );
-  const grandTotalVes = useMemo(
-    () => pendingSales.reduce((acc, s) => acc + s.totalVes, 0),
-    [pendingSales],
-  );
+  const grandTotalUsd = useMemo(() => pendingSales.reduce((acc, s) => acc + s.totalUsd, 0), [pendingSales]);
+  const grandTotalVes = useMemo(() => pendingSales.reduce((acc, s) => acc + s.totalVes, 0), [pendingSales]);
 
   // ── Confirm & submit ──
   const handleConfirmSubmit = useCallback(async () => {
@@ -171,10 +141,8 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
     (isOpen: boolean) => {
       if (!isOpen) {
         setPendingSales([]);
-        setSelectedProductId("");
+        setSelectedProduct(null);
         setQuantity("");
-        setSearch("");
-        setFilteredSearch("");
       }
       onOpenChange(isOpen);
     },
@@ -191,99 +159,56 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
         dialogClassName="min-w-4xl"
         drawerClassName=""
         avoidCloseFromOutsideClick
+        avoidCloseFromEsc
+        descriptionSrOnly
       >
         <div className="flex flex-col gap-3">
           {/* ── Step 1 / 2: Product selector or quantity form ── */}
-          {!selectedProductId ? (
-            /* Product search */
-            <div className="space-y-1.5">
-              <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                Seleccionar Producto
-              </label>
-              <div className="relative">
-                <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
-                <Input
-                  placeholder="Buscar por código o descripción..."
-                  value={search}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="h-9 pl-8 text-sm"
-                  autoFocus
-                />
-              </div>
-              <div className="custom-scrollbar max-h-[160px] divide-y overflow-y-auto rounded-md border">
-                {filtered.length === 0 && (
-                  <div className="text-muted-foreground flex flex-col items-center gap-1.5 p-4 text-center text-xs">
-                    <PackageSearch className="h-5 w-5 opacity-40" />
-                    {search ? "Sin resultados" : "No hay productos con stock disponible"}
-                  </div>
-                )}
-                {filtered.slice(0, 20).map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setSelectedProductId(p.id)}
-                    className="bg-card hover:bg-accent flex w-full items-center gap-2 px-2.5 py-1.5 text-left transition-colors"
-                  >
-                    <span className="product-code text-xs">{p.code}</span>
-                    <span className="flex-1 truncate text-sm">{p.description}</span>
-                    <span className="text-muted-foreground text-xs tabular-nums">
-                      {formatCurrencyUSD(p.price_usd)}
-                    </span>
-                    <span className="text-muted-foreground text-xs tabular-nums">
-                      [{p.stock}]
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
+          {!selectedProduct ? (
+            <ProductSearchInput
+              value=""
+              onChange={(p) => {
+                setSelectedProduct(p);
+                setQuantity("");
+              }}
+              requireStock
+              showPrice
+              autoFocus
+              label="Seleccionar Producto"
+            />
           ) : (
             /* Quantity form for selected product */
             <form onSubmit={handleAddSale} className="space-y-2">
-              {/* Selected product card */}
-              <div className="bg-accent/30 flex items-center gap-2 rounded-lg border p-2.5">
-                <span className="product-code text-xs">{selectedProduct?.code}</span>
-                <span className="min-w-0 flex-1 truncate text-sm">
-                  {selectedProduct?.description}
-                </span>
-                <div className="text-muted-foreground flex shrink-0 gap-3 text-xs">
-                  <span>
-                    {formatCurrencyUSD(priceUsd)}
-                  </span>
-                  <span>Stock: <strong className="text-foreground">{selectedProduct?.stock}</strong></span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => { setSelectedProductId(""); setQuantity(""); }}
-                  className="h-6 shrink-0 gap-1 px-2 text-xs"
-                >
-                  <ArrowLeft className="h-3 w-3" />
-                  Cambiar
-                </Button>
-              </div>
+              {/* Selected product chip */}
+              <ProductSearchInput
+                value={selectedProduct.id}
+                onChange={(p) => {
+                  setSelectedProduct(p);
+                  setQuantity("");
+                }}
+                showPrice
+                label="Producto"
+              />
 
               {/* Quantity input + add button */}
               <div className="flex items-end gap-2">
                 <div className="flex-1 space-y-1">
-                  <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                    Cantidad
-                  </label>
+                  <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Cantidad</label>
                   <Input
+                    ref={qtyInputRef}
                     type="number"
                     min="1"
-                    max={selectedProduct?.stock ?? 999}
+                    max={selectedProduct.stock}
                     step="1"
                     placeholder="0"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    className="h-9 text-sm tabular-nums"
+                    className="h-8 text-sm tabular-nums"
                     required
-                    autoFocus
                   />
                   {isOverStock && (
                     <p className="text-destructive text-[10px]">
-                      Stock insuficiente (disponible: {selectedProduct?.stock})
+                      Stock insuficiente (disponible: {selectedProduct.stock})
                     </p>
                   )}
                 </div>
@@ -294,17 +219,11 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
                     <p className="text-foreground text-sm font-semibold tabular-nums">
                       {formatCurrencyUSD(qty * priceUsd)}
                     </p>
-                    <p className="text-muted-foreground text-xs tabular-nums">
-                      {formatCurrencyVES(qty * priceVes)}
-                    </p>
+                    <p className="text-muted-foreground text-xs tabular-nums">{formatCurrencyVES(qty * priceVes)}</p>
                   </div>
                 )}
 
-                <Button
-                  type="submit"
-                  className="h-9 shrink-0"
-                  disabled={!quantity || qty < 1 || isOverStock}
-                >
+                <Button type="submit" className="h-8 shrink-0" disabled={!quantity || qty < 1 || isOverStock}>
                   Agregar
                 </Button>
               </div>
@@ -312,7 +231,7 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
           )}
 
           {/* ── Pending sales DataTable ── */}
-          <div className="bg-card min-h-60 rounded-md border">
+          <div className="bg-card min-h-52 rounded-md border">
             <DataTable
               columns={pendingSaleColumns}
               data={pendingSales}
@@ -356,7 +275,7 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
               disabled={pendingSales.length === 0 || createMany.isPending}
               onClick={() => setConfirmOpen(true)}
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart data-icon="inline-start" />
               {createMany.isPending
                 ? "Registrando..."
                 : `Registrar ${pendingSales.length > 0 ? pendingSales.length : ""} venta${pendingSales.length !== 1 ? "s" : ""}`}
@@ -394,9 +313,9 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
             <table className="w-full">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground border-b">
-                  <th className="px-2.5 py-1.5 text-left font-semibold uppercase tracking-wider">Producto</th>
-                  <th className="px-2.5 py-1.5 text-right font-semibold uppercase tracking-wider">Cant.</th>
-                  <th className="px-2.5 py-1.5 text-right font-semibold uppercase tracking-wider">Total USD</th>
+                  <th className="px-2.5 py-1.5 text-left font-semibold tracking-wider uppercase">Producto</th>
+                  <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Cant.</th>
+                  <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Total USD</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -404,7 +323,7 @@ export function OutModal({ open, onOpenChange }: OutModalProps) {
                   <tr key={s._tempId} className={i % 2 === 1 ? "bg-table-stripe" : ""}>
                     <td className="px-2.5 py-1">
                       <span className="product-code mr-1.5">{s.code}</span>
-                      <span className="text-muted-foreground max-w-[160px] truncate">{s.description}</span>
+                      <span className="text-muted-foreground max-w-40 truncate">{s.description}</span>
                     </td>
                     <td className="px-2.5 py-1 text-right tabular-nums">{s.quantity}</td>
                     <td className="px-2.5 py-1 text-right font-semibold tabular-nums">

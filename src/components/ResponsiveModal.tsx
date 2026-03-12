@@ -1,6 +1,14 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+} from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface ResponsiveModalProps {
   open: boolean;
@@ -9,8 +17,10 @@ interface ResponsiveModalProps {
   description?: string;
   children: React.ReactNode;
   avoidCloseFromOutsideClick?: boolean;
+  avoidCloseFromEsc?: boolean;
   dialogClassName?: string;
   drawerClassName?: string;
+  descriptionSrOnly?: boolean;
 }
 
 export function ResponsiveModal({
@@ -20,8 +30,10 @@ export function ResponsiveModal({
   description,
   children,
   avoidCloseFromOutsideClick,
+  avoidCloseFromEsc,
   dialogClassName,
   drawerClassName,
+  descriptionSrOnly,
 }: ResponsiveModalProps) {
   const isMobile = useIsMobile();
 
@@ -45,12 +57,17 @@ export function ResponsiveModal({
         className={`gap-0 p-0 ${dialogClassName ?? ""}`}
         showCloseButton
         onInteractOutside={avoidCloseFromOutsideClick ? (e) => e.preventDefault() : undefined}
+        onEscapeKeyDown={avoidCloseFromEsc ? (e) => e.preventDefault() : undefined}
       >
         <DialogHeader className="border-b px-4 pt-4 pb-2">
           <DialogTitle className="text-sm font-bold tracking-wide uppercase">{title}</DialogTitle>
-          {description && <DialogDescription className="text-xs">{description}</DialogDescription>}
+          {description && (
+            <DialogDescription className={cn("text-xs", descriptionSrOnly && "sr-only")}>
+              {description}
+            </DialogDescription>
+          )}
         </DialogHeader>
-        <div className="max-h-[75dvh] overflow-y-auto p-4">{children}</div>
+        <DialogBody className="max-h-[75dvh]">{children}</DialogBody>
       </DialogContent>
     </Dialog>
   );

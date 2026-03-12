@@ -1,11 +1,18 @@
 import { useState, useCallback, useEffect } from "react";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useAppForm } from "@/hooks/form";
 import { useCreateManyProducts } from "@/features/inventory/hooks";
+import { useAuthStore } from "@/features/auth/store";
+import { inventoryMovementsService } from "@/services/inventoryMovementsService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DataTable } from "@/components/ui/data-table";
-import { pendingItemColumns, type PendingItem } from "./columns";
+import { pendingItemColumns, type BatchItem, type NewBatchItem, type ExistingBatchItem } from "./columns";
+import { useBatch } from "./use-batch";
+import { NewProductForm } from "./components/new-product-form";
+import { StockIncreaseForm } from "./components/stock-increase-form";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,8 +25,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatCurrencyUSD } from "@/utils/formatters";
-import { PackagePlus, Plus } from "lucide-react";
+import { PackagePlus } from "lucide-react";
 import { toast } from "sonner";
+
+type TabValue = "new" | "existing";
 
 interface InModalProps {
   open: boolean;
@@ -27,69 +36,99 @@ interface InModalProps {
 }
 
 export function InModal({ open, onOpenChange }: InModalProps) {
-  const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
+  const [activeTab, setActiveTab] = useState<TabValue>("new");
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const { batchItems, addItem, removeItem, clearBatch } = useBatch();
+  const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
   const createMany = useCreateManyProducts();
 
-  // ── Form for adding individual items to the pending list ──
-  const form = useAppForm({
-    defaultValues: {
-      code: "",
-      description: "",
-      price_usd: "" as unknown as number,
-      stock: "" as unknown as number,
-    },
-    onSubmit: async ({ value }) => {
-      const newItem: PendingItem = {
-        code: value.code.trim(),
-        description: value.description.trim(),
-        price_usd: value.price_usd,
-        stock: value.stock,
-        _tempId: crypto.randomUUID(),
-      };
-      setPendingItems((prev) => [...prev, newItem]);
-      form.reset();
-
-      // Return focus to the code field
-      requestAnimationFrame(() => {
-        const codeInput = document.querySelector<HTMLInputElement>('input[name="code"]');
-        codeInput?.focus();
-      });
+  // Batch mutation for existing-product stock increases
+  const createManyMovements = useMutation({
+    mutationFn: (payloads: Parameters<typeof inventoryMovementsService.createMany>[0]) =>
+      inventoryMovementsService.createMany(payloads),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movements"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 
-  // ── Remove item from pending list ──
-  const handleRemoveItem = useCallback((tempId: string) => {
-    setPendingItems((prev) => prev.filter((item) => item._tempId !== tempId));
-  }, []);
+  // ── Handlers ───────────────────────────────────────────────
+  const handleAddToBatch = useCallback(
+    (item: BatchItem) => {
+      addItem(item);
+    },
+    [addItem],
+  );
 
-  // ── Submit all pending items ──
   const handleConfirmSubmit = useCallback(async () => {
-    if (pendingItems.length === 0) return;
+    if (batchItems.length === 0) return;
 
-    // Strip _tempId before sending to backend
-    const payload = pendingItems.map(({ _tempId, ...rest }) => rest);
+    const newItems = batchItems.filter((i): i is NewBatchItem => i._kind === "new");
+    const existingItems = batchItems.filter((i): i is ExistingBatchItem => i._kind === "existing");
 
-    const promise = createMany.mutateAsync(payload);
+    const ops: Promise<unknown>[] = [];
+
+    if (newItems.length > 0) {
+      const payload = newItems.map(({ _tempId: _t, _kind: _k, ...rest }) => rest);
+      ops.push(createMany.mutateAsync(payload));
+    }
+
+    if (existingItems.length > 0 && user) {
+      const movementsPayload = existingItems.map((item) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        type: "entry" as const,
+        user_id: user.id,
+      }));
+      ops.push(createManyMovements.mutateAsync(movementsPayload));
+    }
+
+    const totalItems = batchItems.length;
+    const promise = Promise.all(ops);
 
     toast.promise(promise, {
-      loading: `Cargando ${pendingItems.length} producto${pendingItems.length > 1 ? "s" : ""}...`,
-      success: `${pendingItems.length} producto${pendingItems.length > 1 ? "s" : ""} cargado${pendingItems.length > 1 ? "s" : ""} correctamente`,
-      error: "Error al cargar los productos",
+      loading: `Procesando ${totalItems} item${totalItems > 1 ? "s" : ""}...`,
+      success: `${totalItems} item${totalItems > 1 ? "s" : ""} cargado${totalItems > 1 ? "s" : ""} correctamente`,
+      error: "Error al procesar el lote",
     });
 
     await promise;
-    setPendingItems([]);
+    clearBatch();
     setConfirmOpen(false);
     onOpenChange(false);
-  }, [pendingItems, createMany, onOpenChange]);
+  }, [batchItems, createMany, createManyMovements, user, clearBatch, onOpenChange]);
 
-  // ── Shift+Enter global shortcut ──
+  // ── Reset when modal closes ─────────────────────────────────
+  const handleOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen) {
+        clearBatch();
+        setActiveTab("new");
+      }
+      onOpenChange(isOpen);
+    },
+    [onOpenChange, clearBatch],
+  );
+
+  // ── Keyboard shortcuts ──────────────────────────────────────
   useEffect(() => {
     if (!open) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && e.key === "Enter" && pendingItems.length > 0) {
+      // Alt+N → Tab Nuevo Producto
+      if (e.altKey && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        setActiveTab("new");
+      }
+      // Alt+E → Tab Stock Existente
+      if (e.altKey && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        setActiveTab("existing");
+      }
+      // Shift+Enter → open confirm (when there are items)
+      if (e.shiftKey && e.key === "Enter" && batchItems.length > 0) {
         e.preventDefault();
         e.stopPropagation();
         setConfirmOpen(true);
@@ -98,160 +137,98 @@ export function InModal({ open, onOpenChange }: InModalProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, pendingItems.length]);
+  }, [open, batchItems.length]);
 
-  // ── Reset state when modal closes ──
-  const handleOpenChange = useCallback(
-    (isOpen: boolean) => {
-      if (!isOpen) {
-        setPendingItems([]);
-        form.reset();
-      }
-      onOpenChange(isOpen);
-    },
-    [onOpenChange, form],
-  );
+  // ── Derived values ──────────────────────────────────────────
+  const newCount = batchItems.filter((i) => i._kind === "new").length;
+  const existingCount = batchItems.filter((i) => i._kind === "existing").length;
+  const isPending = createMany.isPending || createManyMovements.isPending;
 
   return (
     <>
       <ResponsiveModal
         open={open}
         onOpenChange={handleOpenChange}
-        title="Carga de Inventario"
-        description="Agrega productos uno a uno y luego carga el lote completo."
+        title="Recepción de Mercancía"
+        description="Agrega productos al lote y luego confirma la carga completa."
         dialogClassName="min-w-4xl"
         drawerClassName=""
         avoidCloseFromOutsideClick
+        descriptionSrOnly
       >
-        <div className="flex flex-col gap-3">
-          {/* ── Inline form ── */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-            className="space-y-2"
-          >
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_2fr_auto_auto_auto]">
-              <form.AppField
-                name="code"
-                validators={{
-                  onChange: ({ value }) => (!value ? "Requerido" : undefined),
-                }}
-              >
-                {(field) => (
-                  <field.TextField label="Código" placeholder="SKU-001" required autoFocus className="h-8 text-sm" />
-                )}
-              </form.AppField>
+        <div className="flex flex-col gap-4">
+          {/* ── Tabs ── */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
+            <TabsList className="w-full">
+              <TabsTrigger value="new" className="flex-1 gap-1.5" aria-keyshortcuts="Alt+N">
+                Nuevo Producto
+                <KbdGroup className="hidden md:flex">
+                  <Kbd className="px-1 text-[9px]">Alt</Kbd>
+                  <span className="text-[9px]">+</span>
+                  <Kbd className="px-1 text-[9px]">N</Kbd>
+                </KbdGroup>
+              </TabsTrigger>
+              <TabsTrigger value="existing" className="flex-1 gap-1.5" aria-keyshortcuts="Alt+E">
+                Aumentar Existencia
+                <KbdGroup className="hidden md:flex">
+                  <Kbd className="px-1 text-[9px]">Alt</Kbd>
+                  <span className="text-[9px]">+</span>
+                  <Kbd className="px-1 text-[9px]">E</Kbd>
+                </KbdGroup>
+              </TabsTrigger>
+            </TabsList>
 
-              <form.AppField
-                name="description"
-                validators={{
-                  onChange: ({ value }) => (!value ? "Requerido" : undefined),
-                }}
-              >
-                {(field) => (
-                  <field.TextField
-                    label="Descripción"
-                    placeholder="Zapato deportivo negro T42"
-                    required
-                    className="h-8 text-sm"
-                  />
-                )}
-              </form.AppField>
+            <TabsContent value="new" className="mt-3">
+              <NewProductForm onAddToBatch={handleAddToBatch} />
+            </TabsContent>
 
-              <form.AppField
-                name="price_usd"
-                validators={{
-                  onChange: ({ value }) => {
-                    if (value === undefined || value === null || String(value) === "") return "Requerido";
-                    if (value < 0) return "Inválido";
-                    return undefined;
-                  },
-                }}
-              >
-                {(field) => (
-                  <field.NumberField
-                    label="Precio USD"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    required
-                    className="h-8 text-sm tabular-nums"
-                  />
-                )}
-              </form.AppField>
+            <TabsContent value="existing" className="mt-3">
+              <StockIncreaseForm onAddToBatch={handleAddToBatch} />
+            </TabsContent>
+          </Tabs>
 
-              <form.AppField
-                name="stock"
-                validators={{
-                  onChange: ({ value }) => {
-                    if (value === undefined || value === null || String(value) === "") return "Requerido";
-                    if (value < 1) return "Mín. 1";
-                    return undefined;
-                  },
-                }}
-              >
-                {(field) => (
-                  <field.NumberField
-                    label="Stock"
-                    min="1"
-                    step="1"
-                    placeholder="0"
-                    required
-                    className="h-8 text-sm tabular-nums"
-                  />
-                )}
-              </form.AppField>
-
-              <div className="flex items-end">
-                <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
-                  {([canSubmit, isSubmitting]) => (
-                    <Button
-                      type="submit"
-                      size="icon"
-                      variant="outline"
-                      className="h-8 w-8 shrink-0"
-                      disabled={!canSubmit || isSubmitting}
-                      aria-label="Agregar item a la lista"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  )}
-                </form.Subscribe>
-              </div>
-            </div>
-          </form>
-
-          {/* ── Pending items table ── */}
-          <div className="bg-card min-h-60 rounded-md border">
+          {/* ── Pending batch table (always visible) ── */}
+          <div className="bg-card min-h-52 rounded-md border">
             <DataTable
               columns={pendingItemColumns}
-              data={pendingItems}
-              emptyMessage="Agrega productos usando el formulario de arriba."
-              meta={{ onRemoveItem: handleRemoveItem }}
+              data={batchItems}
+              emptyMessage="Agrega productos usando las pestañas de arriba."
+              meta={{ onRemoveItem: removeItem }}
             />
           </div>
 
-          {/* ── Footer / Submit ── */}
+          {/* ── Footer ── */}
           <div className="flex items-center justify-between gap-3 border-t pt-3">
             <p className="text-muted-foreground text-xs tabular-nums">
-              {pendingItems.length === 0
-                ? "Sin items pendientes"
-                : `${pendingItems.length} item${pendingItems.length > 1 ? "s" : ""} en cola`}
+              {batchItems.length === 0 ? (
+                "Sin items pendientes"
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  {newCount > 0 && (
+                    <Badge variant="outline" className="px-1 py-0 text-[10px]">
+                      {newCount} nuevo{newCount > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                  {existingCount > 0 && (
+                    <Badge variant="secondary" className="px-1 py-0 text-[10px]">
+                      {existingCount} existente{existingCount > 1 ? "s" : ""}
+                    </Badge>
+                  )}
+                  <span>en el lote</span>
+                </span>
+              )}
             </p>
 
             <Button
               type="button"
               className="gap-2"
-              disabled={pendingItems.length === 0 || createMany.isPending}
+              disabled={batchItems.length === 0 || isPending}
               onClick={() => setConfirmOpen(true)}
             >
-              <PackagePlus className="h-4 w-4" />
-              {createMany.isPending
-                ? "Cargando..."
-                : `Cargar ${pendingItems.length > 0 ? pendingItems.length : ""} item${pendingItems.length !== 1 ? "s" : ""}`}
+              <PackagePlus data-icon="inline-start" />
+              {isPending
+                ? "Procesando..."
+                : `Cargar ${batchItems.length > 0 ? batchItems.length : ""} item${batchItems.length !== 1 ? "s" : ""}`}
               <KbdGroup data-icon="inline-end" className="hidden md:flex">
                 <Kbd className="ml-1">Shift ⇧</Kbd>
                 <span>+</span>
@@ -270,37 +247,64 @@ export function InModal({ open, onOpenChange }: InModalProps) {
               <PackagePlus className="text-primary" />
             </AlertDialogMedia>
             <div>
-              <AlertDialogTitle>¿Confirmar carga de inventario?</AlertDialogTitle>
+              <AlertDialogTitle>¿Confirmar recepción de mercancía?</AlertDialogTitle>
               <AlertDialogDescription className="mt-1">
-                Estás a punto de cargar{" "}
+                Estás a punto de procesar{" "}
                 <strong className="text-foreground">
-                  {pendingItems.length} producto{pendingItems.length > 1 ? "s" : ""}
+                  {batchItems.length} item{batchItems.length > 1 ? "s" : ""}
                 </strong>{" "}
-                al inventario. Esta acción no se puede deshacer.
+                en el inventario. Esta acción no se puede deshacer.
               </AlertDialogDescription>
             </div>
           </AlertDialogHeader>
 
-          {/* Items summary table */}
-          <div className="custom-scrollbar max-h-48 overflow-y-auto rounded-md border text-xs">
+          {/* Summary table */}
+          <div className="custom-scrollbar max-h-52 overflow-y-auto rounded-md border text-xs">
             <table className="w-full">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground border-b">
-                  <th className="px-2.5 py-1.5 text-left font-semibold uppercase tracking-wider">Producto</th>
-                  <th className="px-2.5 py-1.5 text-right font-semibold uppercase tracking-wider">Stock</th>
-                  <th className="px-2.5 py-1.5 text-right font-semibold uppercase tracking-wider">Precio</th>
+                  <th className="px-2.5 py-1.5 text-left font-semibold tracking-wider uppercase">Tipo</th>
+                  <th className="px-2.5 py-1.5 text-left font-semibold tracking-wider uppercase">Producto</th>
+                  <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Cant.</th>
+                  <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Precio</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {pendingItems.map((item, i) => (
+                {batchItems.map((item, i) => (
                   <tr key={item._tempId} className={i % 2 === 1 ? "bg-table-stripe" : ""}>
+                    <td className="px-2.5 py-1">
+                      {item._kind === "new" ? (
+                        <Badge variant="outline" className="px-1 py-0 text-[9px]">
+                          Nuevo
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="px-1 py-0 text-[9px]">
+                          +Stock
+                        </Badge>
+                      )}
+                    </td>
                     <td className="px-2.5 py-1">
                       <span className="product-code mr-1.5">{item.code}</span>
                       <span className="text-muted-foreground">{item.description}</span>
                     </td>
-                    <td className="px-2.5 py-1 text-right tabular-nums">{item.stock}</td>
+                    <td className="px-2.5 py-1 text-right tabular-nums">
+                      {item._kind === "new" ? (
+                        item.stock
+                      ) : (
+                        <span className="inline-flex items-center gap-1">
+                          <span className="text-muted-foreground">{item.currentStock}</span>
+                          <span className="text-muted-foreground">→</span>
+                          <span className="text-foreground font-medium">{item.currentStock + item.quantity}</span>
+                          <span className="text-muted-foreground text-[10px]">(+{item.quantity})</span>
+                        </span>
+                      )}
+                    </td>
                     <td className="px-2.5 py-1 text-right font-semibold tabular-nums">
-                      {formatCurrencyUSD(item.price_usd)}
+                      {item._kind === "new" ? (
+                        formatCurrencyUSD(item.price_usd ?? 0)
+                      ) : (
+                        <span className="text-muted-foreground font-normal">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -309,9 +313,9 @@ export function InModal({ open, onOpenChange }: InModalProps) {
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={createMany.isPending}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSubmit} disabled={createMany.isPending}>
-              {createMany.isPending ? "Cargando..." : "Confirmar carga"}
+            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit} disabled={isPending}>
+              {isPending ? "Procesando..." : "Confirmar carga"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
