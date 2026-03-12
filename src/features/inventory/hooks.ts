@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/productsService";
 import type { ProductInsert, ProductUpdate } from "@/types/index";
 
-export function useProducts() {
+export function useProducts(date?: string) {
   return useQuery({
-    queryKey: ["products"],
-    queryFn: () => productsService.getAll(),
+    queryKey: ["products", { date }],
+    queryFn: () => productsService.getAll(date),
   });
 }
 

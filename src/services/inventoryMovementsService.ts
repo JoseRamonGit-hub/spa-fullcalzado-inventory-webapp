@@ -4,11 +4,14 @@ import type { InventoryMovementWithRelations, InventoryMovementInsert } from "@/
 const MOVEMENT_SELECT = "*, products(code, description), users(fullname)" as const;
 
 export const inventoryMovementsService = {
-  getAll: async (): Promise<InventoryMovementWithRelations[]> => {
-    const { data, error } = await supabase
-      .from("inventory_movements")
-      .select(MOVEMENT_SELECT)
-      .order("created_at", { ascending: false });
+  getAll: async (date?: string): Promise<InventoryMovementWithRelations[]> => {
+    let query = supabase.from("inventory_movements").select(MOVEMENT_SELECT).order("created_at", { ascending: false });
+
+    if (date) {
+      query = query.gte("created_at", `${date}T00:00:00`).lte("created_at", `${date}T23:59:59`);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
     return data;

@@ -2,8 +2,14 @@ import { supabase } from "@/lib/supabase";
 import type { Product, ProductInsert, ProductUpdate } from "@/types/index";
 
 export const productsService = {
-  getAll: async (): Promise<Product[]> => {
-    const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+  getAll: async (date?: string): Promise<Product[]> => {
+    let query = supabase.from("products").select("*").order("created_at", { ascending: false });
+
+    if (date) {
+      query = query.gte("created_at", `${date}T00:00:00`).lte("created_at", `${date}T23:59:59`);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
     return data;
