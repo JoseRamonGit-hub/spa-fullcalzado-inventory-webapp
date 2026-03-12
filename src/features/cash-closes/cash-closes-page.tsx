@@ -1,11 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCashCloses } from "./hooks";
 import { useTransactions, useTodayTransactions } from "@/features/transactions/hooks";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Button } from "@/components/ui/button";
-import { Lock, Hash, DollarSign, Banknote, ShoppingCart, CalendarDays } from "lucide-react";
+import { Lock, Hash, DollarSign, Banknote, ShoppingCart, CalendarDays, AlertTriangle } from "lucide-react";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { cn } from "@/lib/utils";
 import { cashClosesService } from "@/services/cashClosesService";
@@ -13,25 +13,22 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
-import { useState } from "react";
 import type { CashClose } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
+import { ResponsiveAlertModal } from "@/components/ResponsiveAlertModal";
 
 export function CashClosesPage() {
   const [date, setDate] = useState<string | undefined>(undefined);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { data: cashCloses, isLoading, isError } = useCashCloses(date);
-  // When a date filter is active, load transactions for that specific day to show in the summary
   const { data: filteredTxs } = useTransactions(date);
-  // Always keep today's live metrics for the "no filter" state
   const { data: todayTxs } = useTodayTransactions();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate({ from: "/cash-closes" });
 
   const isFiltered = !!date;
-
-  // Use filtered transactions for the summary when a date filter is active
   const sourceTxs = isFiltered ? filteredTxs : todayTxs;
 
   const todayMetrics = useMemo(() => {
@@ -57,7 +54,7 @@ export function CashClosesPage() {
     },
   });
 
-  const handleClose = () => {
+  const handleConfirmClose = () => {
     if (!user) return;
     const promise = closeMutation.mutateAsync(user.id);
     toast.promise(promise, {
@@ -120,9 +117,7 @@ export function CashClosesPage() {
       {topbar}
 
       <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
-        {/* Summary panel */}
         <div className="space-y-3 border-b px-3 py-3 md:px-4">
-          {/* Label with optional filter badge */}
           <div className="flex items-center gap-1.5">
             {isFiltered && (
               <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
@@ -161,10 +156,9 @@ export function CashClosesPage() {
             ))}
           </div>
 
-          {/* Only show the generate-close button when no date filter is active (today's view) */}
           {!isFiltered && (
             <Button
-              onClick={handleClose}
+              onClick={() => setConfirmOpen(true)}
               disabled={closeMutation.isPending || !user}
               className="h-8 w-full gap-2 text-xs font-semibold"
             >
@@ -174,7 +168,6 @@ export function CashClosesPage() {
           )}
         </div>
 
-        {/* Closes table — rows are clickable to navigate to /transactions?date=... */}
         <div className="flex flex-1 flex-col">
           <div className="px-3 pt-3 pb-2 md:px-4">
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
@@ -189,6 +182,74 @@ export function CashClosesPage() {
           />
         </div>
       </div>
+
+      {/* Confirmation modal */}
+      <ResponsiveAlertModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Confirmar Cierre de Caja"
+        description="Estás a punto de cerrar el día de hoy. Esta acción consolidará todas las ventas registradas."
+        confirmLabel="Sí, cerrar el día"
+        cancelLabel="Cancelar"
+        isPending={closeMutation.isPending}
+        onConfirm={handleConfirmClose}
+      >
+        {/* Rich summary preview inside the modal */}
+        <div className="space-y-3">
+          {/* Icon + date header */}
+          <div className="bg-primary/8 border-primary/20 flex items-center gap-3 rounded-lg border px-4 py-3">
+            <div className="bg-primary/15 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+              <Lock className="text-primary h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-foreground text-sm font-semibold">Cierre del {today}</p>
+              <p className="text-muted-foreground text-xs">
+                {todayMetrics.count} transacción{todayMetrics.count !== 1 ? "es" : ""} registrada{todayMetrics.count !== 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
+
+          {/* Metrics summary */}
+          <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
+            <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+              <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <DollarSign className="h-3 w-3" /> Total USD
+              </span>
+              <span className="text-foreground text-sm font-bold tabular-nums">
+                {formatCurrencyUSD(todayMetrics.totalUsd)}
+              </span>
+            </div>
+            <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+              <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <Banknote className="h-3 w-3" /> Total Bs.
+              </span>
+              <span className="text-foreground text-sm font-bold tabular-nums">
+                {formatCurrencyVES(todayMetrics.totalVes)}
+              </span>
+            </div>
+            <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+              <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <Hash className="h-3 w-3" /> Ventas
+              </span>
+              <span className="text-foreground text-sm font-bold tabular-nums">{todayMetrics.count}</span>
+            </div>
+            <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+              <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <ShoppingCart className="h-3 w-3" /> Unidades
+              </span>
+              <span className="text-foreground text-sm font-bold tabular-nums">{todayMetrics.units}</span>
+            </div>
+          </div>
+
+          {/* Warning note */}
+          <div className="bg-amber-500/8 border-amber-500/25 flex items-start gap-2.5 rounded-lg border px-3 py-2.5">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Una vez confirmado, no se puede deshacer. Asegúrate de que todas las ventas del día están registradas.
+            </p>
+          </div>
+        </div>
+      </ResponsiveAlertModal>
     </section>
   );
 }

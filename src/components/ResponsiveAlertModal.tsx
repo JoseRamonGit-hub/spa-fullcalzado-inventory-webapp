@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
 
 interface ResponsiveAlertModalProps {
   open: boolean;
@@ -30,6 +31,8 @@ interface ResponsiveAlertModalProps {
   cancelLabel?: string;
   variant?: "default" | "danger";
   isPending?: boolean;
+  /** Optional rich content rendered between header and footer */
+  children?: ReactNode;
 }
 
 export function ResponsiveAlertModal({
@@ -42,6 +45,7 @@ export function ResponsiveAlertModal({
   cancelLabel = "Cancelar",
   variant = "default",
   isPending,
+  children,
 }: ResponsiveAlertModalProps) {
   const isMobile = useIsMobile();
 
@@ -58,6 +62,7 @@ export function ResponsiveAlertModal({
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             <DrawerDescription className="text-xs">{description}</DrawerDescription>
           </DrawerHeader>
+          {children && <div className="px-4 pb-2">{children}</div>}
           <DrawerFooter className="flex-row gap-2">
             <DrawerClose asChild>
               <Button variant="outline" className="flex-1">
@@ -85,6 +90,7 @@ export function ResponsiveAlertModal({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {children && <div>{children}</div>}
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
