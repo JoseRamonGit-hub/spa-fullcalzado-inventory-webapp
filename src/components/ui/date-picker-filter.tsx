@@ -58,9 +58,7 @@ export function DatePickerFilter({
     onChange(undefined);
   };
 
-  const displayLabel = selected
-    ? format(selected, "d MMM, yyyy", { locale: es })
-    : placeholder;
+  const displayLabel = selected ? format(selected, "d MMM, yyyy", { locale: es }) : placeholder;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -69,36 +67,25 @@ export function DatePickerFilter({
           variant="outline"
           className={cn(
             "bg-card border-border hover:bg-card/80 h-8 min-w-0 gap-1.5 px-2.5 text-xs font-normal transition-colors",
-            value
-              ? "border-primary/40 text-foreground"
-              : "text-muted-foreground",
+            value ? "border-primary/40 text-foreground" : "text-muted-foreground",
             className,
           )}
         >
-          <CalendarDays
-            className={cn(
-              "h-3.5 w-3.5 shrink-0",
-              value ? "text-primary" : "text-muted-foreground",
-            )}
-          />
+          <CalendarDays className={cn("h-3.5 w-3.5 shrink-0", value ? "text-primary" : "text-muted-foreground")} />
           <span className="truncate">{displayLabel}</span>
           {value && (
             <span
               role="button"
               aria-label="Limpiar filtro de fecha"
               onClick={handleReset}
-              className="text-muted-foreground hover:text-foreground hover:bg-accent ml-0.5 rounded-sm p-0.5 transition-colors cursor-pointer"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent ml-0.5 cursor-pointer rounded-sm p-0.5 transition-colors"
             >
               <X className="h-3 w-3" />
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="bg-card w-auto p-0 shadow-lg"
-        align="end"
-        sideOffset={6}
-      >
+      <PopoverContent className="bg-card w-auto p-0 shadow-lg" align="end" sideOffset={6}>
         <div className="flex flex-col">
           <Calendar
             mode="single"
@@ -108,6 +95,7 @@ export function DatePickerFilter({
             toDate={new Date()}
             initialFocus
             className="rounded-t-md"
+            disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
             classNames={{
               root: "w-fit",
             }}
