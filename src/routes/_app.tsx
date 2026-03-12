@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui/button";
 import { PackagePlus, ShoppingCart, Moon, Sun } from "lucide-react";
 import { InModal } from "@/components/modals/in-modal";
-import { VentaModal } from "@/components/modals/venta-modal";
+import { OutModal } from "@/components/modals/out-modal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
@@ -121,7 +121,7 @@ function AppLayout() {
       <BottomBar />
 
       <InModal open={ingresoOpen} onOpenChange={setIngresoOpen} />
-      <VentaModal open={ventaOpen} onOpenChange={setVentaOpen} />
+      <OutModal open={ventaOpen} onOpenChange={setVentaOpen} />
     </SidebarProvider>
   );
 }

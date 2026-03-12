@@ -28,7 +28,7 @@ export function ResponsiveModal({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className={drawerClassName}>
+        <DrawerContent className={drawerClassName} onInteractOutside={(e) => e.preventDefault()}>
           <DrawerHeader className="border-b">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}

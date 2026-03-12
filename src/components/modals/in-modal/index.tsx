@@ -14,8 +14,10 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { formatCurrencyUSD } from "@/utils/formatters";
 import { PackagePlus, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -264,15 +266,48 @@ export function InModal({ open, onOpenChange }: InModalProps) {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar carga de inventario</AlertDialogTitle>
-            <AlertDialogDescription>
-              Estás a punto de cargar{" "}
-              <strong className="text-foreground">
-                {pendingItems.length} producto{pendingItems.length > 1 ? "s" : ""}
-              </strong>{" "}
-              al inventario. Esta acción no se puede deshacer.
-            </AlertDialogDescription>
+            <AlertDialogMedia>
+              <PackagePlus className="text-primary" />
+            </AlertDialogMedia>
+            <div>
+              <AlertDialogTitle>¿Confirmar carga de inventario?</AlertDialogTitle>
+              <AlertDialogDescription className="mt-1">
+                Estás a punto de cargar{" "}
+                <strong className="text-foreground">
+                  {pendingItems.length} producto{pendingItems.length > 1 ? "s" : ""}
+                </strong>{" "}
+                al inventario. Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </div>
           </AlertDialogHeader>
+
+          {/* Items summary table */}
+          <div className="custom-scrollbar max-h-48 overflow-y-auto rounded-md border text-xs">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-muted/50 text-muted-foreground border-b">
+                  <th className="px-2.5 py-1.5 text-left font-semibold uppercase tracking-wider">Producto</th>
+                  <th className="px-2.5 py-1.5 text-right font-semibold uppercase tracking-wider">Stock</th>
+                  <th className="px-2.5 py-1.5 text-right font-semibold uppercase tracking-wider">Precio</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {pendingItems.map((item, i) => (
+                  <tr key={item._tempId} className={i % 2 === 1 ? "bg-table-stripe" : ""}>
+                    <td className="px-2.5 py-1">
+                      <span className="product-code mr-1.5">{item.code}</span>
+                      <span className="text-muted-foreground">{item.description}</span>
+                    </td>
+                    <td className="px-2.5 py-1 text-right tabular-nums">{item.stock}</td>
+                    <td className="px-2.5 py-1 text-right font-semibold tabular-nums">
+                      {formatCurrencyUSD(item.price_usd)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel disabled={createMany.isPending}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmSubmit} disabled={createMany.isPending}>

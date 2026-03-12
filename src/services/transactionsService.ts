@@ -37,4 +37,11 @@ export const transactionsService = {
     if (error) throw new Error(error.message);
     return data;
   },
+
+  createMany: async (payload: TransactionInsert[]): Promise<TransactionWithRelations[]> => {
+    const { data, error } = await supabase.from("transactions").insert(payload).select(TRANSACTION_SELECT);
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
 };
