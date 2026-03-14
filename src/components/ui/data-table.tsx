@@ -18,6 +18,7 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   meta?: Record<string, unknown>;
   isLoading?: boolean;
+  getRowId?: (originalRow: TData, index: number) => string;
 }
 
 export function DataTable<TData, TValue>({
@@ -27,6 +28,7 @@ export function DataTable<TData, TValue>({
   onRowClick,
   meta,
   isLoading,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -51,20 +53,20 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
     meta,
+    getRowId,
   });
 
   return (
-    <div className="custom-scrollbar h-full flex-1 overflow-auto">
-      <div className="max-h-64 min-h-64 w-full">
-        <Table>
-          <TableHeader className="px-10!">
+    <div className="custom-scrollbar h-full flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible">
+      <Table>
+        <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
                       key={header.id}
-                      className="text-muted-foreground h-7 px-2.5 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
+                      className="text-muted-foreground h-7 px-4 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
                     >
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
@@ -73,7 +75,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="">
+          <TableBody>
             {isLoading ? (
               <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
             ) : table.getRowModel().rows?.length ? (
@@ -85,10 +87,7 @@ export function DataTable<TData, TValue>({
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className="h-8 overflow-hidden px-2.5 py-0.5 text-[13px] whitespace-nowrap"
-                    >
+                    <TableCell key={cell.id} className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -96,7 +95,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={columns.length} className="h-56 text-center">
+                <TableCell colSpan={table.getVisibleFlatColumns().length} className="h-56 text-center">
                   <div className="text-muted-foreground flex flex-col items-center gap-2">
                     <PackageOpen className="h-8 w-8 opacity-40" />
                     <span className="text-sm">{emptyMessage}</span>
@@ -105,8 +104,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             )}
           </TableBody>
-        </Table>
-      </div>
+      </Table>
     </div>
   );
 }

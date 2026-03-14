@@ -13,7 +13,7 @@
     "test:run": "vitest run",
     "generate-routes": "tsr generate",
     "watch-routes": "tsr watch",
-    "supabase:env": "supabase status -o env | grep -E 'API_URL|PUBLISHABLE_KEY' | sed 's/API_URL/VITE_SUPABASE_URL/' | sed 's/UBLISHABLE_KEY/VITE_SUPABASE_ANON_KEY/' >.env.development",
+    "supabase:env": "npx supabase status -o env | grep -E 'API_URL|PUBLISHABLE_KEY' | sed 's/API_URL/VITE_SUPABASE_URL/' | sed 's/UBLISHABLE_KEY/VITE_SUPABASE_ANON_KEY/' >.env.development",
     "supabase:start": "supabase start"
   },
   "dependencies": {
