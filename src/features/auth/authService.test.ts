@@ -38,6 +38,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { authService } from "@/services/authService";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@/types";
+import type { User as SupabaseUser, Session, AuthError } from "@supabase/supabase-js";
 
 // ── Castear los mocks para que TypeScript acepte .mockX() ────
 //
@@ -77,7 +78,7 @@ function mockProfileQuery(profile: User | null) {
   const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
   const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
 
-  mockFrom.mockReturnValue({ select: mockSelect } as any);
+  mockFrom.mockReturnValue({ select: mockSelect } as unknown as ReturnType<typeof supabase.from>);
 }
 
 describe("Auth Service", () => {
@@ -97,8 +98,8 @@ describe("Auth Service", () => {
       // ARRANGE: configuramos el mock de Supabase para responder "éxito"
       mockSignIn.mockResolvedValueOnce({
         data: {
-          user: { id: "user-123" } as any,
-          session: {} as any,
+          user: { id: "user-123" } as unknown as SupabaseUser,
+          session: {} as unknown as Session,
         },
         error: null,
       });
@@ -127,7 +128,7 @@ describe("Auth Service", () => {
       // ARRANGE: Supabase responde con error
       mockSignIn.mockResolvedValueOnce({
         data: { user: null, session: null },
-        error: { message: "Invalid login credentials" } as any,
+        error: { message: "Invalid login credentials" } as unknown as AuthError,
       });
 
       // ACT
@@ -144,8 +145,8 @@ describe("Auth Service", () => {
       // ARRANGE: Supabase auth OK, pero NO hay perfil en la tabla `users`
       mockSignIn.mockResolvedValueOnce({
         data: {
-          user: { id: "user-999" } as any,
-          session: {} as any,
+          user: { id: "user-999" } as unknown as SupabaseUser,
+          session: {} as unknown as Session,
         },
         error: null,
       });
@@ -199,11 +200,11 @@ describe("Auth Service", () => {
     it("retorna el profile cuando hay sesión válida", async () => {
       // ARRANGE
       mockGetSession.mockResolvedValueOnce({
-        data: { session: {} as any },
+        data: { session: {} as unknown as Session },
         error: null,
       });
       mockGetUser.mockResolvedValueOnce({
-        data: { user: { id: "user-123" } as any },
+        data: { user: { id: "user-123" } as unknown as SupabaseUser },
         error: null,
       });
       mockProfileQuery(fakeUser);
@@ -232,13 +233,13 @@ describe("Auth Service", () => {
     it("retorna null cuando hay sesión pero no está autenticado en SSR", async () => {
       // Pasa el primer check de sesión
       mockGetSession.mockResolvedValueOnce({
-        data: { session: {} as any },
+        data: { session: {} as unknown as Session },
         error: null,
       });
       // Falla el segundo de validación real
       mockGetUser.mockResolvedValueOnce({
         data: { user: null },
-        error: { message: "Not authenticated" } as any,
+        error: { message: "Not authenticated" } as unknown as AuthError,
       });
 
       const profile = await authService.getAuthenticatedProfile();
@@ -248,13 +249,13 @@ describe("Auth Service", () => {
 
     it("retorna null cuando el JWT expiró durante la validación", async () => {
       mockGetSession.mockResolvedValueOnce({
-        data: { session: {} as any },
+        data: { session: {} as unknown as Session },
         error: null,
       });
 
       mockGetUser.mockResolvedValueOnce({
         data: { user: null },
-        error: { message: "JWT expired" } as any,
+        error: { message: "JWT expired" } as unknown as AuthError,
       });
 
       const profile = await authService.getAuthenticatedProfile();
