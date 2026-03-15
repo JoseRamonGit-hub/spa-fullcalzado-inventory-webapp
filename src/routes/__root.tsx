@@ -31,31 +31,26 @@ export const Route = createRootRoute({
    * worst case, the user is redirected to /login.
    */
   beforeLoad: async () => {
-    const { isInitialized, setAuth, clearAuth } = useAuthStore.getState();
+    const { setAuth, clearAuth } = useAuthStore.getState();
 
-    const validateSession = async () => {
-      try {
-        const profile = await authService.getAuthenticatedProfile();
-        if (profile) {
-          setAuth(profile);
-        } else {
-          clearAuth();
-        }
-      } catch (error) {
-        // Network error (handled by authService throwing) => DO NOT clearAuth.
-        // The user keeps their persisted session offline.
-        console.warn("Autenticación en segundo plano falló (offline)", error);
+    try {
+      const profile = await authService.getAuthenticatedProfile();
+      if (profile) {
+        setAuth(profile);
+      } else {
+        clearAuth();
       }
-    };
-
-    if (!isInitialized) {
-      // First load ever (no local storage state yet)
-      await validateSession();
-    } else {
-      // Already hydrated from localStorage persist.
-      // Do a background sync so rendering is not blocked and network issues don't log them out.
-      validateSession();
+    } catch (error) {
+      // Network error (handled by authService throwing) => DO NOT clearAuth.
+      // The user keeps their persisted session offline.
+      console.warn("Autenticación en segundo plano falló (offline)", error);
     }
+
+    return {
+      auth: {
+        isAuthenticated: useAuthStore.getState().isAuthenticated,
+      },
+    };
   },
   component: RootComponent,
 });

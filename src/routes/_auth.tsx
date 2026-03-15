@@ -1,18 +1,15 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/features/auth/store";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { requireGuest } from "@/features/auth/routeGuards";
 
 /**
  * Public layout route for unauthenticated pages (e.g. /login).
  *
- * Root route already validated the session via getAuthenticatedProfile().
- * This guard is a synchronous store check — no extra network call.
+ * Root route already validated the session via getAuthenticatedProfile()
+ * and passes auth state through route context.
  */
 export const Route = createFileRoute("/_auth")({
-  beforeLoad: () => {
-    const { isAuthenticated } = useAuthStore.getState();
-    if (isAuthenticated) {
-      throw redirect({ to: "/inventory" });
-    }
+  beforeLoad: ({ context }) => {
+    requireGuest(context);
   },
   component: AuthLayout,
 });

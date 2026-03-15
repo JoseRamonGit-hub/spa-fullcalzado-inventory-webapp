@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppSidebar } from "../components/app-sidebar";
 import { BottomBar } from "../components/bottom-bar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -12,15 +12,11 @@ import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/features/auth/store";
 import { formatCurrencyVES } from "@/utils/formatters";
+import { requireAuthenticated } from "@/features/auth/routeGuards";
 
 export const Route = createFileRoute("/_app")({
-  beforeLoad: () => {
-    // Root route already ran getAuthenticatedProfile() and hydrated the store.
-    // This guard is a lightweight synchronous check — no network call needed.
-    const { isAuthenticated } = useAuthStore.getState();
-    if (!isAuthenticated) {
-      throw redirect({ to: "/login" });
-    }
+  beforeLoad: ({ context }) => {
+    requireAuthenticated(context);
   },
   component: AppLayout,
 });
