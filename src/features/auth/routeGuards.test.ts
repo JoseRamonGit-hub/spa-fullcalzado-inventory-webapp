@@ -31,4 +31,8 @@ describe("routeGuards", () => {
     ).toThrow();
     expect(mockRedirect).toHaveBeenCalledWith({ to: "/inventory" });
   });
+
+  it("requireGuest allows guests when auth context is missing", () => {
+    expect(() => requireGuest({})).not.toThrow();
+  });
 });
