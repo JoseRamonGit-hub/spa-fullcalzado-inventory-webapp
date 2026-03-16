@@ -10,7 +10,7 @@ import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { formatCurrencyVES } from "@/utils/formatters";
 
 export const Route = createFileRoute("/_app")({

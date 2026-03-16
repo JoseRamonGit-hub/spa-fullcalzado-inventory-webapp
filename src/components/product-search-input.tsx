@@ -1,5 +1,5 @@
 import { useState, useMemo, useTransition, useCallback, useRef, useEffect } from "react";
-import { useProducts } from "@/features/inventory/hooks";
+import { useProducts } from "@/features/inventory/hooks/useProducts";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { formatCurrencyUSD } from "@/utils/formatters";
@@ -66,12 +66,12 @@ export function ProductSearchInput({
     );
   }, [products, deferredSearch, requireStock]);
 
-  const selectedProduct = useMemo(() => products?.find((p) => p.id === value) ?? null, [products, value]);
+  const selectedProduct = useMemo(() => products?.find((p: any) => p.id === value) ?? null, [products, value]);
 
   // ── Select ─────────────────────────────────────────────────
   const handleSelect = useCallback(
     (productId: string) => {
-      const product = products?.find((p) => p.id === productId);
+      const product = products?.find((p: any) => p.id === productId);
       if (!product) return;
       onChange({
         id: product.id,
@@ -222,7 +222,7 @@ export function ProductSearchInput({
                       : "Escribe para buscar..."}
                 </CommandEmpty>
                 <CommandGroup>
-                  {filtered.slice(0, 20).map((p) => (
+                  {filtered.slice(0, 20).map((p: any) => (
                     <CommandItem
                       key={p.id}
                       value={p.id}

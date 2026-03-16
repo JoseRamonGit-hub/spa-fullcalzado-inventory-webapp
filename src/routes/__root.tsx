@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { authService } from "@/services/authService";
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 const TanStackRouterDevtools = import.meta.env.PROD
   ? () => null

@@ -1,5 +1,5 @@
 import { ResponsiveAlertModal } from "@/components/ResponsiveAlertModal";
-import { useDeleteProduct } from "@/features/inventory/hooks";
+import { useDeleteProduct } from "@/features/inventory/hooks/useProducts";
 import { toast } from "sonner";
 import type { Product } from "@/types";
 

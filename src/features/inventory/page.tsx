@@ -1,5 +1,5 @@
 import { useState, useTransition, useCallback, useMemo } from "react";
-import { useProducts } from "./hooks";
+import { useProducts } from "./hooks/useProducts";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";

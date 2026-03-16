@@ -1,4 +1,4 @@
-import { TransactionsPage } from "@/features/transactions/transactions-page";
+import { TransactionsPage } from "@/features/transactions/page";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 

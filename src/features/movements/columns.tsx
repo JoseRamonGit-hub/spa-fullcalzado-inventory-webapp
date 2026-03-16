@@ -11,11 +11,11 @@ export const columns = [
     cell: ({ getValue }) => {
       const type = getValue();
       return (
-        <div className="text-center">
+        <span className="flex justify-center">
           <Badge variant={type === "entry" ? "success" : "destructive"}>
             {type === "entry" ? "Entrada" : "Salida"}
           </Badge>
-        </div>
+        </span>
       );
     },
   }),
@@ -41,7 +41,7 @@ export const columns = [
   }),
   columHelper.accessor("quantity", {
     header: () => <div className="text-right">Cant.</div>,
-    cell: ({ getValue }) => <div className="text-right font-medium tabular-nums">{getValue()}</div>,
+    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{getValue()}</span>,
   }),
   columHelper.accessor("users.fullname", {
     header: "Usuario",

@@ -3,9 +3,9 @@ import { ResponsiveModal } from "@/components/ResponsiveModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Search, ArrowLeft } from "lucide-react";
-import { useProducts } from "@/features/inventory/hooks";
+import { useProducts } from "@/features/inventory/hooks/useProducts";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { transactionsService } from "@/services/transactionsService";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -41,7 +41,7 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
   const filtered = useMemo(() => {
     if (!products) return [];
     return products.filter(
-      (p) =>
+      (p: any) =>
         p.active &&
         p.stock > 0 &&
         (p.code.toLowerCase().includes(filteredSearch.toLowerCase()) ||
@@ -49,7 +49,7 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
     );
   }, [products, filteredSearch]);
 
-  const selectedProduct = products?.find((p) => p.id === productId);
+  const selectedProduct = products?.find((p: any) => p.id === productId);
   const rate = exchangeRate?.rate || 0;
   const priceUsd = selectedProduct?.price_usd || 0;
   const priceVes = priceUsd * rate;
@@ -121,11 +121,11 @@ export function VentaModal({ open, onOpenChange }: VentaModalProps) {
                 autoFocus
               />
             </div>
-            <div className="custom-scrollbar max-h-[132px] divide-y overflow-y-auto rounded-md border">
+            <div className="custom-scrollbar max-h-33 divide-y overflow-y-auto rounded-md border">
               {filtered.length === 0 && (
                 <div className="text-muted-foreground p-2 text-center text-xs">No hay productos con stock</div>
               )}
-              {filtered.slice(0, 20).map((p) => (
+              {filtered.slice(0, 20).map((p: any) => (
                 <button
                   key={p.id}
                   type="button"

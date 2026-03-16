@@ -1,6 +1,6 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { useAuthStore } from "@/features/auth/store";
-import { useLogout } from "@/features/auth/login/hooks";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useTheme } from "next-themes";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Settings, ReceiptText, Moon, Sun, LogOut } from "lucide-react";

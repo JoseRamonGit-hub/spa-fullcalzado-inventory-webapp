@@ -2,16 +2,25 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/productsService";
 import type { ProductInsert, ProductUpdate } from "@/types/index";
 
+// Query Keys factory
+export const productKeys = {
+  all: ["products"] as const,
+  lists: () => [...productKeys.all, "list"] as const,
+  list: (date?: string) => [...productKeys.lists(), { date }] as const,
+  details: () => [...productKeys.all, "detail"] as const,
+  detail: (id: string) => [...productKeys.details(), id] as const,
+};
+
 export function useProducts(date?: string) {
   return useQuery({
-    queryKey: ["products", { date }],
+    queryKey: productKeys.list(date),
     queryFn: () => productsService.getAll(date),
   });
 }
 
 export function useProduct(id: string) {
   return useQuery({
-    queryKey: ["products", id],
+    queryKey: productKeys.detail(id),
     queryFn: () => productsService.getById(id),
     enabled: !!id,
   });
@@ -22,7 +31,8 @@ export function useCreateProduct() {
   return useMutation({
     mutationFn: (payload: ProductInsert) => productsService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      // Invalidate all product lists
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
     },
   });
 }
@@ -31,8 +41,10 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: ProductUpdate }) => productsService.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    onSuccess: (_, variables) => {
+      // Invalidate specific detail and all lists to keep them in sync
+      queryClient.invalidateQueries({ queryKey: productKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
     },
   });
 }
@@ -42,7 +54,7 @@ export function useCreateManyProducts() {
   return useMutation({
     mutationFn: (payload: ProductInsert[]) => productsService.createMany(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
     },
   });
 }
@@ -51,8 +63,10 @@ export function useDeleteProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => productsService.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    onSuccess: (_, id) => {
+      // Invalidate the deleted item detail and the lists
+      queryClient.invalidateQueries({ queryKey: productKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
     },
   });
 }

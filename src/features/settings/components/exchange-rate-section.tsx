@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, History, TrendingUp } from "lucide-react";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useExchangeRateHistory, useUpdateExchangeRate } from "@/features/settings/hooks";
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
 import { formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 

@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
-import { useAuthStore } from "@/features/auth/store";
-import { useCreateManyTransactions } from "@/features/transactions/hooks";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useCreateManyTransactions } from "@/features/transactions/hooks/useTransactions";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingSaleColumns, type PendingSale } from "./columns";
 import { ProductSearchInput, type ProductSearchResult } from "@/components/product-search-input";

@@ -25,18 +25,18 @@ export const columns = [
   }),
   columnHelper.accessor("quantity", {
     header: () => <div className="text-right">Cant.</div>,
-    cell: ({ getValue }) => <div className="text-right font-medium tabular-nums">{getValue()}</div>,
+    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{getValue()}</span>,
   }),
   columnHelper.accessor("total_usd", {
     header: () => <div className="text-right">USD</div>,
     cell: ({ getValue }) => (
-      <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(getValue() ?? 0)}</div>
+      <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue() ?? 0)}</span>
     ),
   }),
   columnHelper.accessor("total_ves", {
     header: () => <div className="text-right">VES</div>,
     cell: ({ getValue }) => (
-      <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(getValue() ?? 0)}</div>
+      <span className="text-muted-foreground block text-right tabular-nums">{formatCurrencyVES(getValue() ?? 0)}</span>
     ),
   }),
   columnHelper.accessor("exchange_rate", {

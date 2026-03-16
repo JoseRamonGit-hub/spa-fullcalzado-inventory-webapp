@@ -11,14 +11,14 @@ interface TopbarProps {
 
 export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarProps) {
   return (
-    <div className="topbar-height bg-background flex items-center justify-between gap-2 border-b px-3 md:px-4">
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+    <header className="topbar-height bg-background flex items-center justify-between gap-2 border-b px-3 md:px-4">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
         <div className="flex shrink-0 items-center gap-1.5">
-          <span className="bg-primary h-1.5 w-1.5 rounded-full" />
-          <h2 className="text-foreground text-sm font-semibold whitespace-nowrap">Inventario</h2>
+          <span className="bg-primary h-1.5 w-1.5 rounded-full" aria-hidden="true" />
+          <h1 className="text-foreground text-sm font-semibold whitespace-nowrap">Inventario</h1>
         </div>
-        <div className="bg-card rounded-md">
-          <InputGroup className="h-8 flex-1 md:max-w-xs">
+        <div className="bg-card flex-1 md:max-w-xs rounded-md">
+          <InputGroup className="h-8">
             <InputGroupInput
               placeholder="Buscar código o descripción..."
               value={search}
@@ -26,25 +26,15 @@ export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarPro
               className="border-0 text-sm md:text-xs"
             />
             <InputGroupAddon align="inline-end">
-              <Search className="h-4 w-4 md:h-3.5 md:w-3.5" />
+              <Search className="h-4 w-4 md:h-3.5 md:w-3.5" aria-hidden="true" />
             </InputGroupAddon>
           </InputGroup>
         </div>
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
-        {/* <NativeSelect
-          className="h-8 min-w-28 text-sm md:text-xs"
-          value={stockFilter}
-          onChange={(e) => onStockFilterChange?.(e.target.value)}
-        >
-          <NativeSelectOption value="all">Stock: Todos</NativeSelectOption>
-          <NativeSelectOption value="in-stock">Con stock</NativeSelectOption>
-          <NativeSelectOption value="no-stock">Sin stock</NativeSelectOption>
-        </NativeSelect> */}
-
         <DatePickerFilter value={date} onChange={(v) => onDateChange?.(v)} placeholder="Filtrar por día" />
       </div>
-    </div>
+    </header>
   );
 }
