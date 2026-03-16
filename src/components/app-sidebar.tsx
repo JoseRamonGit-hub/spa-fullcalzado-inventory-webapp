@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/sidebar";
 import { ReceiptText, ArrowLeftRight, LogOut, Package, ShoppingBag, Settings, Tags } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useLogout } from "@/features/auth/login/hooks";
-import { useAuthStore } from "@/features/auth/store";
+import { useLogout } from "@/features/auth/login/hooks/useLogout";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 const navItems = [
   {

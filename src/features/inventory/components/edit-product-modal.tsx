@@ -3,7 +3,7 @@ import { ResponsiveModal } from "@/components/ResponsiveModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
-import { useUpdateProduct } from "@/features/inventory/hooks";
+import { useUpdateProduct } from "@/features/inventory/hooks/useProducts";
 import { toast } from "sonner";
 import type { Product } from "@/types";
 
@@ -55,7 +55,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
 
   return (
     <ResponsiveModal open={open} onOpenChange={handleOpenChange} title="Editar Producto">
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="space-y-1.5">
           <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Código</label>
           <Input value={code} onChange={(e) => setCode(e.target.value)} className="h-9 text-sm" required />
@@ -69,7 +69,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             required
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <fieldset className="m-0 grid grid-cols-2 gap-3 border-0 p-0">
           <div className="space-y-1.5">
             <label className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Precio USD</label>
             <Input
@@ -94,8 +94,8 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
               required
             />
           </div>
-        </div>
-        <Button type="submit" className="h-9 w-full gap-2" disabled={updateProduct.isPending}>
+        </fieldset>
+        <Button type="submit" className="mt-2 h-9 w-full gap-2" disabled={updateProduct.isPending}>
           <Pencil className="h-4 w-4" />
           {updateProduct.isPending ? "Guardando..." : "Guardar Cambios"}
         </Button>

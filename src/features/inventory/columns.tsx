@@ -33,16 +33,18 @@ export const columns = [
   columHelper.accessor("stock", {
     header: () => <div className="text-right">Stock</div>,
     cell: ({ getValue }) => (
-      <div className="text-right font-medium tabular-nums">
-        <span className={getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground"}>
-          {getValue()}
-        </span>
-      </div>
+      <span
+        className={`block text-right font-medium tabular-nums ${
+          getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground"
+        }`}
+      >
+        {getValue()}
+      </span>
     ),
   }),
   columHelper.accessor("price_usd", {
     header: () => <div className="text-right">USD</div>,
-    cell: ({ getValue }) => <div className="text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</div>,
+    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>,
   }),
   columHelper.display({
     id: "price_ves",

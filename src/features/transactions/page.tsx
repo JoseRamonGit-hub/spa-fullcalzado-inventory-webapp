@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useTransactions, useTodayTransactions } from "./hooks";
+import { useTransactions, useTodayTransactions } from "./hooks/useTransactions";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";

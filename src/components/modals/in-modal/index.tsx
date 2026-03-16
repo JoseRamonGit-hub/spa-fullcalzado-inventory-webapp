@@ -1,9 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useCreateManyProducts } from "@/features/inventory/hooks";
-import { useAuthStore } from "@/features/auth/store";
-import { inventoryMovementsService } from "@/services/inventoryMovementsService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCreateManyProducts } from "@/features/inventory/hooks/useProducts";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useCreateManyMovements } from "@/features/movements/hooks/useMovements";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingItemColumns, type BatchItem, type NewBatchItem, type ExistingBatchItem } from "./columns";
 import { useBatch } from "./use-batch";
@@ -41,18 +40,9 @@ export function InModal({ open, onOpenChange }: InModalProps) {
 
   const { batchItems, addItem, removeItem, clearBatch } = useBatch();
   const user = useAuthStore((s) => s.user);
-  const queryClient = useQueryClient();
   const createMany = useCreateManyProducts();
 
-  // Batch mutation for existing-product stock increases
-  const createManyMovements = useMutation({
-    mutationFn: (payloads: Parameters<typeof inventoryMovementsService.createMany>[0]) =>
-      inventoryMovementsService.createMany(payloads),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["movements"] });
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
+  const createManyMovements = useCreateManyMovements();
 
   // ── Handlers ───────────────────────────────────────────────
   const handleAddToBatch = useCallback(

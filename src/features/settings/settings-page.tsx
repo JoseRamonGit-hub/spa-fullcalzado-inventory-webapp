@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { ExchangeRateSection } from "./components/exchange-rate-section";
 import { Settings, User, Globe } from "lucide-react";
 

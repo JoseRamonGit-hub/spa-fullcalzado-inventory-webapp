@@ -31,7 +31,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { useAuthStore } from "./store";
+import { useAuthStore } from "../store/useAuthStore";
 import type { User } from "@/types";
 
 // ── Datos de prueba ──────────────────────────────────────────

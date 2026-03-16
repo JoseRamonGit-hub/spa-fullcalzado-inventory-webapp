@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { supabase } from "@/lib/supabase";
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { queryClient } from "@/lib/queryClient";
 
 // Create router
@@ -40,7 +40,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 
   if (event === "TOKEN_REFRESHED" && session?.user) {
-    // Avoid Supabase client deadlocks/token freezes: 
+    // Avoid Supabase client deadlocks/token freezes:
     // Do not await db calls inside the onAuthStateChange callback.
     // Dispatch them asynchronously outside this event loop tick.
     setTimeout(async () => {
