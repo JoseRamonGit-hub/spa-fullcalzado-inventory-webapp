@@ -5,14 +5,21 @@ import { formatDateForBackend } from "@/utils/formatters";
 const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as const;
 
 export const transactionsService = {
-  // 1. Histórico General (Idealmente después le agregaremos paginación o un límite)
-  getAll: async (): Promise<TransactionWithRelations[]> => {
-    const { data, error } = await supabase
+  // Historical — filtered by exact date when provided, otherwise last 500 rows
+  getAll: async (date?: string): Promise<TransactionWithRelations[]> => {
+    let query = supabase
       .from("transactions")
       .select(TRANSACTION_SELECT)
       .order("date", { ascending: false })
-      .order("time", { ascending: false })
-      .limit(500);
+      .order("time", { ascending: false });
+
+    if (date) {
+      query = query.eq("date", date);
+    } else {
+      query = query.limit(500);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
     return data;

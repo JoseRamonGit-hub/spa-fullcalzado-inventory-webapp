@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { transactionsService } from "@/services/transactionsService";
 import type { TransactionInsert } from "@/types/index";
 
-export function useTransactions() {
+export function useTransactions(date?: string) {
   return useQuery({
-    queryKey: ["transactions"],
-    queryFn: () => transactionsService.getAll(),
+    queryKey: ["transactions", { date }],
+    queryFn: () => transactionsService.getAll(date),
   });
 }
 

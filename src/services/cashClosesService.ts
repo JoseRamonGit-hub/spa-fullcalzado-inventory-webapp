@@ -2,8 +2,12 @@ import { supabase } from "@/lib/supabase";
 import type { CashClose } from "@/types/index";
 
 export const cashClosesService = {
-  getAll: async (): Promise<CashClose[]> => {
-    const { data, error } = await supabase.from("cash_closes").select("*").order("date", { ascending: false });
+  getAll: async (date?: string): Promise<CashClose[]> => {
+    let query = supabase.from("cash_closes").select("*").order("date", { ascending: false });
+
+    if (date) query = query.eq("date", date);
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
     return data;

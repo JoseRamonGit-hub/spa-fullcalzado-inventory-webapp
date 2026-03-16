@@ -12,14 +12,15 @@ import { Pencil, Trash2 } from "lucide-react";
 import type { Product } from "@/types";
 
 export function InventoryPage() {
-  const { data: products, isLoading, isError } = useProducts();
-  const isMobile = useIsMobile();
-
   // Search + filtering with useTransition for non-blocking UI
   const [search, setSearch] = useState("");
   const [filteredSearch, setFilteredSearch] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
+  const [date, setDate] = useState<string | undefined>(undefined);
   const [, startTransition] = useTransition();
+
+  const { data: products, isLoading, isError } = useProducts(date);
+  const isMobile = useIsMobile();
 
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -75,15 +76,19 @@ export function InventoryPage() {
     [],
   );
 
+  const topbarProps = {
+    search,
+    onSearchChange: handleSearchChange,
+    stockFilter,
+    onStockFilterChange: setStockFilter,
+    date,
+    onDateChange: setDate,
+  };
+
   if (isLoading) {
     return (
       <section className="flex flex-1 flex-col overflow-hidden">
-        <Topbar
-          search={search}
-          onSearchChange={handleSearchChange}
-          stockFilter={stockFilter}
-          onStockFilterChange={setStockFilter}
-        />
+        <Topbar {...topbarProps} />
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
       </section>
     );
@@ -92,12 +97,7 @@ export function InventoryPage() {
   if (isError) {
     return (
       <section className="flex flex-1 flex-col">
-        <Topbar
-          search={search}
-          onSearchChange={handleSearchChange}
-          stockFilter={stockFilter}
-          onStockFilterChange={setStockFilter}
-        />
+        <Topbar {...topbarProps} />
         <div className="flex flex-1 items-center justify-center">
           <p className="text-destructive text-sm">Error al cargar el inventario.</p>
         </div>
@@ -107,12 +107,7 @@ export function InventoryPage() {
 
   return (
     <section className="flex flex-1 flex-col overflow-hidden">
-      <Topbar
-        search={search}
-        onSearchChange={handleSearchChange}
-        stockFilter={stockFilter}
-        onStockFilterChange={setStockFilter}
-      />
+      <Topbar {...topbarProps} />
 
       <DataTable
         columns={columns}

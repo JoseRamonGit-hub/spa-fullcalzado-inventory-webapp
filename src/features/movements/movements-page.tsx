@@ -2,14 +2,18 @@ import { useMovements } from "./hooks";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Topbar } from "./components/topbar";
+import { useState } from "react";
 
 export function MovementsPage() {
-  const { data: movements, isLoading, isError } = useMovements();
+  const [date, setDate] = useState<string | undefined>(undefined);
+  const { data: movements, isLoading, isError } = useMovements(date);
+
+  const topbar = <Topbar date={date} onDateChange={setDate} />;
 
   if (isLoading) {
     return (
       <section className="flex flex-1 flex-col overflow-hidden">
-        <Topbar />
+        {topbar}
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
       </section>
     );
@@ -18,7 +22,7 @@ export function MovementsPage() {
   if (isError) {
     return (
       <section className="flex flex-1 flex-col">
-        <Topbar />
+        {topbar}
         <div className="flex flex-1 items-center justify-center">
           <p className="text-destructive text-sm">Error al cargar los movimientos.</p>
         </div>
@@ -28,7 +32,7 @@ export function MovementsPage() {
 
   return (
     <section className="flex flex-1 flex-col overflow-hidden">
-      <Topbar />
+      {topbar}
       <DataTable columns={columns} data={movements || []} emptyMessage="No hay movimientos registrados." />
     </section>
   );
