@@ -21,9 +21,9 @@ export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarPro
           <InputGroup className="h-8 flex-1 md:max-w-xs">
             <InputGroupInput
               placeholder="Buscar código o descripción..."
-              className="text-sm md:text-xs"
               value={search}
               onChange={(e) => onSearchChange?.(e.target.value)}
+              className="border-0 text-sm md:text-xs"
             />
             <InputGroupAddon align="inline-end">
               <Search className="h-4 w-4 md:h-3.5 md:w-3.5" />

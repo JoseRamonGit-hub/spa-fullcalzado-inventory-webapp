@@ -28,7 +28,7 @@ declare module "@tanstack/react-router" {
  * This listener only handles TOKEN_REFRESHED to keep the user profile
  * in sync when Supabase silently refreshes the JWT.
  */
-supabase.auth.onAuthStateChange(async (event, session) => {
+supabase.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT") {
     // Session was terminated (user logged out, session expired, or revoked)
     useAuthStore.getState().clearAuth();
@@ -40,15 +40,20 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   }
 
   if (event === "TOKEN_REFRESHED" && session?.user) {
-    try {
-      const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();
+    // Avoid Supabase client deadlocks/token freezes: 
+    // Do not await db calls inside the onAuthStateChange callback.
+    // Dispatch them asynchronously outside this event loop tick.
+    setTimeout(async () => {
+      try {
+        const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();
 
-      if (profile) {
-        useAuthStore.getState().setAuth(profile);
+        if (profile) {
+          useAuthStore.getState().setAuth(profile);
+        }
+      } catch {
+        // Non-critical — profile stays as-is
       }
-    } catch {
-      // Non-critical — profile stays as-is
-    }
+    }, 0);
   }
 });
 
