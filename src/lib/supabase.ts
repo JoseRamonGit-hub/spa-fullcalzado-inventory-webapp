@@ -10,5 +10,6 @@ export const supabase = createClient<Database>(supabaseUrl ?? "http://localhost"
     storageKey: "supabase-auth-storage",
     autoRefreshToken: true,
     detectSessionInUrl: false,
+    debug: true,
   },
 });
