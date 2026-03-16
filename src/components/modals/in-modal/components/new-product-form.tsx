@@ -47,85 +47,93 @@ export function NewProductForm({ onAddToBatch }: NewProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_2fr_auto_auto_auto]">
-        <form.AppField
-          name="code"
-          validators={{
-            onChange: ({ value }) => (!value ? "Requerido" : undefined),
-          }}
-        >
-          {(field) => (
-            <field.TextField
-              label="Código"
-              placeholder="SKU-001"
-              required
-              autoFocus
-              className="h-8 text-sm"
-            />
-          )}
-        </form.AppField>
+      <fieldset className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-[1fr_2fr_auto_auto_auto]">
+        <div className="col-span-2 sm:col-span-1">
+          <form.AppField
+            name="code"
+            validators={{
+              onChange: ({ value }) => (!value ? "Requerido" : undefined),
+            }}
+          >
+            {(field) => (
+              <field.TextField
+                label="Código"
+                placeholder="SKU-001"
+                required
+                autoFocus
+                className="h-8 text-sm"
+              />
+            )}
+          </form.AppField>
+        </div>
 
-        <form.AppField
-          name="description"
-          validators={{
-            onChange: ({ value }) => (!value ? "Requerido" : undefined),
-          }}
-        >
-          {(field) => (
-            <field.TextField
-              label="Descripción"
-              placeholder="Zapato deportivo negro T42"
-              required
-              className="h-8 text-sm"
-            />
-          )}
-        </form.AppField>
+        <div className="col-span-2 sm:col-span-1">
+          <form.AppField
+            name="description"
+            validators={{
+              onChange: ({ value }) => (!value ? "Requerido" : undefined),
+            }}
+          >
+            {(field) => (
+              <field.TextField
+                label="Descripción"
+                placeholder="Zapato deportivo negro T42"
+                required
+                className="h-8 text-sm"
+              />
+            )}
+          </form.AppField>
+        </div>
 
-        <form.AppField
-          name="price_usd"
-          validators={{
-            onChange: ({ value }) => {
-              if (value === undefined || value === null || String(value) === "") return "Requerido";
-              if (value < 0) return "Inválido";
-              return undefined;
-            },
-          }}
-        >
-          {(field) => (
-            <field.NumberField
-              label="Precio USD"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              required
-              className="h-8 text-sm tabular-nums"
-            />
-          )}
-        </form.AppField>
+        <div className="col-span-1 sm:col-span-1">
+          <form.AppField
+            name="price_usd"
+            validators={{
+              onChange: ({ value }) => {
+                if (value === undefined || value === null || String(value) === "") return "Requerido";
+                if (value < 0) return "Inválido";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <field.NumberField
+                label="Precio USD"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                required
+                className="h-8 text-sm tabular-nums"
+              />
+            )}
+          </form.AppField>
+        </div>
 
-        <form.AppField
-          name="stock"
-          validators={{
-            onChange: ({ value }) => {
-              if (value === undefined || value === null || String(value) === "") return "Requerido";
-              if (value < 1) return "Mín. 1";
-              return undefined;
-            },
-          }}
-        >
-          {(field) => (
-            <field.NumberField
-              label="Stock"
-              min="1"
-              step="1"
-              placeholder="0"
-              required
-              className="h-8 text-sm tabular-nums"
-            />
-          )}
-        </form.AppField>
+        <div className="col-span-1 sm:col-span-1">
+          <form.AppField
+            name="stock"
+            validators={{
+              onChange: ({ value }) => {
+                if (value === undefined || value === null || String(value) === "") return "Requerido";
+                if (value < 1) return "Mín. 1";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <field.NumberField
+                label="Stock"
+                min="1"
+                step="1"
+                placeholder="0"
+                required
+                className="h-8 text-sm tabular-nums"
+              />
+            )}
+          </form.AppField>
+        </div>
 
-        <div className="flex items-end">
+        <div className="flex items-end col-span-2 sm:col-span-1">
           <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (
               <Button
@@ -141,7 +149,7 @@ export function NewProductForm({ onAddToBatch }: NewProductFormProps) {
             )}
           </form.Subscribe>
         </div>
-      </div>
+      </fieldset>
     </form>
   );
 }

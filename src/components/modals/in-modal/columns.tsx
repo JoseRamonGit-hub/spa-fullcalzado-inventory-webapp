@@ -64,7 +64,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
     id: "description",
     header: "Descripción",
     cell: ({ row }) => (
-      <span className="block max-w-[160px] truncate md:max-w-[260px]">
+      <span className="block max-w-[140px] md:max-w-[260px] break-words line-clamp-2" title={row.original.description}>
         {row.original.description}
       </span>
     ),

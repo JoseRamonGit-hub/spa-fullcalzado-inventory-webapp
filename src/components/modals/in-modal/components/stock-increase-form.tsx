@@ -60,10 +60,11 @@ export function StockIncreaseForm({ onAddToBatch }: StockIncreaseFormProps) {
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
-      <ProductSearchInput value={selectedProduct?.id ?? ""} onChange={handleProductChange} autoFocus />
+      <fieldset>
+        <ProductSearchInput value={selectedProduct?.id ?? ""} onChange={handleProductChange} autoFocus />
 
-      <div className="flex items-end gap-2">
-        <div className="flex-1">
+        <div className="flex flex-wrap items-end gap-3 mt-3">
+          <div className="flex-1 min-w-[120px]">
           <form.AppField
             name="quantity"
             validators={{
@@ -101,7 +102,8 @@ export function StockIncreaseForm({ onAddToBatch }: StockIncreaseFormProps) {
             </Button>
           )}
         </form.Subscribe>
-      </div>
+        </div>
+      </fieldset>
     </form>
   );
 }

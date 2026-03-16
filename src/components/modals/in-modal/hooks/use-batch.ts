@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { BatchItem } from "./columns";
+import type { BatchItem } from "../columns";
 
 export interface UseBatchReturn {
   batchItems: BatchItem[];
