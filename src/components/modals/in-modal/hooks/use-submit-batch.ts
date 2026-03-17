@@ -6,54 +6,64 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
 
 interface UseSubmitBatchProps {
-  batchItems: BatchItem[];
-  clearBatch: () => void;
+  pendingBatchItems: BatchItem[];
+  clearPendingBatchItems: () => void;
   onSuccess: () => void;
 }
 
-export function useSubmitBatch({ batchItems, clearBatch, onSuccess }: UseSubmitBatchProps) {
-  const user = useAuthStore((s) => s.user);
-  const createMany = useCreateManyProducts();
-  const createManyMovements = useCreateManyMovements();
+export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSuccess }: UseSubmitBatchProps) {
+  const currentUser = useAuthStore((state) => state.user);
+  const createManyProductsMutation = useCreateManyProducts();
+  const createManyMovementsMutation = useCreateManyMovements();
 
-  const isPending = createMany.isPending || createManyMovements.isPending;
+  const isSubmissionPending = createManyProductsMutation.isPending || createManyMovementsMutation.isPending;
 
-  const submitBatch = useCallback(async () => {
-    if (batchItems.length === 0) return;
+  const submitPendingBatchItems = useCallback(async () => {
+    const hasNoItems = pendingBatchItems.length === 0;
+    if (hasNoItems) return;
 
-    const newItems = batchItems.filter((i): i is NewBatchItem => i._kind === "new");
-    const existingItems = batchItems.filter((i): i is ExistingBatchItem => i._kind === "existing");
+    const newBatchItems = pendingBatchItems.filter((item): item is NewBatchItem => item._kind === "new");
+    const existingBatchItems = pendingBatchItems.filter((item): item is ExistingBatchItem => item._kind === "existing");
 
-    const ops: Promise<unknown>[] = [];
+    const batchOperations: Promise<unknown>[] = [];
 
-    if (newItems.length > 0) {
-      const payload = newItems.map(({ _tempId, _kind, ...rest }) => rest);
-      ops.push(createMany.mutateAsync(payload));
-    }
-
-    if (existingItems.length > 0 && user) {
-      const movementsPayload = existingItems.map((item) => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        type: "entry" as const,
-        user_id: user.id,
+    if (newBatchItems.length > 0) {
+      const newProductsPayload = newBatchItems.map(({ _tempId, _kind, initialStock, ...restProps }) => ({
+        ...restProps,
+        price_usd: restProps.priceUsd,
+        stock: initialStock,
       }));
-      ops.push(createManyMovements.mutateAsync(movementsPayload));
+
+      // Clean up properties not expected by the API
+      const safePayload = newProductsPayload.map(({ priceUsd, ...keep }) => keep);
+      
+      batchOperations.push(createManyProductsMutation.mutateAsync(safePayload));
     }
 
-    const totalItems = batchItems.length;
-    const promise = Promise.all(ops);
+    if (existingBatchItems.length > 0 && currentUser) {
+      const movementsPayload = existingBatchItems.map((item) => ({
+        product_id: item.productId,
+        quantity: item.addedQuantity,
+        type: "entry" as const,
+        user_id: currentUser.id,
+      }));
+      batchOperations.push(createManyMovementsMutation.mutateAsync(movementsPayload));
+    }
 
-    toast.promise(promise, {
-      loading: `Procesando ${totalItems} item${totalItems > 1 ? "s" : ""}...`,
-      success: `${totalItems} item${totalItems > 1 ? "s" : ""} cargado${totalItems > 1 ? "s" : ""} correctamente`,
+    const totalItemsCount = pendingBatchItems.length;
+    const isMultipleItems = totalItemsCount > 1;
+    const batchPromises = Promise.all(batchOperations);
+
+    toast.promise(batchPromises, {
+      loading: `Procesando ${totalItemsCount} item${isMultipleItems ? "s" : ""}...`,
+      success: `${totalItemsCount} item${isMultipleItems ? "s" : ""} cargado${isMultipleItems ? "s" : ""} correctamente`,
       error: "Error al procesar el lote",
     });
 
-    await promise;
-    clearBatch();
+    await batchPromises;
+    clearPendingBatchItems();
     onSuccess();
-  }, [batchItems, createMany, createManyMovements, user, clearBatch, onSuccess]);
+  }, [pendingBatchItems, createManyProductsMutation, createManyMovementsMutation, currentUser, clearPendingBatchItems, onSuccess]);
 
-  return { submitBatch, isPending };
+  return { submitPendingBatchItems, isSubmissionPending };
 }

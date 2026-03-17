@@ -17,7 +17,7 @@ export const columns = [
   }),
   columnHelper.accessor("products.code", {
     header: "Código",
-    cell: ({ getValue }) => <span className="product-code font-bold">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
   }),
   columnHelper.accessor("products.description", {
     header: "Descripción",

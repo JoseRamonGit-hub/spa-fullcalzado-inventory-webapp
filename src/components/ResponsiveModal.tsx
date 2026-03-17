@@ -5,8 +5,16 @@ import {
   DialogTitle,
   DialogDescription,
   DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +29,7 @@ interface ResponsiveModalProps {
   dialogClassName?: string;
   drawerClassName?: string;
   descriptionSrOnly?: boolean;
+  footer?: React.ReactNode;
 }
 
 export function ResponsiveModal({
@@ -34,6 +43,7 @@ export function ResponsiveModal({
   dialogClassName,
   drawerClassName,
   descriptionSrOnly,
+  footer,
 }: ResponsiveModalProps) {
   const isMobile = useIsMobile();
 
@@ -45,13 +55,13 @@ export function ResponsiveModal({
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
           </DrawerHeader>
-          <div className="custom-scrollbar max-h-[75dvh] overflow-y-auto px-4 py-2">{children}</div>
+          <div className="custom-scrollbar overflow-y-auto px-4 py-2">{children}</div>
+          <DrawerFooter>{footer}</DrawerFooter>
         </DrawerContent>
       </Drawer>
     );
   }
 
-  // Test
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -69,6 +79,7 @@ export function ResponsiveModal({
           )}
         </DialogHeader>
         <DialogBody className="max-h-[75dvh]">{children}</DialogBody>
+        <DialogFooter>{footer}</DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -2,26 +2,26 @@ import { useState, useCallback } from "react";
 import type { BatchItem } from "../columns";
 
 export interface UseBatchReturn {
-  batchItems: BatchItem[];
-  addItem: (item: BatchItem) => void;
-  removeItem: (tempId: string) => void;
-  clearBatch: () => void;
+  pendingBatchItems: BatchItem[];
+  addPendingBatchItem: (item: BatchItem) => void;
+  removePendingBatchItem: (tempId: string) => void;
+  clearPendingBatchItems: () => void;
 }
 
 export function useBatch(): UseBatchReturn {
-  const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
+  const [pendingBatchItems, setPendingBatchItems] = useState<BatchItem[]>([]);
 
-  const addItem = useCallback((item: BatchItem) => {
-    setBatchItems((prev) => [...prev, item]);
+  const addPendingBatchItem = useCallback((item: BatchItem) => {
+    setPendingBatchItems((prevItems) => [...prevItems, item]);
   }, []);
 
-  const removeItem = useCallback((tempId: string) => {
-    setBatchItems((prev) => prev.filter((i) => i._tempId !== tempId));
+  const removePendingBatchItem = useCallback((tempId: string) => {
+    setPendingBatchItems((prevItems) => prevItems.filter((item) => item._tempId !== tempId));
   }, []);
 
-  const clearBatch = useCallback(() => {
-    setBatchItems([]);
+  const clearPendingBatchItems = useCallback(() => {
+    setPendingBatchItems([]);
   }, []);
 
-  return { batchItems, addItem, removeItem, clearBatch };
+  return { pendingBatchItems, addPendingBatchItem, removePendingBatchItem, clearPendingBatchItems };
 }

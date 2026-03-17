@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppLayout() {
-  const { ingresoOpen, ventaOpen, setIngresoOpen, setVentaOpen } = useModalStore();
+  const { isInModalOpen, isOutModalOpen, setInModalOpen, setOutModalOpen } = useModalStore();
   const { data: exchangeRate } = useExchangeRate();
   const { theme, setTheme } = useTheme();
   const user = useAuthStore((s) => s.user);
@@ -36,15 +36,15 @@ function AppLayout() {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === "i" || e.key === "I") {
           e.preventDefault();
-          setIngresoOpen(true);
+          setInModalOpen(true);
         }
         if (e.key === "j" || e.key === "J") {
           e.preventDefault();
-          setVentaOpen(true);
+          setOutModalOpen(true);
         }
       }
     },
-    [setIngresoOpen, setVentaOpen],
+    [setInModalOpen, setOutModalOpen],
   );
 
   useEffect(() => {
@@ -67,7 +67,7 @@ function AppLayout() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIngresoOpen(true)}
+              onClick={() => setInModalOpen(true)}
               className="text-foreground hover:text-primary hover:bg-primary/8 hidden h-7 gap-1.5 px-2 text-xs md:inline-flex"
             >
               <PackagePlus className="h-3.5 w-3.5" />
@@ -77,7 +77,7 @@ function AppLayout() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setVentaOpen(true)}
+              onClick={() => setOutModalOpen(true)}
               className="text-foreground hover:text-primary hover:bg-primary/8 hidden h-7 gap-1.5 px-2 text-xs md:inline-flex"
             >
               <ShoppingCart className="h-3.5 w-3.5" />
@@ -87,7 +87,7 @@ function AppLayout() {
 
             {/* Mobile-only: user name + role */}
             <div className="flex items-center gap-1.5 md:hidden">
-              <span className="text-foreground max-w-[120px] truncate text-xs font-medium">
+              <span className="text-foreground max-w-30 truncate text-xs font-medium">
                 {user?.fullname || "Usuario"}
               </span>
               <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
@@ -120,8 +120,8 @@ function AppLayout() {
 
       <BottomBar />
 
-      <InModal open={ingresoOpen} onOpenChange={setIngresoOpen} />
-      <OutModal open={ventaOpen} onOpenChange={setVentaOpen} />
+      <InModal isOpen={isInModalOpen} onOpenChange={setInModalOpen} />
+      <OutModal isOpen={isOutModalOpen} onOpenChange={setOutModalOpen} />
     </SidebarProvider>
   );
 }

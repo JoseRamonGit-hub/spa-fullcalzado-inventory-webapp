@@ -1,107 +1,139 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useAppForm } from "@/hooks/form";
-import { ProductSearchInput, type ProductSearchResult } from "@/components/product-search-input";
+import { Kbd } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { ExistingBatchItem } from "../columns";
+import type { ProductSearchResult } from "@/components/product-search-input";
+
+const REQUIRED_FIELD_ERROR = "Requerido";
+const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
+const MINIMUM_VALUE_ERROR = "Mín. 1";
+const MINIMUM_ALLOWED_QUANTITY = 1;
 
 interface StockIncreaseFormProps {
-  onAddToBatch: (item: ExistingBatchItem) => void;
+  onAddPendingBatchItem: (item: ExistingBatchItem) => void;
 }
 
-export function StockIncreaseForm({ onAddToBatch }: StockIncreaseFormProps) {
-  const [selectedProduct, setSelectedProduct] = useState<ProductSearchResult | null>(null);
+export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormProps) {
+  const stockIncreaseFormHtmlRef = useRef<HTMLFormElement>(null);
 
-  const form = useAppForm({
+  // Holds the full product object while productId lives in the form state.
+  // A ref avoids triggering re-renders on every selection.
+  const currentlySelectedProductRef = useRef<ProductSearchResult | null>(null);
+
+  const stockIncreaseForm = useAppForm({
     defaultValues: {
-      quantity: "" as unknown as number,
+      productId: "",
+      addedQuantity: "" as unknown as number,
     },
     onSubmit: async ({ value }) => {
+      const selectedProduct = currentlySelectedProductRef.current;
       if (!selectedProduct) return;
 
-      const item: ExistingBatchItem = {
+      const newExistingBatchItem: ExistingBatchItem = {
         _tempId: crypto.randomUUID(),
         _kind: "existing",
-        product_id: selectedProduct.id,
+        productId: selectedProduct.id,
         code: selectedProduct.code,
         description: selectedProduct.description,
-        quantity: value.quantity,
+        addedQuantity: value.addedQuantity,
         currentStock: selectedProduct.stock,
       };
 
-      onAddToBatch(item);
-      form.reset();
-      setSelectedProduct(null);
+      onAddPendingBatchItem(newExistingBatchItem);
+      currentlySelectedProductRef.current = null;
+      stockIncreaseForm.reset();
     },
   });
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      form.handleSubmit();
+  const handleFormSubmit = useCallback(
+    (event: React.FormEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      stockIncreaseForm.handleSubmit();
     },
-    [form],
+    [stockIncreaseForm],
   );
 
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const handleProductChange = useCallback((product: ProductSearchResult | null) => {
-    setSelectedProduct(product);
-    if (product) {
-      // Jump focus to the quantity field once React renders the chip
-      requestAnimationFrame(() => {
-        const qtyInput = formRef.current?.querySelector<HTMLInputElement>('input[type="number"]');
-        qtyInput?.focus();
-        qtyInput?.select();
-      });
-    }
+  // Called right after the user picks a product in the Command dropdown.
+  // Stores the full product object and jumps focus to the quantity input.
+  const handleAfterProductSelection = useCallback((product: ProductSearchResult) => {
+    currentlySelectedProductRef.current = product;
+    requestAnimationFrame(() => {
+      const quantityInputHtmlElement = stockIncreaseFormHtmlRef.current?.querySelector<HTMLInputElement>('input[type="number"]');
+      quantityInputHtmlElement?.focus();
+      quantityInputHtmlElement?.select();
+    });
   }, []);
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
-      <fieldset>
-        <ProductSearchInput value={selectedProduct?.id ?? ""} onChange={handleProductChange} autoFocus />
-
-        <div className="flex flex-wrap items-end gap-3 mt-3">
-          <div className="flex-1 min-w-[120px]">
-          <form.AppField
-            name="quantity"
+    <form ref={stockIncreaseFormHtmlRef} onSubmit={handleFormSubmit}>
+      <fieldset className="flex flex-col gap-3 md:flex-row md:items-end">
+        {/* Product search — stretches to fill available width */}
+        <div className="min-w-0 flex-1">
+          <stockIncreaseForm.AppField
+            name="productId"
             validators={{
-              onChange: ({ value }) => {
-                if (value === undefined || value === null || String(value) === "") return "Requerido";
-                if (value < 1) return "Mín. 1";
-                return undefined;
-              },
+              onChange: ({ value }) => (!value ? PRODUCT_SELECTION_REQUIRED_ERROR : undefined),
             }}
           >
             {(field) => (
-              <field.NumberField
-                label="Cantidad a sumar"
-                min="1"
-                step="1"
-                placeholder="0"
-                required
-                className="h-8 text-sm tabular-nums"
+              <field.ProductSearchField
+                label="Producto"
+                autoFocus
+                onAfterSelect={handleAfterProductSelection}
               />
             )}
-          </form.AppField>
+          </stockIncreaseForm.AppField>
         </div>
 
-        <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
-          {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              size="icon"
-              variant="outline"
-              className="h-8 w-8 shrink-0"
-              disabled={!canSubmit || isSubmitting || !selectedProduct}
-              aria-label="Agregar al lote"
+        {/* Quantity + submit — pinned together */}
+        <div className="flex items-end gap-2">
+          <div className="w-32.5 shrink-0">
+            <stockIncreaseForm.AppField
+              name="addedQuantity"
+              validators={{
+                onChange: ({ value }) => {
+                  const isValueEmpty = value === undefined || value === null || String(value) === "";
+                  if (isValueEmpty) return REQUIRED_FIELD_ERROR;
+                  if (value < MINIMUM_ALLOWED_QUANTITY) return MINIMUM_VALUE_ERROR;
+                  return undefined;
+                },
+              }}
             >
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
-        </form.Subscribe>
+              {(field) => (
+                <field.NumberField
+                  label="Cantidad a sumar"
+                  min={String(MINIMUM_ALLOWED_QUANTITY)}
+                  step="1"
+                  placeholder="0"
+                  required
+                  className="h-9 text-sm tabular-nums"
+                />
+              )}
+            </stockIncreaseForm.AppField>
+          </div>
+
+          <stockIncreaseForm.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+            {([canSubmit, isSubmitting]) => (
+              <div className="mb-0.5 flex items-center gap-1.5">
+                <Button
+                  type="submit"
+                  size="icon"
+                  variant="outline"
+                  className="size-9 shrink-0"
+                  disabled={!canSubmit || isSubmitting}
+                  aria-label="Agregar al lote"
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                </Button>
+                <Kbd className="opacity-50 select-none" aria-hidden="true">
+                  Enter
+                </Kbd>
+              </div>
+            )}
+          </stockIncreaseForm.Subscribe>
         </div>
       </fieldset>
     </form>

@@ -11,69 +11,74 @@ import { BatchSummaryFooter } from "./components/batch-summary-footer";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type TabValue = "new" | "existing";
+type InModalTabValue = "new" | "existing";
 
-interface InModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+type InModalProps = {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+};
 
-export function InModal({ open, onOpenChange }: InModalProps) {
-  const [activeTab, setActiveTab] = useState<TabValue>("new");
-  const [confirmOpen, setConfirmOpen] = useState(false);
+export function InModal({ isOpen, onOpenChange }: InModalProps) {
+  const [currentActiveTab, setCurrentActiveTab] = useState<InModalTabValue>("new");
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-  const { batchItems, addItem, removeItem, clearBatch } = useBatch();
+  const { pendingBatchItems, addPendingBatchItem, removePendingBatchItem, clearPendingBatchItems } = useBatch();
 
-  const handleSuccess = useCallback(() => {
-    setConfirmOpen(false);
+  const handleSubmissionSuccess = useCallback(() => {
+    setIsConfirmDialogOpen(false);
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const { submitBatch, isPending } = useSubmitBatch({
-    batchItems,
-    clearBatch,
-    onSuccess: handleSuccess,
+  const { submitPendingBatchItems, isSubmissionPending } = useSubmitBatch({
+    pendingBatchItems,
+    clearPendingBatchItems,
+    onSuccess: handleSubmissionSuccess,
   });
 
-  const handleOpenChange = useCallback(
-    (isOpen: boolean) => {
-      if (!isOpen) {
-        clearBatch();
-        setActiveTab("new");
+  const handleModalOpenChange = useCallback(
+    (isCurrentlyOpen: boolean) => {
+      if (!isCurrentlyOpen) {
+        clearPendingBatchItems();
+        setCurrentActiveTab("new");
       }
-      onOpenChange(isOpen);
+      onOpenChange(isCurrentlyOpen);
     },
-    [onOpenChange, clearBatch],
+    [onOpenChange, clearPendingBatchItems],
   );
 
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey && e.key.toLowerCase() === "n") {
-        e.preventDefault();
-        setActiveTab("new");
+    const handleKeyboardShortcut = (event: KeyboardEvent) => {
+      const isAltKeyActive = event.altKey;
+      const isShiftKeyActive = event.shiftKey;
+      const keyLowerCase = event.key.toLowerCase();
+      const hasPendingBatchItems = pendingBatchItems.length > 0;
+
+      if (isAltKeyActive && keyLowerCase === "n") {
+        event.preventDefault();
+        setCurrentActiveTab("new");
       }
-      if (e.altKey && e.key.toLowerCase() === "e") {
-        e.preventDefault();
-        setActiveTab("existing");
+      if (isAltKeyActive && keyLowerCase === "e") {
+        event.preventDefault();
+        setCurrentActiveTab("existing");
       }
-      if (e.shiftKey && e.key === "Enter" && batchItems.length > 0) {
-        e.preventDefault();
-        e.stopPropagation();
-        setConfirmOpen(true);
+      if (isShiftKeyActive && event.key === "Enter" && hasPendingBatchItems) {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsConfirmDialogOpen(true);
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, batchItems.length]);
+    window.addEventListener("keydown", handleKeyboardShortcut);
+    return () => window.removeEventListener("keydown", handleKeyboardShortcut);
+  }, [isOpen, pendingBatchItems.length]);
 
   return (
     <>
       <ResponsiveModal
-        open={open}
-        onOpenChange={handleOpenChange}
+        open={isOpen}
+        onOpenChange={handleModalOpenChange}
         title="Recepción de Mercancía"
         description="Agrega productos al lote y luego confirma la carga completa."
         dialogClassName="min-w-5xl"
@@ -83,7 +88,7 @@ export function InModal({ open, onOpenChange }: InModalProps) {
       >
         <section className="flex flex-col gap-4">
           <header>
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
+            <Tabs value={currentActiveTab} onValueChange={(value) => setCurrentActiveTab(value as InModalTabValue)}>
               <TabsList className="w-full">
                 <TabsTrigger value="new" className="flex-1 gap-1.5" aria-keyshortcuts="Alt+N">
                   Nuevo Producto
@@ -104,11 +109,11 @@ export function InModal({ open, onOpenChange }: InModalProps) {
               </TabsList>
 
               <TabsContent value="new" className="mt-4">
-                <NewProductForm onAddToBatch={addItem} />
+                <NewProductForm onAddPendingBatchItem={addPendingBatchItem} />
               </TabsContent>
 
               <TabsContent value="existing" className="mt-4">
-                <StockIncreaseForm onAddToBatch={addItem} />
+                <StockIncreaseForm onAddPendingBatchItem={addPendingBatchItem} />
               </TabsContent>
             </Tabs>
           </header>
@@ -116,26 +121,26 @@ export function InModal({ open, onOpenChange }: InModalProps) {
           <article className="bg-card flex min-h-52 flex-col overflow-hidden rounded-md border">
             <DataTable
               columns={pendingItemColumns}
-              data={batchItems}
+              data={pendingBatchItems}
               emptyMessage="Agrega productos usando las pestañas de arriba."
-              meta={{ onRemoveItem: removeItem }}
+              meta={{ onRemovePendingBatchItem: removePendingBatchItem }}
             />
           </article>
 
           <BatchSummaryFooter
-            batchItems={batchItems}
-            isPending={isPending}
-            onConfirmOpen={() => setConfirmOpen(true)}
+            pendingBatchItems={pendingBatchItems}
+            isSubmissionPending={isSubmissionPending}
+            onOpenConfirmDialog={() => setIsConfirmDialogOpen(true)}
           />
         </section>
       </ResponsiveModal>
 
       <ConfirmBatchDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        batchItems={batchItems}
-        isPending={isPending}
-        onConfirm={submitBatch}
+        isOpen={isConfirmDialogOpen}
+        onOpenChange={setIsConfirmDialogOpen}
+        pendingBatchItems={pendingBatchItems}
+        isSubmissionPending={isSubmissionPending}
+        onConfirmSubmit={submitPendingBatchItems}
       />
     </>
   );

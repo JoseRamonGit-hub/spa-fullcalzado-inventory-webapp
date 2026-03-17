@@ -78,29 +78,36 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function DialogFooter({
-  className,
+const DialogFooter = ({
+  leftContent,
   showCloseButton = false,
+  className,
   children,
   ...props
 }: React.ComponentProps<"div"> & {
+  leftContent?: React.ReactNode;
   showCloseButton?: boolean;
-}) {
-  return (
-    <div
-      data-slot="dialog-footer"
-      className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
-      {...props}
-    >
-      {children}
-      {showCloseButton && (
+}) => (
+  <div
+    data-slot="dialog-footer"
+    className={cn(
+      "border-truckbi-gray-300 flex w-full shrink-0 flex-col gap-2 border-t px-6 py-3 sm:flex-row sm:justify-between",
+      className,
+    )}
+    {...props}
+  >
+    {leftContent ? <div className="hidden items-center gap-2 text-xs text-gray-500 sm:flex">{leftContent}</div> : null}
+    {/* <div className={cn("flex items-center justify-end gap-2")}> */}
+    {children}
+    {/*       {showCloseButton && (
         <DialogPrimitive.Close asChild>
           <Button variant="outline">Close</Button>
         </DialogPrimitive.Close>
-      )}
-    </div>
-  );
-}
+      )} */}
+    {/* </div> */}
+  </div>
+);
+DialogFooter.displayName = "DialogFooter";
 
 function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (

@@ -24,7 +24,7 @@ const PriceBsCell = ({ priceUsd }: { priceUsd: number }) => {
 export const columns = [
   columHelper.accessor("code", {
     header: "Código",
-    cell: ({ getValue }) => <span className="product-code font-bold">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
   }),
   columHelper.accessor("description", {
     header: "Descripción",
@@ -44,7 +44,9 @@ export const columns = [
   }),
   columHelper.accessor("price_usd", {
     header: () => <div className="text-right">USD</div>,
-    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>,
+    cell: ({ getValue }) => (
+      <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
+    ),
   }),
   columHelper.display({
     id: "price_ves",

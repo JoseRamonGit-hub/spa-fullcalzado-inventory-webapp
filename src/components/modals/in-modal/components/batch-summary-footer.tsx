@@ -4,31 +4,39 @@ import { Badge } from "@/components/ui/badge";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import type { BatchItem } from "../columns";
 
+const NEW_ITEM_KIND = "new";
+const EXISTING_ITEM_KIND = "existing";
+
 interface BatchSummaryFooterProps {
-  batchItems: BatchItem[];
-  isPending: boolean;
-  onConfirmOpen: () => void;
+  pendingBatchItems: BatchItem[];
+  isSubmissionPending: boolean;
+  onOpenConfirmDialog: () => void;
 }
 
-export function BatchSummaryFooter({ batchItems, isPending, onConfirmOpen }: BatchSummaryFooterProps) {
-  const newCount = batchItems.filter((i) => i._kind === "new").length;
-  const existingCount = batchItems.filter((i) => i._kind === "existing").length;
+export function BatchSummaryFooter({
+  pendingBatchItems,
+  isSubmissionPending,
+  onOpenConfirmDialog,
+}: BatchSummaryFooterProps) {
+  const newItemsCount = pendingBatchItems.filter((item) => item._kind === NEW_ITEM_KIND).length;
+  const existingItemsCount = pendingBatchItems.filter((item) => item._kind === EXISTING_ITEM_KIND).length;
+  const hasNoItems = pendingBatchItems.length === 0;
 
   return (
     <footer className="flex items-center justify-between gap-3 border-t pt-3 mt-4">
       <p className="text-muted-foreground text-xs tabular-nums">
-        {batchItems.length === 0 ? (
+        {hasNoItems ? (
           "Sin items pendientes"
         ) : (
           <span className="flex flex-wrap items-center gap-1.5">
-            {newCount > 0 && (
+            {newItemsCount > 0 && (
               <Badge variant="outline" className="px-1.5 py-0.5 text-[10px]">
-                {newCount} nuevo{newCount > 1 ? "s" : ""}
+                {newItemsCount} nuevo{newItemsCount > 1 ? "s" : ""}
               </Badge>
             )}
-            {existingCount > 0 && (
+            {existingItemsCount > 0 && (
               <Badge variant="secondary" className="px-1.5 py-0.5 text-[10px]">
-                {existingCount} existente{existingCount > 1 ? "s" : ""}
+                {existingItemsCount} existente{existingItemsCount > 1 ? "s" : ""}
               </Badge>
             )}
             <span className="hidden sm:inline">en el lote</span>
@@ -39,13 +47,13 @@ export function BatchSummaryFooter({ batchItems, isPending, onConfirmOpen }: Bat
       <Button
         type="button"
         className="gap-2 shrink-0"
-        disabled={batchItems.length === 0 || isPending}
-        onClick={onConfirmOpen}
+        disabled={hasNoItems || isSubmissionPending}
+        onClick={onOpenConfirmDialog}
       >
         <PackagePlus data-icon="inline-start" className="h-4 w-4" />
-        {isPending
+        {isSubmissionPending
           ? "Procesando..."
-          : `Cargar ${batchItems.length > 0 ? batchItems.length : ""} item${batchItems.length !== 1 ? "s" : ""}`}
+          : `Cargar ${!hasNoItems ? pendingBatchItems.length : ""} item${pendingBatchItems.length !== 1 ? "s" : ""}`}
         <KbdGroup data-icon="inline-end" className="hidden lg:flex">
           <Kbd className="ml-1">Shift ⇧</Kbd>
           <span>+</span>
