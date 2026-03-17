@@ -13,7 +13,7 @@ export function BottomBar() {
   const currentPath = routerState.location.pathname;
   const [actionDrawerOpen, setActionDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { setIngresoOpen, setVentaOpen } = useModalStore();
+  const { setInModalOpen, setOutModalOpen } = useModalStore();
 
   const renderNavItem = (title: string, url: string, Icon: React.ElementType) => {
     const isActive = currentPath.startsWith(url);
@@ -22,7 +22,7 @@ export function BottomBar() {
         key={title}
         to={url}
         className={cn(
-          "relative flex h-full w-[56px] flex-col items-center justify-center gap-0.5 py-1 transition-colors",
+          "relative flex h-full w-14 flex-col items-center justify-center gap-0.5 py-1 transition-colors",
           isActive ? "text-primary" : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80",
         )}
       >
@@ -67,7 +67,7 @@ export function BottomBar() {
           {/* Item 5: Menú Escalable */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="text-sidebar-foreground/50 hover:text-sidebar-foreground/80 flex h-full w-[56px] flex-col items-center justify-center gap-0.5 py-1 transition-colors"
+            className="text-sidebar-foreground/50 hover:text-sidebar-foreground/80 flex h-full w-14 flex-col items-center justify-center gap-0.5 py-1 transition-colors"
             aria-label="Abrir menú"
           >
             <Menu className="h-5 w-5" />
@@ -91,7 +91,7 @@ export function BottomBar() {
               className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
               onClick={() => {
                 setActionDrawerOpen(false);
-                setIngresoOpen(true);
+                setInModalOpen(true);
               }}
             >
               <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
@@ -107,7 +107,7 @@ export function BottomBar() {
               className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
               onClick={() => {
                 setActionDrawerOpen(false);
-                setVentaOpen(true);
+                setOutModalOpen(true);
               }}
             >
               <div className="bg-success/10 flex h-10 w-10 items-center justify-center rounded-lg">

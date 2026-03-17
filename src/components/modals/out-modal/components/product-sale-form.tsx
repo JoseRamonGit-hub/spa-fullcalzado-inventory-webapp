@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import type { PendingSale } from "../columns";
+import type { PendingSale } from "../types";
 
 const DECIMAL_RADIX = 10;
 const MINIMUM_QUANTITY = 1;

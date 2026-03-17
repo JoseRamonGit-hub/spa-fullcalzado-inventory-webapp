@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import type { PendingSale } from "../columns";
+import type { PendingSale } from "../types";
 
 const INITIAL_TOTAL = 0;
 

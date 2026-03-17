@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ShoppingCart } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import type { PendingSale } from "../columns";
+import type { PendingSale } from "../types";
 
 interface ConfirmSalesDialogProps {
   isOpen: boolean;
