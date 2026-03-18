@@ -127,9 +127,10 @@ export function ProductCommandSearch({
         shouldFilter={false}
         className={cn(
           // Match Input sizing & shape
-          "h-9 w-full rounded-md border bg-card shadow-xs transition-[color,box-shadow]",
-          // Remove the internal border-b that CommandInput adds (we use the outer border only)
-          "**:data-[slot=command-input-wrapper]:border-b-0",
+          "h-8 w-full rounded-md border bg-card shadow-xs transition-[color,box-shadow]",
+          // Override internal Command heights to fit h-8 and remove the border-b
+          "**:data-[slot=command-input-wrapper]:h-full **:data-[slot=command-input-wrapper]:border-b-0",
+          "**:data-[slot=command-input]:h-full **:data-[slot=command-input]:py-0",
           // Focus ring — same as Input's focus-visible ring
           "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
           // Invalid state — same as Input's aria-invalid ring

@@ -7,6 +7,7 @@ export type FormFieldProps = {
   description?: string;
   action?: React.ReactNode;
   descriptionBelow?: boolean;
+  compact?: boolean;
 };
 
 type FieldWrapperProps = FormFieldProps & {
@@ -20,6 +21,7 @@ export function FieldWrapper({
   orientation = undefined,
   action,
   descriptionBelow,
+  compact,
 }: FieldWrapperProps) {
   const field = useFieldContext();
 
@@ -27,12 +29,21 @@ export function FieldWrapper({
 
   const errorElement = isInvalid && <FieldError errors={field.state.meta.errors} />;
 
+  const labelElement = (
+    <FieldLabel
+      htmlFor={field.name}
+      className={compact ? "text-muted-foreground text-[11px] font-medium tracking-wider uppercase" : undefined}
+    >
+      {label}
+    </FieldLabel>
+  );
+
   return (
     <Field data-invalid={isInvalid} orientation={orientation}>
       <FieldContent>
         {descriptionBelow ? (
           <>
-            <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+            {labelElement}
             {children}
             {errorElement}
             <FieldDescription>{description}</FieldDescription>
@@ -40,7 +51,7 @@ export function FieldWrapper({
           </>
         ) : (
           <>
-            <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+            {labelElement}
             <FieldDescription>{description}</FieldDescription>
             {children}
             {errorElement}

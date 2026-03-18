@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import { useAppForm } from "@/hooks/form";
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import type { NewBatchItem } from "../columns";
 
@@ -64,6 +66,7 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
             {(field) => (
               <field.TextField
                 label="Código"
+                compact
                 placeholder="SKU-001"
                 required
                 autoFocus
@@ -83,6 +86,7 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
             {(field) => (
               <field.TextField
                 label="Descripción"
+                compact
                 placeholder="Zapato deportivo negro T42"
                 required
                 className="h-8 text-sm"
@@ -106,6 +110,7 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
             {(field) => (
               <field.NumberField
                 label="Precio USD"
+                compact
                 step="0.01"
                 min={String(MINIMUM_ALLOWED_PRICE)}
                 placeholder="0.00"
@@ -131,6 +136,7 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
             {(field) => (
               <field.NumberField
                 label="Stock"
+                compact
                 min={String(MINIMUM_ALLOWED_STOCK)}
                 step="1"
                 placeholder="0"
@@ -144,16 +150,23 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
         <div className="col-span-2 flex items-end sm:col-span-1">
           <newProductForm.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (
-              <Button
-                type="submit"
-                size="icon"
-                variant="outline"
-                className="h-8 w-8 shrink-0"
-                disabled={!canSubmit || isSubmitting}
-                aria-label="Agregar item al lote"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="icon"
+                    className="size-8 shrink-0"
+                    disabled={!canSubmit || isSubmitting}
+                    aria-label="Agregar item al lote"
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">
+                  Agregar <Kbd>Enter</Kbd>
+                </TooltipContent>
+              </Tooltip>
             )}
           </newProductForm.Subscribe>
         </div>

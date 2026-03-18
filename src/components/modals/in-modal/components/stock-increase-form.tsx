@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { useAppForm } from "@/hooks/form";
 import { Kbd } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import type { ExistingBatchItem } from "../columns";
 import type { ProductSearchResult } from "@/components/product-search-input";
@@ -81,6 +82,7 @@ export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormPr
             {(field) => (
               <field.ProductSearchField
                 label="Producto"
+                compact
                 autoFocus
                 onAfterSelect={handleAfterProductSelection}
               />
@@ -105,11 +107,12 @@ export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormPr
               {(field) => (
                 <field.NumberField
                   label="Cantidad a sumar"
+                  compact
                   min={String(MINIMUM_ALLOWED_QUANTITY)}
                   step="1"
                   placeholder="0"
                   required
-                  className="h-9 text-sm tabular-nums"
+                  className="h-8 text-sm tabular-nums"
                 />
               )}
             </stockIncreaseForm.AppField>
@@ -117,21 +120,23 @@ export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormPr
 
           <stockIncreaseForm.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (
-              <div className="mb-0.5 flex items-center gap-1.5">
-                <Button
-                  type="submit"
-                  size="icon"
-                  variant="outline"
-                  className="size-9 shrink-0"
-                  disabled={!canSubmit || isSubmitting}
-                  aria-label="Agregar al lote"
-                >
-                  <Plus className="size-4" aria-hidden="true" />
-                </Button>
-                <Kbd className="opacity-50 select-none" aria-hidden="true">
-                  Enter
-                </Kbd>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="icon"
+                    className="size-8 shrink-0"
+                    disabled={!canSubmit || isSubmitting}
+                    aria-label="Agregar al lote"
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">
+                  Agregar <Kbd>Enter</Kbd>
+                </TooltipContent>
+              </Tooltip>
             )}
           </stockIncreaseForm.Subscribe>
         </div>

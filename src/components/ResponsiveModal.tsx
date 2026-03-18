@@ -50,13 +50,20 @@ export function ResponsiveModal({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className={drawerClassName} onInteractOutside={(e) => e.preventDefault()}>
+        <DrawerContent
+          className={cn("flex max-h-[88dvh]", drawerClassName ?? "")}
+          onInteractOutside={avoidCloseFromOutsideClick ? (e) => e.preventDefault() : undefined}
+        >
           <DrawerHeader className="border-b">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
-            {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
+            {description && (
+              <DrawerDescription className={cn("text-xs", descriptionSrOnly && "sr-only")}>
+                {description}
+              </DrawerDescription>
+            )}
           </DrawerHeader>
-          <div className="custom-scrollbar overflow-y-auto px-4 py-2">{children}</div>
-          <DrawerFooter>{footer}</DrawerFooter>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2" data-vaul-no-drag>{children}</div>
+          <DrawerFooter className="border-t">{footer}</DrawerFooter>
         </DrawerContent>
       </Drawer>
     );
@@ -65,7 +72,7 @@ export function ResponsiveModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`gap-0 p-0 ${dialogClassName ?? ""}`}
+        className={cn("grid max-h-[90dvh] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 p-0", dialogClassName ?? "")}
         showCloseButton
         onInteractOutside={avoidCloseFromOutsideClick ? (e) => e.preventDefault() : undefined}
         onEscapeKeyDown={avoidCloseFromEsc ? (e) => e.preventDefault() : undefined}
@@ -78,7 +85,7 @@ export function ResponsiveModal({
             </DialogDescription>
           )}
         </DialogHeader>
-        <DialogBody className="max-h-[75dvh]">{children}</DialogBody>
+        <DialogBody className="min-h-0">{children}</DialogBody>
         <DialogFooter>{footer}</DialogFooter>
       </DialogContent>
     </Dialog>

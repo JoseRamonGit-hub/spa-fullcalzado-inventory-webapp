@@ -66,30 +66,25 @@ export function ProductSearchInput({
   // ── Selected chip ──────────────────────────────────────────
   if (selectedProduct) {
     return (
-      <div className={className}>
+      <div className={cn("min-h-8 w-full min-w-0", className)}>
         <div
           className={cn(
-            "flex min-h-9 items-center gap-2 rounded-md border bg-accent/40 px-2.5 py-1 transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
-            isInvalid
-              ? "border-destructive ring-destructive/20 dark:ring-destructive/40"
-              : "border-border/60",
+            "bg-accent/40 focus-within:border-ring focus-within:ring-ring/50 flex h-8 items-center gap-2 overflow-hidden rounded-md border px-2.5 py-1 transition-[color,box-shadow] focus-within:ring-[3px]",
+            isInvalid ? "border-destructive ring-destructive/20 dark:ring-destructive/40" : "border-border/60",
           )}
           onKeyDown={handleChipKeyDown}
         >
-          <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider">
+          <span className="bg-muted text-muted-foreground max-w-16 shrink-0 truncate rounded px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase">
             {selectedProduct.code}
           </span>
-          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-            {selectedProduct.description}
-          </span>
+          <span className="min-w-0 flex-1 truncate text-sm font-medium">{selectedProduct.description}</span>
           {showPrice && (
-            <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+            <span className="text-muted-foreground hidden shrink-0 text-xs tabular-nums sm:inline">
               {formatCurrencyUSD(selectedProduct.price_usd)}
             </span>
           )}
-          <span className="text-muted-foreground shrink-0 tabular-nums text-[11px]">
-            Stock:{" "}
-            <strong className="text-foreground font-semibold">{selectedProduct.stock}</strong>
+          <span className="text-muted-foreground hidden shrink-0 text-[11px] tabular-nums md:inline">
+            Stock: <strong className="text-foreground font-semibold">{selectedProduct.stock}</strong>
           </span>
           <Button
             ref={clearBtnRef}
@@ -109,7 +104,7 @@ export function ProductSearchInput({
 
   // ── Search UI ─────────────────────────────────────────────
   return (
-    <div className={className}>
+    <div className={cn("min-h-8 w-full min-w-0", className)}>
       <ProductCommandSearch
         products={products}
         requireStock={requireStock}

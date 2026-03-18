@@ -74,6 +74,13 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
     return () => window.removeEventListener("keydown", handleKeyboardShortcut);
   }, [isOpen, pendingBatchItems.length]);
 
+  useEffect(() => {
+    if (!isOpen || currentActiveTab !== "new") return;
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLInputElement>('input[name="code"]')?.focus();
+    });
+  }, [isOpen, currentActiveTab]);
+
   return (
     <>
       <ResponsiveModal
@@ -85,12 +92,19 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
         drawerClassName=""
         avoidCloseFromOutsideClick
         descriptionSrOnly
+        footer={
+          <BatchSummaryFooter
+            pendingBatchItems={pendingBatchItems}
+            isSubmissionPending={isSubmissionPending}
+            onOpenConfirmDialog={() => setIsConfirmDialogOpen(true)}
+          />
+        }
       >
         <section className="flex flex-col gap-4">
-          <header>
-            <Tabs value={currentActiveTab} onValueChange={(value) => setCurrentActiveTab(value as InModalTabValue)}>
-              <TabsList className="w-full">
-                <TabsTrigger value="new" className="flex-1 gap-1.5" aria-keyshortcuts="Alt+N">
+          <header className="-mx-6 -mt-6">
+            <Tabs value={currentActiveTab} onValueChange={(value) => setCurrentActiveTab(value as InModalTabValue)} className="gap-0">
+              <TabsList className="h-10 w-full rounded-none border-x-0 border-t-0 p-0">
+                <TabsTrigger value="new" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+N">
                   Nuevo Producto
                   <KbdGroup className="hidden md:flex">
                     <Kbd className="px-1 text-[9px]">Alt</Kbd>
@@ -98,7 +112,7 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
                     <Kbd className="px-1 text-[9px]">N</Kbd>
                   </KbdGroup>
                 </TabsTrigger>
-                <TabsTrigger value="existing" className="flex-1 gap-1.5" aria-keyshortcuts="Alt+E">
+                <TabsTrigger value="existing" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+E">
                   Aumentar Existencia
                   <KbdGroup className="hidden md:flex">
                     <Kbd className="px-1 text-[9px]">Alt</Kbd>
@@ -108,17 +122,17 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="new" className="mt-4">
+              <TabsContent value="new" className="px-6 pt-4">
                 <NewProductForm onAddPendingBatchItem={addPendingBatchItem} />
               </TabsContent>
 
-              <TabsContent value="existing" className="mt-4">
+              <TabsContent value="existing" className="px-6 pt-4">
                 <StockIncreaseForm onAddPendingBatchItem={addPendingBatchItem} />
               </TabsContent>
             </Tabs>
           </header>
 
-          <article className="bg-card flex min-h-52 flex-col overflow-hidden rounded-md border">
+          <article className="bg-card flex h-56 flex-col overflow-hidden rounded-md border md:h-64">
             <DataTable
               columns={pendingItemColumns}
               data={pendingBatchItems}
@@ -126,12 +140,6 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
               meta={{ onRemovePendingBatchItem: removePendingBatchItem }}
             />
           </article>
-
-          <BatchSummaryFooter
-            pendingBatchItems={pendingBatchItems}
-            isSubmissionPending={isSubmissionPending}
-            onOpenConfirmDialog={() => setIsConfirmDialogOpen(true)}
-          />
         </section>
       </ResponsiveModal>
 

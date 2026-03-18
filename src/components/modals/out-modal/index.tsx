@@ -52,7 +52,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     if (!isOpen) return;
     const handleKeyboardShortcut = (event: KeyboardEvent) => {
       const hasPendingSales = pendingSales.length > 0;
-      if (event.shiftKey && event.key === "Enter" && hasPendingSales) {
+      if (event.shiftKey && event.key === "Enter" && hasPendingSales && !isConfirmDialogOpen) {
         event.preventDefault();
         event.stopPropagation();
         setIsConfirmDialogOpen(true);
@@ -60,7 +60,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     };
     window.addEventListener("keydown", handleKeyboardShortcut);
     return () => window.removeEventListener("keydown", handleKeyboardShortcut);
-  }, [isOpen, pendingSales.length]);
+  }, [isOpen, pendingSales.length, isConfirmDialogOpen]);
 
   return (
     <>
@@ -68,8 +68,8 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         open={isOpen}
         onOpenChange={handleModalOpenChange}
         title="Registrar Ventas"
-        description="Agrega productos al carrito y luego registra el lote completo."
-        dialogClassName="min-w-4xl"
+        description="Agrega productos al lote y confirma con Shift + Enter."
+        dialogClassName="sm:max-w-4xl"
         drawerClassName=""
         avoidCloseFromOutsideClick
         avoidCloseFromEsc
@@ -88,7 +88,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         <section className="flex flex-col gap-4">
           <ProductSaleForm currentExchangeRate={currentExchangeRate} onAddPendingSale={addPendingSale} />
 
-          <article className="bg-card min-h-52 rounded-md border">
+          <article className="bg-card h-56 overflow-hidden rounded-md border md:h-64">
             <DataTable
               columns={pendingSaleColumns}
               data={pendingSales}

@@ -1,14 +1,17 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { ProductSearchInput, type ProductSearchResult } from "@/components/product-search-input";
-import { Input } from "@/components/ui/input";
+import { useCallback, useRef } from "react";
+import { useAppForm } from "@/hooks/form";
+import type { ProductSearchResult } from "@/components/product-search-input";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Plus } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { PendingSale } from "../types";
 
-const DECIMAL_RADIX = 10;
-const MINIMUM_QUANTITY = 1;
-const DEFAULT_VALUE = 0;
+const MINIMUM_ALLOWED_QUANTITY = 1;
+const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
+const REQUIRED_FIELD_ERROR = "Requerido";
+const MINIMUM_VALUE_ERROR = "Mín. 1";
 
 interface ProductSaleFormProps {
   currentExchangeRate: number;
@@ -16,141 +19,196 @@ interface ProductSaleFormProps {
 }
 
 export function ProductSaleForm({ currentExchangeRate, onAddPendingSale }: ProductSaleFormProps) {
-  const [selectedProduct, setSelectedProduct] = useState<ProductSearchResult | null>(null);
-  const [quantityInput, setQuantityInput] = useState("");
-  
-  const quantityInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const selectedProductRef = useRef<ProductSearchResult | null>(null);
 
-  // Focus quantity input automatically when a product is selected
-  useEffect(() => {
-    if (selectedProduct) {
-      requestAnimationFrame(() => {
-        quantityInputRef.current?.focus();
-        quantityInputRef.current?.select();
+  const saleForm = useAppForm({
+    defaultValues: {
+      productId: "",
+      quantity: 0,
+    },
+    onSubmit: async ({ value }) => {
+      const product = selectedProductRef.current;
+      if (!product) return;
+
+      const priceVes = product.price_usd * currentExchangeRate;
+
+      onAddPendingSale({
+        _tempId: crypto.randomUUID(),
+        productId: product.id,
+        code: product.code,
+        description: product.description,
+        quantity: value.quantity,
+        priceUsd: product.price_usd,
+        priceVes,
+        totalUsd: value.quantity * product.price_usd,
+        totalVes: value.quantity * priceVes,
+        availableStock: product.stock,
       });
-    }
-  }, [selectedProduct]);
 
-  const parsedQuantity = parseInt(quantityInput, DECIMAL_RADIX) || DEFAULT_VALUE;
-  const productPriceUsd = selectedProduct?.price_usd ?? DEFAULT_VALUE;
-  const calculatedPriceVes = productPriceUsd * currentExchangeRate;
-  
-  const hasInsufficientStock = selectedProduct ? parsedQuantity > selectedProduct.stock : false;
-  const isQuantityValid = quantityInput && parsedQuantity >= MINIMUM_QUANTITY;
-  const canAddProductToSale = isQuantityValid && !hasInsufficientStock && selectedProduct;
+      selectedProductRef.current = null;
+      saleForm.reset();
+    },
+  });
 
-  const handleProductChange = useCallback((product: ProductSearchResult | null) => {
-    setSelectedProduct(product);
-    setQuantityInput("");
-  }, []);
+  const handleFormSubmit = useCallback(
+    (event: React.FormEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      saleForm.handleSubmit();
+    },
+    [saleForm],
+  );
 
-  const handleFormSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!canAddProductToSale) return;
+  const handleAfterProductSelection = useCallback(
+    (product: ProductSearchResult) => {
+      selectedProductRef.current = product;
+      saleForm.setFieldValue("quantity", 0);
+      requestAnimationFrame(() => {
+        const quantityInput = formRef.current?.querySelector<HTMLInputElement>('input[type="number"]');
+        quantityInput?.focus();
+        quantityInput?.select();
+      });
+    },
+    [saleForm],
+  );
 
-    const newPendingSale: PendingSale = {
-      _tempId: crypto.randomUUID(),
-      productId: selectedProduct.id,
-      code: selectedProduct.code,
-      description: selectedProduct.description,
-      quantity: parsedQuantity,
-      priceUsd: productPriceUsd,
-      priceVes: calculatedPriceVes,
-      totalUsd: parsedQuantity * productPriceUsd,
-      totalVes: parsedQuantity * calculatedPriceVes,
-      availableStock: selectedProduct.stock,
-    };
-
-    onAddPendingSale(newPendingSale);
-    setSelectedProduct(null);
-    setQuantityInput("");
-  };
-
-  if (!selectedProduct) {
-    return (
-      <section className="space-y-1.5">
-        <label className="text-muted-foreground block text-[11px] font-semibold tracking-widest uppercase">
-          Seleccionar Producto
-        </label>
-        <ProductSearchInput
-          value=""
-          onChange={handleProductChange}
-          requireStock
-          showPrice
-          autoFocus
-        />
-      </section>
-    );
-  }
+  const handleProductClear = useCallback(() => {
+    selectedProductRef.current = null;
+    saleForm.setFieldValue("quantity", 0);
+  }, [saleForm]);
 
   return (
-    <form onSubmit={handleFormSubmit}>
-      <fieldset className="mb-4 flex flex-col gap-3 md:flex-row md:items-end">
-        {/* Selected product chip */}
+    <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-2">
+      <fieldset className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end">
+        {/* Product search — stretches to fill available width */}
         <div className="min-w-0 flex-1">
-          <label className="text-muted-foreground mb-1.5 block text-[11px] font-semibold tracking-widest uppercase">
-            Producto
-          </label>
-          <ProductSearchInput
-            value={selectedProduct.id}
-            onChange={handleProductChange}
-            showPrice
-          />
+          <saleForm.AppField
+            name="productId"
+            validators={{
+              onChange: ({ value }) => (!value ? PRODUCT_SELECTION_REQUIRED_ERROR : undefined),
+            }}
+          >
+            {(field) => (
+              <field.ProductSearchField
+                label="Producto"
+                compact
+                requireStock
+                showPrice
+                autoFocus
+                onAfterSelect={handleAfterProductSelection}
+                onClear={handleProductClear}
+              />
+            )}
+          </saleForm.AppField>
         </div>
 
-        {/* Quantity input + add button */}
-        <div className="flex items-end gap-2">
-          <div className="relative w-32 shrink-0">
-            <label className="text-muted-foreground mb-1.5 block text-[11px] font-semibold tracking-widest uppercase">
-              Cantidad
-            </label>
-            <Input
-              ref={quantityInputRef}
-              type="number"
-              min={String(MINIMUM_QUANTITY)}
-              max={selectedProduct.stock}
-              step="1"
-              placeholder="0"
-              value={quantityInput}
-              onChange={(event) => setQuantityInput(event.target.value)}
-              className="h-9 text-sm tabular-nums"
-              required
-            />
+        {/* Quantity + submit — pinned together */}
+        <div className="flex shrink-0 items-end gap-2">
+          <div className="relative w-28 shrink-0 md:w-32">
+            <saleForm.AppField
+              name="quantity"
+              validators={{
+                onChange: ({ value }) => {
+                  const isEmpty = value === undefined || value === null || String(value) === "";
+                  if (isEmpty) return REQUIRED_FIELD_ERROR;
+                  if (value < MINIMUM_ALLOWED_QUANTITY) return MINIMUM_VALUE_ERROR;
+                  const product = selectedProductRef.current;
+                  if (product && value > product.stock) {
+                    return `Stock insuficiente (disponible: ${product.stock})`;
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <saleForm.Subscribe selector={(state) => state.values.productId}>
+                  {(productId) => {
+                    const product = productId ? selectedProductRef.current : null;
+                    return (
+                      <field.NumberField
+                        label="Cantidad"
+                        compact
+                        min={String(MINIMUM_ALLOWED_QUANTITY)}
+                        max={product?.stock}
+                        step="1"
+                        placeholder={productId ? "0" : "Selecciona"}
+                        disabled={!productId}
+                        required
+                        className="h-8 text-sm tabular-nums"
+                      />
+                    );
+                  }}
+                </saleForm.Subscribe>
+              )}
+            </saleForm.AppField>
 
-            {/* Error flotante solido */}
-            {hasInsufficientStock && (
-              <div className="animate-in fade-in slide-in-from-top-1 absolute top-full left-0 z-20 mt-1.5 w-full">
-                <p className="bg-background border-destructive/20 text-destructive rounded border px-2 py-1 text-[10.5px] leading-tight font-medium shadow-sm">
-                  Stock insuficiente (disponible: {selectedProduct.stock})
-                </p>
-              </div>
-            )}
+            {/* Price preview popover */}
+            <saleForm.Subscribe
+              selector={(state) => ({
+                quantity: state.values.quantity,
+                productId: state.values.productId,
+              })}
+            >
+              {({ quantity, productId }) => {
+                const product = productId ? selectedProductRef.current : null;
+                if (!product || !quantity || quantity < MINIMUM_ALLOWED_QUANTITY || quantity > product.stock)
+                  return null;
 
-            {/* Totales flotantes solidos */}
-            {parsedQuantity > 0 && !hasInsufficientStock && (
-              <div className="bg-popover text-popover-foreground animate-in fade-in slide-in-from-top-1 absolute top-full left-0 z-20 mt-1.5 flex w-full flex-col rounded-md border px-2 py-1.5 text-[11px] shadow-md">
-                <div className="mb-0.5 flex items-center justify-between">
-                  <span className="text-muted-foreground text-[10px]">USD</span>
-                  <span className="font-semibold tabular-nums">{formatCurrencyUSD(parsedQuantity * productPriceUsd)}</span>
-                </div>
-                <div className="border-border/50 flex items-center justify-between border-t pt-1">
-                  <span className="text-muted-foreground text-[10px]">Bs</span>
-                  <span className="font-medium tabular-nums">{formatCurrencyVES(parsedQuantity * calculatedPriceVes)}</span>
-                </div>
-              </div>
-            )}
+                const totalUsd = quantity * product.price_usd;
+                const totalVes = quantity * product.price_usd * currentExchangeRate;
+
+                return (
+                  <div className="bg-popover text-popover-foreground animate-in fade-in slide-in-from-top-1 absolute top-full left-0 z-20 mt-1.5 flex w-full flex-col rounded-md border px-2 py-1.5 text-[11px] shadow-md">
+                    <div className="mb-0.5 flex items-center justify-between">
+                      <span className="text-muted-foreground text-[10px]">USD</span>
+                      <span className="font-semibold tabular-nums">{formatCurrencyUSD(totalUsd)}</span>
+                    </div>
+                    <div className="border-border/50 flex items-center justify-between border-t pt-1">
+                      <span className="text-muted-foreground text-[10px]">Bs</span>
+                      <span className="font-medium tabular-nums">{formatCurrencyVES(totalVes)}</span>
+                    </div>
+                  </div>
+                );
+              }}
+            </saleForm.Subscribe>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Button type="submit" className="h-9 shrink-0 px-3" disabled={!canAddProductToSale}>
-              Agregar
-            </Button>
-            <Kbd className="hidden opacity-50 shadow-none select-none md:inline-flex" aria-hidden="true">
-              Enter
-            </Kbd>
-          </div>
+          <saleForm.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+            {([canSubmit, isSubmitting]) => (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="icon"
+                    className="size-8 shrink-0"
+                    disabled={!canSubmit || isSubmitting}
+                    aria-label="Agregar producto"
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">
+                  Agregar <Kbd>Enter</Kbd>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </saleForm.Subscribe>
         </div>
       </fieldset>
+
+      <div
+        className="text-muted-foreground hidden items-center gap-3 text-[10.5px] md:flex"
+        aria-label="Atajos de teclado"
+      >
+        <span className="inline-flex items-center gap-1">
+          <Kbd>Tab</Kbd> navega resultados
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <Kbd>Esc</Kbd> limpia selección
+        </span>
+      </div>
     </form>
   );
 }

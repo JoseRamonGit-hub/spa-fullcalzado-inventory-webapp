@@ -23,7 +23,7 @@ export function BatchSummaryFooter({
   const hasNoItems = pendingBatchItems.length === 0;
 
   return (
-    <footer className="flex items-center justify-between gap-3 border-t pt-3 mt-4">
+    <footer className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
       <p className="text-muted-foreground text-xs tabular-nums">
         {hasNoItems ? (
           "Sin items pendientes"
@@ -46,16 +46,18 @@ export function BatchSummaryFooter({
 
       <Button
         type="button"
-        className="gap-2 shrink-0"
+        className="w-full shrink-0 gap-3 md:w-auto"
         disabled={hasNoItems || isSubmissionPending}
         onClick={onOpenConfirmDialog}
       >
         <PackagePlus data-icon="inline-start" className="h-4 w-4" />
-        {isSubmissionPending
-          ? "Procesando..."
-          : `Cargar ${!hasNoItems ? pendingBatchItems.length : ""} item${pendingBatchItems.length !== 1 ? "s" : ""}`}
-        <KbdGroup data-icon="inline-end" className="hidden lg:flex">
-          <Kbd className="ml-1">Shift ⇧</Kbd>
+        <span className="truncate">
+          {isSubmissionPending
+            ? "Procesando..."
+            : `Cargar ${!hasNoItems ? pendingBatchItems.length : ""} item${pendingBatchItems.length !== 1 ? "s" : ""}`}
+        </span>
+        <KbdGroup className="hidden opacity-60 md:flex" aria-hidden="true">
+          <Kbd>Shift ⇧</Kbd>
           <span>+</span>
           <Kbd>Enter</Kbd>
         </KbdGroup>

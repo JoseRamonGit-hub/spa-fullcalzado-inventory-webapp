@@ -8,6 +8,7 @@ type ProductSearchFieldProps = FormFieldProps & {
   showPrice?: boolean;
   autoFocus?: boolean;
   onAfterSelect?: (product: ProductSearchResult) => void;
+  onClear?: () => void;
 };
 
 /**
@@ -21,10 +22,12 @@ type ProductSearchFieldProps = FormFieldProps & {
 export function ProductSearchField({
   label,
   description,
+  compact,
   requireStock = false,
   showPrice = false,
   autoFocus = false,
   onAfterSelect,
+  onClear,
 }: ProductSearchFieldProps) {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.errors.length > 0;
@@ -36,12 +39,15 @@ export function ProductSearchField({
       if (product && onAfterSelect) {
         onAfterSelect(product);
       }
+      if (!product && onClear) {
+        onClear();
+      }
     },
-    [field, onAfterSelect],
+    [field, onAfterSelect, onClear],
   );
 
   return (
-    <FieldWrapper label={label} description={description}>
+    <FieldWrapper label={label} description={description} compact={compact}>
       <ProductSearchInput
         value={field.state.value}
         onChange={handleChange}
