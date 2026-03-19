@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import type { ExistingBatchItem } from "../columns";
-import type { ProductSearchResult } from "@/components/product-search-input";
+import { focusFirstNumberInput, useProductLookup } from "@/components/modals/shared/product-selection";
 
 const REQUIRED_FIELD_ERROR = "Requerido";
 const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
@@ -18,10 +18,7 @@ interface StockIncreaseFormProps {
 
 export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormProps) {
   const stockIncreaseFormHtmlRef = useRef<HTMLFormElement>(null);
-
-  // Holds the full product object while productId lives in the form state.
-  // A ref avoids triggering re-renders on every selection.
-  const currentlySelectedProductRef = useRef<ProductSearchResult | null>(null);
+  const { getProductById } = useProductLookup();
 
   const stockIncreaseForm = useAppForm({
     defaultValues: {
@@ -29,12 +26,12 @@ export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormPr
       addedQuantity: "" as unknown as number,
     },
     onSubmit: async ({ value }) => {
-      const selectedProduct = currentlySelectedProductRef.current;
+      const selectedProduct = getProductById(value.productId);
       if (!selectedProduct) return;
 
       const newExistingBatchItem: ExistingBatchItem = {
-        _tempId: crypto.randomUUID(),
-        _kind: "existing",
+        tempId: crypto.randomUUID(),
+        kind: "existing",
         productId: selectedProduct.id,
         code: selectedProduct.code,
         description: selectedProduct.description,
@@ -43,7 +40,6 @@ export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormPr
       };
 
       onAddPendingBatchItem(newExistingBatchItem);
-      currentlySelectedProductRef.current = null;
       stockIncreaseForm.reset();
     },
   });
@@ -57,16 +53,8 @@ export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormPr
     [stockIncreaseForm],
   );
 
-  // Called right after the user picks a product in the Command dropdown.
-  // Stores the full product object and jumps focus to the quantity input.
-  const handleAfterProductSelection = useCallback((product: ProductSearchResult) => {
-    currentlySelectedProductRef.current = product;
-    requestAnimationFrame(() => {
-      const quantityInputHtmlElement =
-        stockIncreaseFormHtmlRef.current?.querySelector<HTMLInputElement>('input[type="number"]');
-      quantityInputHtmlElement?.focus();
-      quantityInputHtmlElement?.select();
-    });
+  const handleAfterProductSelection = useCallback(() => {
+    focusFirstNumberInput(stockIncreaseFormHtmlRef.current);
   }, []);
 
   return (

@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
 
 export type NewBatchItem = {
-  _kind: "new";
-  _tempId: string;
+  kind: "new";
+  tempId: string;
   code: string;
   description: string;
   priceUsd: number;
@@ -14,8 +14,8 @@ export type NewBatchItem = {
 };
 
 export type ExistingBatchItem = {
-  _kind: "existing";
-  _tempId: string;
+  kind: "existing";
+  tempId: string;
   productId: string;
   code: string;
   description: string;
@@ -30,7 +30,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
     id: "type",
     header: "Tipo",
     cell: ({ row }) => {
-      const isNewItem = row.original._kind === "new";
+      const isNewItem = row.original.kind === "new";
       return isNewItem ? (
         <Badge variant="outline" className="px-1.5 py-0.5 text-[9px] uppercase">
           Nuevo
@@ -61,7 +61,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
     header: () => <span className="block text-right">Cant.</span>,
     cell: ({ row }) => {
       const pendingBatchItem = row.original;
-      if (pendingBatchItem._kind === "new") {
+      if (pendingBatchItem.kind === "new") {
         return <span className="block text-right font-medium tabular-nums">{pendingBatchItem.initialStock}</span>;
       }
       return (
@@ -84,7 +84,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
     header: () => <span className="block text-right">Precio</span>,
     cell: ({ row }) => {
       const pendingBatchItem = row.original;
-      if (pendingBatchItem._kind === "new") {
+      if (pendingBatchItem.kind === "new") {
         return <span className="block text-right tabular-nums">{formatCurrencyUSD(pendingBatchItem.priceUsd)}</span>;
       }
       return <span className="text-muted-foreground block text-right">—</span>;
@@ -103,7 +103,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
             variant="ghost"
             size="icon"
             className="text-muted-foreground hover:text-destructive h-6 w-6"
-            onClick={() => tableMeta?.onRemovePendingBatchItem?.(row.original._tempId)}
+            onClick={() => tableMeta?.onRemovePendingBatchItem?.(row.original.tempId)}
             aria-label={`Eliminar ${row.original.code}`}
           >
             <Trash2 className="h-3.5 w-3.5" />

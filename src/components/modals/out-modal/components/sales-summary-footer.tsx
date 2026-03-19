@@ -1,8 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ShoppingCart } from "lucide-react";
 import { SalesSummaryBlock } from "./sales-summary-block";
 import type { PendingSale } from "../types";
+import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
 
 interface SalesSummaryFooterProps {
   pendingSales: PendingSale[];
@@ -33,32 +32,28 @@ export function SalesSummaryFooter({
         totalAmountVes={totalAmountVes}
       />
 
-      <section className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
-        <p className="text-muted-foreground hidden text-xs font-medium tabular-nums md:block">
-          {!hasPendingSales
-            ? "Sin ventas pendientes"
-            : `${pendingSalesCount} venta${isMultipleSales ? "s" : ""} en cola`}
-        </p>
-        <Button
-          disabled={!hasPendingSales || isSubmissionPending}
-          onClick={onOpenConfirmDialog}
-          className="w-full shrink-0 gap-3 md:w-auto"
-        >
-          <ShoppingCart data-icon="inline-start" />
-          <span className="truncate">
-            {isSubmissionPending
+      <ModalFooterActionRow
+        message={
+          <span className="tabular-nums">
+            {!hasPendingSales
+              ? "Sin ventas pendientes"
+              : `${pendingSalesCount} venta${isMultipleSales ? "s" : ""} en cola`}
+          </span>
+        }
+      >
+        <ModalShortcutActionButton
+          icon={<ShoppingCart data-icon="inline-start" />}
+          label={
+            isSubmissionPending
               ? "Registrando..."
               : hasPendingSales
                 ? `Registrar ${pendingSalesCount} venta${isMultipleSales ? "s" : ""}`
-                : "Registrar ventas"}
-          </span>
-          <KbdGroup className="hidden opacity-60 md:flex" aria-hidden="true">
-            <Kbd>Shift ⇧</Kbd>
-            <span>+</span>
-            <Kbd>Enter</Kbd>
-          </KbdGroup>
-        </Button>
-      </section>
+                : "Registrar ventas"
+          }
+          disabled={!hasPendingSales || isSubmissionPending}
+          onClick={onOpenConfirmDialog}
+        />
+      </ModalFooterActionRow>
     </footer>
   );
 }

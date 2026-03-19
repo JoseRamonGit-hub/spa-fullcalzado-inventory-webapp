@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import type { PendingSale } from "../types";
+import { usePendingItems } from "@/components/modals/shared/use-pending-items";
 
 const INITIAL_TOTAL = 0;
 
@@ -13,19 +14,7 @@ export interface UsePendingSalesReturn {
 }
 
 export function usePendingSales(): UsePendingSalesReturn {
-  const [pendingSales, setPendingSales] = useState<PendingSale[]>([]);
-
-  const addPendingSale = useCallback((sale: PendingSale) => {
-    setPendingSales((prevSales) => [...prevSales, sale]);
-  }, []);
-
-  const removePendingSale = useCallback((tempId: string) => {
-    setPendingSales((prevSales) => prevSales.filter((sale) => sale._tempId !== tempId));
-  }, []);
-
-  const clearPendingSales = useCallback(() => {
-    setPendingSales([]);
-  }, []);
+  const { items: pendingSales, addItem, removeItem, clearItems } = usePendingItems<PendingSale>();
 
   const totalAmountUsd = useMemo(
     () => pendingSales.reduce((accumulator, sale) => accumulator + sale.totalUsd, INITIAL_TOTAL),
@@ -39,9 +28,9 @@ export function usePendingSales(): UsePendingSalesReturn {
 
   return {
     pendingSales,
-    addPendingSale,
-    removePendingSale,
-    clearPendingSales,
+    addPendingSale: addItem,
+    removePendingSale: removeItem,
+    clearPendingSales: clearItems,
     totalAmountUsd,
     totalAmountVes,
   };

@@ -65,7 +65,7 @@ export const pendingSaleColumns: ColumnDef<PendingSale>[] = [
           variant="ghost"
           size="icon"
           className="text-muted-foreground hover:text-destructive h-6 w-6"
-          onClick={() => meta?.onRemovePendingSale?.(row.original._tempId)}
+          onClick={() => meta?.onRemovePendingSale?.(row.original.tempId)}
           aria-label={`Eliminar ${row.original.code}`}
         >
           <Trash2 className="h-3.5 w-3.5" />

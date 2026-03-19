@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
 import type { BatchItem } from "../columns";
+import { usePendingItems } from "@/components/modals/shared/use-pending-items";
 
 export interface UseBatchReturn {
   pendingBatchItems: BatchItem[];
@@ -9,19 +9,12 @@ export interface UseBatchReturn {
 }
 
 export function useBatch(): UseBatchReturn {
-  const [pendingBatchItems, setPendingBatchItems] = useState<BatchItem[]>([]);
+  const { items: pendingBatchItems, addItem, removeItem, clearItems } = usePendingItems<BatchItem>();
 
-  const addPendingBatchItem = useCallback((item: BatchItem) => {
-    setPendingBatchItems((prevItems) => [...prevItems, item]);
-  }, []);
-
-  const removePendingBatchItem = useCallback((tempId: string) => {
-    setPendingBatchItems((prevItems) => prevItems.filter((item) => item._tempId !== tempId));
-  }, []);
-
-  const clearPendingBatchItems = useCallback(() => {
-    setPendingBatchItems([]);
-  }, []);
-
-  return { pendingBatchItems, addPendingBatchItem, removePendingBatchItem, clearPendingBatchItems };
+  return {
+    pendingBatchItems,
+    addPendingBatchItem: addItem,
+    removePendingBatchItem: removeItem,
+    clearPendingBatchItems: clearItems,
+  };
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +10,7 @@ import { ReturnItemsPanel } from "./components/return-items-panel";
 import { ReturnSummaryFooter } from "./components/return-summary-footer";
 import { ConfirmReturnDialog } from "./components/confirm-return-dialog";
 import type { PendingReturnItem, PendingExchangeItem } from "./types";
+import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
 
 type ReturnTabValue = "return" | "exchange";
 
@@ -23,8 +24,9 @@ const INITIAL_FALLBACK_RATE = 0;
 export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
   const { data: exchangeRateData } = useExchangeRate();
   const currentExchangeRate = exchangeRateData?.rate ?? INITIAL_FALLBACK_RATE;
+  const isExchangeRateReady = currentExchangeRate > INITIAL_FALLBACK_RATE;
 
-  const [currentTab, setCurrentTab] = useState<ReturnTabValue>("return");
+  const [activeTab, setActiveTab] = useState<ReturnTabValue>("return");
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [notes, setNotes] = useState("");
 
@@ -64,36 +66,37 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
       if (!isCurrentlyOpen) {
         clearAll();
         setNotes("");
-        setCurrentTab("return");
+        setActiveTab("return");
       }
       onOpenChange(isCurrentlyOpen);
     },
     [onOpenChange, clearAll],
   );
 
-  // ── Keyboard shortcuts: Alt+D (devolver), Alt+C (cambiar), Shift+Enter (confirmar) ──
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
+  const keyboardShortcuts = useMemo(
+    () => [
+      {
+        key: "d",
+        altKey: true,
+        onTrigger: () => setActiveTab("return"),
+      },
+      {
+        key: "c",
+        altKey: true,
+        onTrigger: () => setActiveTab("exchange"),
+      },
+      {
+        key: "enter",
+        shiftKey: true,
+        when: returnItems.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
+        stopPropagation: true,
+        onTrigger: () => setIsConfirmDialogOpen(true),
+      },
+    ],
+    [returnItems.length, isConfirmDialogOpen, isExchangeRateReady],
+  );
 
-      if (e.altKey && key === "d") {
-        e.preventDefault();
-        setCurrentTab("return");
-      }
-      if (e.altKey && key === "c") {
-        e.preventDefault();
-        setCurrentTab("exchange");
-      }
-      if (e.shiftKey && e.key === "Enter" && returnItems.length > 0 && !isConfirmDialogOpen) {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsConfirmDialogOpen(true);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, returnItems.length, isConfirmDialogOpen]);
+  useModalKeyboardShortcuts({ enabled: isOpen, shortcuts: keyboardShortcuts });
 
   // ── Handlers ───────────────────────────────────────────────
   const handleAddReturnItem = useCallback(
@@ -106,7 +109,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
       priceVes: number;
     }) => {
       const pendingItem: PendingReturnItem = {
-        _tempId: crypto.randomUUID(),
+        tempId: crypto.randomUUID(),
         productId: item.productId,
         code: item.code,
         description: item.description,
@@ -132,7 +135,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
       availableStock: number;
     }) => {
       const pendingItem: PendingExchangeItem = {
-        _tempId: crypto.randomUUID(),
+        tempId: crypto.randomUUID(),
         productId: item.productId,
         code: item.code,
         description: item.description,
@@ -168,6 +171,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
             differenceUsd={differenceUsd}
             differenceVes={differenceVes}
             currentExchangeRate={currentExchangeRate}
+            isExchangeRateReady={isExchangeRateReady}
             isSubmissionPending={isSubmissionPending}
             notes={notes}
             onNotesChange={setNotes}
@@ -177,7 +181,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
       >
         <section className="flex flex-col gap-4">
           <header className="-mx-6 -mt-6">
-            <Tabs value={currentTab} onValueChange={(v) => setCurrentTab(v as ReturnTabValue)} className="gap-0">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ReturnTabValue)} className="gap-0">
               <TabsList className="h-10 w-full rounded-none border-x-0 border-t-0 p-0">
                 <TabsTrigger value="return" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+D">
                   Entrada
@@ -208,12 +212,17 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
               </TabsList>
 
               <TabsContent value="return" className="px-4 pt-3 md:px-6 md:pt-4">
-                <ProductReturnForm currentExchangeRate={currentExchangeRate} onAddItem={handleAddReturnItem} />
+                <ProductReturnForm
+                  currentExchangeRate={currentExchangeRate}
+                  isExchangeRateReady={isExchangeRateReady}
+                  onAddItem={handleAddReturnItem}
+                />
               </TabsContent>
 
               <TabsContent value="exchange" className="px-4 pt-3 md:px-6 md:pt-4">
                 <ProductReturnForm
                   currentExchangeRate={currentExchangeRate}
+                  isExchangeRateReady={isExchangeRateReady}
                   requireStock
                   onAddItem={handleAddExchangeItem}
                 />
@@ -242,6 +251,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
         differenceUsd={differenceUsd}
         differenceVes={differenceVes}
         currentExchangeRate={currentExchangeRate}
+        isExchangeRateReady={isExchangeRateReady}
         isSubmissionPending={isSubmissionPending}
         notes={notes}
         onConfirmSubmit={submitReturn}

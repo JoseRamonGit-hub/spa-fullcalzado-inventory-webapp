@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useFieldContext } from "@/hooks/form";
-import { ProductSearchInput, type ProductSearchResult } from "@/components/product-search-input";
+import { ProductSearch, type ProductSearchResult } from "@/components/product-search";
 import { FieldWrapper, type FormFieldProps } from "./field-wrapper";
 
 type ProductSearchFieldProps = FormFieldProps & {
@@ -13,8 +13,7 @@ type ProductSearchFieldProps = FormFieldProps & {
 
 /**
  * TanStack Form field component for product search.
- * Wires `field.state.value` (product id string) and `field.handleChange`
- * into `ProductSearchInput` — same composition pattern as TextField / NumberField.
+ * Keeps the form-aware adapter thin and delegates UI/search behavior to ProductSearch.
  *
  * Usage inside form.AppField:
  *   <field.ProductSearchField label="Producto" autoFocus />
@@ -48,12 +47,10 @@ export function ProductSearchField({
 
   return (
     <FieldWrapper label={label} description={description} compact={compact}>
-      <ProductSearchInput
+      <ProductSearch
         value={field.state.value}
         onChange={handleChange}
-        requireStock={requireStock}
-        showPrice={showPrice}
-        autoFocus={autoFocus}
+        options={{ requireStock, showPrice, autoFocus }}
         isInvalid={isInvalid}
       />
     </FieldWrapper>

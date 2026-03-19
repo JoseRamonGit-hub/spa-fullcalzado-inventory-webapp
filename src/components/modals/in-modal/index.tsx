@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingItemColumns } from "./columns";
@@ -10,6 +10,7 @@ import { ConfirmBatchDialog } from "./components/confirm-batch-dialog";
 import { BatchSummaryFooter } from "./components/batch-summary-footer";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
 
 type InModalTabValue = "new" | "existing";
 
@@ -19,7 +20,7 @@ type InModalProps = {
 };
 
 export function InModal({ isOpen, onOpenChange }: InModalProps) {
-  const [currentActiveTab, setCurrentActiveTab] = useState<InModalTabValue>("new");
+  const [activeTab, setActiveTab] = useState<InModalTabValue>("new");
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
   const { pendingBatchItems, addPendingBatchItem, removePendingBatchItem, clearPendingBatchItems } = useBatch();
@@ -39,47 +40,44 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
     (isCurrentlyOpen: boolean) => {
       if (!isCurrentlyOpen) {
         clearPendingBatchItems();
-        setCurrentActiveTab("new");
+        setActiveTab("new");
       }
       onOpenChange(isCurrentlyOpen);
     },
     [onOpenChange, clearPendingBatchItems],
   );
 
-  useEffect(() => {
-    if (!isOpen) return;
+  const keyboardShortcuts = useMemo(
+    () => [
+      {
+        key: "n",
+        altKey: true,
+        onTrigger: () => setActiveTab("new"),
+      },
+      {
+        key: "e",
+        altKey: true,
+        onTrigger: () => setActiveTab("existing"),
+      },
+      {
+        key: "enter",
+        shiftKey: true,
+        when: pendingBatchItems.length > 0,
+        stopPropagation: true,
+        onTrigger: () => setIsConfirmDialogOpen(true),
+      },
+    ],
+    [pendingBatchItems.length],
+  );
 
-    const handleKeyboardShortcut = (event: KeyboardEvent) => {
-      const isAltKeyActive = event.altKey;
-      const isShiftKeyActive = event.shiftKey;
-      const keyLowerCase = event.key.toLowerCase();
-      const hasPendingBatchItems = pendingBatchItems.length > 0;
-
-      if (isAltKeyActive && keyLowerCase === "n") {
-        event.preventDefault();
-        setCurrentActiveTab("new");
-      }
-      if (isAltKeyActive && keyLowerCase === "e") {
-        event.preventDefault();
-        setCurrentActiveTab("existing");
-      }
-      if (isShiftKeyActive && event.key === "Enter" && hasPendingBatchItems) {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsConfirmDialogOpen(true);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyboardShortcut);
-    return () => window.removeEventListener("keydown", handleKeyboardShortcut);
-  }, [isOpen, pendingBatchItems.length]);
+  useModalKeyboardShortcuts({ enabled: isOpen, shortcuts: keyboardShortcuts });
 
   useEffect(() => {
-    if (!isOpen || currentActiveTab !== "new") return;
+    if (!isOpen || activeTab !== "new") return;
     requestAnimationFrame(() => {
       document.querySelector<HTMLInputElement>('input[name="code"]')?.focus();
     });
-  }, [isOpen, currentActiveTab]);
+  }, [isOpen, activeTab]);
 
   return (
     <>
@@ -101,11 +99,7 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
       >
         <section className="flex flex-col gap-4">
           <header className="-mx-6 -mt-6">
-            <Tabs
-              value={currentActiveTab}
-              onValueChange={(value) => setCurrentActiveTab(value as InModalTabValue)}
-              className="gap-0"
-            >
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as InModalTabValue)} className="gap-0">
               <TabsList className="h-10 w-full rounded-none border-x-0 border-t-0 p-0">
                 <TabsTrigger value="new" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+N">
                   Nuevo Producto

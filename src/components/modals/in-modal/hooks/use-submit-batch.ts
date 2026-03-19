@@ -22,22 +22,20 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
     const hasNoItems = pendingBatchItems.length === 0;
     if (hasNoItems) return;
 
-    const newBatchItems = pendingBatchItems.filter((item): item is NewBatchItem => item._kind === "new");
-    const existingBatchItems = pendingBatchItems.filter((item): item is ExistingBatchItem => item._kind === "existing");
+    const newBatchItems = pendingBatchItems.filter((item): item is NewBatchItem => item.kind === "new");
+    const existingBatchItems = pendingBatchItems.filter((item): item is ExistingBatchItem => item.kind === "existing");
 
     const batchOperations: Promise<unknown>[] = [];
 
     if (newBatchItems.length > 0) {
-      const newProductsPayload = newBatchItems.map(({ _tempId, _kind, initialStock, ...restProps }) => ({
-        ...restProps,
-        price_usd: restProps.priceUsd,
-        stock: initialStock,
+      const newProductsPayload = newBatchItems.map((item) => ({
+        code: item.code,
+        description: item.description,
+        price_usd: item.priceUsd,
+        stock: item.initialStock,
       }));
 
-      // Clean up properties not expected by the API
-      const safePayload = newProductsPayload.map(({ priceUsd, ...keep }) => keep);
-
-      batchOperations.push(createManyProductsMutation.mutateAsync(safePayload));
+      batchOperations.push(createManyProductsMutation.mutateAsync(newProductsPayload));
     }
 
     if (existingBatchItems.length > 0 && currentUser) {

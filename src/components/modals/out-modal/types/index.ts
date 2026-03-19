@@ -1,5 +1,5 @@
 export type PendingSale = {
-  _tempId: string;
+  tempId: string;
   productId: string;
   code: string;
   description: string;

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
@@ -10,6 +10,7 @@ import { useSubmitSales } from "./hooks/use-submit-sales";
 import { ProductSaleForm } from "./components/product-sale-form";
 import { SalesSummaryFooter } from "./components/sales-summary-footer";
 import { ConfirmSalesDialog } from "./components/confirm-sales-dialog";
+import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
 
 type OutModalProps = {
   isOpen: boolean;
@@ -51,19 +52,20 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     [onOpenChange, clearPendingSales],
   );
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyboardShortcut = (event: KeyboardEvent) => {
-      const hasPendingSales = pendingSales.length > 0;
-      if (event.shiftKey && event.key === "Enter" && hasPendingSales && !isConfirmDialogOpen) {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsConfirmDialogOpen(true);
-      }
-    };
-    window.addEventListener("keydown", handleKeyboardShortcut);
-    return () => window.removeEventListener("keydown", handleKeyboardShortcut);
-  }, [isOpen, pendingSales.length, isConfirmDialogOpen]);
+  const keyboardShortcuts = useMemo(
+    () => [
+      {
+        key: "enter",
+        shiftKey: true,
+        when: pendingSales.length > 0 && !isConfirmDialogOpen,
+        stopPropagation: true,
+        onTrigger: () => setIsConfirmDialogOpen(true),
+      },
+    ],
+    [pendingSales.length, isConfirmDialogOpen],
+  );
+
+  useModalKeyboardShortcuts({ enabled: isOpen, shortcuts: keyboardShortcuts });
 
   return (
     <>

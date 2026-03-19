@@ -30,9 +30,7 @@ function ItemRow({
       className={`border-border/40 flex items-center gap-3 border-b px-4 py-1.5 ${striped ? "bg-table-stripe" : ""}`}
     >
       <span className="product-code text-xs uppercase">{code}</span>
-      <span className="text-muted-foreground hidden min-w-0 flex-1 truncate text-[13px] md:block">
-        {description}
-      </span>
+      <span className="text-muted-foreground hidden min-w-0 flex-1 truncate text-[13px] md:block">{description}</span>
       <span className="text-muted-foreground ml-auto text-[13px] tabular-nums md:ml-0">{quantity}</span>
       <span className="text-muted-foreground w-20 text-right text-[13px] tabular-nums">
         {formatCurrencyUSD(totalUsd)}
@@ -88,13 +86,13 @@ export function ReturnItemsPanel({
           </div>
           {returnItems.map((item, index) => (
             <ItemRow
-              key={item._tempId}
+              key={item.tempId}
               code={item.code}
               description={item.description}
               quantity={item.quantity}
               totalUsd={item.totalUsd}
               striped={index % 2 === 1}
-              onRemove={() => onRemoveReturnItem(item._tempId)}
+              onRemove={() => onRemoveReturnItem(item.tempId)}
             />
           ))}
         </div>
@@ -116,13 +114,13 @@ export function ReturnItemsPanel({
           </div>
           {exchangeItems.map((item, index) => (
             <ItemRow
-              key={item._tempId}
+              key={item.tempId}
               code={item.code}
               description={item.description}
               quantity={item.quantity}
               totalUsd={item.totalUsd}
               striped={index % 2 === 1}
-              onRemove={() => onRemoveExchangeItem(item._tempId)}
+              onRemove={() => onRemoveExchangeItem(item.tempId)}
             />
           ))}
         </div>

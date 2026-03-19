@@ -26,8 +26,8 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
     },
     onSubmit: async ({ value }) => {
       const newPendingItem: NewBatchItem = {
-        _tempId: crypto.randomUUID(),
-        _kind: "new",
+        tempId: crypto.randomUUID(),
+        kind: "new",
         code: value.code.trim(),
         description: value.description.trim(),
         priceUsd: value.priceUsd,

@@ -1,35 +1,27 @@
-import { useState, useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
+import { usePendingItems } from "@/components/modals/shared/use-pending-items";
 
 const INITIAL_TOTAL = 0;
 
 export function usePendingReturn() {
-  const [returnItems, setReturnItems] = useState<PendingReturnItem[]>([]);
-  const [exchangeItems, setExchangeItems] = useState<PendingExchangeItem[]>([]);
+  const {
+    items: returnItems,
+    addItem: addReturnItem,
+    removeItem: removeReturnItem,
+    clearItems: clearReturnItems,
+  } = usePendingItems<PendingReturnItem>();
+  const {
+    items: exchangeItems,
+    addItem: addExchangeItem,
+    removeItem: removeExchangeItem,
+    clearItems: clearExchangeItems,
+  } = usePendingItems<PendingExchangeItem>();
 
-  // ── Return items (products the customer is returning) ──────
-  const addReturnItem = useCallback((item: PendingReturnItem) => {
-    setReturnItems((prev) => [...prev, item]);
-  }, []);
-
-  const removeReturnItem = useCallback((tempId: string) => {
-    setReturnItems((prev) => prev.filter((item) => item._tempId !== tempId));
-  }, []);
-
-  // ── Exchange items (new products the customer is taking) ───
-  const addExchangeItem = useCallback((item: PendingExchangeItem) => {
-    setExchangeItems((prev) => [...prev, item]);
-  }, []);
-
-  const removeExchangeItem = useCallback((tempId: string) => {
-    setExchangeItems((prev) => prev.filter((item) => item._tempId !== tempId));
-  }, []);
-
-  // ── Clear all ──────────────────────────────────────────────
-  const clearAll = useCallback(() => {
-    setReturnItems([]);
-    setExchangeItems([]);
-  }, []);
+  const clearAll = () => {
+    clearReturnItems();
+    clearExchangeItems();
+  };
 
   // ── Calculated totals ─────────────────────────────────────
   const creditUsd = useMemo(() => returnItems.reduce((acc, item) => acc + item.totalUsd, INITIAL_TOTAL), [returnItems]);

@@ -1,9 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { IterationCcw } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
 
 interface ReturnSummaryFooterProps {
   hasReturnItems: boolean;
@@ -13,6 +12,7 @@ interface ReturnSummaryFooterProps {
   differenceUsd: number;
   differenceVes: number;
   currentExchangeRate: number;
+  isExchangeRateReady: boolean;
   isSubmissionPending: boolean;
   notes: string;
   onNotesChange: (notes: string) => void;
@@ -27,6 +27,7 @@ export function ReturnSummaryFooter({
   differenceUsd,
   differenceVes,
   currentExchangeRate,
+  isExchangeRateReady,
   isSubmissionPending,
   notes,
   onNotesChange,
@@ -38,7 +39,8 @@ export function ReturnSummaryFooter({
   // Employees cannot process refunds or negative differences
   const isBlockedByRole = isEmployee && (returnType === "refund" || differenceUsd < 0);
 
-  const canSubmit = hasReturnItems && !isSubmissionPending && !isBlockedByRole;
+  const isBlockedByExchangeRate = !isExchangeRateReady;
+  const canSubmit = hasReturnItems && !isSubmissionPending && !isBlockedByRole && !isBlockedByExchangeRate;
 
   const buttonLabel =
     returnType === "exchange"
@@ -53,11 +55,21 @@ export function ReturnSummaryFooter({
     ? returnType === "refund"
       ? "Solo un administrador puede procesar devoluciones"
       : "Solo un administrador puede procesar cambios con saldo a favor"
-    : undefined;
+    : isBlockedByExchangeRate
+      ? "La tasa de cambio no est\u00e1 disponible. Actualiza la tasa antes de confirmar."
+      : undefined;
 
   return (
     <footer className="flex w-full flex-col gap-3">
-      {/* Notes input */}
+      {!isExchangeRateReady && (
+        <section className="border-warning/40 bg-warning/8 rounded-md border px-3 py-2 text-xs">
+          <p className="text-warning-foreground font-medium">Tasa no disponible</p>
+          <p className="text-muted-foreground mt-1">
+            No puedes registrar devoluciones o cambios hasta que exista una tasa de cambio vigente.
+          </p>
+        </section>
+      )}
+
       <textarea
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
@@ -107,29 +119,26 @@ export function ReturnSummaryFooter({
         </div>
       </section>
 
-      {/* Action row */}
-      <section className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
-        <p className="text-muted-foreground hidden text-xs font-medium md:block">
-          {differenceUsd > 0
+      <ModalFooterActionRow
+        message={
+          differenceUsd > 0
             ? "Cliente paga la diferencia"
             : differenceUsd < 0
               ? "Tienda devuelve la diferencia"
               : hasReturnItems
                 ? "Cambio exacto — sin pago"
-                : "Agrega productos a devolver"}
-        </p>
+                : "Agrega productos a devolver"
+        }
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="w-full md:w-auto">
-              <Button disabled={!canSubmit} onClick={onOpenConfirmDialog} className="w-full shrink-0 gap-3 md:w-auto">
-                <IterationCcw data-icon="inline-start" />
-                <span className="truncate">{buttonLabel}</span>
-                <KbdGroup className="hidden opacity-60 md:flex" aria-hidden="true">
-                  <Kbd>Shift ⇧</Kbd>
-                  <span>+</span>
-                  <Kbd>Enter</Kbd>
-                </KbdGroup>
-              </Button>
+              <ModalShortcutActionButton
+                icon={<IterationCcw data-icon="inline-start" />}
+                label={buttonLabel}
+                disabled={!canSubmit}
+                onClick={onOpenConfirmDialog}
+              />
             </span>
           </TooltipTrigger>
           {blockedTooltip && (
@@ -138,7 +147,7 @@ export function ReturnSummaryFooter({
             </TooltipContent>
           )}
         </Tooltip>
-      </section>
+      </ModalFooterActionRow>
     </footer>
   );
 }
