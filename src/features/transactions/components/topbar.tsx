@@ -12,11 +12,7 @@ export function Topbar({ date, onDateChange }: TopbarProps) {
         <span className="bg-primary h-1.5 w-1.5 rounded-full" aria-hidden="true" />
         <h2 className="text-foreground text-sm font-semibold whitespace-nowrap">Ventas</h2>
       </div>
-      <DatePickerFilter
-        value={date}
-        onChange={onDateChange}
-        placeholder="Filtrar por día"
-      />
+      <DatePickerFilter value={date} onChange={onDateChange} placeholder="Filtrar por día" />
     </header>
   );
 }

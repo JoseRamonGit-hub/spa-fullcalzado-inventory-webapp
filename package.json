@@ -16,7 +16,9 @@
     "generate-routes": "tsr generate",
     "watch-routes": "tsr watch",
     "supabase:env": "npx supabase status -o env | grep -E 'API_URL|PUBLISHABLE_KEY' | sed 's/API_URL/VITE_SUPABASE_URL/' | sed 's/UBLISHABLE_KEY/VITE_SUPABASE_ANON_KEY/' >.env.development",
-    "supabase:start": "supabase start"
+    "supabase:start": "supabase start",
+    "supabase:reset": "npx supabase db reset",
+    "supabase:seed": "npx supabase db seed"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",

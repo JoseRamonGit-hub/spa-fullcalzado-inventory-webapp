@@ -74,7 +74,7 @@ describe("useProducts", () => {
   describe("Mutations", () => {
     it("create product invalidates lists query", async () => {
       mockCreate.mockResolvedValueOnce(fakeProduct);
-      
+
       const { result } = renderHook(() => useCreateProduct(), {
         wrapper: createWrapper(),
       });
@@ -83,7 +83,7 @@ describe("useProducts", () => {
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
 
       const insertData: ProductInsert = { code: "SHO-01", description: "Zapatos Nike", price_usd: 120, stock: 10 };
-      
+
       act(() => {
         result.current.mutate(insertData);
       });
@@ -98,7 +98,7 @@ describe("useProducts", () => {
 
     it("update product invalidates lists and specific detail query", async () => {
       mockUpdate.mockResolvedValueOnce(fakeProduct);
-      
+
       const { result } = renderHook(() => useUpdateProduct(), {
         wrapper: createWrapper(),
       });
@@ -106,7 +106,7 @@ describe("useProducts", () => {
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
 
       const updateData: ProductUpdate = { price_usd: 150 };
-      
+
       act(() => {
         result.current.mutate({ id: "prod-1", payload: updateData });
       });
@@ -122,13 +122,13 @@ describe("useProducts", () => {
 
     it("delete product invalidates lists and specific detail query", async () => {
       mockDelete.mockResolvedValueOnce(undefined);
-      
+
       const { result } = renderHook(() => useDeleteProduct(), {
         wrapper: createWrapper(),
       });
 
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
-      
+
       act(() => {
         result.current.mutate("prod-1");
       });

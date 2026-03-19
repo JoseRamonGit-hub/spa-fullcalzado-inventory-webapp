@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Package, ArrowLeftRight, Plus, Tags, Menu } from "lucide-react";
+import { Package, ArrowLeftRight, Plus, Tags, Menu, IterationCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -13,7 +13,7 @@ export function BottomBar() {
   const currentPath = routerState.location.pathname;
   const [actionDrawerOpen, setActionDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { setInModalOpen, setOutModalOpen } = useModalStore();
+  const { setInModalOpen, setOutModalOpen, setReturnModalOpen } = useModalStore();
 
   const renderNavItem = (title: string, url: string, Icon: React.ElementType) => {
     const isActive = currentPath.startsWith(url);
@@ -116,6 +116,22 @@ export function BottomBar() {
               <div className="flex flex-col items-start">
                 <span className="text-sm font-semibold">Registrar Venta</span>
                 <span className="text-muted-foreground text-xs">Vender un producto del inventario</span>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
+              onClick={() => {
+                setActionDrawerOpen(false);
+                setReturnModalOpen(true);
+              }}
+            >
+              <div className="bg-warning/10 flex h-10 w-10 items-center justify-center rounded-lg">
+                <IterationCcw className="text-warning h-5 w-5" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-semibold">Registrar Devolución</span>
+                <span className="text-muted-foreground text-xs">Cambio o devolución de producto</span>
               </div>
             </Button>
           </div>

@@ -36,7 +36,7 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
 
       // Clean up properties not expected by the API
       const safePayload = newProductsPayload.map(({ priceUsd, ...keep }) => keep);
-      
+
       batchOperations.push(createManyProductsMutation.mutateAsync(safePayload));
     }
 
@@ -63,7 +63,14 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
     await batchPromises;
     clearPendingBatchItems();
     onSuccess();
-  }, [pendingBatchItems, createManyProductsMutation, createManyMovementsMutation, currentUser, clearPendingBatchItems, onSuccess]);
+  }, [
+    pendingBatchItems,
+    createManyProductsMutation,
+    createManyMovementsMutation,
+    currentUser,
+    clearPendingBatchItems,
+    onSuccess,
+  ]);
 
   return { submitPendingBatchItems, isSubmissionPending };
 }

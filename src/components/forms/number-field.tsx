@@ -8,9 +8,7 @@ type NumberFieldProps = FormFieldProps & React.ComponentProps<"input"> & {};
 export function NumberField({ label, description, compact, ...props }: NumberFieldProps) {
   const field = useFieldContext<number>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-  const [displayValue, setDisplayValue] = useState<string>(
-    field.state.value ? String(field.state.value) : ""
-  );
+  const [displayValue, setDisplayValue] = useState<string>(field.state.value ? String(field.state.value) : "");
 
   // Sync displayValue when form value changes externally (e.g. form reset)
   useEffect(() => {

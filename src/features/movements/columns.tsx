@@ -10,11 +10,11 @@ export const columns = [
     header: () => <div className="text-center">Tipo</div>,
     cell: ({ getValue }) => {
       const type = getValue();
+      const variant = type === "entry" ? "success" : type === "return" ? "warning" : "destructive";
+      const label = type === "entry" ? "Entrada" : type === "return" ? "Devolución" : "Salida";
       return (
         <span className="flex justify-center">
-          <Badge variant={type === "entry" ? "success" : "destructive"}>
-            {type === "entry" ? "Entrada" : "Salida"}
-          </Badge>
+          <Badge variant={variant}>{label}</Badge>
         </span>
       );
     },

@@ -1,5 +1,6 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
+import { Badge } from "@/components/ui/badge";
 import { formatTime, formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<TransactionWithRelations>();
@@ -17,7 +18,16 @@ export const columns = [
   }),
   columnHelper.accessor("products.code", {
     header: "Código",
-    cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
+    cell: ({ getValue, row }) => (
+      <span className="flex items-center gap-1.5">
+        <span className="product-code font-bold uppercase">{getValue()}</span>
+        {row.original.return_id && (
+          <Badge variant="outline" className="text-warning border-warning/30 px-1.5 py-0 text-[10px]">
+            Cambio
+          </Badge>
+        )}
+      </span>
+    ),
   }),
   columnHelper.accessor("products.description", {
     header: "Descripción",

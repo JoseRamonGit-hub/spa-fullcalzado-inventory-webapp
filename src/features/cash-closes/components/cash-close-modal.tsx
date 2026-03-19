@@ -11,14 +11,7 @@ interface CashCloseModalProps {
   metrics: { count: number; units: number; totalUsd: number; totalVes: number };
 }
 
-export function CashCloseModal({
-  open,
-  onOpenChange,
-  isPending,
-  onConfirm,
-  today,
-  metrics,
-}: CashCloseModalProps) {
+export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today, metrics }: CashCloseModalProps) {
   return (
     <ResponsiveAlertModal
       open={open}
@@ -76,7 +69,10 @@ export function CashCloseModal({
         </div>
 
         <div className="flex items-start gap-2.5 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+          <AlertTriangle
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+            aria-hidden="true"
+          />
           <p className="text-muted-foreground text-[11px] leading-relaxed">
             Una vez confirmado, no se puede deshacer. Asegúrate de que todas las ventas del día están registradas.
           </p>

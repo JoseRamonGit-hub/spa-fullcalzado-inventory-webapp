@@ -25,10 +25,7 @@ export const inventoryMovementsService = {
   },
 
   createMany: async (payloads: InventoryMovementInsert[]): Promise<InventoryMovementWithRelations[]> => {
-    const { data, error } = await supabase
-      .from("inventory_movements")
-      .insert(payloads)
-      .select(MOVEMENT_SELECT);
+    const { data, error } = await supabase.from("inventory_movements").insert(payloads).select(MOVEMENT_SELECT);
 
     if (error) throw new Error(error.message);
     return data;

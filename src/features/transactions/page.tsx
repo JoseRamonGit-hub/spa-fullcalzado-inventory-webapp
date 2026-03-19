@@ -43,9 +43,7 @@ export function TransactionsPage() {
     );
   }, [sourceTxs]);
 
-  const metricsLabel = isFiltered
-    ? `Ventas del ${formatDate(date + "T12:00:00")}`
-    : "Ventas de Hoy";
+  const metricsLabel = isFiltered ? `Ventas del ${formatDate(date + "T12:00:00")}` : "Ventas de Hoy";
 
   const topbarProps = { date, onDateChange: setDate };
 
@@ -98,9 +96,7 @@ export function TransactionsPage() {
                 Filtrado
               </span>
             )}
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              {metricsLabel}
-            </h3>
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">{metricsLabel}</h3>
           </div>
           <div className="divide-border/50 grid grid-cols-3 divide-x">
             {metricItems.map((m, i) => (
@@ -131,9 +127,7 @@ export function TransactionsPage() {
               {isFiltered ? "Ventas del día" : "Histórico"}
             </h3>
             {isFiltered && (
-              <span className="text-muted-foreground text-[10px]">
-                {transactions?.length ?? 0} registros
-              </span>
+              <span className="text-muted-foreground text-[10px]">{transactions?.length ?? 0} registros</span>
             )}
           </div>
           <DataTable columns={columns} data={transactions || []} emptyMessage="No hay ventas registradas." />

@@ -62,7 +62,8 @@ export function StockIncreaseForm({ onAddPendingBatchItem }: StockIncreaseFormPr
   const handleAfterProductSelection = useCallback((product: ProductSearchResult) => {
     currentlySelectedProductRef.current = product;
     requestAnimationFrame(() => {
-      const quantityInputHtmlElement = stockIncreaseFormHtmlRef.current?.querySelector<HTMLInputElement>('input[type="number"]');
+      const quantityInputHtmlElement =
+        stockIncreaseFormHtmlRef.current?.querySelector<HTMLInputElement>('input[type="number"]');
       quantityInputHtmlElement?.focus();
       quantityInputHtmlElement?.select();
     });

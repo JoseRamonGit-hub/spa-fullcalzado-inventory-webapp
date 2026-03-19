@@ -12,14 +12,7 @@ interface MetricsSummaryProps {
   hasUser: boolean;
 }
 
-export function MetricsSummary({
-  metrics,
-  label,
-  isFiltered,
-  onOpenConfirm,
-  isPending,
-  hasUser,
-}: MetricsSummaryProps) {
+export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPending, hasUser }: MetricsSummaryProps) {
   const summaryItems = [
     { label: "Transacciones", value: String(metrics.count), icon: Hash },
     { label: "Unidades Vendidas", value: String(metrics.units), icon: ShoppingCart },
@@ -54,9 +47,7 @@ export function MetricsSummary({
           >
             <div className="text-muted-foreground flex items-center gap-1.5">
               <item.icon className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
-                {item.label}
-              </p>
+              <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{item.label}</p>
             </div>
             <p className="truncate text-sm leading-none font-bold tabular-nums sm:text-lg" title={item.value}>
               {item.value}

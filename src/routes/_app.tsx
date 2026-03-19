@@ -3,9 +3,10 @@ import { AppSidebar } from "../components/app-sidebar";
 import { BottomBar } from "../components/bottom-bar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { PackagePlus, ShoppingCart, Moon, Sun } from "lucide-react";
+import { PackagePlus, ShoppingCart, IterationCcw, Moon, Sun } from "lucide-react";
 import { InModal } from "@/components/modals/in-modal";
 import { OutModal } from "@/components/modals/out-modal";
+import { ReturnModal } from "@/components/modals/return-modal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
@@ -26,7 +27,8 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppLayout() {
-  const { isInModalOpen, isOutModalOpen, setInModalOpen, setOutModalOpen } = useModalStore();
+  const { isInModalOpen, isOutModalOpen, isReturnModalOpen, setInModalOpen, setOutModalOpen, setReturnModalOpen } =
+    useModalStore();
   const { data: exchangeRate } = useExchangeRate();
   const { theme, setTheme } = useTheme();
   const user = useAuthStore((s) => s.user);
@@ -42,9 +44,13 @@ function AppLayout() {
           e.preventDefault();
           setOutModalOpen(true);
         }
+        if (e.key === "k" || e.key === "K") {
+          e.preventDefault();
+          setReturnModalOpen(true);
+        }
       }
     },
-    [setInModalOpen, setOutModalOpen],
+    [setInModalOpen, setOutModalOpen, setReturnModalOpen],
   );
 
   useEffect(() => {
@@ -84,6 +90,16 @@ function AppLayout() {
               <span>Venta</span>
               <kbd className="kbd hidden lg:inline-flex">Ctrl+J</kbd>
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setReturnModalOpen(true)}
+              className="text-foreground hover:text-primary hover:bg-primary/8 hidden h-7 gap-1.5 px-2 text-xs md:inline-flex"
+            >
+              <IterationCcw className="h-3.5 w-3.5" />
+              <span>Devolución</span>
+              <kbd className="kbd hidden lg:inline-flex">Ctrl+K</kbd>
+            </Button>
 
             {/* Mobile-only: user name + role */}
             <div className="flex items-center gap-1.5 md:hidden">
@@ -122,6 +138,7 @@ function AppLayout() {
 
       <InModal isOpen={isInModalOpen} onOpenChange={setInModalOpen} />
       <OutModal isOpen={isOutModalOpen} onOpenChange={setOutModalOpen} />
+      <ReturnModal isOpen={isReturnModalOpen} onOpenChange={setReturnModalOpen} />
     </SidebarProvider>
   );
 }
