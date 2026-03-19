@@ -198,7 +198,7 @@ export function ProductSaleForm({ currentExchangeRate, onAddPendingSale }: Produ
         </div>
       </fieldset>
 
-      <div
+      {/* <div
         className="text-muted-foreground hidden items-center gap-3 text-[10.5px] md:flex"
         aria-label="Atajos de teclado"
       >
@@ -208,7 +208,7 @@ export function ProductSaleForm({ currentExchangeRate, onAddPendingSale }: Produ
         <span className="inline-flex items-center gap-1">
           <Kbd>Esc</Kbd> limpia selección
         </span>
-      </div>
+      </div> */}
     </form>
   );
 }

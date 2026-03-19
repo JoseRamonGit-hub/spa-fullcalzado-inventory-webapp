@@ -1,13 +1,6 @@
 import { useState, useMemo, useTransition, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { Product } from "@/types/index";
 import type { ProductSearchResult } from "./product-search-input";
@@ -127,16 +120,14 @@ export function ProductCommandSearch({
         shouldFilter={false}
         className={cn(
           // Match Input sizing & shape
-          "h-8 w-full rounded-md border bg-card shadow-xs transition-[color,box-shadow]",
+          "bg-card h-8 w-full rounded-md border shadow-xs transition-[color,box-shadow]",
           // Override internal Command heights to fit h-8 and remove the border-b
           "**:data-[slot=command-input-wrapper]:h-full **:data-[slot=command-input-wrapper]:border-b-0",
           "**:data-[slot=command-input]:h-full **:data-[slot=command-input]:py-0",
           // Focus ring — same as Input's focus-visible ring
-          "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
+          "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
           // Invalid state — same as Input's aria-invalid ring
-          isInvalid
-            ? "border-destructive ring-destructive/20 dark:ring-destructive/40"
-            : "border-input",
+          isInvalid ? "border-destructive ring-destructive/20 dark:ring-destructive/40" : "border-input",
         )}
       >
         <CommandInput
@@ -148,14 +139,14 @@ export function ProductCommandSearch({
           onKeyDown={handleKeyDown}
           className="text-sm"
           autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
         />
 
         {showDropdown && (
           <div className="bg-popover absolute top-full left-0 z-50 mt-1 w-full rounded-md border shadow-lg">
             <CommandList className="max-h-44 overflow-y-auto">
-              <CommandEmpty className="text-muted-foreground py-4 text-center text-xs">
-                Sin resultados
-              </CommandEmpty>
+              <CommandEmpty className="text-muted-foreground py-4 text-center text-xs">Sin resultados</CommandEmpty>
               <CommandGroup>
                 {filtered.map((p) => (
                   <CommandItem
@@ -167,7 +158,7 @@ export function ProductCommandSearch({
                     onSelect={handleSelect}
                     className="flex items-center gap-2 px-2.5 py-2"
                   >
-                    <span className="product-code bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider">
+                    <span className="product-code bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase">
                       {p.code}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-sm">{p.description}</span>
@@ -176,9 +167,7 @@ export function ProductCommandSearch({
                         {formatCurrencyUSD(p.price_usd)}
                       </span>
                     )}
-                    <span className="text-muted-foreground shrink-0 tabular-nums text-[11px]">
-                      [{p.stock}]
-                    </span>
+                    <span className="text-muted-foreground shrink-0 text-[11px] tabular-nums">[{p.stock}]</span>
                   </CommandItem>
                 ))}
               </CommandGroup>

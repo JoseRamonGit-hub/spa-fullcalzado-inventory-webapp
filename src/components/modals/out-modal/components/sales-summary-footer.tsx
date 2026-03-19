@@ -34,7 +34,7 @@ export function SalesSummaryFooter({
       />
 
       <section className="flex w-full flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
-        <p className="text-muted-foreground text-xs font-medium tabular-nums">
+        <p className="text-muted-foreground hidden text-xs font-medium tabular-nums md:block">
           {!hasPendingSales
             ? "Sin ventas pendientes"
             : `${pendingSalesCount} venta${isMultipleSales ? "s" : ""} en cola`}
@@ -42,7 +42,7 @@ export function SalesSummaryFooter({
         <Button
           disabled={!hasPendingSales || isSubmissionPending}
           onClick={onOpenConfirmDialog}
-          className="w-full gap-3 shrink-0 md:w-auto"
+          className="w-full shrink-0 gap-3 md:w-auto"
         >
           <ShoppingCart data-icon="inline-start" />
           <span className="truncate">

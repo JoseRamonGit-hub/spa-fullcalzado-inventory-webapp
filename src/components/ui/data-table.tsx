@@ -60,50 +60,50 @@ export function DataTable<TData, TValue>({
     <div className="custom-scrollbar h-full flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible">
       <Table>
         <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className="text-muted-foreground h-7 px-4 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
-                    >
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead
+                    key={header.id}
+                    className="text-muted-foreground h-7 px-4 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
+                  >
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+            <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
+          ) : table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row, index) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
+                onClick={() => onRowClick?.(row.original)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
-                  onClick={() => onRowClick?.(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={table.getVisibleFlatColumns().length} className="h-56 text-center">
-                  <div className="text-muted-foreground flex flex-col items-center gap-2">
-                    <PackageOpen className="h-8 w-8 opacity-40" />
-                    <span className="text-sm">{emptyMessage}</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+            ))
+          ) : (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={table.getVisibleFlatColumns().length} className="h-56 text-center">
+                <div className="text-muted-foreground flex flex-col items-center gap-2">
+                  <PackageOpen className="h-8 w-8 opacity-40" />
+                  <span className="text-sm">{emptyMessage}</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
       </Table>
     </div>
   );

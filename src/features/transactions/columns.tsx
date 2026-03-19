@@ -41,7 +41,7 @@ export const columns = [
   }),
   columnHelper.accessor("exchange_rate", {
     header: "Tasa",
-    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatCurrencyUSD(getValue())}</span>,
+    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(getValue())}</span>,
   }),
   columnHelper.accessor("users.fullname", {
     header: "Vendedor",

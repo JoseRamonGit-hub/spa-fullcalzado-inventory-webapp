@@ -53,7 +53,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
   {
     accessorKey: "description",
     header: "Descripción",
-    cell: ({ getValue }) => <span className="block max-w-40 truncate md:max-w-60">{getValue<string>()}</span>,
+    cell: ({ getValue }) => <span className="block max-w-40 truncate md:max-w-100">{getValue<string>()}</span>,
     meta: { hideOnMobile: true },
   },
   {

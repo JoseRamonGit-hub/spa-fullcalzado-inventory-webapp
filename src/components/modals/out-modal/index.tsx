@@ -70,7 +70,6 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         title="Registrar Ventas"
         description="Agrega productos al lote y confirma con Shift + Enter."
         dialogClassName="sm:max-w-4xl"
-        drawerClassName=""
         avoidCloseFromOutsideClick
         avoidCloseFromEsc
         descriptionSrOnly

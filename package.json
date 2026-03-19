@@ -11,6 +11,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:db": "npx supabase test db",
+    "test:all": "vitest run && npx supabase test db",
     "generate-routes": "tsr generate",
     "watch-routes": "tsr watch",
     "supabase:env": "npx supabase status -o env | grep -E 'API_URL|PUBLISHABLE_KEY' | sed 's/API_URL/VITE_SUPABASE_URL/' | sed 's/UBLISHABLE_KEY/VITE_SUPABASE_ANON_KEY/' >.env.development",

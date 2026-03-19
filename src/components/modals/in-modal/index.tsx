@@ -88,8 +88,7 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
         onOpenChange={handleModalOpenChange}
         title="Recepción de Mercancía"
         description="Agrega productos al lote y luego confirma la carga completa."
-        dialogClassName="min-w-5xl"
-        drawerClassName=""
+        dialogClassName="min-w-4xl"
         avoidCloseFromOutsideClick
         descriptionSrOnly
         footer={
@@ -102,7 +101,11 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
       >
         <section className="flex flex-col gap-4">
           <header className="-mx-6 -mt-6">
-            <Tabs value={currentActiveTab} onValueChange={(value) => setCurrentActiveTab(value as InModalTabValue)} className="gap-0">
+            <Tabs
+              value={currentActiveTab}
+              onValueChange={(value) => setCurrentActiveTab(value as InModalTabValue)}
+              className="gap-0"
+            >
               <TabsList className="h-10 w-full rounded-none border-x-0 border-t-0 p-0">
                 <TabsTrigger value="new" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+N">
                   Nuevo Producto
@@ -122,17 +125,17 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="new" className="px-6 pt-4">
+              <TabsContent value="new" className="px-4 pt-3 md:px-6 md:pt-4">
                 <NewProductForm onAddPendingBatchItem={addPendingBatchItem} />
               </TabsContent>
 
-              <TabsContent value="existing" className="px-6 pt-4">
+              <TabsContent value="existing" className="px-4 pt-3 md:px-6 md:pt-4">
                 <StockIncreaseForm onAddPendingBatchItem={addPendingBatchItem} />
               </TabsContent>
             </Tabs>
           </header>
 
-          <article className="bg-card flex h-56 flex-col overflow-hidden rounded-md border md:h-64">
+          <article className="bg-card -mx-2 flex h-56 flex-col overflow-hidden rounded-md border md:h-64">
             <DataTable
               columns={pendingItemColumns}
               data={pendingBatchItems}
