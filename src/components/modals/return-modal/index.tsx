@@ -177,14 +177,10 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
       >
         <section className="flex flex-col gap-4">
           <header className="-mx-6 -mt-6">
-            <Tabs
-              value={currentTab}
-              onValueChange={(v) => setCurrentTab(v as ReturnTabValue)}
-              className="gap-0"
-            >
+            <Tabs value={currentTab} onValueChange={(v) => setCurrentTab(v as ReturnTabValue)} className="gap-0">
               <TabsList className="h-10 w-full rounded-none border-x-0 border-t-0 p-0">
                 <TabsTrigger value="return" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+D">
-                  Devolución
+                  Entrada
                   {returnItems.length > 0 && (
                     <span className="bg-primary/10 text-primary rounded-full px-1.5 text-[10px] font-semibold tabular-nums">
                       {returnItems.length}
@@ -197,7 +193,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
                   </KbdGroup>
                 </TabsTrigger>
                 <TabsTrigger value="exchange" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+C">
-                  Cambio
+                  Salida
                   {exchangeItems.length > 0 && (
                     <span className="bg-primary/10 text-primary rounded-full px-1.5 text-[10px] font-semibold tabular-nums">
                       {exchangeItems.length}

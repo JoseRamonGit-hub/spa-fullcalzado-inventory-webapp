@@ -44,7 +44,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
         <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
             <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
-              <DollarSign className="h-3 w-3" aria-hidden="true" /> Facturado USD
+              <DollarSign className="h-3 w-3" aria-hidden="true" /> Total Facturado USD
             </span>
             <span className="text-foreground text-sm font-bold tabular-nums">
               {formatCurrencyUSD(metrics.totalUsd)}
@@ -52,7 +52,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           </div>
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
             <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
-              <Banknote className="h-3 w-3" aria-hidden="true" /> Facturado Bs.
+              <Banknote className="h-3 w-3" aria-hidden="true" /> Total Facturado Bs.
             </span>
             <span className="text-foreground text-sm font-bold tabular-nums">
               {formatCurrencyVES(metrics.totalVes)}
@@ -103,13 +103,13 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
             <div className="bg-primary/8 border-primary/20 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
               <div className="flex flex-col gap-0.5 px-3 py-2.5">
                 <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
-                  <DollarSign className="h-3 w-3" aria-hidden="true" /> Neto USD
+                  <DollarSign className="h-3 w-3" aria-hidden="true" /> Total Producido USD
                 </span>
                 <span className="text-primary text-sm font-bold tabular-nums">{formatCurrencyUSD(metrics.netUsd)}</span>
               </div>
               <div className="flex flex-col gap-0.5 px-3 py-2.5">
                 <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
-                  <Banknote className="h-3 w-3" aria-hidden="true" /> Neto Bs.
+                  <Banknote className="h-3 w-3" aria-hidden="true" /> Total Producido BS.
                 </span>
                 <span className="text-primary text-sm font-bold tabular-nums">{formatCurrencyVES(metrics.netVes)}</span>
               </div>

@@ -34,7 +34,16 @@ export function TransactionsPage() {
     // Guard: same race-condition fix as cash-closes — don't subtract returns
     // credit from a zero transactions total while txs are still loading.
     if (sourceTxs === undefined) {
-      return { count: 0, totalUsd: 0, totalVes: 0, returnsCount: 0, returnsCreditUsd: 0, returnsCreditVes: 0, netUsd: 0, netVes: 0 };
+      return {
+        count: 0,
+        totalUsd: 0,
+        totalVes: 0,
+        returnsCount: 0,
+        returnsCreditUsd: 0,
+        returnsCreditVes: 0,
+        netUsd: 0,
+        netVes: 0,
+      };
     }
 
     const txMetrics = sourceTxs.reduce(
@@ -101,14 +110,19 @@ export function TransactionsPage() {
   const metricItems = hasReturns
     ? [
         { label: "Ventas", value: String(metrics.count), icon: ShoppingCart, color: "" },
-        { label: "Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
+        { label: "Total Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
         { label: "Devol.", value: String(metrics.returnsCount), icon: IterationCcw, color: "text-orange-500" },
-        { label: "Neto USD", value: formatCurrencyUSD(metrics.netUsd), icon: DollarSign, color: "text-primary" },
+        {
+          label: "Total Producido USD",
+          value: formatCurrencyUSD(metrics.netUsd),
+          icon: DollarSign,
+          color: "text-primary",
+        },
       ]
     : [
         { label: "Ventas", value: String(metrics.count), icon: ShoppingCart, color: "" },
         { label: "Total USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
-        { label: "Total Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote, color: "" },
+        { label: "Total Bs.", value: formatCurrencyVES(metrics.totalVes), icon: Banknote, color: "" },
       ];
 
   return (

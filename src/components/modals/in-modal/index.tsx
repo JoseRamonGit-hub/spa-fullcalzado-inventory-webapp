@@ -86,7 +86,7 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
       <ResponsiveModal
         open={isOpen}
         onOpenChange={handleModalOpenChange}
-        title="Recepción de Mercancía"
+        title="Carga de Inventario"
         description="Agrega productos al lote y luego confirma la carga completa."
         dialogClassName="min-w-4xl"
         avoidCloseFromOutsideClick

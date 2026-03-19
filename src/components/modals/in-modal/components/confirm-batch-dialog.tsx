@@ -55,7 +55,7 @@ export function ConfirmBatchDialog({
             <PackagePlus className="text-primary" />
           </AlertDialogMedia>
           <div>
-            <AlertDialogTitle>¿Confirmar recepción de mercancía?</AlertDialogTitle>
+            <AlertDialogTitle>¿Confirmar carga de inventario?</AlertDialogTitle>
             <AlertDialogDescription className="mt-1">
               Estás a punto de procesar{" "}
               <strong className="text-foreground">

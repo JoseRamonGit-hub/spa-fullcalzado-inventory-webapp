@@ -35,13 +35,13 @@ export const columns = [
     meta: { hideOnMobile: true },
   }),
   columHelper.accessor("total_usd", {
-    header: () => <div className="text-right">Neto USD</div>,
+    header: () => <div className="text-right">Total Producido USD</div>,
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
     ),
   }),
   columHelper.accessor("total_ves", {
-    header: () => <div className="text-right">Neto VES</div>,
+    header: () => <div className="text-right">Total Producido BS</div>,
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
     ),

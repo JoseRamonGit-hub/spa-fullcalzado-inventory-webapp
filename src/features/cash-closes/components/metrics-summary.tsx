@@ -30,8 +30,8 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
   const salesItems = [
     { label: "Ventas", value: String(metrics.count), icon: Hash },
     { label: "Unidades", value: String(metrics.units), icon: ShoppingCart },
-    { label: "Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign },
-    { label: "Facturado Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote },
+    { label: "Total Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign },
+    { label: "Total Facturado Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote },
   ];
 
   return (
@@ -110,7 +110,9 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
             <li className="bg-primary/5 flex min-w-0 flex-col gap-1.5 rounded-l-lg px-3 py-2">
               <div className="text-muted-foreground flex items-center gap-1.5">
                 <DollarSign className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">Neto USD</p>
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
+                  Total Producido USD
+                </p>
               </div>
               <p className="text-primary truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
                 {formatCurrencyUSD(metrics.netUsd)}
@@ -119,7 +121,9 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
             <li className="bg-primary/5 border-border/50 flex min-w-0 flex-col gap-1.5 rounded-r-lg border-l px-3 py-2">
               <div className="text-muted-foreground flex items-center gap-1.5">
                 <Banknote className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">Neto Bs</p>
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
+                  Total Producido BS.
+                </p>
               </div>
               <p className="text-primary truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
                 {formatCurrencyVES(metrics.netVes)}
