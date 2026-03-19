@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
 import { useExchangeRate } from "@/features/exchange_rates/hooks";
 import { DataTable } from "@/components/ui/data-table";
@@ -18,6 +19,7 @@ type OutModalProps = {
 const INITIAL_FALLBACK_RATE = 0;
 
 export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
+  const navigate = useNavigate();
   const { data: exchangeRateData } = useExchangeRate();
   const currentExchangeRate = exchangeRateData?.rate ?? INITIAL_FALLBACK_RATE;
 
@@ -29,7 +31,8 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
   const handleSubmissionSuccess = useCallback(() => {
     setIsConfirmDialogOpen(false);
     onOpenChange(false);
-  }, [onOpenChange]);
+    navigate({ to: "/transactions" });
+  }, [onOpenChange, navigate]);
 
   const { submitPendingSales, isSubmissionPending } = useSubmitSales({
     pendingSales,

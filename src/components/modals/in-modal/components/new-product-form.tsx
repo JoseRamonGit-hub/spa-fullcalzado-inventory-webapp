@@ -71,6 +71,7 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
                 required
                 autoFocus
                 className="h-8 text-sm uppercase"
+                autoComplete="off"
               />
             )}
           </newProductForm.AppField>
@@ -90,6 +91,7 @@ export function NewProductForm({ onAddPendingBatchItem }: NewProductFormProps) {
                 placeholder="Zapato deportivo negro T42"
                 required
                 className="h-8 text-sm"
+                autoComplete="off"
               />
             )}
           </newProductForm.AppField>

@@ -85,7 +85,7 @@ export function ReturnSummaryFooter({
         </div>
         {returnType === "exchange" && (
           <div className="min-w-0">
-            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">N. Compra</p>
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Nueva Compra</p>
             <p className="truncate text-[11px] font-semibold tabular-nums">{formatCurrencyUSD(newPurchaseUsd)}</p>
             <p className="text-muted-foreground truncate text-[10px] tabular-nums">
               {formatCurrencyVES(newPurchaseUsd * currentExchangeRate)}

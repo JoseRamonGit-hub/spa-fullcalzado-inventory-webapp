@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { returnsService } from "@/services/returnsService";
 import type { ProcessReturnPayload } from "@/types/index";
 
@@ -7,7 +7,24 @@ export const returnKeys = {
   all: ["returns"] as const,
   lists: () => [...returnKeys.all, "list"] as const,
   list: (date?: string) => [...returnKeys.lists(), { date }] as const,
+  today: () => [...returnKeys.all, "today"] as const,
 };
+
+// ---------- Queries ----------
+export function useReturns(date?: string) {
+  return useQuery({
+    queryKey: returnKeys.list(date),
+    queryFn: () => returnsService.getAll(date),
+  });
+}
+
+export function useTodayReturns() {
+  return useQuery({
+    queryKey: returnKeys.today(),
+    queryFn: () => returnsService.getToday(),
+    refetchInterval: 30_000,
+  });
+}
 
 // ---------- Mutations ----------
 export function useCreateReturn() {

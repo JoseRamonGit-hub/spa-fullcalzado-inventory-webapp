@@ -37,6 +37,21 @@ export type InventoryMovementWithRelations = InventoryMovement & {
   users: Pick<User, "fullname">;
 };
 
+// ── Return types with joined relations ──────────────────────
+export type ReturnItemWithProduct = ReturnItem & {
+  products: Pick<Product, "code" | "description">;
+};
+
+export type ReturnTransactionWithProduct = Transaction & {
+  products: Pick<Product, "code" | "description">;
+};
+
+export type ReturnWithRelations = Return & {
+  users: Pick<User, "fullname">;
+  return_items: ReturnItemWithProduct[];
+  transactions: ReturnTransactionWithProduct[];
+};
+
 // ── Return RPC payload types ────────────────────────────────
 export type ProcessReturnPayload = {
   p_type: "exchange" | "refund";

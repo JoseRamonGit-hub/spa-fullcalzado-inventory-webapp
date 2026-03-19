@@ -161,6 +161,7 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
+          return_id: string | null
           time: string
           type: Database["public"]["Enums"]["movement_types"]
           user_id: string
@@ -171,6 +172,7 @@ export type Database = {
           id?: string
           product_id: string
           quantity: number
+          return_id?: string | null
           time?: string
           type: Database["public"]["Enums"]["movement_types"]
           user_id: string
@@ -181,6 +183,7 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
+          return_id?: string | null
           time?: string
           type?: Database["public"]["Enums"]["movement_types"]
           user_id?: string
@@ -191,6 +194,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
             referencedColumns: ["id"]
           },
           {

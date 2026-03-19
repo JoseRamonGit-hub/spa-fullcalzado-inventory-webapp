@@ -16,20 +16,32 @@ export const columns = [
   columHelper.accessor("total_units_sold", {
     header: () => <div className="text-right">Unidades</div>,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
+    meta: { hideOnMobile: true },
   }),
   columHelper.accessor("total_returns", {
     header: () => <div className="text-right">Devol.</div>,
-    cell: ({ getValue }) => <span className="text-warning block text-right tabular-nums">{getValue()}</span>,
+    cell: ({ getValue, row }) => {
+      const count = getValue();
+      if (!count) return <span className="text-muted-foreground block text-right tabular-nums">—</span>;
+      return (
+        <span
+          className="block text-right text-orange-500 tabular-nums"
+          title={`Crédito: ${formatCurrencyUSD(row.original.total_returns_usd)}`}
+        >
+          {count}
+        </span>
+      );
+    },
     meta: { hideOnMobile: true },
   }),
   columHelper.accessor("total_usd", {
-    header: () => <div className="text-right">USD Neto</div>,
+    header: () => <div className="text-right">Neto USD</div>,
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
     ),
   }),
   columHelper.accessor("total_ves", {
-    header: () => <div className="text-right">VES Neto</div>,
+    header: () => <div className="text-right">Neto VES</div>,
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
     ),

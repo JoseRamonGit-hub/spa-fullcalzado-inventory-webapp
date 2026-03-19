@@ -2,6 +2,7 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { formatTime, formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
+import { useNavigate } from "@tanstack/react-router";
 
 const columnHelper = createColumnHelper<TransactionWithRelations>();
 
@@ -18,16 +19,15 @@ export const columns = [
   }),
   columnHelper.accessor("products.code", {
     header: "Código",
-    cell: ({ getValue, row }) => (
-      <span className="flex items-center gap-1.5">
-        <span className="product-code font-bold uppercase">{getValue()}</span>
-        {row.original.return_id && (
-          <Badge variant="outline" className="text-warning border-warning/30 px-1.5 py-0 text-[10px]">
-            Cambio
-          </Badge>
-        )}
-      </span>
-    ),
+    cell: ({ getValue, row }) => {
+      const isExchange = !!row.original.return_id;
+      return (
+        <span className="flex items-center gap-1.5">
+          <span className="product-code font-bold uppercase">{getValue()}</span>
+          {isExchange && <ExchangeBadge />}
+        </span>
+      );
+    },
   }),
   columnHelper.accessor("products.description", {
     header: "Descripción",
@@ -58,3 +58,22 @@ export const columns = [
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
   }),
 ] as ColumnDef<TransactionWithRelations>[];
+
+// ── Internal component: navigable exchange badge ────────────
+function ExchangeBadge() {
+  const navigate = useNavigate();
+
+  return (
+    <Badge
+      variant="exchange"
+      className="cursor-pointer px-1.5 py-0 text-[10px] transition-opacity hover:opacity-80"
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate({ to: "/returns" });
+      }}
+      title="Ver en módulo de devoluciones"
+    >
+      Cambio ↗
+    </Badge>
+  );
+}

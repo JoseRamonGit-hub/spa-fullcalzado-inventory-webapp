@@ -15,7 +15,7 @@ export function useUpdateExchangeRate() {
   return useMutation({
     mutationFn: (payload: ExchangeRateInsert) => exchangeRatesService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["exchangeRate"] });
+      queryClient.invalidateQueries();
     },
   });
 }

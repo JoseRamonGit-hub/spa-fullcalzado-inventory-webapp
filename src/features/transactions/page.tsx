@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import { useTransactions, useTodayTransactions } from "./hooks/useTransactions";
+import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturns";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
-import { ShoppingCart, DollarSign, Banknote, CalendarDays } from "lucide-react";
+import { ShoppingCart, DollarSign, Banknote, CalendarDays, IterationCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 import { Route } from "@/routes/_app/transactions";
@@ -22,18 +23,21 @@ export function TransactionsPage() {
   const isFiltered = !!date;
 
   const { data: transactions, isLoading, isError } = useTransactions(date);
-  // Today's metrics shown only when no date filter is active
   const { data: todayTxs } = useTodayTransactions();
+  const { data: filteredReturns } = useReturns(date);
+  const { data: todayReturns } = useTodayReturns();
 
-  // When a date filter is active: compute metrics from the filtered result.
-  // When no filter: fall back to today's dedicated query.
   const sourceTxs = isFiltered ? transactions : todayTxs;
+  const sourceReturns = isFiltered ? filteredReturns : todayReturns;
 
   const metrics = useMemo(() => {
-    if (!sourceTxs || sourceTxs.length === 0) {
-      return { count: 0, totalUsd: 0, totalVes: 0 };
+    // Guard: same race-condition fix as cash-closes — don't subtract returns
+    // credit from a zero transactions total while txs are still loading.
+    if (sourceTxs === undefined) {
+      return { count: 0, totalUsd: 0, totalVes: 0, returnsCount: 0, returnsCreditUsd: 0, returnsCreditVes: 0, netUsd: 0, netVes: 0 };
     }
-    return sourceTxs.reduce(
+
+    const txMetrics = sourceTxs.reduce(
       (acc, tx) => ({
         count: acc.count + 1,
         totalUsd: acc.totalUsd + tx.price_usd * tx.quantity,
@@ -41,8 +45,27 @@ export function TransactionsPage() {
       }),
       { count: 0, totalUsd: 0, totalVes: 0 },
     );
-  }, [sourceTxs]);
 
+    const retMetrics = (sourceReturns || []).reduce(
+      (acc, ret) => ({
+        count: acc.count + 1,
+        creditUsd: acc.creditUsd + ret.credit_usd,
+        creditVes: acc.creditVes + ret.credit_ves,
+      }),
+      { count: 0, creditUsd: 0, creditVes: 0 },
+    );
+
+    return {
+      ...txMetrics,
+      returnsCount: retMetrics.count,
+      returnsCreditUsd: retMetrics.creditUsd,
+      returnsCreditVes: retMetrics.creditVes,
+      netUsd: txMetrics.totalUsd - retMetrics.creditUsd,
+      netVes: txMetrics.totalVes - retMetrics.creditVes,
+    };
+  }, [sourceTxs, sourceReturns]);
+
+  const hasReturns = metrics.returnsCount > 0;
   const metricsLabel = isFiltered ? `Ventas del ${formatDate(date + "T12:00:00")}` : "Ventas de Hoy";
 
   const topbarProps = { date, onDateChange: setDate };
@@ -75,11 +98,18 @@ export function TransactionsPage() {
     );
   }
 
-  const metricItems = [
-    { label: "Ventas", value: String(metrics.count), icon: ShoppingCart },
-    { label: "Total USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign },
-    { label: "Total Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote },
-  ];
+  const metricItems = hasReturns
+    ? [
+        { label: "Ventas", value: String(metrics.count), icon: ShoppingCart, color: "" },
+        { label: "Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
+        { label: "Devol.", value: String(metrics.returnsCount), icon: IterationCcw, color: "text-orange-500" },
+        { label: "Neto USD", value: formatCurrencyUSD(metrics.netUsd), icon: DollarSign, color: "text-primary" },
+      ]
+    : [
+        { label: "Ventas", value: String(metrics.count), icon: ShoppingCart, color: "" },
+        { label: "Total USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
+        { label: "Total Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote, color: "" },
+      ];
 
   return (
     <section className="flex flex-1 flex-col overflow-hidden">
@@ -98,7 +128,7 @@ export function TransactionsPage() {
             )}
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">{metricsLabel}</h3>
           </div>
-          <div className="divide-border/50 grid grid-cols-3 divide-x">
+          <div className={cn("divide-border/50 grid divide-x", hasReturns ? "grid-cols-4" : "grid-cols-3")}>
             {metricItems.map((m, i) => (
               <div
                 key={m.label}
@@ -109,10 +139,13 @@ export function TransactionsPage() {
                 )}
               >
                 <div className="text-muted-foreground flex items-center gap-1.5">
-                  <m.icon className="text-primary h-3.5 w-3.5 shrink-0" />
+                  <m.icon className={cn("h-3.5 w-3.5 shrink-0", m.color || "text-primary")} />
                   <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{m.label}</p>
                 </div>
-                <p className="truncate text-sm leading-none font-bold tabular-nums sm:text-lg" title={m.value}>
+                <p
+                  className={cn("truncate text-sm leading-none font-bold tabular-nums sm:text-lg", m.color)}
+                  title={m.value}
+                >
                   {m.value}
                 </p>
               </div>

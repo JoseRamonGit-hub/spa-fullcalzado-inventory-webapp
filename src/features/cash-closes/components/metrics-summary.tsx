@@ -1,10 +1,22 @@
-import { Hash, DollarSign, Banknote, ShoppingCart, CalendarDays, Lock } from "lucide-react";
+import { Hash, DollarSign, Banknote, ShoppingCart, CalendarDays, Lock, IterationCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 
+export interface CashCloseMetrics {
+  count: number;
+  units: number;
+  totalUsd: number;
+  totalVes: number;
+  returnsCount: number;
+  returnsCreditUsd: number;
+  returnsCreditVes: number;
+  netUsd: number;
+  netVes: number;
+}
+
 interface MetricsSummaryProps {
-  metrics: { count: number; units: number; totalUsd: number; totalVes: number };
+  metrics: CashCloseMetrics;
   label: string;
   isFiltered: boolean;
   onOpenConfirm: () => void;
@@ -13,11 +25,13 @@ interface MetricsSummaryProps {
 }
 
 export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPending, hasUser }: MetricsSummaryProps) {
-  const summaryItems = [
-    { label: "Transacciones", value: String(metrics.count), icon: Hash },
-    { label: "Unidades Vendidas", value: String(metrics.units), icon: ShoppingCart },
-    { label: "Total USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign },
-    { label: "Total Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote },
+  const hasReturns = metrics.returnsCount > 0;
+
+  const salesItems = [
+    { label: "Ventas", value: String(metrics.count), icon: Hash },
+    { label: "Unidades", value: String(metrics.units), icon: ShoppingCart },
+    { label: "Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign },
+    { label: "Facturado Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote },
   ];
 
   return (
@@ -32,8 +46,9 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
         <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">{label}</h3>
       </header>
 
+      {/* Sales row */}
       <ul className="grid grid-cols-2 gap-y-4 md:grid-cols-4">
-        {summaryItems.map((item, i) => (
+        {salesItems.map((item, i) => (
           <li
             key={item.label}
             className={cn(
@@ -42,7 +57,7 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
               "md:border-l",
               i === 0 ? "pl-0 md:border-l-0" : "",
               i === 2 ? "border-l-0 pl-0 md:border-l md:pl-4" : "",
-              i === summaryItems.length - 1 ? "pr-0" : "",
+              i === salesItems.length - 1 ? "pr-0" : "",
             )}
           >
             <div className="text-muted-foreground flex items-center gap-1.5">
@@ -55,6 +70,64 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
           </li>
         ))}
       </ul>
+
+      {/* Returns + Net row */}
+      {hasReturns && (
+        <div className="border-border/40 space-y-3 border-t pt-3">
+          <ul className="grid grid-cols-3 gap-y-4">
+            <li className="flex min-w-0 flex-col gap-1.5 pl-0">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <IterationCcw className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">Devoluciones</p>
+              </div>
+              <p className="truncate text-sm leading-none font-bold text-orange-500 tabular-nums sm:text-lg">
+                {metrics.returnsCount}
+              </p>
+            </li>
+            <li className="border-border/50 flex min-w-0 flex-col gap-1.5 border-l px-2 sm:px-4">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <DollarSign className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
+                  Crédito Devolución
+                </p>
+              </div>
+              <p className="truncate text-sm leading-none font-bold text-orange-500 tabular-nums sm:text-lg">
+                {formatCurrencyUSD(metrics.returnsCreditUsd)}
+              </p>
+            </li>
+            <li className="border-border/50 flex min-w-0 flex-col gap-1.5 border-l px-2 pr-0 sm:px-4 sm:pr-0">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <Banknote className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">Crédito Bs.</p>
+              </div>
+              <p className="truncate text-sm leading-none font-bold text-orange-500 tabular-nums sm:text-lg">
+                {formatCurrencyVES(metrics.returnsCreditVes)}
+              </p>
+            </li>
+          </ul>
+
+          <ul className="grid grid-cols-2">
+            <li className="bg-primary/5 flex min-w-0 flex-col gap-1.5 rounded-l-lg px-3 py-2">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <DollarSign className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">Neto USD</p>
+              </div>
+              <p className="text-primary truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
+                {formatCurrencyUSD(metrics.netUsd)}
+              </p>
+            </li>
+            <li className="bg-primary/5 border-border/50 flex min-w-0 flex-col gap-1.5 rounded-r-lg border-l px-3 py-2">
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <Banknote className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">Neto Bs</p>
+              </div>
+              <p className="text-primary truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
+                {formatCurrencyVES(metrics.netVes)}
+              </p>
+            </li>
+          </ul>
+        </div>
+      )}
 
       {!isFiltered && (
         <Button

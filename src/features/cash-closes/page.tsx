@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useCashCloses } from "./hooks/useCashCloses";
 import { useTransactions, useTodayTransactions } from "@/features/transactions/hooks/useTransactions";
+import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturns";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
@@ -22,18 +23,24 @@ export function CashClosesPage() {
   const { data: cashCloses, isLoading, isError } = useCashCloses(date);
   const { data: filteredTxs } = useTransactions(date);
   const { data: todayTxs } = useTodayTransactions();
+  const { data: filteredReturns } = useReturns(date);
+  const { data: todayReturns } = useTodayReturns();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate({ from: "/cash-closes" });
 
   const isFiltered = !!date;
   const sourceTxs = isFiltered ? filteredTxs : todayTxs;
+  const sourceReturns = isFiltered ? filteredReturns : todayReturns;
 
   const todayMetrics = useMemo(() => {
-    if (!sourceTxs || sourceTxs.length === 0) {
-      return { count: 0, units: 0, totalUsd: 0, totalVes: 0 };
-    }
-    return sourceTxs.reduce(
+    const zero = { count: 0, units: 0, totalUsd: 0, totalVes: 0, returnsCount: 0, returnsCreditUsd: 0, returnsCreditVes: 0, netUsd: 0, netVes: 0 };
+
+    // Guard: if transactions haven't loaded yet, return zeros to avoid a
+    // negative net when returns cache is warm but transactions are still fetching.
+    if (sourceTxs === undefined) return zero;
+
+    const txMetrics = sourceTxs.reduce(
       (acc, tx) => ({
         count: acc.count + 1,
         units: acc.units + tx.quantity,
@@ -42,7 +49,25 @@ export function CashClosesPage() {
       }),
       { count: 0, units: 0, totalUsd: 0, totalVes: 0 },
     );
-  }, [sourceTxs]);
+
+    const retMetrics = (sourceReturns || []).reduce(
+      (acc, ret) => ({
+        count: acc.count + 1,
+        creditUsd: acc.creditUsd + ret.credit_usd,
+        creditVes: acc.creditVes + ret.credit_ves,
+      }),
+      { count: 0, creditUsd: 0, creditVes: 0 },
+    );
+
+    return {
+      ...txMetrics,
+      returnsCount: retMetrics.count,
+      returnsCreditUsd: retMetrics.creditUsd,
+      returnsCreditVes: retMetrics.creditVes,
+      netUsd: txMetrics.totalUsd - retMetrics.creditUsd,
+      netVes: txMetrics.totalVes - retMetrics.creditVes,
+    };
+  }, [sourceTxs, sourceReturns]);
 
   const closeMutation = useMutation({
     mutationFn: (userId: string) => cashClosesService.generateDailyCashClose(userId),

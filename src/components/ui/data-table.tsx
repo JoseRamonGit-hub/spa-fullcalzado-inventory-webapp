@@ -1,8 +1,10 @@
 import {
   type ColumnDef,
+  type Row,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,6 +21,7 @@ interface DataTableProps<TData, TValue> {
   meta?: Record<string, unknown>;
   isLoading?: boolean;
   getRowId?: (originalRow: TData, index: number) => string;
+  renderSubRow?: (row: Row<TData>) => React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -29,6 +32,7 @@ export function DataTable<TData, TValue>({
   meta,
   isLoading,
   getRowId,
+  renderSubRow,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -49,6 +53,7 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    ...(renderSubRow ? { getExpandedRowModel: getExpandedRowModel(), getRowCanExpand: () => true } : {}),
     state: {
       columnVisibility,
     },
@@ -83,8 +88,11 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick ? "cursor-pointer" : ""}`}
-                onClick={() => onRowClick?.(row.original)}
+                className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""}`}
+                onClick={() => {
+                  if (renderSubRow) row.toggleExpanded();
+                  onRowClick?.(row.original);
+                }}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id} className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap">
@@ -93,6 +101,20 @@ export function DataTable<TData, TValue>({
                 ))}
               </TableRow>
             ))
+            .flatMap((rowEl, index) => {
+              const row = table.getRowModel().rows[index];
+              if (renderSubRow && row.getIsExpanded()) {
+                return [
+                  rowEl,
+                  <TableRow key={`${row.id}-expanded`} className="hover:bg-transparent">
+                    <TableCell colSpan={row.getVisibleCells().length} className="p-0">
+                      {renderSubRow(row)}
+                    </TableCell>
+                  </TableRow>,
+                ];
+              }
+              return [rowEl];
+            })
           ) : (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={table.getVisibleFlatColumns().length} className="h-56 text-center">

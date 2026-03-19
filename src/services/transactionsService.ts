@@ -7,11 +7,7 @@ const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as 
 export const transactionsService = {
   // Historical — filtered by exact date when provided, otherwise last 500 rows
   getAll: async (date?: string): Promise<TransactionWithRelations[]> => {
-    let query = supabase
-      .from("transactions")
-      .select(TRANSACTION_SELECT)
-      .order("date", { ascending: false })
-      .order("time", { ascending: false });
+    let query = supabase.from("transactions").select(TRANSACTION_SELECT).order("created_at", { ascending: false });
 
     if (date) {
       query = query.eq("date", date);
