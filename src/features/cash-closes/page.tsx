@@ -100,16 +100,14 @@ export function CashClosesPage() {
     return (
       <main className="flex flex-1 flex-col overflow-hidden">
         {topbar}
-        <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
-          <MetricsSkeleton count={4} />
-          <div className="flex flex-1 flex-col">
-            <header className="px-3 pt-3 pb-2 md:px-4">
-              <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                Cierres Anteriores
-              </h3>
-            </header>
-            <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
-          </div>
+        <MetricsSkeleton count={4} />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <header className="shrink-0 px-3 pt-3 pb-2 md:px-4">
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              Cierres Anteriores
+            </h3>
+          </header>
+          <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
         </div>
       </main>
     );
@@ -130,29 +128,29 @@ export function CashClosesPage() {
     <main className="flex flex-1 flex-col overflow-hidden">
       {topbar}
 
-      <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
-        <MetricsSummary
-          metrics={todayMetrics}
-          label={summaryLabel}
-          isFiltered={isFiltered}
-          onOpenConfirm={() => setConfirmOpen(true)}
-          isPending={closeMutation.isPending}
-          hasUser={!!user}
-        />
+      {/* Metrics — fixed at top, never scrolls */}
+      <MetricsSummary
+        metrics={todayMetrics}
+        label={summaryLabel}
+        isFiltered={isFiltered}
+        onOpenConfirm={() => setConfirmOpen(true)}
+        isPending={closeMutation.isPending}
+        hasUser={!!user}
+      />
 
-        <div className="flex flex-1 flex-col">
-          <header className="px-3 pt-3 pb-2 md:px-4">
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              {isFiltered ? "Cierre encontrado" : "Cierres Anteriores"}
-            </h3>
-          </header>
-          <DataTable
-            columns={columns}
-            data={cashCloses || []}
-            emptyMessage="No hay cierres de caja registrados."
-            onRowClick={handleRowClick}
-          />
-        </div>
+      {/* Table — fills remaining space, pagination pinned at bottom */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <header className="shrink-0 px-3 pt-3 pb-2 md:px-4">
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            {isFiltered ? "Cierre encontrado" : "Cierres Anteriores"}
+          </h3>
+        </header>
+        <DataTable
+          columns={columns}
+          data={cashCloses || []}
+          emptyMessage="No hay cierres de caja registrados."
+          onRowClick={handleRowClick}
+        />
       </div>
 
       <CashCloseModal

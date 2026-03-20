@@ -66,7 +66,7 @@ export const columns = [
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-xs">
                 <p className="text-muted-foreground text-[11px]">
-                  Antes: <span className="text-foreground">{description_before}</span>
+                  Antes: <span className="text-white">{description_before}</span>
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -95,8 +95,11 @@ export const columns = [
             <span className="text-muted-foreground">{stock_before}</span>
             <span className="text-muted-foreground">→</span>
             <span className="text-foreground font-medium">{stockAfter}</span>
-            <span className={cn("hidden text-[10px] md:inline-block", isIncrease ? "text-emerald-500" : "text-red-500")}>
-              ({sign}{quantity})
+            <span
+              className={cn("hidden text-[10px] md:inline-block", isIncrease ? "text-emerald-500" : "text-red-500")}
+            >
+              ({sign}
+              {quantity})
             </span>
           </div>
         );
@@ -114,7 +117,8 @@ export const columns = [
             <span className="text-muted-foreground">→</span>
             <span className="text-foreground font-medium">{stockAfter}</span>
             <span className={cn("hidden text-[10px] md:inline-block", isInflow ? "text-emerald-500" : "text-red-500")}>
-              ({sign}{quantity})
+              ({sign}
+              {quantity})
             </span>
           </div>
         );
@@ -126,12 +130,7 @@ export const columns = [
 
       return (
         <span className="flex items-center justify-end gap-1">
-          <span
-            className={cn(
-              "text-[10px] font-semibold",
-              isInflow ? "text-emerald-500" : "text-red-500",
-            )}
-          >
+          <span className={cn("text-[10px] font-semibold", isInflow ? "text-emerald-500" : "text-red-500")}>
             {sign}
           </span>
           <span className="font-medium tabular-nums">{quantity}</span>
@@ -153,7 +152,7 @@ export const columns = [
       if (type === "edit" && price_usd_before != null) {
         return (
           <div className="flex items-center justify-end gap-1.5 tabular-nums">
-            <span className="text-muted-foreground line-through text-[11px]">
+            <span className="text-muted-foreground text-[11px] line-through">
               {formatCurrencyUSD(price_usd_before)}
             </span>
             <span className="text-muted-foreground">→</span>
@@ -162,7 +161,9 @@ export const columns = [
         );
       }
 
-      return <span className="text-muted-foreground block text-right tabular-nums">{formatCurrencyUSD(price_usd)}</span>;
+      return (
+        <span className="text-muted-foreground block text-right tabular-nums">{formatCurrencyUSD(price_usd)}</span>
+      );
     },
     meta: { hideOnMobile: true },
   }),

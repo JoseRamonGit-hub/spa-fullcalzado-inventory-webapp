@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { Product } from "@/types/index";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 export interface ProductSearchResult {
   id: string;
@@ -234,7 +234,7 @@ export function ProductSearch({
     );
   }
 
-  const showDropdown = open && search.length > 0;
+  const showDropdown = open && search.length > 0 && filteredProducts.length > 0;
 
   return (
     <div className={cn(SHELL_CLASS_NAME, className)}>
@@ -265,8 +265,7 @@ export function ProductSearch({
           {showDropdown && (
             <div className="bg-popover absolute top-full left-0 z-50 mt-1 w-full rounded-md border shadow-lg">
               <CommandList className="max-h-44 overflow-y-auto">
-                <CommandEmpty className="text-muted-foreground py-4 text-center text-xs">Sin resultados</CommandEmpty>
-                <CommandGroup>
+<CommandGroup>
                   {filteredProducts.map((product) => (
                     <CommandItem
                       key={product.id}

@@ -5,10 +5,12 @@ import {
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { PackageOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMemo } from "react";
@@ -22,6 +24,7 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean;
   getRowId?: (originalRow: TData, index: number) => string;
   renderSubRow?: (row: Row<TData>) => React.ReactNode;
+  pageSize?: number;
 }
 
 export function DataTable<TData, TValue>({
@@ -33,6 +36,7 @@ export function DataTable<TData, TValue>({
   isLoading,
   getRowId,
   renderSubRow,
+  pageSize = 20,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -53,80 +57,93 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     ...(renderSubRow ? { getExpandedRowModel: getExpandedRowModel(), getRowCanExpand: () => true } : {}),
     state: {
       columnVisibility,
+    },
+    initialState: {
+      pagination: {
+        pageSize,
+      },
     },
     meta,
     getRowId,
   });
 
+  const showPagination = !isLoading && data.length > 0;
+
   return (
-    <div className="custom-scrollbar h-full flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className="text-muted-foreground h-7 px-4 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
-                  >
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
-          ) : table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, index) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""}`}
-                onClick={() => {
-                  if (renderSubRow) row.toggleExpanded();
-                  onRowClick?.(row.original);
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="custom-scrollbar flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className="text-muted-foreground h-7 px-4 text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase"
+                    >
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-            .flatMap((rowEl, index) => {
-              const row = table.getRowModel().rows[index];
-              if (renderSubRow && row.getIsExpanded()) {
-                return [
-                  rowEl,
-                  <TableRow key={`${row.id}-expanded`} className="hover:bg-transparent">
-                    <TableCell colSpan={row.getVisibleCells().length} className="p-0">
-                      {renderSubRow(row)}
-                    </TableCell>
-                  </TableRow>,
-                ];
-              }
-              return [rowEl];
-            })
-          ) : (
-            <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={table.getVisibleFlatColumns().length} className="h-56 text-center">
-                <div className="text-muted-foreground flex flex-col items-center gap-2">
-                  <PackageOpen className="h-8 w-8 opacity-40" />
-                  <span className="text-sm">{emptyMessage}</span>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
+            ) : table.getRowModel().rows?.length ? (
+              table
+                .getRowModel()
+                .rows.map((row, index) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""}`}
+                    onClick={() => {
+                      if (renderSubRow) row.toggleExpanded();
+                      onRowClick?.(row.original);
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+                .flatMap((rowEl, index) => {
+                  const row = table.getRowModel().rows[index];
+                  if (renderSubRow && row.getIsExpanded()) {
+                    return [
+                      rowEl,
+                      <TableRow key={`${row.id}-expanded`} className="hover:bg-transparent">
+                        <TableCell colSpan={row.getVisibleCells().length} className="p-0">
+                          {renderSubRow(row)}
+                        </TableCell>
+                      </TableRow>,
+                    ];
+                  }
+                  return [rowEl];
+                })
+            ) : (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={table.getVisibleFlatColumns().length} className="h-56 text-center">
+                  <div className="text-muted-foreground flex flex-col items-center gap-2">
+                    <PackageOpen className="h-8 w-8 opacity-40" />
+                    <span className="text-sm">{emptyMessage}</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      {showPagination && <DataTablePagination table={table} />}
     </div>
   );
 }
