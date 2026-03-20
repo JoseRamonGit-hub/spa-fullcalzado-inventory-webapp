@@ -83,14 +83,12 @@ export function TransactionsPage() {
     return (
       <section className="flex flex-1 flex-col overflow-hidden">
         <Topbar {...topbarProps} />
-        <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
-          <MetricsSkeleton count={3} />
-          <div className="flex flex-1 flex-col">
-            <div className="px-3 pt-3 pb-2 md:px-4">
-              <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Histórico</h3>
-            </div>
-            <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
+        <MetricsSkeleton count={3} />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="px-3 pt-3 pb-2 md:px-4">
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Histórico</h3>
           </div>
+          <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
         </div>
       </section>
     );
@@ -129,56 +127,54 @@ export function TransactionsPage() {
     <section className="flex flex-1 flex-col overflow-hidden">
       <Topbar {...topbarProps} />
 
-      <div className="custom-scrollbar flex flex-1 flex-col overflow-auto">
-        {/* Metrics panel */}
-        <div className="border-b px-3 py-3 md:px-4">
-          {/* Filter context label */}
-          <div className="mb-2 flex items-center gap-1.5">
-            {isFiltered && (
-              <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
-                <CalendarDays className="h-3 w-3" />
-                Filtrado
-              </span>
-            )}
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">{metricsLabel}</h3>
-          </div>
-          <div className={cn("divide-border/50 grid divide-x", hasReturns ? "grid-cols-4" : "grid-cols-3")}>
-            {metricItems.map((m, i) => (
-              <div
-                key={m.label}
-                className={cn(
-                  "flex min-w-0 flex-col gap-1.5 px-2 sm:px-4",
-                  i === 0 ? "pl-0" : "",
-                  i === metricItems.length - 1 ? "pr-0" : "",
-                )}
-              >
-                <div className="text-muted-foreground flex items-center gap-1.5">
-                  <m.icon className={cn("h-3.5 w-3.5 shrink-0", m.color || "text-primary")} />
-                  <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{m.label}</p>
-                </div>
-                <p
-                  className={cn("truncate text-sm leading-none font-bold tabular-nums sm:text-lg", m.color)}
-                  title={m.value}
-                >
-                  {m.value}
-                </p>
+      {/* Metrics panel — fixed at top, never scrolls */}
+      <div className="shrink-0 border-b px-3 py-3 md:px-4">
+        {/* Filter context label */}
+        <div className="mb-2 flex items-center gap-1.5">
+          {isFiltered && (
+            <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
+              <CalendarDays className="h-3 w-3" />
+              Filtrado
+            </span>
+          )}
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">{metricsLabel}</h3>
+        </div>
+        <div className={cn("divide-border/50 grid divide-x", hasReturns ? "grid-cols-4" : "grid-cols-3")}>
+          {metricItems.map((m, i) => (
+            <div
+              key={m.label}
+              className={cn(
+                "flex min-w-0 flex-col gap-1.5 px-2 sm:px-4",
+                i === 0 ? "pl-0" : "",
+                i === metricItems.length - 1 ? "pr-0" : "",
+              )}
+            >
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <m.icon className={cn("h-3.5 w-3.5 shrink-0", m.color || "text-primary")} />
+                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{m.label}</p>
               </div>
-            ))}
-          </div>
+              <p
+                className={cn("truncate text-sm leading-none font-bold tabular-nums sm:text-lg", m.color)}
+                title={m.value}
+              >
+                {m.value}
+              </p>
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Historical table */}
-        <div className="flex flex-1 flex-col">
-          <div className="flex items-center gap-2 px-3 pt-3 pb-2 md:px-4">
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              {isFiltered ? "Ventas del día" : "Histórico"}
-            </h3>
-            {isFiltered && (
-              <span className="text-muted-foreground text-[10px]">{transactions?.length ?? 0} registros</span>
-            )}
-          </div>
-          <DataTable columns={columns} data={transactions || []} emptyMessage="No hay ventas registradas." />
+      {/* Historical table — fills remaining space, pagination pinned at bottom */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex shrink-0 items-center gap-2 px-3 pt-3 pb-2 md:px-4">
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            {isFiltered ? "Ventas del día" : "Histórico"}
+          </h3>
+          {isFiltered && (
+            <span className="text-muted-foreground text-[10px]">{transactions?.length ?? 0} registros</span>
+          )}
         </div>
+        <DataTable columns={columns} data={transactions || []} emptyMessage="No hay ventas registradas." />
       </div>
     </section>
   );

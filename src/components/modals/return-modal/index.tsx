@@ -156,7 +156,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
       <ResponsiveModal
         open={isOpen}
         onOpenChange={handleModalOpenChange}
-        title="Devolución / Cambio"
+        title="Devolución"
         description="Registra devoluciones o cambios de productos."
         dialogClassName="sm:max-w-4xl"
         avoidCloseFromOutsideClick
