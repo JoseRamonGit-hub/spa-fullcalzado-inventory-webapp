@@ -10,20 +10,41 @@ export const columns = [
     cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue())}</span>,
   }),
   columHelper.accessor("total_transactions", {
-    header: () => <div className="text-right">Transacciones</div>,
+    header: () => <div className="text-right">Ventas</div>,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
   }),
   columHelper.accessor("total_units_sold", {
     header: () => <div className="text-right">Unidades</div>,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
+    meta: { hideOnMobile: true },
+  }),
+  columHelper.accessor("total_returns", {
+    header: () => <div className="text-right">Devol.</div>,
+    cell: ({ getValue, row }) => {
+      const count = getValue();
+      if (!count) return <span className="text-muted-foreground block text-right tabular-nums">—</span>;
+      return (
+        <span
+          className="block text-right text-orange-500 tabular-nums"
+          title={`Crédito: ${formatCurrencyUSD(row.original.total_returns_usd)}`}
+        >
+          {count}
+        </span>
+      );
+    },
+    meta: { hideOnMobile: true },
   }),
   columHelper.accessor("total_usd", {
-    header: () => <div className="text-right">USD</div>,
-    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>,
+    header: () => <div className="text-right">Total Producido USD</div>,
+    cell: ({ getValue }) => (
+      <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
+    ),
   }),
   columHelper.accessor("total_ves", {
-    header: () => <div className="text-right">VES</div>,
-    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>,
+    header: () => <div className="text-right">Total Producido BS</div>,
+    cell: ({ getValue }) => (
+      <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
+    ),
   }),
   columHelper.accessor("closed_by", {
     header: "Cerrado por",

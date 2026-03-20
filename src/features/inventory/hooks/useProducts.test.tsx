@@ -3,7 +3,7 @@ import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, productKeys } from "./useProducts";
 import { productsService } from "@/services/productsService";
-import type { Product, ProductInsert, ProductUpdate } from "@/types";
+import type { Product, ProductInsert, EditProductPayload } from "@/types";
 import type { ReactNode } from "react";
 
 // Mock the entire service
@@ -13,6 +13,7 @@ vi.mock("@/services/productsService", () => ({
     getById: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    editProduct: vi.fn(),
     createMany: vi.fn(),
     delete: vi.fn(),
   },
@@ -20,7 +21,7 @@ vi.mock("@/services/productsService", () => ({
 
 const mockGetAll = vi.mocked(productsService.getAll);
 const mockCreate = vi.mocked(productsService.create);
-const mockUpdate = vi.mocked(productsService.update);
+const mockEditProduct = vi.mocked(productsService.editProduct);
 const mockDelete = vi.mocked(productsService.delete);
 
 const fakeProduct: Product = {
@@ -74,7 +75,7 @@ describe("useProducts", () => {
   describe("Mutations", () => {
     it("create product invalidates lists query", async () => {
       mockCreate.mockResolvedValueOnce(fakeProduct);
-      
+
       const { result } = renderHook(() => useCreateProduct(), {
         wrapper: createWrapper(),
       });
@@ -83,7 +84,7 @@ describe("useProducts", () => {
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
 
       const insertData: ProductInsert = { code: "SHO-01", description: "Zapatos Nike", price_usd: 120, stock: 10 };
-      
+
       act(() => {
         result.current.mutate(insertData);
       });
@@ -96,39 +97,47 @@ describe("useProducts", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists() });
     });
 
-    it("update product invalidates lists and specific detail query", async () => {
-      mockUpdate.mockResolvedValueOnce(fakeProduct);
-      
+    it("update product invalidates lists, detail, and movements", async () => {
+      mockEditProduct.mockResolvedValueOnce({});
+
       const { result } = renderHook(() => useUpdateProduct(), {
         wrapper: createWrapper(),
       });
 
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
 
-      const updateData: ProductUpdate = { price_usd: 150 };
-      
+      const editPayload: EditProductPayload = {
+        p_product_id: "prod-1",
+        p_code: "SHO-01",
+        p_description: "Zapatos Nike",
+        p_price_usd: 150,
+        p_stock: 10,
+        p_user_id: "user-1",
+      };
+
       act(() => {
-        result.current.mutate({ id: "prod-1", payload: updateData });
+        result.current.mutate(editPayload);
       });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockUpdate).toHaveBeenCalledWith("prod-1", updateData);
+      expect(mockEditProduct).toHaveBeenCalledWith(editPayload);
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.detail("prod-1") });
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists() });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["movements"] });
     });
 
     it("delete product invalidates lists and specific detail query", async () => {
       mockDelete.mockResolvedValueOnce(undefined);
-      
+
       const { result } = renderHook(() => useDeleteProduct(), {
         wrapper: createWrapper(),
       });
 
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
-      
+
       act(() => {
         result.current.mutate("prod-1");
       });

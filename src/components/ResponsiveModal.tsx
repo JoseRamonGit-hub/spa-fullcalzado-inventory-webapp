@@ -5,8 +5,8 @@ import {
   DialogTitle,
   DialogDescription,
   DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +19,8 @@ interface ResponsiveModalProps {
   avoidCloseFromOutsideClick?: boolean;
   avoidCloseFromEsc?: boolean;
   dialogClassName?: string;
-  drawerClassName?: string;
   descriptionSrOnly?: boolean;
+  footer?: React.ReactNode;
 }
 
 export function ResponsiveModal({
@@ -32,30 +32,24 @@ export function ResponsiveModal({
   avoidCloseFromOutsideClick,
   avoidCloseFromEsc,
   dialogClassName,
-  drawerClassName,
   descriptionSrOnly,
+  footer,
 }: ResponsiveModalProps) {
   const isMobile = useIsMobile();
 
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className={drawerClassName} onInteractOutside={(e) => e.preventDefault()}>
-          <DrawerHeader className="border-b">
-            <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
-            {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
-          </DrawerHeader>
-          <div className="custom-scrollbar max-h-[75dvh] overflow-y-auto px-4 py-2">{children}</div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
-  // Test
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`gap-0 p-0 ${dialogClassName ?? ""}`}
+        className={cn(
+          "grid grid-rows-[auto_minmax(0,1fr)_auto] gap-0 p-0",
+          isMobile ? "max-h-[90dvh] w-screen max-w-none rounded-none" : "max-h-[90dvh]",
+          !isMobile && dialogClassName,
+        )}
+        animationClassName={
+          isMobile
+            ? "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 duration-150"
+            : undefined
+        }
         showCloseButton
         onInteractOutside={avoidCloseFromOutsideClick ? (e) => e.preventDefault() : undefined}
         onEscapeKeyDown={avoidCloseFromEsc ? (e) => e.preventDefault() : undefined}
@@ -68,7 +62,8 @@ export function ResponsiveModal({
             </DialogDescription>
           )}
         </DialogHeader>
-        <DialogBody className="max-h-[75dvh]">{children}</DialogBody>
+        <DialogBody className="min-h-0">{children}</DialogBody>
+        <DialogFooter>{footer}</DialogFooter>
       </DialogContent>
     </Dialog>
   );

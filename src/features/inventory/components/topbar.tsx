@@ -17,7 +17,7 @@ export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarPro
           <span className="bg-primary h-1.5 w-1.5 rounded-full" aria-hidden="true" />
           <h1 className="text-foreground text-sm font-semibold whitespace-nowrap">Inventario</h1>
         </div>
-        <div className="bg-card flex-1 md:max-w-xs rounded-md">
+        <div className="bg-card flex-1 rounded-md md:max-w-xs">
           <InputGroup className="h-8">
             <InputGroupInput
               placeholder="Buscar código o descripción..."

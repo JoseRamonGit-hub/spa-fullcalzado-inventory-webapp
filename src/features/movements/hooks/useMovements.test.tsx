@@ -51,7 +51,7 @@ describe("useMovements Hook", () => {
 
     it("debe obtener los movimientos filtrados por fecha si se pasa como argumento", async () => {
       vi.mocked(inventoryMovementsService.getAll).mockResolvedValueOnce([]);
-      
+
       const testDate = "2026-03-10";
       const { result } = renderHook(() => useMovements(testDate), { wrapper });
 
@@ -64,15 +64,13 @@ describe("useMovements Hook", () => {
   describe("useCreateManyMovements (Mutation)", () => {
     it("debe crear movimientos exitosamente e invalidar la query keys de listado", async () => {
       vi.mocked(inventoryMovementsService.createMany).mockResolvedValueOnce([] as any);
-      
+
       // Spy on invalidateQueries to see if cache triggers are correct
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
 
       const { result } = renderHook(() => useCreateManyMovements(), { wrapper });
 
-      const payload = [
-        { product_id: "prod-1", quantity: 10, type: "entry" as const, user_id: "user-1" }
-      ];
+      const payload = [{ product_id: "prod-1", quantity: 10, type: "entry" as const, user_id: "user-1" }];
 
       result.current.mutate(payload);
 

@@ -1,12 +1,12 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { 
-  useTransactions, 
-  useTodayTransactions, 
-  useCreateTransaction, 
-  useCreateManyTransactions, 
-  transactionKeys 
+import {
+  useTransactions,
+  useTodayTransactions,
+  useCreateTransaction,
+  useCreateManyTransactions,
+  transactionKeys,
 } from "./useTransactions";
 import { transactionsService } from "@/services/transactionsService";
 
@@ -47,7 +47,7 @@ describe("useTransactions Hook", () => {
   describe("Queries", () => {
     it("debe obtener todas las transacciones usando list fetcher", async () => {
       vi.mocked(transactionsService.getAll).mockResolvedValueOnce([fakeTransaction]);
-      
+
       const { result } = renderHook(() => useTransactions(), { wrapper });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -58,7 +58,7 @@ describe("useTransactions Hook", () => {
 
     it("debe obtener transacciones filtradas por default parameter", async () => {
       vi.mocked(transactionsService.getAll).mockResolvedValueOnce([]);
-      
+
       const testDate = "2026-03-16";
       const { result } = renderHook(() => useTransactions(testDate), { wrapper });
 
@@ -69,7 +69,7 @@ describe("useTransactions Hook", () => {
 
     it("debe obtener solo las transacciones del día actual", async () => {
       vi.mocked(transactionsService.getToday).mockResolvedValueOnce([fakeTransaction]);
-      
+
       const { result } = renderHook(() => useTodayTransactions(), { wrapper });
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -86,7 +86,14 @@ describe("useTransactions Hook", () => {
 
       const { result } = renderHook(() => useCreateTransaction(), { wrapper });
 
-      const payload = { product_id: "prod-1", quantity: 1, user_id: "user-1", price_usd: 10, price_ves: 350, exchange_rate: 35 };
+      const payload = {
+        product_id: "prod-1",
+        quantity: 1,
+        user_id: "user-1",
+        price_usd: 10,
+        price_ves: 350,
+        exchange_rate: 35,
+      };
       result.current.mutate(payload);
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -102,7 +109,9 @@ describe("useTransactions Hook", () => {
 
       const { result } = renderHook(() => useCreateManyTransactions(), { wrapper });
 
-      const payload = [{ product_id: "prod-1", quantity: 2, user_id: "user-1", price_usd: 10, price_ves: 350, exchange_rate: 35 }];
+      const payload = [
+        { product_id: "prod-1", quantity: 2, user_id: "user-1", price_usd: 10, price_ves: 350, exchange_rate: 35 },
+      ];
       result.current.mutate(payload);
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));

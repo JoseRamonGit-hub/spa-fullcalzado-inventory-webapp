@@ -3,7 +3,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useTheme } from "next-themes";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Settings, ReceiptText, Moon, Sun, LogOut } from "lucide-react";
+import { Settings, ReceiptText, IterationCcw, Moon, Sun, LogOut } from "lucide-react";
 
 export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const user = useAuthStore((s) => s.user);
@@ -18,6 +18,7 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
   };
 
   const secondaryNav = [
+    { title: "Devoluciones", url: "/returns", icon: IterationCcw },
     { title: "Cierres de Caja", url: "/cash-closes", icon: ReceiptText },
     { title: "Ajustes", url: "/settings", icon: Settings },
   ];

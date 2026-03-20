@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/productsService";
-import type { ProductInsert, ProductUpdate } from "@/types/index";
+import { movementKeys } from "@/features/movements/hooks/useMovements";
+import type { ProductInsert, EditProductPayload } from "@/types/index";
 
 // Query Keys factory
 export const productKeys = {
@@ -40,11 +41,11 @@ export function useCreateProduct() {
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: ProductUpdate }) => productsService.update(id, payload),
+    mutationFn: (payload: EditProductPayload) => productsService.editProduct(payload),
     onSuccess: (_, variables) => {
-      // Invalidate specific detail and all lists to keep them in sync
-      queryClient.invalidateQueries({ queryKey: productKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: productKeys.detail(variables.p_product_id) });
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: movementKeys.all });
     },
   });
 }

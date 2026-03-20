@@ -1,111 +1,129 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { ProductInsert } from "@/types/index";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
 
-// ── Discriminated union for batch items ──────────────────────
-export type NewBatchItem = ProductInsert & {
-  _tempId: string;
-  _kind: "new";
+export type NewBatchItem = {
+  kind: "new";
+  tempId: string;
+  code: string;
+  description: string;
+  priceUsd: number;
+  initialStock: number;
 };
 
 export type ExistingBatchItem = {
-  _tempId: string;
-  _kind: "existing";
-  product_id: string;
+  kind: "existing";
+  tempId: string;
+  productId: string;
   code: string;
   description: string;
-  quantity: number;
+  addedQuantity: number;
   currentStock: number;
+  currentPriceUsd: number;
+  priceUsd?: number;
+  originalPriceUsd?: number;
 };
 
 export type BatchItem = NewBatchItem | ExistingBatchItem;
 
-// Legacy alias so existing imports don't break
-export type PendingItem = NewBatchItem;
-
-// ── Table meta type ──────────────────────────────────────────
-type BatchTableMeta = { onRemoveItem?: (id: string) => void };
-
 export const pendingItemColumns: ColumnDef<BatchItem>[] = [
   {
-    id: "index",
-    header: "#",
-    cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{row.index + 1}</span>
-    ),
-    meta: { hideOnMobile: true },
-  },
-  {
-    id: "kind",
-    header: "",
-    cell: ({ row }) =>
-      row.original._kind === "new" ? (
-        <Badge variant="outline" className="text-[10px] px-1 py-0">
+    id: "type",
+    header: "Tipo",
+    cell: ({ row }) => {
+      const isNewItem = row.original.kind === "new";
+      return isNewItem ? (
+        <Badge variant="outline" className="px-1.5 py-0.5 text-[9px] uppercase">
           Nuevo
         </Badge>
       ) : (
-        <Badge variant="secondary" className="text-[10px] px-1 py-0">
-          Existente
+        <Badge variant="secondary" className="px-1.5 py-0.5 text-[9px] uppercase">
+          +Stock
         </Badge>
-      ),
-    meta: { hideOnMobile: true },
+      );
+    },
+    meta: {
+      className: "w-[60px] md:w-[80px]",
+    },
   },
   {
-    id: "code",
+    accessorKey: "code",
     header: "Código",
-    cell: ({ row }) => (
-      <span className="product-code text-xs">{row.original.code}</span>
-    ),
+    cell: ({ getValue }) => <span className="product-code text-xs uppercase">{getValue<string>()}</span>,
   },
   {
-    id: "description",
+    accessorKey: "description",
     header: "Descripción",
-    cell: ({ row }) => (
-      <span className="block max-w-[160px] truncate md:max-w-[260px]">
-        {row.original.description}
-      </span>
-    ),
+    cell: ({ getValue }) => <span className="block max-w-40 truncate md:max-w-100">{getValue<string>()}</span>,
     meta: { hideOnMobile: true },
   },
   {
-    id: "price_usd",
-    header: () => <span className="block text-right">Precio</span>,
-    cell: ({ row }) => (
-      <span className="block text-right tabular-nums">
-        {row.original._kind === "new"
-          ? formatCurrencyUSD(row.original.price_usd ?? 0)
-          : <span className="text-muted-foreground">—</span>}
-      </span>
-    ),
+    id: "quantityOrStock",
+    header: () => <span className="block text-right">Cant.</span>,
+    cell: ({ row }) => {
+      const pendingBatchItem = row.original;
+      if (pendingBatchItem.kind === "new") {
+        return <span className="block text-right font-medium tabular-nums">{pendingBatchItem.initialStock}</span>;
+      }
+      return (
+        <div className="flex items-center justify-end gap-1.5 tabular-nums">
+          <span className="text-muted-foreground">{pendingBatchItem.currentStock}</span>
+          <span className="text-muted-foreground">→</span>
+          <span className="text-foreground font-medium">
+            {pendingBatchItem.currentStock + pendingBatchItem.addedQuantity}
+          </span>
+          <span className="text-muted-foreground hidden text-[10px] md:inline-block">
+            ({pendingBatchItem.addedQuantity > 0 ? "+" : ""}
+            {pendingBatchItem.addedQuantity})
+          </span>
+        </div>
+      );
+    },
   },
   {
-    id: "qty",
-    header: () => <span className="block text-right">Cant.</span>,
-    cell: ({ row }) => (
-      <span className="block text-right tabular-nums">
-        {row.original._kind === "new" ? row.original.stock : row.original.quantity}
-      </span>
-    ),
+    id: "priceUsd",
+    header: () => <span className="block text-right">Precio</span>,
+    cell: ({ row }) => {
+      const pendingBatchItem = row.original;
+      if (pendingBatchItem.kind === "new") {
+        return <span className="block text-right tabular-nums">{formatCurrencyUSD(pendingBatchItem.priceUsd)}</span>;
+      }
+      const { priceUsd, originalPriceUsd } = pendingBatchItem;
+      if (priceUsd != null && originalPriceUsd != null && priceUsd !== originalPriceUsd) {
+        return (
+          <div className="flex items-center justify-end gap-1.5 tabular-nums">
+            <span className="text-muted-foreground line-through text-[11px]">
+              {formatCurrencyUSD(originalPriceUsd)}
+            </span>
+            <span className="text-muted-foreground">→</span>
+            <span className="text-foreground font-medium">{formatCurrencyUSD(priceUsd)}</span>
+          </div>
+        );
+      }
+      return <span className="text-muted-foreground block text-right">—</span>;
+    },
+    meta: { hideOnMobile: true },
   },
   {
     id: "actions",
     header: "",
     cell: ({ row, table }) => {
-      const meta = table.options.meta as BatchTableMeta | undefined;
+      const tableMeta = table.options.meta as { onRemovePendingBatchItem?: (id: string) => void } | undefined;
       return (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive h-6 w-6"
-          onClick={() => meta?.onRemoveItem?.(row.original._tempId)}
-          aria-label={`Eliminar ${row.original.code}`}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-destructive h-6 w-6"
+            onClick={() => tableMeta?.onRemovePendingBatchItem?.(row.original.tempId)}
+            aria-label={`Eliminar ${row.original.code}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       );
     },
   },
