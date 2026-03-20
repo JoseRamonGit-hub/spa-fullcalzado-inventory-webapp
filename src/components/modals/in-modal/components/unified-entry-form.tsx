@@ -64,6 +64,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           description: isUnlocked ? value.description.trim() : product.description,
           addedQuantity: value.quantityOrInitialStock as number,
           currentStock: product.stock,
+          currentPriceUsd: product.price_usd,
           ...(hasPriceChange && { priceUsd: editedPrice, originalPriceUsd: product.price_usd }),
         };
         onAddPendingBatchItem(item);

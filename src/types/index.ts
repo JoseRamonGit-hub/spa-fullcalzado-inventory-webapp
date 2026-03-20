@@ -52,6 +52,16 @@ export type ReturnWithRelations = Return & {
   transactions: ReturnTransactionWithProduct[];
 };
 
+// ── Edit product RPC payload type ─────────────────────────────
+export type EditProductPayload = {
+  p_product_id: string;
+  p_code: string;
+  p_description: string;
+  p_price_usd: number;
+  p_stock: number;
+  p_user_id: string;
+};
+
 // ── Return RPC payload types ────────────────────────────────
 export type ProcessReturnPayload = {
   p_type: "exchange" | "refund";

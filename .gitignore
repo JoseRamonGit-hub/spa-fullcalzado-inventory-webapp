@@ -28,5 +28,8 @@ dist-ssr
 .env.*
 !.env.example
 
+# Database backups
+backups/
+
 # TanStack Router
 .tanstack/

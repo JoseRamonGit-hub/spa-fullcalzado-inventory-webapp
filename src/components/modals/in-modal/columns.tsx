@@ -21,6 +21,7 @@ export type ExistingBatchItem = {
   description: string;
   addedQuantity: number;
   currentStock: number;
+  currentPriceUsd: number;
   priceUsd?: number;
   originalPriceUsd?: number;
 };

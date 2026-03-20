@@ -44,6 +44,8 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
         quantity: item.addedQuantity,
         type: "entry" as const,
         user_id: currentUser.id,
+        stock_before: item.currentStock,
+        price_usd: item.priceUsd ?? item.currentPriceUsd,
       }));
       batchOperations.push(createManyMovementsMutation.mutateAsync(movementsPayload));
     }

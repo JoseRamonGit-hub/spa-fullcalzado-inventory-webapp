@@ -35,8 +35,16 @@ DO $$
 BEGIN
   -- Crear usuario de prueba si no existe ninguno
   IF NOT EXISTS (SELECT 1 FROM public.users LIMIT 1) THEN
-    INSERT INTO public.users (id)
-    VALUES ('00000000-0000-0000-0000-000000000001'::uuid);
+    INSERT INTO auth.users (id, email, instance_id, aud, role, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
+    VALUES (
+      '00000000-0000-0000-0000-000000000001'::uuid,
+      'test@test.com',
+      '00000000-0000-0000-0000-000000000000'::uuid,
+      'authenticated', 'authenticated', crypt('password', gen_salt('bf')),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      '{"fullname":"Test User"}'::jsonb,
+      now(), now(), '', now()
+    );
   END IF;
 END;
 $$;

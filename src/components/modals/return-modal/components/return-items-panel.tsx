@@ -77,7 +77,7 @@ export function ReturnItemsPanel({
             <div className="flex items-center gap-1.5">
               <Undo2 className="text-muted-foreground size-3" />
               <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                Devolución ({returnItems.length})
+                Entrada ({returnItems.length})
               </span>
             </div>
             <span className="text-foreground text-xs font-bold tabular-nums">
@@ -105,7 +105,7 @@ export function ReturnItemsPanel({
             <div className="flex items-center gap-1.5">
               <ArrowRightLeft className="text-muted-foreground size-3" />
               <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                Cambio ({exchangeItems.length})
+                Salida ({exchangeItems.length})
               </span>
             </div>
             <span className="text-foreground text-xs font-bold tabular-nums">

@@ -1,3 +1,4 @@
+Connecting to db 5432
 export type Json =
   | string
   | number
@@ -158,10 +159,14 @@ export type Database = {
         Row: {
           created_at: string | null
           date: string
+          description_before: string | null
           id: string
+          price_usd: number | null
+          price_usd_before: number | null
           product_id: string
           quantity: number
           return_id: string | null
+          stock_before: number | null
           time: string
           type: Database["public"]["Enums"]["movement_types"]
           user_id: string
@@ -169,10 +174,14 @@ export type Database = {
         Insert: {
           created_at?: string | null
           date?: string
+          description_before?: string | null
           id?: string
+          price_usd?: number | null
+          price_usd_before?: number | null
           product_id: string
           quantity: number
           return_id?: string | null
+          stock_before?: number | null
           time?: string
           type: Database["public"]["Enums"]["movement_types"]
           user_id: string
@@ -180,10 +189,14 @@ export type Database = {
         Update: {
           created_at?: string | null
           date?: string
+          description_before?: string | null
           id?: string
+          price_usd?: number | null
+          price_usd_before?: number | null
           product_id?: string
           quantity?: number
           return_id?: string | null
+          stock_before?: number | null
           time?: string
           type?: Database["public"]["Enums"]["movement_types"]
           user_id?: string
@@ -442,6 +455,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      edit_product: {
+        Args: {
+          p_code?: string
+          p_description?: string
+          p_price_usd?: number
+          p_product_id: string
+          p_stock?: number
+          p_user_id?: string
+        }
+        Returns: Json
+      }
       generate_daily_cash_close: {
         Args: { p_user_id: string }
         Returns: {
@@ -479,7 +503,7 @@ export type Database = {
     }
     Enums: {
       exchange_modes: "manual" | "bcv"
-      movement_types: "entry" | "exit" | "return"
+      movement_types: "entry" | "exit" | "return" | "edit"
       return_types: "exchange" | "refund"
       roles: "admin" | "employee"
     }
@@ -613,10 +637,12 @@ export const Constants = {
   public: {
     Enums: {
       exchange_modes: ["manual", "bcv"],
-      movement_types: ["entry", "exit", "return"],
+      movement_types: ["entry", "exit", "return", "edit"],
       return_types: ["exchange", "refund"],
       roles: ["admin", "employee"],
     },
   },
 } as const
 
+A new version of Supabase CLI is available: v2.78.1 (currently installed v2.76.17)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

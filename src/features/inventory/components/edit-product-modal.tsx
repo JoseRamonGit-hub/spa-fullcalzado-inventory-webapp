@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { useUpdateProduct } from "@/features/inventory/hooks/useProducts";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
 import type { Product } from "@/types";
 
@@ -15,6 +16,7 @@ interface EditProductModalProps {
 
 export function EditProductModal({ open, onOpenChange, product }: EditProductModalProps) {
   const updateProduct = useUpdateProduct();
+  const currentUser = useAuthStore((state) => state.user);
 
   const [code, setCode] = useState(product.code);
   const [description, setDescription] = useState(product.description);
@@ -23,15 +25,15 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) return;
 
     const promise = updateProduct.mutateAsync({
-      id: product.id,
-      payload: {
-        code: code.trim(),
-        description: description.trim(),
-        price_usd: parseFloat(priceUsd),
-        stock: parseInt(stock),
-      },
+      p_product_id: product.id,
+      p_code: code.trim(),
+      p_description: description.trim(),
+      p_price_usd: parseFloat(priceUsd),
+      p_stock: parseInt(stock),
+      p_user_id: currentUser.id,
     });
 
     toast.promise(promise, {
