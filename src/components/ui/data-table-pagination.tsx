@@ -5,16 +5,25 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-r
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
+  pageIndex: number;
+  pageSize: number;
+  totalRows: number;
+  pageCount: number;
+  canPreviousPage: boolean;
+  canNextPage: boolean;
   pageSizeOptions?: number[];
 }
 
 export function DataTablePagination<TData>({
   table,
+  pageIndex,
+  pageSize,
+  totalRows,
+  pageCount,
+  canPreviousPage,
+  canNextPage,
   pageSizeOptions = [10, 20, 30, 50],
 }: DataTablePaginationProps<TData>) {
-  const { pageIndex, pageSize } = table.getState().pagination;
-  const totalRows = table.getFilteredRowModel().rows.length;
-  const pageCount = table.getPageCount();
   const from = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const to = Math.min((pageIndex + 1) * pageSize, totalRows);
 
@@ -58,7 +67,7 @@ export function DataTablePagination<TData>({
             size="sm"
             className="hidden h-7 w-7 p-0 sm:inline-flex"
             onClick={() => table.firstPage()}
-            disabled={!table.getCanPreviousPage()}
+            disabled={!canPreviousPage}
           >
             <ChevronsLeft className="h-3.5 w-3.5" />
           </Button>
@@ -67,7 +76,7 @@ export function DataTablePagination<TData>({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            disabled={!canPreviousPage}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
           </Button>
@@ -76,7 +85,7 @@ export function DataTablePagination<TData>({
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            disabled={!canNextPage}
           >
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
@@ -85,7 +94,7 @@ export function DataTablePagination<TData>({
             size="sm"
             className="hidden h-7 w-7 p-0 sm:inline-flex"
             onClick={() => table.lastPage()}
-            disabled={!table.getCanNextPage()}
+            disabled={!canNextPage}
           >
             <ChevronsRight className="h-3.5 w-3.5" />
           </Button>

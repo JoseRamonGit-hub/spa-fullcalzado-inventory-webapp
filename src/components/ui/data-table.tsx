@@ -143,7 +143,17 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {showPagination && <DataTablePagination table={table} />}
+      {showPagination && (
+        <DataTablePagination
+          table={table}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          totalRows={table.getFilteredRowModel().rows.length}
+          pageCount={table.getPageCount()}
+          canPreviousPage={table.getCanPreviousPage()}
+          canNextPage={table.getCanNextPage()}
+        />
+      )}
     </div>
   );
 }
