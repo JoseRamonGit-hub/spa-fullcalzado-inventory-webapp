@@ -84,6 +84,7 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
               data={pendingBatchItems}
               emptyMessage="Busca un producto por código o descripción para comenzar."
               meta={{ onRemovePendingBatchItem: removePendingBatchItem }}
+              hidePagination
             />
           </article>
         </section>
