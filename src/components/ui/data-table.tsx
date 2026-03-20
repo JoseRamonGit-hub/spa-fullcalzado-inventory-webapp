@@ -26,6 +26,7 @@ interface DataTableProps<TData, TValue> {
   getRowId?: (originalRow: TData, index: number) => string;
   renderSubRow?: (row: Row<TData>) => React.ReactNode;
   pageSize?: number;
+  hidePagination?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -38,6 +39,7 @@ export function DataTable<TData, TValue>({
   getRowId,
   renderSubRow,
   pageSize = 20,
+  hidePagination,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -71,7 +73,7 @@ export function DataTable<TData, TValue>({
     getRowId,
   });
 
-  const showPagination = !isLoading && data.length > 0;
+  const showPagination = !hidePagination && !isLoading && data.length > 0;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

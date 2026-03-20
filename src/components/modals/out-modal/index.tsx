@@ -98,6 +98,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
               data={pendingSales}
               emptyMessage="Agrega ventas usando el buscador de arriba."
               meta={{ onRemovePendingSale: removePendingSale }}
+              hidePagination
             />
           </article>
         </section>
