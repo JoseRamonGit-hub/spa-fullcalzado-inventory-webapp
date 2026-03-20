@@ -69,7 +69,12 @@ export const columns = [
     meta: { hideOnMobile: true },
     cell: ({ row, table }) => {
       const product = row.original;
-      const meta = table.options.meta as { onEdit?: (p: Product) => void; onDelete?: (p: Product) => void } | undefined;
+      const meta = table.options.meta as
+        | { onEdit?: (p: Product) => void; onDelete?: (p: Product) => void; isAdmin?: boolean }
+        | undefined;
+
+      if (!meta?.isAdmin) return null;
+
       return (
         <div className="flex items-center justify-center gap-1">
           <Button

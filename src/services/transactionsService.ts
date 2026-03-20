@@ -5,14 +5,16 @@ import { formatDateForBackend } from "@/utils/formatters";
 const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as const;
 
 export const transactionsService = {
-  // Historical — filtered by exact date when provided, otherwise last 500 rows
   getAll: async (date?: string): Promise<TransactionWithRelations[]> => {
     let query = supabase.from("transactions").select(TRANSACTION_SELECT).order("created_at", { ascending: false });
 
     if (date) {
       query = query.eq("date", date);
     } else {
-      query = query.limit(500);
+      // Default: last 30 days
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      query = query.gte("date", formatDateForBackend(cutoff));
     }
 
     const { data, error } = await query;

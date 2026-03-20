@@ -25,7 +25,10 @@ export const returnsService = {
     if (date) {
       query = query.eq("date", date);
     } else {
-      query = query.limit(200);
+      // Default: last 30 days
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      query = query.gte("date", formatDateForBackend(cutoff));
     }
 
     const { data, error } = await query;

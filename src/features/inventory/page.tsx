@@ -10,6 +10,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import type { Product } from "@/types";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 export function InventoryPage() {
   // Search + filtering with useTransition for non-blocking UI
@@ -21,6 +22,8 @@ export function InventoryPage() {
 
   const { data: products, isLoading, isError } = useProducts(date);
   const isMobile = useIsMobile();
+  const currentUser = useAuthStore((state) => state.user);
+  const isAdmin = currentUser?.role === "admin";
 
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -61,19 +64,20 @@ export function InventoryPage() {
 
   const handleRowClick = useCallback(
     (product: Product) => {
-      if (isMobile) {
+      if (isMobile && isAdmin) {
         setMobileActionProduct(product);
       }
     },
-    [isMobile],
+    [isMobile, isAdmin],
   );
 
   const tableMeta = useMemo(
     () => ({
       onEdit: (product: Product) => setEditProduct(product),
       onDelete: (product: Product) => setDeleteProduct(product),
+      isAdmin,
     }),
-    [],
+    [isAdmin],
   );
 
   const topbarProps = {

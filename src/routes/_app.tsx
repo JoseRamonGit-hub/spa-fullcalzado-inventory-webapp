@@ -12,6 +12,7 @@ import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useSidebarStore } from "@/hooks/useSidebarStore";
 import { formatCurrencyVES } from "@/utils/formatters";
 
 export const Route = createFileRoute("/_app")({
@@ -32,6 +33,8 @@ function AppLayout() {
   const { data: exchangeRate } = useExchangeRate();
   const { theme, setTheme } = useTheme();
   const user = useAuthStore((s) => s.user);
+  const sidebarOpen = useSidebarStore((s) => s.open);
+  const setSidebarOpen = useSidebarStore((s) => s.setOpen);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -63,7 +66,7 @@ function AppLayout() {
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   return (
-    <SidebarProvider className="h-dvh">
+    <SidebarProvider className="h-dvh" open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <AppSidebar />
       <SidebarInset className="bg-card overflow-hidden shadow-sm">
         <header className="topbar-height border-border bg-card/80 flex shrink-0 items-center justify-between gap-2 border-b px-3 backdrop-blur-sm md:px-4">

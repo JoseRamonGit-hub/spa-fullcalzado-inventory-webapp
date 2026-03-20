@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { InventoryMovementWithRelations, InventoryMovementInsert } from "@/types/index";
+import { formatDateForBackend } from "@/utils/formatters";
 
 const MOVEMENT_SELECT = "*, products(code, description), users(fullname)" as const;
 
@@ -9,6 +10,11 @@ export const inventoryMovementsService = {
 
     if (date) {
       query = query.gte("created_at", `${date}T00:00:00`).lte("created_at", `${date}T23:59:59`);
+    } else {
+      // Default: last 30 days
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      query = query.gte("created_at", `${formatDateForBackend(cutoff)}T00:00:00`);
     }
 
     const { data, error } = await query;

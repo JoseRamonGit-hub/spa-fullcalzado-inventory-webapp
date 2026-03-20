@@ -46,7 +46,7 @@ export const pendingSaleColumns: ColumnDef<PendingSale>[] = [
   },
   {
     accessorKey: "totalVes",
-    header: () => <span className="block text-right">Total Bs</span>,
+    header: () => <span className="block text-right">Total Bs.</span>,
     cell: ({ getValue }) => (
       <span className="text-muted-foreground block text-right tabular-nums">
         {formatCurrencyVES(getValue<number>())}
