@@ -1,5 +1,6 @@
 import type { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 interface DataTablePaginationProps<TData> {
@@ -31,17 +32,18 @@ export function DataTablePagination<TData>({
         {/* Page size selector */}
         <div className="hidden items-center gap-1.5 sm:flex">
           <span className="text-muted-foreground text-xs">Filas</span>
-          <select
-            className="border-input bg-background text-foreground h-7 rounded-md border px-1.5 text-xs"
+          <NativeSelect
+            size="sm"
+            className="h-7 py-0 pr-7 pl-2 text-xs"
             value={pageSize}
             onChange={(e) => table.setPageSize(Number(e.target.value))}
           >
             {pageSizeOptions.map((size) => (
-              <option key={size} value={size}>
+              <NativeSelectOption key={size} value={size}>
                 {size}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Page indicator */}

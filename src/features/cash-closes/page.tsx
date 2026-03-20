@@ -98,7 +98,7 @@ export function CashClosesPage() {
 
   if (isLoading) {
     return (
-      <main className="flex flex-1 flex-col overflow-hidden">
+      <main className="flex min-h-0 flex-1 flex-col">
         {topbar}
         <MetricsSkeleton count={4} />
         <div className="flex min-h-0 flex-1 flex-col">
@@ -125,7 +125,7 @@ export function CashClosesPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col overflow-hidden">
+    <main className="flex min-h-0 flex-1 flex-col">
       {topbar}
 
       {/* Metrics — fixed at top, never scrolls */}
