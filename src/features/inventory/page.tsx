@@ -87,7 +87,7 @@ export function InventoryPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-1 flex-col overflow-hidden">
+      <section className="flex min-h-0 flex-1 flex-col">
         <Topbar {...topbarProps} />
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
       </section>
@@ -106,7 +106,7 @@ export function InventoryPage() {
   }
 
   return (
-    <section className="flex flex-1 flex-col overflow-hidden">
+    <section className="flex min-h-0 flex-1 flex-col">
       <Topbar {...topbarProps} />
 
       <DataTable

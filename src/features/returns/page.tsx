@@ -13,7 +13,7 @@ export function ReturnsPage() {
 
   if (isLoading) {
     return (
-      <section className="flex flex-1 flex-col overflow-hidden">
+      <section className="flex min-h-0 flex-1 flex-col">
         {topbar}
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
       </section>
@@ -32,7 +32,7 @@ export function ReturnsPage() {
   }
 
   return (
-    <section className="flex flex-1 flex-col overflow-hidden">
+    <section className="flex min-h-0 flex-1 flex-col">
       {topbar}
       <DataTable
         columns={columns}

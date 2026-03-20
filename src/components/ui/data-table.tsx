@@ -1,5 +1,6 @@
 import {
   type ColumnDef,
+  type PaginationState,
   type Row,
   type VisibilityState,
   flexRender,
@@ -13,7 +14,7 @@ import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { PackageOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -53,6 +54,8 @@ export function DataTable<TData, TValue>({
     return hidden;
   }, [isMobile, columns]);
 
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize });
+
   const table = useReactTable({
     data,
     columns,
@@ -61,12 +64,9 @@ export function DataTable<TData, TValue>({
     ...(renderSubRow ? { getExpandedRowModel: getExpandedRowModel(), getRowCanExpand: () => true } : {}),
     state: {
       columnVisibility,
+      pagination,
     },
-    initialState: {
-      pagination: {
-        pageSize,
-      },
-    },
+    onPaginationChange: setPagination,
     meta,
     getRowId,
   });
