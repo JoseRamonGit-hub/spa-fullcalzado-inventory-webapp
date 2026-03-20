@@ -24,6 +24,9 @@ interface ProductSearchOptions {
 interface ProductSearchProps {
   value: string;
   onChange: (product: ProductSearchResult | null) => void;
+  searchText?: string;
+  onSearchTextChange?: (text: string) => void;
+  onEnterWithNoResults?: () => void;
   options?: ProductSearchOptions;
   isInvalid?: boolean;
   className?: string;
@@ -46,14 +49,26 @@ function toSearchResult(product: Product): ProductSearchResult {
   };
 }
 
-export function ProductSearch({ value, onChange, options, isInvalid = false, className }: ProductSearchProps) {
+export function ProductSearch({
+  value,
+  onChange,
+  searchText: controlledSearchText,
+  onSearchTextChange,
+  onEnterWithNoResults,
+  options,
+  isInvalid = false,
+  className,
+}: ProductSearchProps) {
   const { requireStock = false, showPrice = false, autoFocus = false } = options ?? {};
   const { data: products } = useProducts();
-  const [search, setSearch] = useState("");
+  const [internalSearch, setInternalSearch] = useState("");
+  const isSearchControlled = controlledSearchText !== undefined;
+  const search = isSearchControlled ? controlledSearchText : internalSearch;
   const [open, setOpen] = useState(false);
   const deferredSearch = useDeferredValue(search);
   const skipBlurRef = useRef(false);
   const commandRootRef = useRef<HTMLDivElement>(null);
+  const filteredCountRef = useRef(0);
 
   const selectedProduct = useMemo(
     () => products?.find((product: Product) => product.id === value) ?? null,
@@ -74,16 +89,24 @@ export function ProductSearch({ value, onChange, options, isInvalid = false, cla
       .slice(0, RESULT_LIMIT);
   }, [deferredSearch, products, requireStock]);
 
+  filteredCountRef.current = filteredProducts.length;
+
   const focusInput = useCallback(() => {
     requestAnimationFrame(() => {
       commandRootRef.current?.querySelector<HTMLInputElement>("[cmdk-input]")?.focus();
     });
   }, []);
 
-  const handleSearchChange = useCallback((nextValue: string) => {
-    setSearch(nextValue);
-    setOpen(true);
-  }, []);
+  const handleSearchChange = useCallback(
+    (nextValue: string) => {
+      if (!isSearchControlled) {
+        setInternalSearch(nextValue);
+      }
+      setOpen(true);
+      onSearchTextChange?.(nextValue);
+    },
+    [isSearchControlled, onSearchTextChange],
+  );
 
   const handleSelect = useCallback(
     (productId: string) => {
@@ -92,17 +115,23 @@ export function ProductSearch({ value, onChange, options, isInvalid = false, cla
 
       onChange(toSearchResult(product));
       skipBlurRef.current = false;
-      setSearch("");
+      if (!isSearchControlled) {
+        setInternalSearch("");
+      }
       setOpen(false);
+      onSearchTextChange?.("");
     },
-    [onChange, products],
+    [onChange, products, isSearchControlled, onSearchTextChange],
   );
 
   const handleClear = useCallback(() => {
     onChange(null);
-    setSearch("");
+    if (!isSearchControlled) {
+      setInternalSearch("");
+    }
     setOpen(false);
-  }, [onChange]);
+    onSearchTextChange?.("");
+  }, [onChange, isSearchControlled, onSearchTextChange]);
 
   const handleInputFocus = useCallback(() => {
     setOpen(true);
@@ -125,7 +154,21 @@ export function ProductSearch({ value, onChange, options, isInvalid = false, cla
         return;
       }
 
+      // Enter with no results → signal parent to continue as new product
+      if (event.key === "Enter" && filteredCountRef.current === 0 && search.trim()) {
+        event.preventDefault();
+        setOpen(false);
+        onEnterWithNoResults?.();
+        return;
+      }
+
       if (!open || event.key !== "Tab") return;
+
+      // Allow Tab to leave the field when there are no results (UXR-008)
+      if (filteredCountRef.current === 0) {
+        setOpen(false);
+        return;
+      }
 
       event.preventDefault();
       commandRootRef.current?.dispatchEvent(
@@ -136,7 +179,7 @@ export function ProductSearch({ value, onChange, options, isInvalid = false, cla
         }),
       );
     },
-    [open],
+    [open, search, onEnterWithNoResults],
   );
 
   const handleChipKeyDown = useCallback(

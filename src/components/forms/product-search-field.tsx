@@ -7,6 +7,9 @@ type ProductSearchFieldProps = FormFieldProps & {
   requireStock?: boolean;
   showPrice?: boolean;
   autoFocus?: boolean;
+  searchText?: string;
+  onSearchTextChange?: (text: string) => void;
+  onEnterWithNoResults?: () => void;
   onAfterSelect?: (product: ProductSearchResult) => void;
   onClear?: () => void;
 };
@@ -25,6 +28,9 @@ export function ProductSearchField({
   requireStock = false,
   showPrice = false,
   autoFocus = false,
+  searchText,
+  onSearchTextChange,
+  onEnterWithNoResults,
   onAfterSelect,
   onClear,
 }: ProductSearchFieldProps) {
@@ -50,6 +56,9 @@ export function ProductSearchField({
       <ProductSearch
         value={field.state.value}
         onChange={handleChange}
+        searchText={searchText}
+        onSearchTextChange={onSearchTextChange}
+        onEnterWithNoResults={onEnterWithNoResults}
         options={{ requireStock, showPrice, autoFocus }}
         isInvalid={isInvalid}
       />

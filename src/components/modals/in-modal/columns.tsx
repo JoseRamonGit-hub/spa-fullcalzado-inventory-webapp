@@ -21,6 +21,8 @@ export type ExistingBatchItem = {
   description: string;
   addedQuantity: number;
   currentStock: number;
+  priceUsd?: number;
+  originalPriceUsd?: number;
 };
 
 export type BatchItem = NewBatchItem | ExistingBatchItem;
@@ -86,6 +88,18 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
       const pendingBatchItem = row.original;
       if (pendingBatchItem.kind === "new") {
         return <span className="block text-right tabular-nums">{formatCurrencyUSD(pendingBatchItem.priceUsd)}</span>;
+      }
+      const { priceUsd, originalPriceUsd } = pendingBatchItem;
+      if (priceUsd != null && originalPriceUsd != null && priceUsd !== originalPriceUsd) {
+        return (
+          <div className="flex items-center justify-end gap-1.5 tabular-nums">
+            <span className="text-muted-foreground line-through text-[11px]">
+              {formatCurrencyUSD(originalPriceUsd)}
+            </span>
+            <span className="text-muted-foreground">→</span>
+            <span className="text-foreground font-medium">{formatCurrencyUSD(priceUsd)}</span>
+          </div>
+        );
       }
       return <span className="text-muted-foreground block text-right">—</span>;
     },
