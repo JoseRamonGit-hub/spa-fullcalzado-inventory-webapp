@@ -119,8 +119,8 @@ export function TransactionsPage() {
       ]
     : [
         { label: "Ventas", value: String(metrics.count), icon: ShoppingCart, color: "" },
-        { label: "Total USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
-        { label: "Total Bs.", value: formatCurrencyVES(metrics.totalVes), icon: Banknote, color: "" },
+        { label: "Total Producido USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
+        { label: "Total Producido Bs.", value: formatCurrencyVES(metrics.totalVes), icon: Banknote, color: "" },
       ];
 
   return (
