@@ -265,7 +265,7 @@ export function ProductSearch({
           {showDropdown && (
             <div className="bg-popover absolute top-full left-0 z-50 mt-1 w-full rounded-md border shadow-lg">
               <CommandList className="max-h-44 overflow-y-auto">
-<CommandGroup>
+                <CommandGroup>
                   {filteredProducts.map((product) => (
                     <CommandItem
                       key={product.id}

@@ -106,9 +106,11 @@ export function ConfirmBatchDialog({
                 <td className="px-3 py-2 text-right align-top font-semibold whitespace-nowrap tabular-nums">
                   {item.kind === NEW_ITEM_KIND ? (
                     formatCurrencyUSD(item.priceUsd ?? DEFAULT_FALLBACK_PRICE)
-                  ) : item.priceUsd != null && item.originalPriceUsd != null && item.priceUsd !== item.originalPriceUsd ? (
+                  ) : item.priceUsd != null &&
+                    item.originalPriceUsd != null &&
+                    item.priceUsd !== item.originalPriceUsd ? (
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="text-muted-foreground font-normal line-through text-[11px]">
+                      <span className="text-muted-foreground text-[11px] font-normal line-through">
                         {formatCurrencyUSD(item.originalPriceUsd)}
                       </span>
                       <span className="text-muted-foreground font-normal">→</span>

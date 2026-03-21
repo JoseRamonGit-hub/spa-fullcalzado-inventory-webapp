@@ -155,7 +155,8 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             name="code"
             validators={{
               onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
-              onChange: ({ value, fieldApi }) => (fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined),
+              onChange: ({ value, fieldApi }) =>
+                fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
             }}
           >
             {(field) => (

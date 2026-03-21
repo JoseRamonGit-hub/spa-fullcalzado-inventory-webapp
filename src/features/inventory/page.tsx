@@ -52,12 +52,7 @@ export function InventoryPage() {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <Topbar
-        search={searchInput}
-        onSearchChange={handleSearchChange}
-        date={date}
-        onDateChange={setDate}
-      />
+      <Topbar search={searchInput} onSearchChange={handleSearchChange} date={date} onDateChange={setDate} />
 
       {isLoading ? (
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />

@@ -44,9 +44,7 @@ export function ExpandedReturnRow({ row }: { row: Row<ReturnWithRelations> }) {
                   {tx.products.description}
                 </span>
                 <span className="text-muted-foreground ml-auto tabular-nums md:ml-0">{tx.quantity}</span>
-                <span className="w-20 text-right font-medium tabular-nums">
-                  {formatCurrencyUSD(tx.total_usd ?? 0)}
-                </span>
+                <span className="w-20 text-right font-medium tabular-nums">{formatCurrencyUSD(tx.total_usd ?? 0)}</span>
               </div>
             ))}
           </div>
@@ -66,7 +64,11 @@ export function ExpandedReturnRow({ row }: { row: Row<ReturnWithRelations> }) {
             <span
               className={cn(
                 "font-semibold tabular-nums",
-                data.difference_usd > 0 ? "text-success" : data.difference_usd < 0 ? "text-destructive" : "text-foreground",
+                data.difference_usd > 0
+                  ? "text-success"
+                  : data.difference_usd < 0
+                    ? "text-destructive"
+                    : "text-foreground",
               )}
             >
               {data.difference_usd > 0 ? "+" : ""}
@@ -74,9 +76,7 @@ export function ExpandedReturnRow({ row }: { row: Row<ReturnWithRelations> }) {
             </span>
           </span>
         )}
-        {data.notes && (
-          <span className="text-muted-foreground ml-auto italic">"{data.notes}"</span>
-        )}
+        {data.notes && <span className="text-muted-foreground ml-auto italic">"{data.notes}"</span>}
       </div>
     </div>
   );

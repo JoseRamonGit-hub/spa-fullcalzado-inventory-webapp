@@ -121,7 +121,10 @@ export function DataTable<TData, TValue>({
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap">
+                      <TableCell
+                        key={cell.id}
+                        className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap"
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}

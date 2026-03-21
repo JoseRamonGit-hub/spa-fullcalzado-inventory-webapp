@@ -98,14 +98,11 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
     },
   });
 
-  const focusField = useCallback(
-    (name: string) => {
-      requestAnimationFrame(() => {
-        formRef.current?.querySelector<HTMLInputElement>(`input[name="${name}"]`)?.focus();
-      });
-    },
-    [],
-  );
+  const focusField = useCallback((name: string) => {
+    requestAnimationFrame(() => {
+      formRef.current?.querySelector<HTMLInputElement>(`input[name="${name}"]`)?.focus();
+    });
+  }, []);
 
   const handleEnterWithNoResults = useCallback(() => {
     focusField("description");
@@ -170,11 +167,11 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
         </div>
         <div className="flex h-8 items-center">
           {isExistingMode ? (
-            <Badge variant="secondary" className="whitespace-nowrap text-[10px]">
+            <Badge variant="secondary" className="text-[10px] whitespace-nowrap">
               Producto existente
             </Badge>
           ) : searchText.trim() ? (
-            <Badge variant="outline" className="whitespace-nowrap text-[10px]">
+            <Badge variant="outline" className="text-[10px] whitespace-nowrap">
               Nuevo producto
             </Badge>
           ) : null}
