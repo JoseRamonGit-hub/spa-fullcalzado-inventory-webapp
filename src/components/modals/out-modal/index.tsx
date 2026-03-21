@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
+import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingSaleColumns } from "./columns";
 

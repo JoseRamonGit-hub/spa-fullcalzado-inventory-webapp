@@ -10,7 +10,7 @@ import { MobileActionDrawer } from "./components/mobile-action-drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Product } from "@/types";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
+import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
 
 export function InventoryPage() {
   const [date, setDate] = useState<string | undefined>(undefined);

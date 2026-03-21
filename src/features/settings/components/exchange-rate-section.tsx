@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, History, TrendingUp } from "lucide-react";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
-import { useExchangeRateHistory, useUpdateExchangeRate } from "@/features/settings/hooks";
+import { useExchangeRate, useExchangeRateHistory } from "@/features/exchange_rates/useExchangeRateQueries";
+import { useUpdateExchangeRate } from "@/features/exchange_rates/useExchangeRateMutations";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
 import { formatCurrencyVES, formatDateTime } from "@/utils/formatters";
@@ -32,19 +32,16 @@ export function ExchangeRateSection() {
       return;
     }
 
-    const promise = updateRate.mutateAsync({
-      rate,
-      source: "manual",
-      updated_by: user.id,
-    });
+    const promise = updateRate.mutateAsync(
+      { rate, source: "manual", updated_by: user.id },
+      { onSuccess: () => setNewRate("") },
+    );
 
     toast.promise(promise, {
       loading: "Actualizando tasa de cambio...",
       success: "Tasa actualizada correctamente",
       error: "Error al actualizar la tasa",
     });
-
-    promise.then(() => setNewRate(""));
   };
 
   return (

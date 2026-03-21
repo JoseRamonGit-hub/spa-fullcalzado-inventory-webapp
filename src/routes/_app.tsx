@@ -8,7 +8,7 @@ import { PackagePlus, ShoppingCart, IterationCcw, Moon, Sun } from "lucide-react
 import { InModal } from "@/components/modals/in-modal";
 import { OutModal } from "@/components/modals/out-modal";
 import { ReturnModal } from "@/components/modals/return-modal";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
+import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
 import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";

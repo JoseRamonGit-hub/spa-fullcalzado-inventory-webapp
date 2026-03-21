@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
+import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { usePendingReturn } from "./hooks/use-pending-return";

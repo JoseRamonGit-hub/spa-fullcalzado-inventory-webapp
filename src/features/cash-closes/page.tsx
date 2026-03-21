@@ -1,13 +1,12 @@
 import { useMemo, useState } from "react";
-import { useCashCloses } from "./hooks/useCashCloses";
+import { useCashCloses } from "./hooks/useCashCloseQueries";
+import { useGenerateCashClose } from "./hooks/useCashCloseMutations";
 import { useTransactions, useTodayTransactions } from "@/features/transactions/hooks/useTransactionQueries";
 import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
-import { cashClosesService } from "@/services/cashClosesService";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { formatDate } from "@/utils/formatters";
@@ -42,7 +41,7 @@ export function CashClosesPage() {
     isLoading: isTodayReturnsLoading,
     isError: isTodayReturnsError,
   } = useTodayReturns({ enabled: !isFiltered });
-  const queryClient = useQueryClient();
+  const closeMutation = useGenerateCashClose();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate({ from: "/cash-closes" });
 
@@ -100,14 +99,6 @@ export function CashClosesPage() {
       netVes: txMetrics.totalVes - retMetrics.creditVes,
     };
   }, [sourceTxs, sourceReturns]);
-
-  const closeMutation = useMutation({
-    mutationFn: (userId: string) => cashClosesService.generateDailyCashClose(userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cash-closes"] });
-      queryClient.invalidateQueries({ queryKey: ["transactions", "today"] });
-    },
-  });
 
   const handleConfirmClose = () => {
     if (!user) return;
@@ -174,6 +165,7 @@ export function CashClosesPage() {
         <DataTable
           columns={columns}
           data={cashCloses || []}
+          getRowId={(row) => row.id}
           emptyMessage="No hay cierres de caja registrados."
           onRowClick={handleRowClick}
         />
