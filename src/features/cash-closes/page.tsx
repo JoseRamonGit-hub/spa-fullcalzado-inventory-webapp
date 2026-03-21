@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useCashCloses } from "./hooks/useCashCloses";
-import { useTransactions, useTodayTransactions } from "@/features/transactions/hooks/useTransactions";
-import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturns";
+import { useTransactions, useTodayTransactions } from "@/features/transactions/hooks/useTransactionQueries";
+import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";

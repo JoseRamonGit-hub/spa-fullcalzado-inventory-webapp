@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useTransactions, useTodayTransactions } from "./hooks/useTransactions";
-import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturns";
+import { useTransactions, useTodayTransactions } from "./hooks/useTransactionQueries";
+import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
@@ -188,7 +188,12 @@ export function TransactionsPage() {
 
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <DataTable columns={columns} data={transactions || []} emptyMessage="No hay ventas registradas." />
+        <DataTable
+          columns={columns}
+          data={transactions || []}
+          getRowId={(row) => row.id}
+          emptyMessage="No hay ventas registradas."
+        />
       </div>
     );
   }

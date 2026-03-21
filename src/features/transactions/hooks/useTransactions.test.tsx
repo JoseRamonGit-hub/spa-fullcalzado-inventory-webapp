@@ -1,13 +1,8 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  useTransactions,
-  useTodayTransactions,
-  useCreateTransaction,
-  useCreateManyTransactions,
-  transactionKeys,
-} from "./useTransactions";
+import { useTransactions, useTodayTransactions, transactionKeys } from "./useTransactionQueries";
+import { useCreateTransaction, useCreateManyTransactions } from "./useTransactionMutations";
 import { transactionsService } from "@/services/transactionsService";
 
 vi.mock("@/services/transactionsService", () => ({

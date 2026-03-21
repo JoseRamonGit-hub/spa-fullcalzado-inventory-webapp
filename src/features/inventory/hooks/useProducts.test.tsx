@@ -99,7 +99,7 @@ describe("useProducts", () => {
     });
 
     it("update product invalidates lists, detail, and movements", async () => {
-      mockEditProduct.mockResolvedValueOnce({});
+      mockEditProduct.mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useUpdateProduct(), {
         wrapper: createWrapper(),

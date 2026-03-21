@@ -37,8 +37,8 @@ export const returnsService = {
     return data as unknown as ReturnWithRelations[];
   },
 
-  processReturn: async (payload: ProcessReturnPayload) => {
-    const { data, error } = await supabase.rpc("process_return", {
+  processReturn: async (payload: ProcessReturnPayload): Promise<void> => {
+    const { error } = await supabase.rpc("process_return", {
       p_type: payload.p_type,
       p_returned_items: payload.p_returned_items as unknown as Json,
       p_new_items: (payload.p_new_items ?? undefined) as unknown as Json,
@@ -48,6 +48,5 @@ export const returnsService = {
     });
 
     if (error) throw new Error(error.message);
-    return data;
   },
 };

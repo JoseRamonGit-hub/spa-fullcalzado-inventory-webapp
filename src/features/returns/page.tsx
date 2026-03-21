@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useReturns } from "./hooks/useReturns";
+import { useReturns } from "./hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
@@ -26,6 +26,7 @@ export function ReturnsPage() {
       <DataTable
         columns={columns}
         data={returns || []}
+        getRowId={(row) => row.id}
         emptyMessage="No hay devoluciones registradas."
         renderSubRow={(row) => <ExpandedReturnRow row={row} />}
       />
