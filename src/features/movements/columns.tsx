@@ -1,12 +1,13 @@
 import type { InventoryMovementWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatDate, formatTime, formatCurrencyUSD } from "@/utils/formatters";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import { Pencil } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
-const columHelper = createColumnHelper<InventoryMovementWithRelations>();
+const columnHelper = createColumnHelper<InventoryMovementWithRelations>();
 
 function getTypeInfo(movement: InventoryMovementWithRelations) {
   const { type, return_id } = movement;
@@ -20,7 +21,7 @@ function getTypeInfo(movement: InventoryMovementWithRelations) {
 }
 
 export const columns = [
-  columHelper.accessor("type", {
+  columnHelper.accessor("type", {
     header: () => <div className="text-center">Tipo</div>,
     cell: ({ row }) => {
       const { variant, label } = getTypeInfo(row.original);
@@ -31,23 +32,25 @@ export const columns = [
       );
     },
   }),
-  columHelper.accessor("date", {
-    header: "Fecha",
+  columnHelper.accessor("date", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatDate(row.original.created_at)}</span>
     ),
   }),
-  columHelper.accessor("time", {
-    header: "Hora",
+  columnHelper.accessor("time", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Hora" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
     ),
   }),
-  columHelper.accessor("products.code", {
+  columnHelper.accessor("products.code", {
     header: "Código",
     cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
   }),
-  columHelper.accessor("products.description", {
+  columnHelper.accessor("products.description", {
     header: "Descripción",
     cell: ({ getValue, row }) => {
       const description = getValue();
@@ -75,7 +78,7 @@ export const columns = [
       );
     },
   }),
-  columHelper.accessor("quantity", {
+  columnHelper.accessor("quantity", {
     header: () => <div className="text-right">Cant.</div>,
     cell: ({ getValue, row }) => {
       const { type, stock_before } = row.original;
@@ -138,7 +141,7 @@ export const columns = [
       );
     },
   }),
-  columHelper.display({
+  columnHelper.display({
     id: "price",
     header: () => <div className="text-right">Precio</div>,
     cell: ({ row }) => {
@@ -167,7 +170,7 @@ export const columns = [
     },
     meta: { hideOnMobile: true },
   }),
-  columHelper.accessor("users.fullname", {
+  columnHelper.accessor("users.fullname", {
     header: "Usuario",
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
   }),

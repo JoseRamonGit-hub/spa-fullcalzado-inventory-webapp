@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
@@ -9,7 +9,7 @@ import {
   ModalProductIdentity,
 } from "@/components/modals/shared/modal-ui";
 import { useAppForm } from "@/hooks/form";
-import { useUpdateProduct } from "@/features/inventory/hooks/useProducts";
+import { useUpdateProduct } from "@/features/inventory/hooks/useProductMutations";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { Product } from "@/types";
@@ -19,18 +19,18 @@ const INVALID = "Inválido";
 const MIN_PRICE = 0;
 const MIN_STOCK = 0;
 
-interface EditProductModalProps {
+type EditProductModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product;
-}
+};
 
-interface PendingChanges {
+type PendingChanges = {
   code: string;
   description: string;
   priceUsd: number;
   stock: number;
-}
+};
 
 type ChangedField = { label: string; from: string; to: string };
 
@@ -58,7 +58,6 @@ function getChangedFields(product: Product, values: PendingChanges): ChangedFiel
 export function EditProductModal({ open, onOpenChange, product }: EditProductModalProps) {
   const updateProduct = useUpdateProduct();
   const currentUser = useAuthStore((state) => state.user);
-  const formRef = useRef<HTMLFormElement>(null);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<PendingChanges | null>(null);
@@ -84,25 +83,28 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
   const handleConfirmSubmit = useCallback(() => {
     if (!pendingValues || !currentUser) return;
 
-    const promise = updateProduct.mutateAsync({
-      p_product_id: product.id,
-      p_code: pendingValues.code.trim(),
-      p_description: pendingValues.description.trim(),
-      p_price_usd: pendingValues.priceUsd,
-      p_stock: pendingValues.stock,
-      p_user_id: currentUser.id,
-    });
+    const promise = updateProduct.mutateAsync(
+      {
+        p_product_id: product.id,
+        p_code: pendingValues.code.trim(),
+        p_description: pendingValues.description.trim(),
+        p_price_usd: pendingValues.priceUsd,
+        p_stock: pendingValues.stock,
+        p_user_id: currentUser.id,
+      },
+      {
+        onSuccess: () => {
+          setConfirmOpen(false);
+          setPendingValues(null);
+          onOpenChange(false);
+        },
+      },
+    );
 
     toast.promise(promise, {
       loading: "Actualizando producto...",
       success: "Producto actualizado correctamente",
       error: "Error al actualizar el producto",
-    });
-
-    promise.then(() => {
-      setConfirmOpen(false);
-      setPendingValues(null);
-      onOpenChange(false);
     });
   }, [pendingValues, currentUser, updateProduct, product.id, onOpenChange]);
 
@@ -135,7 +137,12 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
         footer={
           <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (
-              <Button type="submit" form="edit-product-form" className="mt-1 h-9 w-full gap-2" disabled={!canSubmit || isSubmitting}>
+              <Button
+                type="submit"
+                form="edit-product-form"
+                className="mt-1 h-9 w-full gap-2"
+                disabled={!canSubmit || isSubmitting || updateProduct.isPending}
+              >
                 <Pencil className="h-4 w-4" />
                 Guardar Cambios
               </Button>
@@ -143,11 +150,12 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
           </form.Subscribe>
         }
       >
-        <form id="edit-product-form" ref={formRef} onSubmit={handleFormSubmit} className="flex flex-col gap-3 p-4">
+        <form id="edit-product-form" onSubmit={handleFormSubmit} className="flex flex-col gap-3 p-4">
           <form.AppField
             name="code"
             validators={{
-              onChange: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+              onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+              onChange: ({ value, fieldApi }) => (fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined),
             }}
           >
             {(field) => (
@@ -158,7 +166,9 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
           <form.AppField
             name="description"
             validators={{
-              onChange: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+              onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+              onChange: ({ value, fieldApi }) =>
+                fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
             }}
           >
             {(field) => (
@@ -170,11 +180,9 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             <form.AppField
               name="priceUsd"
               validators={{
-                onChange: ({ value }) => {
-                  if (value === undefined || value === null || String(value) === "") return REQUIRED;
-                  if (value < MIN_PRICE) return INVALID;
-                  return undefined;
-                },
+                onBlur: ({ value }) => (value < MIN_PRICE ? INVALID : undefined),
+                onChange: ({ value, fieldApi }) =>
+                  fieldApi.state.meta.isTouched && value < MIN_PRICE ? INVALID : undefined,
               }}
             >
               {(field) => (
@@ -192,11 +200,9 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             <form.AppField
               name="stock"
               validators={{
-                onChange: ({ value }) => {
-                  if (value === undefined || value === null || String(value) === "") return REQUIRED;
-                  if (value < MIN_STOCK) return INVALID;
-                  return undefined;
-                },
+                onBlur: ({ value }) => (value < MIN_STOCK ? INVALID : undefined),
+                onChange: ({ value, fieldApi }) =>
+                  fieldApi.state.meta.isTouched && value < MIN_STOCK ? INVALID : undefined,
               }}
             >
               {(field) => (

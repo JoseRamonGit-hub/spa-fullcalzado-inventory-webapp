@@ -12,7 +12,7 @@ interface ReturnSummaryFooterProps {
   differenceUsd: number;
   differenceVes: number;
   currentExchangeRate: number;
-  isExchangeRateReady: boolean;
+  isExchangeRateLoading: boolean;
   isSubmissionPending: boolean;
   notes: string;
   onNotesChange: (notes: string) => void;
@@ -27,7 +27,7 @@ export function ReturnSummaryFooter({
   differenceUsd,
   differenceVes,
   currentExchangeRate,
-  isExchangeRateReady,
+  isExchangeRateLoading,
   isSubmissionPending,
   notes,
   onNotesChange,
@@ -35,6 +35,12 @@ export function ReturnSummaryFooter({
 }: ReturnSummaryFooterProps) {
   const userRole = useAuthStore((s) => s.user?.role);
   const isEmployee = userRole === "employee";
+  const isExchangeRateReady = currentExchangeRate > 0;
+  const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";
+  const exchangeRateTitle = isExchangeRateLoading ? "Cargando tasa" : "Tasa no disponible";
+  const exchangeRateMessage = isExchangeRateLoading
+    ? "Cargando tasa de cambio vigente..."
+    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
 
   // Employees cannot process refunds or negative differences
   const isBlockedByRole = isEmployee && (returnType === "refund" || differenceUsd < 0);
@@ -56,17 +62,15 @@ export function ReturnSummaryFooter({
       ? "Solo un administrador puede procesar devoluciones"
       : "Solo un administrador puede procesar cambios con saldo a favor"
     : isBlockedByExchangeRate
-      ? "La tasa de cambio no est\u00e1 disponible. Actualiza la tasa antes de confirmar."
+      ? exchangeRateMessage
       : undefined;
 
   return (
     <footer className="flex w-full flex-col gap-3">
       {!isExchangeRateReady && (
         <section className="border-warning/40 bg-warning/8 rounded-md border px-3 py-2 text-xs">
-          <p className="text-warning-foreground font-medium">Tasa no disponible</p>
-          <p className="text-muted-foreground mt-1">
-            No puedes registrar devoluciones o cambios hasta que exista una tasa de cambio vigente.
-          </p>
+          <p className="text-warning-foreground font-medium">{exchangeRateTitle}</p>
+          <p className="text-muted-foreground mt-1">{exchangeRateMessage}</p>
         </section>
       )}
 
@@ -85,14 +89,14 @@ export function ReturnSummaryFooter({
         <div className={`min-w-0 ${returnType === "exchange" ? "hidden md:block" : ""}`}>
           <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Tasa</p>
           <p className="text-muted-foreground truncate text-[11px] font-medium tabular-nums">
-            {formatCurrencyVES(currentExchangeRate)}
+            {exchangeRateDisplayValue}
           </p>
         </div>
         <div className="min-w-0">
           <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Crédito</p>
           <p className="truncate text-[11px] font-semibold tabular-nums">{formatCurrencyUSD(creditUsd)}</p>
           <p className="text-muted-foreground truncate text-[10px] tabular-nums">
-            {formatCurrencyVES(creditUsd * currentExchangeRate)}
+            {isExchangeRateReady ? formatCurrencyVES(creditUsd * currentExchangeRate) : "—"}
           </p>
         </div>
         {returnType === "exchange" && (
@@ -100,7 +104,7 @@ export function ReturnSummaryFooter({
             <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Nueva Compra</p>
             <p className="truncate text-[11px] font-semibold tabular-nums">{formatCurrencyUSD(newPurchaseUsd)}</p>
             <p className="text-muted-foreground truncate text-[10px] tabular-nums">
-              {formatCurrencyVES(newPurchaseUsd * currentExchangeRate)}
+              {isExchangeRateReady ? formatCurrencyVES(newPurchaseUsd * currentExchangeRate) : "—"}
             </p>
           </div>
         )}
@@ -113,8 +117,7 @@ export function ReturnSummaryFooter({
             {formatCurrencyUSD(differenceUsd)}
           </p>
           <p className="text-muted-foreground truncate text-[10px] tabular-nums">
-            {differenceVes > 0 ? "+" : ""}
-            {formatCurrencyVES(differenceVes)}
+            {isExchangeRateReady ? `${differenceVes > 0 ? "+" : ""}${formatCurrencyVES(differenceVes)}` : "—"}
           </p>
         </div>
       </section>

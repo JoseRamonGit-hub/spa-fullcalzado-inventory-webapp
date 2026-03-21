@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
+import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingSaleColumns } from "./columns";
 
@@ -21,8 +21,9 @@ const INITIAL_FALLBACK_RATE = 0;
 
 export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
   const navigate = useNavigate();
-  const { data: exchangeRateData } = useExchangeRate();
+  const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
   const currentExchangeRate = exchangeRateData?.rate ?? INITIAL_FALLBACK_RATE;
+  const isExchangeRateReady = !!exchangeRateData?.rate;
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
@@ -57,12 +58,12 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
       {
         key: "enter",
         shiftKey: true,
-        when: pendingSales.length > 0 && !isConfirmDialogOpen,
+        when: pendingSales.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
         stopPropagation: true,
         onTrigger: () => setIsConfirmDialogOpen(true),
       },
     ],
-    [pendingSales.length, isConfirmDialogOpen],
+    [pendingSales.length, isConfirmDialogOpen, isExchangeRateReady],
   );
 
   useModalKeyboardShortcuts({ enabled: isOpen, shortcuts: keyboardShortcuts });
@@ -82,6 +83,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
           <SalesSummaryFooter
             pendingSales={pendingSales}
             currentExchangeRate={currentExchangeRate}
+            isExchangeRateLoading={isExchangeRateLoading}
             totalAmountUsd={totalAmountUsd}
             totalAmountVes={totalAmountVes}
             isSubmissionPending={isSubmissionPending}
@@ -90,7 +92,11 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         }
       >
         <section className="flex flex-col gap-4">
-          <ProductSaleForm currentExchangeRate={currentExchangeRate} onAddPendingSale={addPendingSale} />
+          <ProductSaleForm
+            currentExchangeRate={currentExchangeRate}
+            isExchangeRateReady={isExchangeRateReady}
+            onAddPendingSale={addPendingSale}
+          />
 
           <article className="bg-card h-56 overflow-hidden rounded-md border md:h-64">
             <DataTable
@@ -109,6 +115,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         onOpenChange={setIsConfirmDialogOpen}
         pendingSales={pendingSales}
         currentExchangeRate={currentExchangeRate}
+        isExchangeRateLoading={isExchangeRateLoading}
         totalAmountUsd={totalAmountUsd}
         totalAmountVes={totalAmountVes}
         isSubmissionPending={isSubmissionPending}

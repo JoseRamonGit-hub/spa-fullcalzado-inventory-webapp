@@ -2,11 +2,13 @@ import {
   type ColumnDef,
   type PaginationState,
   type Row,
+  type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -47,8 +49,7 @@ export function DataTable<TData, TValue>({
     if (!isMobile) return {};
     const hidden: VisibilityState = {};
     for (const col of columns) {
-      const colMeta = col.meta as { hideOnMobile?: boolean } | undefined;
-      if (colMeta?.hideOnMobile) {
+      if (col.meta?.hideOnMobile) {
         const colId = "id" in col ? (col.id as string) : "accessorKey" in col ? (col.accessorKey as string) : "";
         if (colId) hidden[colId] = false;
       }
@@ -57,18 +58,26 @@ export function DataTable<TData, TValue>({
   }, [isMobile, columns]);
 
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     ...(renderSubRow ? { getExpandedRowModel: getExpandedRowModel(), getRowCanExpand: () => true } : {}),
+    enableMultiSort: false,
     state: {
       columnVisibility,
       pagination,
+      sorting,
     },
     onPaginationChange: setPagination,
+    onSortingChange: (updater) => {
+      setSorting(updater);
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    },
     meta,
     getRowId,
   });

@@ -14,6 +14,7 @@ interface ConfirmSalesDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   pendingSales: PendingSale[];
   currentExchangeRate: number;
+  isExchangeRateLoading: boolean;
   totalAmountUsd: number;
   totalAmountVes: number;
   isSubmissionPending: boolean;
@@ -25,6 +26,7 @@ export function ConfirmSalesDialog({
   onOpenChange,
   pendingSales,
   currentExchangeRate,
+  isExchangeRateLoading,
   totalAmountUsd,
   totalAmountVes,
   isSubmissionPending,
@@ -32,6 +34,11 @@ export function ConfirmSalesDialog({
 }: ConfirmSalesDialogProps) {
   const pendingSalesCount = pendingSales.length;
   const isMultipleSales = pendingSalesCount > 1;
+  const isExchangeRateReady = currentExchangeRate > 0;
+  const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";
+  const exchangeRateMessage = isExchangeRateLoading
+    ? "Cargando tasa de cambio vigente..."
+    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
 
   return (
     <ModalConfirmDialog
@@ -52,6 +59,7 @@ export function ConfirmSalesDialog({
       pendingLabel="Registrando..."
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
+      confirmDisabled={!isExchangeRateReady}
     >
       <ConfirmDialogTableSection className="max-h-48">
         <table className="w-full">
@@ -79,9 +87,10 @@ export function ConfirmSalesDialog({
       </ConfirmDialogTableSection>
 
       <ConfirmDialogSummarySection>
+        {!isExchangeRateReady && <p className="text-warning mb-1">{exchangeRateMessage}</p>}
         <div className="flex justify-between">
           <span className="text-muted-foreground">Tasa</span>
-          <span className="font-medium tabular-nums">{formatCurrencyVES(currentExchangeRate)}</span>
+          <span className="font-medium tabular-nums">{exchangeRateDisplayValue}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Total lote USD</span>
@@ -89,7 +98,9 @@ export function ConfirmSalesDialog({
         </div>
         <div className="border-primary/20 flex justify-between border-t pt-1">
           <span className="text-muted-foreground">Total lote Bs</span>
-          <span className="text-foreground font-bold tabular-nums">{formatCurrencyVES(totalAmountVes)}</span>
+          <span className="text-foreground font-bold tabular-nums">
+            {isExchangeRateReady ? formatCurrencyVES(totalAmountVes) : "—"}
+          </span>
         </div>
       </ConfirmDialogSummarySection>
     </ModalConfirmDialog>

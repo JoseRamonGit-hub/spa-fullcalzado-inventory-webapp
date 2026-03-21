@@ -1,25 +1,30 @@
 import type { CashClose } from "@/types";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
-const columHelper = createColumnHelper<CashClose>();
+const columnHelper = createColumnHelper<CashClose>();
 
 export const columns = [
-  columHelper.accessor("closed_at", {
-    header: "Fecha",
+  columnHelper.accessor("closed_at", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue())}</span>,
   }),
-  columHelper.accessor("total_transactions", {
-    header: () => <div className="text-right">Ventas</div>,
+  columnHelper.accessor("total_transactions", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Ventas" className="justify-end" />,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
   }),
-  columHelper.accessor("total_units_sold", {
-    header: () => <div className="text-right">Unidades</div>,
+  columnHelper.accessor("total_units_sold", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Unidades" className="justify-end" />,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
     meta: { hideOnMobile: true },
   }),
-  columHelper.accessor("total_returns", {
-    header: () => <div className="text-right">Devol.</div>,
+  columnHelper.accessor("total_returns", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Devol." className="justify-end" />,
     cell: ({ getValue, row }) => {
       const count = getValue();
       if (!count) return <span className="text-muted-foreground block text-right tabular-nums">—</span>;
@@ -34,20 +39,27 @@ export const columns = [
     },
     meta: { hideOnMobile: true },
   }),
-  columHelper.accessor("total_usd", {
-    header: () => <div className="text-right">Total Producido USD</div>,
+  columnHelper.accessor("total_usd", {
+    enableSorting: true,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Total Producido USD" className="justify-end" />
+    ),
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
     ),
   }),
-  columHelper.accessor("total_ves", {
-    header: () => <div className="text-right">Total Producido BS</div>,
+  columnHelper.accessor("total_ves", {
+    enableSorting: true,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Total Producido BS" className="justify-end" />
+    ),
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
     ),
   }),
-  columHelper.accessor("closed_by", {
-    header: "Cerrado por",
+  columnHelper.accessor("closed_by", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Cerrado por" />,
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
   }),
 ] as ColumnDef<CashClose>[];

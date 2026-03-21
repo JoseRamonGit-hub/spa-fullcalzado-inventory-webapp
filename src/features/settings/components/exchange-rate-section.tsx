@@ -1,21 +1,26 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, History, TrendingUp } from "lucide-react";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
-import { useExchangeRateHistory, useUpdateExchangeRate } from "@/features/settings/hooks";
+import { useExchangeRate, useExchangeRateHistory } from "@/features/exchange_rates/useExchangeRateQueries";
+import { useUpdateExchangeRate } from "@/features/exchange_rates/useExchangeRateMutations";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
 import { formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
 export function ExchangeRateSection() {
-  const { data: currentRate } = useExchangeRate();
-  const { data: history } = useExchangeRateHistory();
-  const updateRate = useUpdateExchangeRate();
-  const user = useAuthStore((s) => s.user);
-
+  const { data: currentRate, isLoading: isExchangeRateLoading } = useExchangeRate();
   const [newRate, setNewRate] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const { data: history } = useExchangeRateHistory({ enabled: showHistory });
+  const updateRate = useUpdateExchangeRate();
+  const user = useAuthStore((s) => s.user);
+  const hasExchangeRate = !!currentRate?.rate;
+  const exchangeRateDisplayValue = hasExchangeRate ? formatCurrencyVES(currentRate.rate) : "Sin tasa vigente";
+  const exchangeRateMessage = isExchangeRateLoading
+    ? "Cargando tasa de cambio vigente..."
+    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,19 +32,16 @@ export function ExchangeRateSection() {
       return;
     }
 
-    const promise = updateRate.mutateAsync({
-      rate,
-      source: "manual",
-      updated_by: user.id,
-    });
+    const promise = updateRate.mutateAsync(
+      { rate, source: "manual", updated_by: user.id },
+      { onSuccess: () => setNewRate("") },
+    );
 
     toast.promise(promise, {
       loading: "Actualizando tasa de cambio...",
       success: "Tasa actualizada correctamente",
       error: "Error al actualizar la tasa",
     });
-
-    promise.then(() => setNewRate(""));
   };
 
   return (
@@ -51,11 +53,16 @@ export function ExchangeRateSection() {
         </div>
         <div className="flex-1">
           <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Tasa Activa</p>
-          <p className="font-mono text-2xl font-bold tabular-nums">
-            {currentRate?.rate ? formatCurrencyVES(currentRate.rate) : "—"}
-          </p>
+          {isExchangeRateLoading ? (
+            <Skeleton className="mt-2 h-8 w-36" />
+          ) : (
+            <p className="font-mono text-2xl font-bold tabular-nums">{exchangeRateDisplayValue}</p>
+          )}
+          {!isExchangeRateLoading && !hasExchangeRate && (
+            <p className="text-warning mt-1 text-xs">{exchangeRateMessage}</p>
+          )}
         </div>
-        {currentRate?.source && (
+        {currentRate?.source && hasExchangeRate && (
           <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
             {currentRate.source}
           </span>

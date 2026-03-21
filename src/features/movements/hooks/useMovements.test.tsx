@@ -1,7 +1,8 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useMovements, useCreateManyMovements, movementKeys } from "./useMovements";
+import { useMovements, movementKeys } from "./useMovementQueries";
+import { useCreateManyMovements } from "./useMovementMutations";
 import { inventoryMovementsService } from "@/services/inventoryMovementsService";
 
 vi.mock("@/services/inventoryMovementsService", () => ({

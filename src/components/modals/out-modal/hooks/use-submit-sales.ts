@@ -1,15 +1,15 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useCreateManyTransactions } from "@/features/transactions/hooks/useTransactions";
+import { useCreateManyTransactions } from "@/features/transactions/hooks/useTransactionMutations";
 import type { PendingSale } from "../types";
 
-interface UseSubmitSalesProps {
+type UseSubmitSalesProps = {
   pendingSales: PendingSale[];
   currentExchangeRate: number;
   clearPendingSales: () => void;
   onSuccess: () => void;
-}
+};
 
 export function useSubmitSales({
   pendingSales,

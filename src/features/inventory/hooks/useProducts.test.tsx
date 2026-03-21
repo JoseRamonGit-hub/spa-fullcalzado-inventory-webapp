@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, productKeys } from "./useProducts";
+import { useProducts, productKeys } from "./useProductQueries";
+import { useCreateProduct, useUpdateProduct, useDeleteProduct } from "./useProductMutations";
 import { productsService } from "@/services/productsService";
 import type { Product, ProductInsert, EditProductPayload } from "@/types";
 import type { ReactNode } from "react";
@@ -98,7 +99,7 @@ describe("useProducts", () => {
     });
 
     it("update product invalidates lists, detail, and movements", async () => {
-      mockEditProduct.mockResolvedValueOnce({});
+      mockEditProduct.mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useUpdateProduct(), {
         wrapper: createWrapper(),

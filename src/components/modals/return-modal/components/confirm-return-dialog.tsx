@@ -19,7 +19,7 @@ interface ConfirmReturnDialogProps {
   differenceUsd: number;
   differenceVes: number;
   currentExchangeRate: number;
-  isExchangeRateReady: boolean;
+  isExchangeRateLoading: boolean;
   isSubmissionPending: boolean;
   notes: string;
   onConfirmSubmit: () => void;
@@ -35,12 +35,17 @@ export function ConfirmReturnDialog({
   differenceUsd,
   differenceVes,
   currentExchangeRate,
-  isExchangeRateReady,
+  isExchangeRateLoading,
   isSubmissionPending,
   notes,
   onConfirmSubmit,
 }: ConfirmReturnDialogProps) {
   const isExchange = returnType === "exchange";
+  const isExchangeRateReady = currentExchangeRate > 0;
+  const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";
+  const exchangeRateMessage = isExchangeRateLoading
+    ? "Cargando tasa de cambio vigente..."
+    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
 
   return (
     <ModalConfirmDialog
@@ -116,9 +121,10 @@ export function ConfirmReturnDialog({
       )}
 
       <ConfirmDialogSummarySection>
+        {!isExchangeRateReady && <p className="text-warning mb-1">{exchangeRateMessage}</p>}
         <div className="flex justify-between">
           <span className="text-muted-foreground">Tasa</span>
-          <span className="font-medium tabular-nums">{formatCurrencyVES(currentExchangeRate)}</span>
+          <span className="font-medium tabular-nums">{exchangeRateDisplayValue}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Crédito</span>
@@ -137,7 +143,9 @@ export function ConfirmReturnDialog({
         {differenceUsd !== 0 && (
           <div className="flex justify-between">
             <span className="text-muted-foreground" />
-            <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(Math.abs(differenceVes))}</span>
+            <span className="text-muted-foreground tabular-nums">
+              {isExchangeRateReady ? formatCurrencyVES(Math.abs(differenceVes)) : "—"}
+            </span>
           </div>
         )}
         {notes && (

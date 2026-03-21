@@ -3,11 +3,12 @@ import { AppSidebar } from "../components/app-sidebar";
 import { BottomBar } from "../components/bottom-bar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PackagePlus, ShoppingCart, IterationCcw, Moon, Sun } from "lucide-react";
 import { InModal } from "@/components/modals/in-modal";
 import { OutModal } from "@/components/modals/out-modal";
 import { ReturnModal } from "@/components/modals/return-modal";
-import { useExchangeRate } from "@/features/exchange_rates/hooks";
+import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
 import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_app")({
 function AppLayout() {
   const { isInModalOpen, isOutModalOpen, isReturnModalOpen, setInModalOpen, setOutModalOpen, setReturnModalOpen } =
     useModalStore();
-  const { data: exchangeRate } = useExchangeRate();
+  const { data: exchangeRate, isLoading: isExchangeRateLoading } = useExchangeRate();
   const { theme, setTheme } = useTheme();
   const user = useAuthStore((s) => s.user);
   const sidebarOpen = useSidebarStore((s) => s.open);
@@ -61,7 +62,9 @@ function AppLayout() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const rateDisplay = exchangeRate?.rate ? formatCurrencyVES(exchangeRate.rate) : "—";
+  const hasExchangeRate = !!exchangeRate?.rate;
+  const isExchangeRateUnavailable = !isExchangeRateLoading && !hasExchangeRate;
+  const exchangeRateDisplayValue = hasExchangeRate ? formatCurrencyVES(exchangeRate.rate) : "Sin tasa vigente";
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
@@ -123,11 +126,29 @@ function AppLayout() {
               <span className="sr-only">Toggle theme</span>
             </Button>
 
-            <div className="bg-primary/8 border-primary/20 flex items-center gap-1.5 rounded-md border px-2 py-0.5">
-              <span className="text-primary/70 hidden text-[10px] font-semibold tracking-wider uppercase sm:inline">
+            <div
+              className={`flex items-center gap-1.5 rounded-md border px-2 py-0.5 ${
+                isExchangeRateUnavailable ? "border-warning/30 bg-warning/10" : "bg-primary/8 border-primary/20"
+              }`}
+            >
+              <span
+                className={`hidden text-[10px] font-semibold tracking-wider uppercase sm:inline ${
+                  isExchangeRateUnavailable ? "text-warning" : "text-primary/70"
+                }`}
+              >
                 TASA
               </span>
-              <span className="text-primary font-mono text-sm leading-none font-bold tabular-nums">{rateDisplay}</span>
+              {isExchangeRateLoading ? (
+                <Skeleton className="h-4 w-18" />
+              ) : (
+                <span
+                  className={`font-mono text-sm leading-none font-bold tabular-nums ${
+                    isExchangeRateUnavailable ? "text-warning" : "text-primary"
+                  }`}
+                >
+                  {exchangeRateDisplayValue}
+                </span>
+              )}
             </div>
           </div>
         </header>

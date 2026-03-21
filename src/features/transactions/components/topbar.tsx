@@ -1,9 +1,9 @@
 import { DatePickerFilter } from "@/components/ui/date-picker-filter";
 
-interface TopbarProps {
+type TopbarProps = {
   date?: string;
   onDateChange: (value: string | undefined) => void;
-}
+};
 
 export function Topbar({ date, onDateChange }: TopbarProps) {
   return (

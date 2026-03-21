@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
-import { useProducts } from "@/features/inventory/hooks/useProducts";
+import { useProducts } from "@/features/inventory/hooks/useProductQueries";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/index";
 import { formatCurrencyUSD } from "@/utils/formatters";

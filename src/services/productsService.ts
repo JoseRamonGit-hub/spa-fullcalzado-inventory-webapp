@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { Product, ProductInsert, ProductUpdate, EditProductPayload } from "@/types/index";
+import type { Product, ProductInsert, EditProductPayload } from "@/types/index";
 
 export const productsService = {
   getAll: async (date?: string): Promise<Product[]> => {
@@ -36,17 +36,9 @@ export const productsService = {
     return data;
   },
 
-  update: async (id: string, payload: ProductUpdate): Promise<Product> => {
-    const { data, error } = await supabase.from("products").update(payload).eq("id", id).select().single();
-
+  editProduct: async (payload: EditProductPayload): Promise<void> => {
+    const { error } = await supabase.rpc("edit_product", payload);
     if (error) throw new Error(error.message);
-    return data;
-  },
-
-  editProduct: async (payload: EditProductPayload): Promise<unknown> => {
-    const { data, error } = await supabase.rpc("edit_product", payload);
-    if (error) throw new Error(error.message);
-    return data;
   },
 
   delete: async (id: string): Promise<void> => {

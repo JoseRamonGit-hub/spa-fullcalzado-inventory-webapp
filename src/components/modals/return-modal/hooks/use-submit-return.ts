@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useCreateReturn } from "@/features/returns/hooks/useReturns";
+import { useCreateReturn } from "@/features/returns/hooks/useReturnMutations";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
 
-interface UseSubmitReturnProps {
+type UseSubmitReturnProps = {
   returnItems: readonly PendingReturnItem[];
   exchangeItems: readonly PendingExchangeItem[];
   returnType: "exchange" | "refund";
@@ -12,7 +12,7 @@ interface UseSubmitReturnProps {
   notes: string;
   clearAll: () => void;
   onSuccess: () => void;
-}
+};
 
 export function useSubmitReturn({
   returnItems,

@@ -3,14 +3,14 @@ import { ResponsiveAlertModal } from "@/components/ResponsiveAlertModal";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { CashCloseMetrics } from "./metrics-summary";
 
-interface CashCloseModalProps {
+type CashCloseModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   isPending: boolean;
   onConfirm: () => void;
   today: string;
   metrics: CashCloseMetrics;
-}
+};
 
 export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today, metrics }: CashCloseModalProps) {
   const hasReturns = metrics.returnsCount > 0;
