@@ -2,11 +2,13 @@ import {
   type ColumnDef,
   type PaginationState,
   type Row,
+  type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -56,18 +58,26 @@ export function DataTable<TData, TValue>({
   }, [isMobile, columns]);
 
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     ...(renderSubRow ? { getExpandedRowModel: getExpandedRowModel(), getRowCanExpand: () => true } : {}),
+    enableMultiSort: false,
     state: {
       columnVisibility,
       pagination,
+      sorting,
     },
     onPaginationChange: setPagination,
+    onSortingChange: (updater) => {
+      setSorting(updater);
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    },
     meta,
     getRowId,
   });

@@ -1,5 +1,6 @@
 import type { InventoryMovementWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatDate, formatTime, formatCurrencyUSD } from "@/utils/formatters";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
@@ -32,13 +33,15 @@ export const columns = [
     },
   }),
   columnHelper.accessor("date", {
-    header: "Fecha",
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatDate(row.original.created_at)}</span>
     ),
   }),
   columnHelper.accessor("time", {
-    header: "Hora",
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Hora" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
     ),

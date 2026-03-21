@@ -1,6 +1,7 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { ReturnWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatDate, formatTime, formatCurrencyUSD } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
@@ -34,14 +35,16 @@ export const columns = [
     },
   }),
   columnHelper.accessor("date", {
-    header: "Fecha",
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatDate(row.original.created_at)}</span>
     ),
     meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("time", {
-    header: "Hora",
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Hora" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
     ),
@@ -61,7 +64,8 @@ export const columns = [
     },
   }),
   columnHelper.accessor("credit_usd", {
-    header: () => <div className="text-right">Crédito</div>,
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Crédito" className="justify-end" />,
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
     ),
@@ -96,7 +100,8 @@ export const columns = [
     meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("users.fullname", {
-    header: "Usuario",
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Usuario" />,
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
     meta: { hideOnMobile: true },
   }),

@@ -2,6 +2,7 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Pencil, Trash2 } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
@@ -41,15 +42,18 @@ function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading }: Pr
 export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryColumnsOptions) {
   return [
     columnHelper.accessor("code", {
-      header: "Código",
+      enableSorting: true,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Código" />,
       cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
     }),
     columnHelper.accessor("description", {
-      header: "Descripción",
+      enableSorting: true,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
       cell: ({ getValue }) => <span className="max-w-table-row block truncate">{getValue()}</span>,
     }),
     columnHelper.accessor("stock", {
-      header: () => <div className="text-right">Stock</div>,
+      enableSorting: true,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Stock" className="justify-end" />,
       cell: ({ getValue }) => (
         <span
           className={`block text-right font-medium tabular-nums ${
@@ -61,14 +65,16 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
       ),
     }),
     columnHelper.accessor("price_usd", {
-      header: () => <div className="text-right">USD</div>,
+      enableSorting: true,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="USD" className="justify-end" />,
       cell: ({ getValue }) => (
         <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
       ),
     }),
-    columnHelper.display({
+    columnHelper.accessor((row) => row.price_usd, {
       id: "price_ves",
-      header: () => <div className="text-right">VES</div>,
+      enableSorting: true,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="VES" className="justify-end" />,
       cell: ({ row }) =>
         renderPriceBsCell({
           priceUsd: row.original.price_usd,
@@ -77,7 +83,8 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
         }),
     }),
     columnHelper.accessor("active", {
-      header: () => <div className="text-center">Estado</div>,
+      enableSorting: true,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Estado" className="justify-center" />,
       cell: ({ getValue }) => (
         <div className="text-center">
           <Badge variant={getValue() ? "success" : "secondary"}>{getValue() ? "Activo" : "Inactivo"}</Badge>

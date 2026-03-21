@@ -1,25 +1,30 @@
 import type { CashClose } from "@/types";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<CashClose>();
 
 export const columns = [
   columnHelper.accessor("closed_at", {
-    header: "Fecha",
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue())}</span>,
   }),
   columnHelper.accessor("total_transactions", {
-    header: () => <div className="text-right">Ventas</div>,
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Ventas" className="justify-end" />,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
   }),
   columnHelper.accessor("total_units_sold", {
-    header: () => <div className="text-right">Unidades</div>,
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Unidades" className="justify-end" />,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
     meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("total_returns", {
-    header: () => <div className="text-right">Devol.</div>,
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Devol." className="justify-end" />,
     cell: ({ getValue, row }) => {
       const count = getValue();
       if (!count) return <span className="text-muted-foreground block text-right tabular-nums">—</span>;
@@ -35,19 +40,26 @@ export const columns = [
     meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("total_usd", {
-    header: () => <div className="text-right">Total Producido USD</div>,
+    enableSorting: true,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Total Producido USD" className="justify-end" />
+    ),
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
     ),
   }),
   columnHelper.accessor("total_ves", {
-    header: () => <div className="text-right">Total Producido BS</div>,
+    enableSorting: true,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Total Producido BS" className="justify-end" />
+    ),
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
     ),
   }),
   columnHelper.accessor("closed_by", {
-    header: "Cerrado por",
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Cerrado por" />,
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
   }),
 ] as ColumnDef<CashClose>[];
