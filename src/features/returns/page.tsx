@@ -9,37 +9,33 @@ export function ReturnsPage() {
   const [date, setDate] = useState<string | undefined>(undefined);
   const { data: returns, isLoading, isError } = useReturns(date);
 
-  const topbar = <Topbar date={date} onDateChange={setDate} />;
+  function renderContent() {
+    if (isLoading) {
+      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" />;
+    }
 
-  if (isLoading) {
-    return (
-      <section className="flex min-h-0 flex-1 flex-col">
-        {topbar}
-        <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
-      </section>
-    );
-  }
-
-  if (isError) {
-    return (
-      <section className="flex flex-1 flex-col">
-        {topbar}
+    if (isError) {
+      return (
         <div className="flex flex-1 items-center justify-center">
           <p className="text-destructive text-sm">Error al cargar las devoluciones.</p>
         </div>
-      </section>
-    );
-  }
+      );
+    }
 
-  return (
-    <section className="flex min-h-0 flex-1 flex-col">
-      {topbar}
+    return (
       <DataTable
         columns={columns}
         data={returns || []}
         emptyMessage="No hay devoluciones registradas."
         renderSubRow={(row) => <ExpandedReturnRow row={row} />}
       />
+    );
+  }
+
+  return (
+    <section className="flex min-h-0 flex-1 flex-col">
+      <Topbar date={date} onDateChange={setDate} />
+      {renderContent()}
     </section>
   );
 }

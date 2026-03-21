@@ -23,12 +23,28 @@ export function TransactionsPage() {
   const isFiltered = !!date;
 
   const { data: transactions, isLoading, isError } = useTransactions(date);
-  const { data: todayTxs } = useTodayTransactions();
-  const { data: filteredReturns } = useReturns(date);
-  const { data: todayReturns } = useTodayReturns();
+  const {
+    data: todayTxs,
+    isLoading: isTodayTxsLoading,
+    isError: isTodayTxsError,
+  } = useTodayTransactions({ enabled: !isFiltered });
+  const {
+    data: filteredReturns,
+    isLoading: isFilteredReturnsLoading,
+    isError: isFilteredReturnsError,
+  } = useReturns(date, { enabled: isFiltered });
+  const {
+    data: todayReturns,
+    isLoading: isTodayReturnsLoading,
+    isError: isTodayReturnsError,
+  } = useTodayReturns({ enabled: !isFiltered });
 
   const sourceTxs = isFiltered ? transactions : todayTxs;
   const sourceReturns = isFiltered ? filteredReturns : todayReturns;
+  const isMetricsLoading = isFiltered
+    ? isLoading || isFilteredReturnsLoading
+    : isTodayTxsLoading || isTodayReturnsLoading;
+  const hasMetricsError = isFiltered ? isError || isFilteredReturnsError : isTodayTxsError || isTodayReturnsError;
 
   const metrics = useMemo(() => {
     // Guard: same race-condition fix as cash-closes — don't subtract returns
@@ -76,34 +92,11 @@ export function TransactionsPage() {
 
   const hasReturns = metrics.returnsCount > 0;
   const metricsLabel = isFiltered ? `Ventas del ${formatDate(date + "T12:00:00")}` : "Ventas de Hoy";
+  const metricsErrorMessage = isFiltered
+    ? "No se pudo cargar el resumen de devoluciones para la fecha filtrada."
+    : "No se pudo cargar el resumen del día en este momento.";
 
   const topbarProps = { date, onDateChange: setDate };
-
-  if (isLoading) {
-    return (
-      <section className="flex min-h-0 flex-1 flex-col">
-        <Topbar {...topbarProps} />
-        <MetricsSkeleton count={3} />
-        <div className="flex min-h-0 flex-1 flex-col">
-          <div className="px-3 pt-3 pb-2 md:px-4">
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Histórico</h3>
-          </div>
-          <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
-        </div>
-      </section>
-    );
-  }
-
-  if (isError) {
-    return (
-      <section className="flex flex-1 flex-col">
-        <Topbar {...topbarProps} />
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar las ventas.</p>
-        </div>
-      </section>
-    );
-  }
 
   const metricItems = hasReturns
     ? [
@@ -123,13 +116,23 @@ export function TransactionsPage() {
         { label: "Total Producido Bs.", value: formatCurrencyVES(metrics.totalVes), icon: Banknote, color: "" },
       ];
 
-  return (
-    <section className="flex min-h-0 flex-1 flex-col">
-      <Topbar {...topbarProps} />
+  function renderMetrics() {
+    if (isMetricsLoading) {
+      return <MetricsSkeleton count={hasReturns ? 4 : 3} />;
+    }
 
-      {/* Metrics panel — fixed at top, never scrolls */}
+    if (hasMetricsError) {
+      return (
+        <div className="border-b px-3 py-3 md:px-4">
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+            {metricsErrorMessage}
+          </div>
+        </div>
+      );
+    }
+
+    return (
       <div className="shrink-0 border-b px-3 py-3 md:px-4">
-        {/* Filter context label */}
         <div className="mb-2 flex items-center gap-1.5">
           {isFiltered && (
             <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
@@ -163,19 +166,38 @@ export function TransactionsPage() {
           ))}
         </div>
       </div>
+    );
+  }
 
-      {/* Historical table — fills remaining space, pagination pinned at bottom */}
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex shrink-0 items-center gap-2 px-3 pt-3 pb-2 md:px-4">
-          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            {isFiltered ? "Ventas del día" : "Histórico"}
-          </h3>
-          {isFiltered && (
-            <span className="text-muted-foreground text-[10px]">{transactions?.length ?? 0} registros</span>
-          )}
+  function renderContent() {
+    if (isLoading) {
+      return (
+        <div className="flex min-h-0 flex-1 flex-col">
+          <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
         </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-destructive text-sm">Error al cargar las ventas.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
         <DataTable columns={columns} data={transactions || []} emptyMessage="No hay ventas registradas." />
       </div>
+    );
+  }
+
+  return (
+    <section className="flex min-h-0 flex-1 flex-col">
+      <Topbar {...topbarProps} />
+      {renderMetrics()}
+      {renderContent()}
     </section>
   );
 }

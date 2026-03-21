@@ -2,6 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { transactionsService } from "@/services/transactionsService";
 import type { TransactionInsert } from "@/types/index";
 
+type TransactionQueryOptions = {
+  enabled?: boolean;
+};
+
 // ---------- Query Keys Factory ----------
 export const transactionKeys = {
   all: ["transactions"] as const,
@@ -11,17 +15,19 @@ export const transactionKeys = {
 };
 
 // ---------- Queries ----------
-export function useTransactions(date?: string) {
+export function useTransactions(date?: string, options?: TransactionQueryOptions) {
   return useQuery({
     queryKey: transactionKeys.list(date),
     queryFn: () => transactionsService.getAll(date),
+    enabled: options?.enabled,
   });
 }
 
-export function useTodayTransactions() {
+export function useTodayTransactions(options?: TransactionQueryOptions) {
   return useQuery({
     queryKey: transactionKeys.today(),
     queryFn: () => transactionsService.getToday(),
+    enabled: options?.enabled,
     refetchInterval: 30_000, // Refresh every 30s for live metrics
   });
 }

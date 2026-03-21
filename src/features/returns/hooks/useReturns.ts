@@ -2,6 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { returnsService } from "@/services/returnsService";
 import type { ProcessReturnPayload } from "@/types/index";
 
+type ReturnQueryOptions = {
+  enabled?: boolean;
+};
+
 // ---------- Query Keys Factory ----------
 export const returnKeys = {
   all: ["returns"] as const,
@@ -11,17 +15,19 @@ export const returnKeys = {
 };
 
 // ---------- Queries ----------
-export function useReturns(date?: string) {
+export function useReturns(date?: string, options?: ReturnQueryOptions) {
   return useQuery({
     queryKey: returnKeys.list(date),
     queryFn: () => returnsService.getAll(date),
+    enabled: options?.enabled,
   });
 }
 
-export function useTodayReturns() {
+export function useTodayReturns(options?: ReturnQueryOptions) {
   return useQuery({
     queryKey: returnKeys.today(),
     queryFn: () => returnsService.getToday(),
+    enabled: options?.enabled,
     refetchInterval: 30_000,
   });
 }

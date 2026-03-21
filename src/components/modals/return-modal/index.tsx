@@ -22,9 +22,9 @@ type ReturnModalProps = {
 const INITIAL_FALLBACK_RATE = 0;
 
 export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
-  const { data: exchangeRateData } = useExchangeRate();
+  const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
   const currentExchangeRate = exchangeRateData?.rate ?? INITIAL_FALLBACK_RATE;
-  const isExchangeRateReady = currentExchangeRate > INITIAL_FALLBACK_RATE;
+  const isExchangeRateReady = !!exchangeRateData?.rate;
 
   const [activeTab, setActiveTab] = useState<ReturnTabValue>("return");
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -171,7 +171,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
             differenceUsd={differenceUsd}
             differenceVes={differenceVes}
             currentExchangeRate={currentExchangeRate}
-            isExchangeRateReady={isExchangeRateReady}
+            isExchangeRateLoading={isExchangeRateLoading}
             isSubmissionPending={isSubmissionPending}
             notes={notes}
             onNotesChange={setNotes}
@@ -251,7 +251,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
         differenceUsd={differenceUsd}
         differenceVes={differenceVes}
         currentExchangeRate={currentExchangeRate}
-        isExchangeRateReady={isExchangeRateReady}
+        isExchangeRateLoading={isExchangeRateLoading}
         isSubmissionPending={isSubmissionPending}
         notes={notes}
         onConfirmSubmit={submitReturn}

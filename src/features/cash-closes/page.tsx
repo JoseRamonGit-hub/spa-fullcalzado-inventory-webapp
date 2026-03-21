@@ -19,22 +19,54 @@ import { CashCloseModal } from "./components/cash-close-modal";
 export function CashClosesPage() {
   const [date, setDate] = useState<string | undefined>(undefined);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const isFiltered = !!date;
 
   const { data: cashCloses, isLoading, isError } = useCashCloses(date);
-  const { data: filteredTxs } = useTransactions(date);
-  const { data: todayTxs } = useTodayTransactions();
-  const { data: filteredReturns } = useReturns(date);
-  const { data: todayReturns } = useTodayReturns();
+  const {
+    data: filteredTxs,
+    isLoading: isFilteredTxsLoading,
+    isError: isFilteredTxsError,
+  } = useTransactions(date, { enabled: isFiltered });
+  const {
+    data: todayTxs,
+    isLoading: isTodayTxsLoading,
+    isError: isTodayTxsError,
+  } = useTodayTransactions({ enabled: !isFiltered });
+  const {
+    data: filteredReturns,
+    isLoading: isFilteredReturnsLoading,
+    isError: isFilteredReturnsError,
+  } = useReturns(date, { enabled: isFiltered });
+  const {
+    data: todayReturns,
+    isLoading: isTodayReturnsLoading,
+    isError: isTodayReturnsError,
+  } = useTodayReturns({ enabled: !isFiltered });
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate({ from: "/cash-closes" });
 
-  const isFiltered = !!date;
   const sourceTxs = isFiltered ? filteredTxs : todayTxs;
   const sourceReturns = isFiltered ? filteredReturns : todayReturns;
+  const isMetricsLoading = isFiltered
+    ? isFilteredTxsLoading || isFilteredReturnsLoading
+    : isTodayTxsLoading || isTodayReturnsLoading;
+  const hasMetricsError = isFiltered
+    ? isFilteredTxsError || isFilteredReturnsError
+    : isTodayTxsError || isTodayReturnsError;
 
   const todayMetrics = useMemo(() => {
-    const zero = { count: 0, units: 0, totalUsd: 0, totalVes: 0, returnsCount: 0, returnsCreditUsd: 0, returnsCreditVes: 0, netUsd: 0, netVes: 0 };
+    const zero = {
+      count: 0,
+      units: 0,
+      totalUsd: 0,
+      totalVes: 0,
+      returnsCount: 0,
+      returnsCreditUsd: 0,
+      returnsCreditVes: 0,
+      netUsd: 0,
+      netVes: 0,
+    };
 
     // Guard: if transactions haven't loaded yet, return zeros to avoid a
     // negative net when returns cache is warm but transactions are still fetching.
@@ -93,42 +125,26 @@ export function CashClosesPage() {
 
   const today = formatDate(new Date());
   const summaryLabel = isFiltered ? `Resumen del ${formatDate(date + "T12:00:00")}` : `Resumen del Día — ${today}`;
+  const metricsErrorMessage = isFiltered
+    ? "No se pudo cargar el resumen de la fecha filtrada."
+    : "No se pudo cargar el resumen del día en este momento.";
 
-  const topbar = <Topbar date={date} onDateChange={setDate} />;
+  function renderSummary() {
+    if (isMetricsLoading) {
+      return <MetricsSkeleton count={4} />;
+    }
 
-  if (isLoading) {
-    return (
-      <main className="flex min-h-0 flex-1 flex-col">
-        {topbar}
-        <MetricsSkeleton count={4} />
-        <div className="flex min-h-0 flex-1 flex-col">
-          <header className="shrink-0 px-3 pt-3 pb-2 md:px-4">
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Cierres Anteriores
-            </h3>
-          </header>
-          <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
+    if (hasMetricsError) {
+      return (
+        <div className="border-b px-3 py-3 md:px-4">
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+            {metricsErrorMessage}
+          </div>
         </div>
-      </main>
-    );
-  }
+      );
+    }
 
-  if (isError) {
     return (
-      <main className="flex flex-1 flex-col">
-        {topbar}
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar los cierres de caja.</p>
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="flex min-h-0 flex-1 flex-col">
-      {topbar}
-
-      {/* Metrics — fixed at top, never scrolls */}
       <MetricsSummary
         metrics={todayMetrics}
         label={summaryLabel}
@@ -137,14 +153,24 @@ export function CashClosesPage() {
         isPending={closeMutation.isPending}
         hasUser={!!user}
       />
+    );
+  }
 
-      {/* Table — fills remaining space, pagination pinned at bottom */}
+  function renderContent() {
+    if (isLoading) {
+      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" />;
+    }
+
+    if (isError) {
+      return (
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-destructive text-sm">Error al cargar los cierres de caja.</p>
+        </div>
+      );
+    }
+
+    return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <header className="shrink-0 px-3 pt-3 pb-2 md:px-4">
-          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            {isFiltered ? "Cierre encontrado" : "Cierres Anteriores"}
-          </h3>
-        </header>
         <DataTable
           columns={columns}
           data={cashCloses || []}
@@ -152,6 +178,14 @@ export function CashClosesPage() {
           onRowClick={handleRowClick}
         />
       </div>
+    );
+  }
+
+  return (
+    <main className="flex min-h-0 flex-1 flex-col">
+      <Topbar date={date} onDateChange={setDate} />
+      {renderSummary()}
+      {renderContent()}
 
       <CashCloseModal
         open={confirmOpen}

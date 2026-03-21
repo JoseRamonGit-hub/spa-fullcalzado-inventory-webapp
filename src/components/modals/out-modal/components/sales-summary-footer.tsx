@@ -6,6 +6,7 @@ import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/mo
 interface SalesSummaryFooterProps {
   pendingSales: PendingSale[];
   currentExchangeRate: number;
+  isExchangeRateLoading: boolean;
   totalAmountUsd: number;
   totalAmountVes: number;
   isSubmissionPending: boolean;
@@ -15,6 +16,7 @@ interface SalesSummaryFooterProps {
 export function SalesSummaryFooter({
   pendingSales,
   currentExchangeRate,
+  isExchangeRateLoading,
   totalAmountUsd,
   totalAmountVes,
   isSubmissionPending,
@@ -23,11 +25,25 @@ export function SalesSummaryFooter({
   const pendingSalesCount = pendingSales.length;
   const hasPendingSales = pendingSalesCount > 0;
   const isMultipleSales = pendingSalesCount > 1;
+  const isExchangeRateReady = currentExchangeRate > 0;
+  const exchangeRateTitle = isExchangeRateLoading ? "Cargando tasa" : "Tasa no disponible";
+  const exchangeRateMessage = isExchangeRateLoading
+    ? "Cargando tasa de cambio vigente..."
+    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
+  const canSubmit = hasPendingSales && !isSubmissionPending && isExchangeRateReady;
 
   return (
     <footer className="flex w-full flex-col gap-3">
+      {!isExchangeRateReady && (
+        <section className="border-warning/40 bg-warning/8 rounded-md border px-3 py-2 text-xs">
+          <p className="text-warning-foreground font-medium">{exchangeRateTitle}</p>
+          <p className="text-muted-foreground mt-1">{exchangeRateMessage}</p>
+        </section>
+      )}
+
       <SalesSummaryBlock
         currentExchangeRate={currentExchangeRate}
+        isExchangeRateLoading={isExchangeRateLoading}
         totalAmountUsd={totalAmountUsd}
         totalAmountVes={totalAmountVes}
       />
@@ -50,7 +66,7 @@ export function SalesSummaryFooter({
                 ? `Registrar ${pendingSalesCount} venta${isMultipleSales ? "s" : ""}`
                 : "Registrar ventas"
           }
-          disabled={!hasPendingSales || isSubmissionPending}
+          disabled={!canSubmit}
           onClick={onOpenConfirmDialog}
         />
       </ModalFooterActionRow>

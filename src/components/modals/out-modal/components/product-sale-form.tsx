@@ -15,10 +15,15 @@ const MINIMUM_VALUE_ERROR = "Mín. 1";
 
 interface ProductSaleFormProps {
   currentExchangeRate: number;
+  isExchangeRateReady?: boolean;
   onAddPendingSale: (sale: PendingSale) => void;
 }
 
-export function ProductSaleForm({ currentExchangeRate, onAddPendingSale }: ProductSaleFormProps) {
+export function ProductSaleForm({
+  currentExchangeRate,
+  isExchangeRateReady = true,
+  onAddPendingSale,
+}: ProductSaleFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { getProductById } = useProductLookup();
 
@@ -28,6 +33,8 @@ export function ProductSaleForm({ currentExchangeRate, onAddPendingSale }: Produ
       quantity: 0,
     },
     onSubmit: async ({ value }) => {
+      if (!isExchangeRateReady) return;
+
       const product = getProductById(value.productId);
       if (!product) return;
 
@@ -70,7 +77,7 @@ export function ProductSaleForm({ currentExchangeRate, onAddPendingSale }: Produ
 
   return (
     <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-2">
-      <fieldset className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end">
+      <fieldset disabled={!isExchangeRateReady} className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end">
         {/* Product search — stretches to fill available width */}
         <div className="min-w-0 flex-1">
           <saleForm.AppField

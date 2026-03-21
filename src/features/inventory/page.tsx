@@ -2,7 +2,7 @@ import { useState, useTransition, useCallback, useMemo } from "react";
 import { useProducts } from "./hooks/useProducts";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 import { EditProductModal } from "./components/edit-product-modal";
 import { DeleteProductModal } from "./components/delete-product-modal";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import type { Product } from "@/types";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useExchangeRate } from "@/features/exchange_rates/hooks";
 
 export function InventoryPage() {
   // Search + filtering with useTransition for non-blocking UI
@@ -21,6 +22,7 @@ export function InventoryPage() {
   const [, startTransition] = useTransition();
 
   const { data: products, isLoading, isError } = useProducts(date);
+  const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
   const isMobile = useIsMobile();
   const currentUser = useAuthStore((state) => state.user);
   const isAdmin = currentUser?.role === "admin";
@@ -80,6 +82,11 @@ export function InventoryPage() {
     [isAdmin],
   );
 
+  const columns = useMemo(
+    () => getColumns({ exchangeRate: exchangeRateData?.rate, isExchangeRateLoading }),
+    [exchangeRateData?.rate, isExchangeRateLoading],
+  );
+
   const topbarProps = {
     search,
     onSearchChange: handleSearchChange,
@@ -89,30 +96,20 @@ export function InventoryPage() {
     onDateChange: setDate,
   };
 
-  if (isLoading) {
-    return (
-      <section className="flex min-h-0 flex-1 flex-col">
-        <Topbar {...topbarProps} />
-        <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
-      </section>
-    );
-  }
+  function renderContent() {
+    if (isLoading) {
+      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" />;
+    }
 
-  if (isError) {
-    return (
-      <section className="flex flex-1 flex-col">
-        <Topbar {...topbarProps} />
+    if (isError) {
+      return (
         <div className="flex flex-1 items-center justify-center">
           <p className="text-destructive text-sm">Error al cargar el inventario.</p>
         </div>
-      </section>
-    );
-  }
+      );
+    }
 
-  return (
-    <section className="flex min-h-0 flex-1 flex-col">
-      <Topbar {...topbarProps} />
-
+    return (
       <DataTable
         columns={columns}
         data={filteredProducts}
@@ -120,6 +117,14 @@ export function InventoryPage() {
         onRowClick={handleRowClick}
         meta={tableMeta}
       />
+    );
+  }
+
+  return (
+    <section className="flex min-h-0 flex-1 flex-col">
+      <Topbar {...topbarProps} />
+
+      {renderContent()}
 
       {/* Edit modal */}
       {editProduct && (
