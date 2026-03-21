@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useProducts } from "@/features/inventory/hooks/useProducts";
+import { useProducts } from "@/features/inventory/hooks/useProductQueries";
 import type { Product } from "@/types/index";
 import type { ProductSearchResult } from "@/components/product-search";
 

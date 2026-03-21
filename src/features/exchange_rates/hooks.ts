@@ -1,9 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { exchangeRatesService } from "@/services/exchangeRatesService";
 
+export const exchangeRateKeys = {
+  all: ["exchangeRate"] as const,
+  current: () => [...exchangeRateKeys.all, "current"] as const,
+  history: () => [...exchangeRateKeys.all, "history"] as const,
+};
+
 export function useExchangeRate() {
   return useQuery({
-    queryKey: ["exchangeRate"],
+    queryKey: exchangeRateKeys.current(),
     queryFn: () => exchangeRatesService.getCurrent(),
   });
 }

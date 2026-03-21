@@ -47,8 +47,7 @@ export function DataTable<TData, TValue>({
     if (!isMobile) return {};
     const hidden: VisibilityState = {};
     for (const col of columns) {
-      const colMeta = col.meta as { hideOnMobile?: boolean } | undefined;
-      if (colMeta?.hideOnMobile) {
+      if (col.meta?.hideOnMobile) {
         const colId = "id" in col ? (col.id as string) : "accessorKey" in col ? (col.accessorKey as string) : "";
         if (colId) hidden[colId] = false;
       }

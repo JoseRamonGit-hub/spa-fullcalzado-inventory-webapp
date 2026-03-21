@@ -1,27 +1,27 @@
 import { ResponsiveAlertModal } from "@/components/ResponsiveAlertModal";
-import { useDeleteProduct } from "@/features/inventory/hooks/useProducts";
+import { useDeleteProduct } from "@/features/inventory/hooks/useProductMutations";
 import { toast } from "sonner";
 import type { Product } from "@/types";
 
-interface DeleteProductModalProps {
+type DeleteProductModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product;
-}
+};
 
 export function DeleteProductModal({ open, onOpenChange, product }: DeleteProductModalProps) {
   const deleteProduct = useDeleteProduct();
 
   const handleConfirm = () => {
-    const promise = deleteProduct.mutateAsync(product.id);
+    const promise = deleteProduct.mutateAsync(product.id, {
+      onSuccess: () => onOpenChange(false),
+    });
 
     toast.promise(promise, {
       loading: "Eliminando producto...",
       success: "Producto eliminado correctamente",
       error: "Error al eliminar el producto",
     });
-
-    promise.then(() => onOpenChange(false));
   };
 
   return (

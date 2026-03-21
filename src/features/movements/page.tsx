@@ -1,4 +1,4 @@
-import { useMovements } from "./hooks/useMovements";
+import { useMovements } from "./hooks/useMovementQueries";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
 import { Topbar } from "./components/topbar";
@@ -21,7 +21,14 @@ export function MovementsPage() {
       );
     }
 
-    return <DataTable columns={columns} data={movements || []} emptyMessage="No hay movimientos registrados." />;
+    return (
+      <DataTable
+        columns={columns}
+        data={movements || []}
+        getRowId={(row) => row.id}
+        emptyMessage="No hay movimientos registrados."
+      />
+    );
   }
 
   return (

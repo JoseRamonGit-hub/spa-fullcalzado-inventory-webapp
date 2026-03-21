@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { exchangeRatesService } from "@/services/exchangeRatesService";
+import { exchangeRateKeys } from "@/features/exchange_rates/hooks";
 import type { ExchangeRateInsert } from "@/types/index";
 
 type ExchangeRateHistoryOptions = {
@@ -8,7 +9,7 @@ type ExchangeRateHistoryOptions = {
 
 export function useExchangeRateHistory(options?: ExchangeRateHistoryOptions) {
   return useQuery({
-    queryKey: ["exchangeRate", "history"],
+    queryKey: exchangeRateKeys.history(),
     queryFn: () => exchangeRatesService.getHistory(),
     enabled: options?.enabled,
   });
@@ -20,7 +21,7 @@ export function useUpdateExchangeRate() {
   return useMutation({
     mutationFn: (payload: ExchangeRateInsert) => exchangeRatesService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: exchangeRateKeys.all });
     },
   });
 }

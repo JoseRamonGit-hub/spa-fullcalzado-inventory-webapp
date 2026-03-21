@@ -1,15 +1,15 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
-import { useCreateManyProducts } from "@/features/inventory/hooks/useProducts";
-import { useCreateManyMovements } from "@/features/movements/hooks/useMovements";
+import { useCreateManyProducts } from "@/features/inventory/hooks/useProductMutations";
+import { useCreateManyMovements } from "@/features/movements/hooks/useMovementMutations";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
 
-interface UseSubmitBatchProps {
+type UseSubmitBatchProps = {
   pendingBatchItems: BatchItem[];
   clearPendingBatchItems: () => void;
   onSuccess: () => void;
-}
+};
 
 export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSuccess }: UseSubmitBatchProps) {
   const currentUser = useAuthStore((state) => state.user);

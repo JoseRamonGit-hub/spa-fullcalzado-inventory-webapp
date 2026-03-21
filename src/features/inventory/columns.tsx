@@ -5,18 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
-const columHelper = createColumnHelper<Product>();
+const columnHelper = createColumnHelper<Product>();
 
-interface PriceBsCellProps {
+export type InventoryTableMeta = {
+  onEdit?: (product: Product) => void;
+  onDelete?: (product: Product) => void;
+  isAdmin?: boolean;
+};
+
+type PriceBsCellProps = {
   priceUsd: number;
   exchangeRate?: number;
   isExchangeRateLoading: boolean;
-}
+};
 
-interface InventoryColumnsOptions {
+type InventoryColumnsOptions = {
   exchangeRate?: number;
   isExchangeRateLoading: boolean;
-}
+};
 
 function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading }: PriceBsCellProps) {
   if (isExchangeRateLoading) {
@@ -34,15 +40,15 @@ function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading }: Pr
 
 export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryColumnsOptions) {
   return [
-    columHelper.accessor("code", {
+    columnHelper.accessor("code", {
       header: "Código",
       cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
     }),
-    columHelper.accessor("description", {
+    columnHelper.accessor("description", {
       header: "Descripción",
       cell: ({ getValue }) => <span className="max-w-table-row block truncate">{getValue()}</span>,
     }),
-    columHelper.accessor("stock", {
+    columnHelper.accessor("stock", {
       header: () => <div className="text-right">Stock</div>,
       cell: ({ getValue }) => (
         <span
@@ -54,13 +60,13 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
         </span>
       ),
     }),
-    columHelper.accessor("price_usd", {
+    columnHelper.accessor("price_usd", {
       header: () => <div className="text-right">USD</div>,
       cell: ({ getValue }) => (
         <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
       ),
     }),
-    columHelper.display({
+    columnHelper.display({
       id: "price_ves",
       header: () => <div className="text-right">VES</div>,
       cell: ({ row }) =>
@@ -70,7 +76,7 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
           isExchangeRateLoading,
         }),
     }),
-    columHelper.accessor("active", {
+    columnHelper.accessor("active", {
       header: () => <div className="text-center">Estado</div>,
       cell: ({ getValue }) => (
         <div className="text-center">
@@ -78,15 +84,13 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
         </div>
       ),
     }),
-    columHelper.display({
+    columnHelper.display({
       id: "actions",
       header: () => <div className="text-center">Acciones</div>,
       meta: { hideOnMobile: true },
       cell: ({ row, table }) => {
         const product = row.original;
-        const meta = table.options.meta as
-          | { onEdit?: (p: Product) => void; onDelete?: (p: Product) => void; isAdmin?: boolean }
-          | undefined;
+        const meta = table.options.meta as InventoryTableMeta | undefined;
 
         if (!meta?.isAdmin) return null;
 

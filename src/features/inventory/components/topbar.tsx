@@ -2,12 +2,12 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Search } from "lucide-react";
 import { DatePickerFilter } from "@/components/ui/date-picker-filter";
 
-interface TopbarProps {
-  search?: string;
-  onSearchChange?: (value: string) => void;
-  date?: string;
-  onDateChange?: (value: string | undefined) => void;
-}
+type TopbarProps = {
+  search: string;
+  onSearchChange: (value: string) => void;
+  date: string | undefined;
+  onDateChange: (value: string | undefined) => void;
+};
 
 export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarProps) {
   return (
@@ -22,7 +22,7 @@ export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarPro
             <InputGroupInput
               placeholder="Buscar código o descripción..."
               value={search}
-              onChange={(e) => onSearchChange?.(e.target.value)}
+              onChange={(e) => onSearchChange(e.target.value)}
               className="border-0 text-sm md:text-xs"
             />
             <InputGroupAddon align="inline-end">
@@ -33,7 +33,7 @@ export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarPro
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5">
-        <DatePickerFilter value={date} onChange={(v) => onDateChange?.(v)} placeholder="Filtrar por día" />
+        <DatePickerFilter value={date} onChange={onDateChange} placeholder="Filtrar por día" />
       </div>
     </header>
   );
