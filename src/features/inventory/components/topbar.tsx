@@ -15,7 +15,7 @@ export function Topbar({ search, onSearchChange, date, onDateChange }: TopbarPro
       <div className="flex min-w-0 flex-1 items-center gap-4">
         <div className="flex shrink-0 items-center gap-1.5">
           <span className="bg-primary h-1.5 w-1.5 rounded-full" aria-hidden="true" />
-          <h1 className="text-foreground text-sm font-semibold whitespace-nowrap">Inventario</h1>
+          <h1 className="font-heading text-foreground text-sm font-semibold whitespace-nowrap">Inventario</h1>
         </div>
         <div className="bg-card flex-1 rounded-md md:max-w-xs">
           <InputGroup className="h-8">

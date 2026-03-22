@@ -27,6 +27,10 @@ export type InventoryMovementUpdate = TablesUpdate<"inventory_movements">;
 export type ExchangeRateUpdate = TablesUpdate<"exchange_rates">;
 
 // ── Extended types with joined relations ────────────────────
+export type CashCloseWithRelations = CashClose & {
+  users: Pick<User, "fullname">;
+};
+
 export type TransactionWithRelations = Transaction & {
   products: Pick<Product, "code" | "description">;
   users: Pick<User, "fullname">;

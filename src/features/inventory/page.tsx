@@ -11,16 +11,27 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { Product } from "@/types";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
+import { Route } from "@/routes/_app/inventory";
+import { useNavigate } from "@tanstack/react-router";
 
 export function InventoryPage() {
-  const [date, setDate] = useState<string | undefined>(undefined);
+  const { date } = Route.useSearch();
+  const navigate = useNavigate({ from: "/inventory" });
+
+  const setDate = (value: string | undefined) => {
+    navigate({ search: (prev) => ({ ...prev, date: value }) });
+  };
 
   const { data: products, isLoading, isError } = useProducts(date);
   const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
   const isMobile = useIsMobile();
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
 
-  const { searchInput, handleSearchChange, filteredProducts } = useProductFilters(products);
+  const { searchInput, setSearchInput, filteredProducts } = useProductFilters(products);
+
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+  };
 
   // Action modals state
   const [editProduct, setEditProduct] = useState<Product | null>(null);

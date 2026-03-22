@@ -12,7 +12,7 @@ export function HeaderLoginForm() {
       >
         <ShoppingBag className="h-7 w-7 text-white" />
       </div>
-      <h1 className="text-foreground text-2xl font-bold tracking-tight">Bienvenido de nuevo</h1>
+      <h1 className="font-heading text-foreground text-2xl font-bold tracking-tight">Bienvenido de nuevo</h1>
       <p className="text-muted-foreground text-sm text-balance">Ingresa tus credenciales para acceder al sistema</p>
     </header>
   );

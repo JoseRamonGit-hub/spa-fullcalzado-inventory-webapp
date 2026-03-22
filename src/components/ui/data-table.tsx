@@ -1,5 +1,7 @@
 import {
   type ColumnDef,
+  type ExpandedState,
+  type OnChangeFn,
   type PaginationState,
   type Row,
   type SortingState,
@@ -16,7 +18,7 @@ import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { PackageOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -29,6 +31,10 @@ interface DataTableProps<TData, TValue> {
   renderSubRow?: (row: Row<TData>) => React.ReactNode;
   pageSize?: number;
   hidePagination?: boolean;
+  autoExpandRowId?: string;
+  expanded?: ExpandedState;
+  onExpandedChange?: OnChangeFn<ExpandedState>;
+  getRowClassName?: (row: Row<TData>, index: number) => string | undefined;
 }
 
 export function DataTable<TData, TValue>({
@@ -42,6 +48,10 @@ export function DataTable<TData, TValue>({
   renderSubRow,
   pageSize = 20,
   hidePagination,
+  autoExpandRowId,
+  expanded,
+  onExpandedChange,
+  getRowClassName,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -59,6 +69,37 @@ export function DataTable<TData, TValue>({
 
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize });
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [internalExpanded, setInternalExpanded] = useState<ExpandedState>({});
+  const lastAutoExpandedRowIdRef = useRef<string | undefined>(undefined);
+
+  const expandedState = expanded ?? internalExpanded;
+  const handleExpandedChange = onExpandedChange ?? setInternalExpanded;
+
+  useEffect(() => {
+    if (!autoExpandRowId) {
+      lastAutoExpandedRowIdRef.current = undefined;
+      return;
+    }
+
+    if (lastAutoExpandedRowIdRef.current === autoExpandRowId) {
+      return;
+    }
+
+    const targetIndex = data.findIndex((row, index) => {
+      const rowId = getRowId ? getRowId(row, index) : String(index);
+      return rowId === autoExpandRowId;
+    });
+
+    if (targetIndex === -1) {
+      return;
+    }
+
+    handleExpandedChange((prev) =>
+      prev === true ? { [autoExpandRowId]: true } : { ...prev, [autoExpandRowId]: true },
+    );
+    setPagination((prev) => ({ ...prev, pageIndex: Math.floor(targetIndex / prev.pageSize) }));
+    lastAutoExpandedRowIdRef.current = autoExpandRowId;
+  }, [autoExpandRowId, data, getRowId, handleExpandedChange]);
 
   const table = useReactTable({
     data,
@@ -72,12 +113,14 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       pagination,
       sorting,
+      ...(renderSubRow ? { expanded: expandedState } : {}),
     },
     onPaginationChange: setPagination,
     onSortingChange: (updater) => {
       setSorting(updater);
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     },
+    ...(renderSubRow ? { onExpandedChange: handleExpandedChange } : {}),
     meta,
     getRowId,
   });
@@ -114,7 +157,7 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""}`}
+                    className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""} ${getRowClassName?.(row, index) ?? ""}`}
                     onClick={() => {
                       if (renderSubRow) row.toggleExpanded();
                       onRowClick?.(row.original);
@@ -123,7 +166,7 @@ export function DataTable<TData, TValue>({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className="h-8 overflow-hidden px-4 py-0.5 text-[13px] whitespace-nowrap"
+                        className="h-[30px] overflow-hidden px-4 py-0 text-[13px] whitespace-nowrap"
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>

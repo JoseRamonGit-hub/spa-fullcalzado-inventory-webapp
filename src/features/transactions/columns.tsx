@@ -2,8 +2,9 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { formatTime, formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
+import { formatTime, formatCurrencyUSD, formatCurrencyVES, formatDate, formatDateForBackend } from "@/utils/formatters";
 import { useNavigate } from "@tanstack/react-router";
+import { IterationCcw } from "lucide-react";
 
 const columnHelper = createColumnHelper<TransactionWithRelations>();
 
@@ -25,10 +26,13 @@ export const columns = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Código" />,
     cell: ({ getValue, row }) => {
       const isExchange = !!row.original.return_id;
+      const exchangeDate = formatDateForBackend(row.original.created_at);
+      const returnId = row.original.return_id;
+
       return (
         <span className="flex items-center gap-1.5">
           <span className="product-code font-bold uppercase">{getValue()}</span>
-          {isExchange && <ExchangeBadge />}
+          {isExchange && returnId && <ExchangeBadge date={exchangeDate} returnId={returnId} />}
         </span>
       );
     },
@@ -69,7 +73,7 @@ export const columns = [
 ] as ColumnDef<TransactionWithRelations>[];
 
 // ── Internal component: navigable exchange badge ────────────
-function ExchangeBadge() {
+function ExchangeBadge({ date, returnId }: { date: string; returnId: string }) {
   const navigate = useNavigate();
 
   return (
@@ -78,11 +82,12 @@ function ExchangeBadge() {
       className="cursor-pointer px-1.5 py-0 text-[10px] transition-opacity hover:opacity-80"
       onClick={(e) => {
         e.stopPropagation();
-        navigate({ to: "/returns" });
+        navigate({ to: "/returns", search: { date, returnId } });
       }}
-      title="Ver en módulo de devoluciones"
+      title={`Ver devolución vinculada del ${date}`}
     >
-      Cambio ↗
+      <IterationCcw aria-hidden="true" />
+      Devolución
     </Badge>
   );
 }

@@ -4,7 +4,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { formatDate, formatTime, formatCurrencyUSD } from "@/utils/formatters";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
-import { Pencil } from "lucide-react";
+import { IterationCcw, Pencil } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const columnHelper = createColumnHelper<InventoryMovementWithRelations>();
@@ -13,21 +13,59 @@ function getTypeInfo(movement: InventoryMovementWithRelations) {
   const { type, return_id } = movement;
   const isExchangeExit = type === "exit" && return_id;
 
-  if (type === "entry") return { variant: "success" as const, label: "Entrada" };
-  if (type === "return") return { variant: "refund" as const, label: "Devolución" };
-  if (type === "edit") return { variant: "edit" as const, label: "Edición" };
-  if (isExchangeExit) return { variant: "exchange" as const, label: "Cambio" };
-  return { variant: "destructive" as const, label: "Salida" };
+  if (type === "entry") {
+    return {
+      variant: "success" as const,
+      label: "Entrada",
+      title: "Entrada de inventario",
+    };
+  }
+
+  if (type === "return") {
+    return {
+      variant: "refund" as const,
+      label: "Entrada",
+      title: "Entrada por devolución",
+      showReturnIcon: true,
+    };
+  }
+
+  if (type === "edit") {
+    return {
+      variant: "edit" as const,
+      label: "Ajuste",
+      title: "Ajuste por edición",
+    };
+  }
+
+  if (isExchangeExit) {
+    return {
+      variant: "exchange" as const,
+      label: "Salida",
+      title: "Salida por cambio",
+      showReturnIcon: true,
+    };
+  }
+
+  return {
+    variant: "destructive" as const,
+    label: "Salida",
+    title: "Salida por venta",
+  };
 }
 
 export const columns = [
   columnHelper.accessor("type", {
     header: () => <div className="text-center">Tipo</div>,
     cell: ({ row }) => {
-      const { variant, label } = getTypeInfo(row.original);
+      const { variant, label, title, showReturnIcon } = getTypeInfo(row.original);
+
       return (
         <span className="flex justify-center">
-          <Badge variant={variant}>{label}</Badge>
+          <Badge variant={variant} title={title}>
+            {showReturnIcon ? <IterationCcw aria-hidden="true" /> : null}
+            {label}
+          </Badge>
         </span>
       );
     },

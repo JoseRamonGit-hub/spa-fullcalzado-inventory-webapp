@@ -1,23 +1,12 @@
-import { useState, useTransition, useCallback, useMemo } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import type { Product } from "@/types";
 
 export type StockFilter = "all" | "in-stock" | "no-stock";
 
 export function useProductFilters(products: Product[] | undefined) {
   const [searchInput, setSearchInput] = useState("");
-  const [deferredSearch, setDeferredSearch] = useState("");
+  const deferredSearch = useDeferredValue(searchInput);
   const [stockFilter, setStockFilter] = useState<StockFilter>("all");
-  const [, startTransition] = useTransition();
-
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchInput(value);
-      startTransition(() => {
-        setDeferredSearch(value);
-      });
-    },
-    [startTransition],
-  );
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
@@ -39,7 +28,7 @@ export function useProductFilters(products: Product[] | undefined) {
 
   return {
     searchInput,
-    handleSearchChange,
+    setSearchInput,
     stockFilter,
     setStockFilter,
     filteredProducts,

@@ -78,8 +78,11 @@ describe("useLogin", () => {
     expect(mockNavigate).toHaveBeenCalledWith({ to: "/inventory" });
   });
 
-  it("en login fallido: muestra toast de error y NO navega", async () => {
-    mockLogin.mockRejectedValueOnce(new Error("Credenciales incorrectas"));
+  it("en credenciales incorrectas: muestra toast de error y NO navega", async () => {
+    mockLogin.mockResolvedValueOnce({
+      success: false,
+      error: "Credenciales incorrectas",
+    });
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(),
@@ -96,6 +99,28 @@ describe("useLogin", () => {
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
 
     expect(mockToastError).toHaveBeenCalledWith("Credenciales incorrectas");
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("en error de red: muestra toast de error y NO navega", async () => {
+    mockLogin.mockRejectedValueOnce(new Error("Failed to fetch"));
+
+    const { result } = renderHook(() => useLogin(), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.mutate({ email: "bad@test.com", password: "wrong" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
+    });
+
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+
+    expect(mockToastError).toHaveBeenCalledWith("Failed to fetch");
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });

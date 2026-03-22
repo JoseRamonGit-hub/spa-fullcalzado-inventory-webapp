@@ -47,7 +47,7 @@ export function ExchangeRateSection() {
   return (
     <div className="space-y-4">
       {/* Current rate display */}
-      <div className="bg-card flex items-center gap-3 rounded-lg border p-4">
+      <div className="bg-primary/8 -mx-3 flex items-center gap-3 px-3 py-3 md:-mx-4 md:px-4">
         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <DollarSign className="text-primary h-5 w-5" />
         </div>
@@ -56,7 +56,7 @@ export function ExchangeRateSection() {
           {isExchangeRateLoading ? (
             <Skeleton className="mt-2 h-8 w-36" />
           ) : (
-            <p className="font-mono text-2xl font-bold tabular-nums">{exchangeRateDisplayValue}</p>
+            <p className="font-heading text-2xl font-bold tabular-nums">{exchangeRateDisplayValue}</p>
           )}
           {!isExchangeRateLoading && !hasExchangeRate && (
             <p className="text-warning mt-1 text-xs">{exchangeRateMessage}</p>

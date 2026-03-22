@@ -6,6 +6,7 @@
 
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -101,7 +102,7 @@
   --exchange-foreground: oklch(0.98 0 0);
   --refund: oklch(0.5 0.18 310);
   --refund-foreground: oklch(0.98 0 0);
-  --edit: oklch(0.55 0.14 60);
+  --edit: oklch(0.5 0.08 65);
   --edit-foreground: oklch(0.98 0 0);
 
   /* ── Borders & Inputs ── */
@@ -160,8 +161,8 @@
   --exchange-foreground: oklch(0.12 0.02 240);
   --refund: oklch(0.65 0.2 310);
   --refund-foreground: oklch(0.12 0.02 310);
-  --edit: oklch(0.65 0.16 60);
-  --edit-foreground: oklch(0.12 0.02 60);
+  --edit: oklch(0.72 0.09 68);
+  --edit-foreground: oklch(0.14 0.02 68);
   --border: oklch(1 0 0 / 15%);
   --input: oklch(1 0 0 / 20%);
   --ring: oklch(0.68 0.16 55);

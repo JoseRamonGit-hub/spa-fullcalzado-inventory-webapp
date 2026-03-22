@@ -8,12 +8,14 @@ export function useLogin() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) => authService.login(email, password),
-    onSuccess: async (result) => {
-      if (result.success) {
-        useAuthStore.getState().setAuth(result.user);
-        await router.navigate({ to: "/inventory" });
-      }
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const result = await authService.login(email, password);
+      if (!result.success) throw new Error(result.error);
+      return result.user;
+    },
+    onSuccess: async (user) => {
+      useAuthStore.getState().setAuth(user);
+      await router.navigate({ to: "/inventory" });
     },
     onError: (error) => {
       toast.error(error.message);

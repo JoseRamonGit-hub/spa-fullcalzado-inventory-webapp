@@ -142,7 +142,7 @@ function AppLayout() {
                 <Skeleton className="h-4 w-18" />
               ) : (
                 <span
-                  className={`font-mono text-sm leading-none font-bold tabular-nums ${
+                  className={`font-mono text-xs leading-none font-bold tabular-nums ${
                     isExchangeRateUnavailable ? "text-warning" : "text-primary"
                   }`}
                 >

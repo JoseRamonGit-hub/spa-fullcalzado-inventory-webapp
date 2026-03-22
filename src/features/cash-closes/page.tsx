@@ -10,13 +10,14 @@ import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { formatDate } from "@/utils/formatters";
-import type { CashClose } from "@/types";
+import type { CashCloseWithRelations } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
 import { MetricsSummary } from "./components/metrics-summary";
 import { CashCloseModal } from "./components/cash-close-modal";
+import { Route } from "@/routes/_app/cash-closes";
 
 export function CashClosesPage() {
-  const [date, setDate] = useState<string | undefined>(undefined);
+  const { date } = Route.useSearch();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const isFiltered = !!date;
 
@@ -44,6 +45,10 @@ export function CashClosesPage() {
   const closeMutation = useGenerateCashClose();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate({ from: "/cash-closes" });
+
+  const setDate = (value: string | undefined) => {
+    navigate({ search: (prev) => ({ ...prev, date: value }) });
+  };
 
   const sourceTxs = isFiltered ? filteredTxs : todayTxs;
   const sourceReturns = isFiltered ? filteredReturns : todayReturns;
@@ -110,7 +115,7 @@ export function CashClosesPage() {
     });
   };
 
-  const handleRowClick = (row: CashClose) => {
+  const handleRowClick = (row: CashCloseWithRelations) => {
     navigate({ to: "/transactions", search: { date: row.date } });
   };
 
