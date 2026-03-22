@@ -1,55 +1,48 @@
+import zapatos from "@/assets/calzado.jpg";
+
 export function LoginPanel() {
   return (
-    <aside
-      className="bg-sidebar relative hidden flex-col items-start justify-end overflow-hidden p-10 md:flex"
-      style={{
-        background: "linear-gradient(160deg, oklch(0.22 0.02 55), oklch(0.16 0.015 55), oklch(0.12 0.01 55))",
-      }}
-    >
-      {/* Grid pattern */}
+    <aside className="relative hidden flex-col items-start justify-end overflow-hidden bg-black p-10 md:flex">
+      {/* Background photo */}
+      <img
+        src={zapatos}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover object-center"
+      />
+      {/* Overlay: dark gradient from bottom so text stays readable */}
       <div
-        className="absolute inset-0 opacity-[0.04]"
+        className="absolute inset-0"
         style={{
-          backgroundImage:
-            "linear-gradient(oklch(1 0 0 / 30%) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 30%) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+          background:
+            "linear-gradient(to top, oklch(0.10 0.01 50 / 0.92) 0%, oklch(0.12 0.01 50 / 0.50) 40%, oklch(0.14 0.01 50 / 0.20) 100%)",
         }}
-        aria-hidden="true"
-      />
-      {/* Ambient orbs */}
-      <div
-        className="absolute -top-20 right-0 h-80 w-80 rounded-full opacity-20 blur-[90px]"
-        style={{ background: "oklch(0.65 0.16 55)" }}
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-0 -left-16 h-64 w-64 rounded-full opacity-10 blur-[70px]"
-        style={{ background: "oklch(0.55 0.14 25)" }}
         aria-hidden="true"
       />
 
       {/* Branding */}
-      <div className="relative z-10 max-w-xs">
-        <h2 className="mb-4 text-3xl leading-[1.1] font-bold tracking-tight text-white/95">
-          Gestión de
-          <br />
-          <span className="text-primary">Inventario</span>
-          <br />
-          Inteligente
-        </h2>
-        <p className="mb-6 text-sm leading-relaxed text-balance text-white/60">
-          Control total de tu stock de calzado: productos, movimientos, ventas y cierres de caja en un solo lugar.
-        </p>
-        <ul className="flex flex-wrap gap-2" aria-label="Características clave">
-          {["Inventario en Tiempo Real", "Registro de Ventas", "Reportes de Caja"].map((f) => (
-            <li
-              key={f}
-              className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70 backdrop-blur-sm"
-            >
-              {f}
-            </li>
-          ))}
-        </ul>
+      <div className="relative z-10 flex h-full w-full flex-col justify-between">
+        <span className="text-[10px] font-semibold tracking-[0.2em] text-white/30 uppercase">
+          Sistema Interno
+        </span>
+
+        <div className="max-w-xs">
+          <h2 className="font-heading mb-3 text-3xl leading-[1.1] font-bold tracking-tight text-white/95">
+            Full Calzados
+            <br />
+            <span className="text-primary">C.A</span>
+          </h2>
+          <p className="mb-6 text-sm leading-relaxed text-balance text-white/50">
+            Panel de gestión de inventario, ventas y cierres de caja para tu equipo.
+          </p>
+          <div className="flex items-center gap-2 text-[11px] text-white/30">
+            <span>Inventario</span>
+            <span className="text-white/15">·</span>
+            <span>Ventas</span>
+            <span className="text-white/15">·</span>
+            <span>Caja</span>
+          </div>
+        </div>
       </div>
     </aside>
   );

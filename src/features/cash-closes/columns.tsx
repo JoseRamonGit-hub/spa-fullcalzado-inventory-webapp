@@ -1,9 +1,9 @@
-import type { CashClose } from "@/types";
+import type { CashCloseWithRelations } from "@/types";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
-const columnHelper = createColumnHelper<CashClose>();
+const columnHelper = createColumnHelper<CashCloseWithRelations>();
 
 export const columns = [
   columnHelper.accessor("closed_at", {
@@ -57,9 +57,12 @@ export const columns = [
       <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
     ),
   }),
-  columnHelper.accessor("closed_by", {
+  columnHelper.display({
+    id: "closed_by",
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Cerrado por" />,
-    cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.original.users?.fullname ?? "—"}</span>
+    ),
   }),
-] as ColumnDef<CashClose>[];
+] as ColumnDef<CashCloseWithRelations>[];

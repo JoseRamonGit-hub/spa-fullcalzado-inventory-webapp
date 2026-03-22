@@ -2,9 +2,9 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { ReturnWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { formatDate, formatTime, formatCurrencyUSD } from "@/utils/formatters";
+import { formatDate, formatTime, formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, IterationCcw } from "lucide-react";
 
 const columnHelper = createColumnHelper<ReturnWithRelations>();
 
@@ -25,10 +25,13 @@ export const columns = [
     header: () => <div className="text-center">Tipo</div>,
     cell: ({ getValue }) => {
       const type = getValue();
+      const isExchange = type === "exchange";
+
       return (
         <span className="flex justify-center">
-          <Badge variant={type === "exchange" ? "exchange" : "refund"}>
-            {type === "exchange" ? "Cambio" : "Devolución"}
+          <Badge variant={isExchange ? "exchange" : "refund"} title={isExchange ? "Cambio de artículo" : "Devolución sin cambio"}>
+            <IterationCcw aria-hidden="true" />
+            {isExchange ? "Cambio" : "Devolución"}
           </Badge>
         </span>
       );
@@ -86,6 +89,13 @@ export const columns = [
         </span>
       );
     },
+  }),
+  columnHelper.accessor("exchange_rate", {
+    header: "Tasa",
+    cell: ({ getValue }) => (
+      <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(getValue())}</span>
+    ),
+    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("notes", {
     header: "Notas",

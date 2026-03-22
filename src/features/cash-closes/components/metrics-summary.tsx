@@ -64,7 +64,7 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
               <item.icon className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{item.label}</p>
             </div>
-            <p className="truncate text-sm leading-none font-bold tabular-nums sm:text-lg" title={item.value}>
+            <p className="font-heading truncate text-sm leading-none font-bold tabular-nums sm:text-lg" title={item.value}>
               {item.value}
             </p>
           </li>
@@ -106,30 +106,32 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
             </li>
           </ul>
 
-          <ul className="grid grid-cols-2">
-            <li className="bg-primary/5 flex min-w-0 flex-col gap-1.5 rounded-l-lg px-3 py-2">
-              <div className="text-muted-foreground flex items-center gap-1.5">
-                <DollarSign className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
-                  Total Producido USD
+          <div className="bg-primary/8 -mx-3 px-3 py-2.5 md:-mx-4 md:px-4">
+            <ul className="grid grid-cols-2">
+              <li className="flex min-w-0 flex-col gap-1.5 pl-0">
+                <div className="text-muted-foreground flex items-center gap-1.5">
+                  <DollarSign className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
+                    Total Producido USD
+                  </p>
+                </div>
+                <p className="text-primary font-heading truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
+                  {formatCurrencyUSD(metrics.netUsd)}
                 </p>
-              </div>
-              <p className="text-primary truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
-                {formatCurrencyUSD(metrics.netUsd)}
-              </p>
-            </li>
-            <li className="bg-primary/5 border-border/50 flex min-w-0 flex-col gap-1.5 rounded-r-lg border-l px-3 py-2">
-              <div className="text-muted-foreground flex items-center gap-1.5">
-                <Banknote className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
-                  Total Producido BS.
+              </li>
+              <li className="border-border/50 flex min-w-0 flex-col gap-1.5 border-l px-2 sm:px-4">
+                <div className="text-muted-foreground flex items-center gap-1.5">
+                  <Banknote className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">
+                    Total Producido BS.
+                  </p>
+                </div>
+                <p className="text-primary font-heading truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
+                  {formatCurrencyVES(metrics.netVes)}
                 </p>
-              </div>
-              <p className="text-primary truncate text-sm leading-none font-bold tabular-nums sm:text-lg">
-                {formatCurrencyVES(metrics.netVes)}
-              </p>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </div>
         </div>
       )}
 

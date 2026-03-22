@@ -102,7 +102,7 @@ export function TransactionsPage() {
     ? [
         { label: "Ventas", value: String(metrics.count), icon: ShoppingCart, color: "" },
         { label: "Total Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign, color: "" },
-        { label: "Devol.", value: String(metrics.returnsCount), icon: IterationCcw, color: "text-orange-500" },
+        { label: "Devoluciones", value: String(metrics.returnsCount), icon: IterationCcw, color: "text-orange-500" },
         {
           label: "Total Producido USD",
           value: formatCurrencyUSD(metrics.netUsd),
@@ -157,7 +157,7 @@ export function TransactionsPage() {
                 <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{m.label}</p>
               </div>
               <p
-                className={cn("truncate text-sm leading-none font-bold tabular-nums sm:text-lg", m.color)}
+                className={cn("font-heading truncate text-sm leading-none font-bold tabular-nums sm:text-lg", m.color)}
                 title={m.value}
               >
                 {m.value}

@@ -94,7 +94,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
       if (priceUsd != null && originalPriceUsd != null && priceUsd !== originalPriceUsd) {
         return (
           <div className="flex items-center justify-end gap-1.5 tabular-nums">
-            <span className="text-muted-foreground line-through text-[11px]">
+            <span className="text-muted-foreground text-[11px] line-through">
               {formatCurrencyUSD(originalPriceUsd)}
             </span>
             <span className="text-muted-foreground">→</span>

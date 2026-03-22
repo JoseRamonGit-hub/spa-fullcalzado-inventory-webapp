@@ -1,9 +1,11 @@
 import { supabase } from "@/lib/supabase";
-import type { CashClose } from "@/types/index";
+import type { CashClose, CashCloseWithRelations } from "@/types/index";
+
+const CASH_CLOSE_SELECT = "*, users(fullname)" as const;
 
 export const cashClosesService = {
-  getAll: async (date?: string): Promise<CashClose[]> => {
-    let query = supabase.from("cash_closes").select("*").order("date", { ascending: false });
+  getAll: async (date?: string): Promise<CashCloseWithRelations[]> => {
+    let query = supabase.from("cash_closes").select(CASH_CLOSE_SELECT).order("date", { ascending: false });
 
     if (date) query = query.eq("date", date);
 
