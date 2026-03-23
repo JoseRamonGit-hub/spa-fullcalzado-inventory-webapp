@@ -93,6 +93,7 @@ export function ProductSaleForm({
                 requireStock
                 showPrice
                 autoFocus
+                allowInactive
                 onAfterSelect={handleAfterProductSelection}
                 onClear={handleProductClear}
               />

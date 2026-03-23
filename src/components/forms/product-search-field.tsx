@@ -7,6 +7,7 @@ type ProductSearchFieldProps = FormFieldProps & {
   requireStock?: boolean;
   showPrice?: boolean;
   autoFocus?: boolean;
+  allowInactive?: boolean;
   searchText?: string;
   onSearchTextChange?: (text: string) => void;
   onEnterWithNoResults?: () => void;
@@ -28,6 +29,7 @@ export function ProductSearchField({
   requireStock = false,
   showPrice = false,
   autoFocus = false,
+  allowInactive = false,
   searchText,
   onSearchTextChange,
   onEnterWithNoResults,
@@ -59,7 +61,7 @@ export function ProductSearchField({
         searchText={searchText}
         onSearchTextChange={onSearchTextChange}
         onEnterWithNoResults={onEnterWithNoResults}
-        options={{ requireStock, showPrice, autoFocus }}
+        options={{ requireStock, showPrice, autoFocus, allowInactive }}
         isInvalid={isInvalid}
       />
     </FieldWrapper>

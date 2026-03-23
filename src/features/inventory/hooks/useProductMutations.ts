@@ -35,11 +35,11 @@ export function useUpdateProduct() {
   });
 }
 
-export function useDeleteProduct() {
+export function useToggleProductActive() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => productsService.delete(id),
-    onSuccess: (_, id) => {
+    mutationFn: ({ id, active }: { id: string; active: boolean }) => productsService.toggleActive(id, active),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: productKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
     },

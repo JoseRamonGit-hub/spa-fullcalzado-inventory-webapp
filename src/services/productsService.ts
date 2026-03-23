@@ -41,8 +41,8 @@ export const productsService = {
     if (error) throw new Error(error.message);
   },
 
-  delete: async (id: string): Promise<void> => {
-    const { error } = await supabase.from("products").delete().eq("id", id);
+  toggleActive: async (id: string, active: boolean): Promise<void> => {
+    const { error } = await supabase.from("products").update({ active }).eq("id", id);
     if (error) throw new Error(error.message);
   },
 };

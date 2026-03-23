@@ -97,6 +97,7 @@ export function ProductReturnForm({
                 requireStock={requireStock}
                 showPrice
                 autoFocus
+                allowInactive
                 onAfterSelect={handleAfterProductSelection}
                 onClear={handleProductClear}
               />

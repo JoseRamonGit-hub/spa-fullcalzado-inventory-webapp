@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { Product } from "@/types/index";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 export interface ProductSearchResult {
@@ -19,6 +20,8 @@ interface ProductSearchOptions {
   requireStock?: boolean;
   showPrice?: boolean;
   autoFocus?: boolean;
+  /** When false (default), selecting an inactive product shows a warning and is blocked. */
+  allowInactive?: boolean;
 }
 
 interface ProductSearchProps {
@@ -59,7 +62,7 @@ export function ProductSearch({
   isInvalid = false,
   className,
 }: ProductSearchProps) {
-  const { requireStock = false, showPrice = false, autoFocus = false } = options ?? {};
+  const { requireStock = false, showPrice = false, autoFocus = false, allowInactive = false } = options ?? {};
   const { data: products } = useProducts();
   const [internalSearch, setInternalSearch] = useState("");
   const isSearchControlled = controlledSearchText !== undefined;
@@ -82,7 +85,6 @@ export function ProductSearch({
     return products
       .filter(
         (product) =>
-          product.active &&
           (!requireStock || product.stock > 0) &&
           (product.code.toLowerCase().includes(query) || product.description.toLowerCase().includes(query)),
       )
@@ -112,6 +114,11 @@ export function ProductSearch({
     (productId: string) => {
       const product = products?.find((item) => item.id === productId);
       if (!product) return;
+
+      if (!product.active && !allowInactive) {
+        toast.warning("Este producto está inactivo y no puede recibir cargas de inventario.");
+        return;
+      }
 
       onChange(toSearchResult(product));
       skipBlurRef.current = false;
@@ -274,12 +281,20 @@ export function ProductSearch({
                         skipBlurRef.current = true;
                       }}
                       onSelect={handleSelect}
-                      className="flex items-center gap-2 px-2.5 py-2"
+                      className={cn(
+                        "flex items-center gap-2 px-2.5 py-2",
+                        !product.active && "opacity-50",
+                      )}
                     >
                       <span className="product-code bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px] tracking-wider uppercase">
                         {product.code}
                       </span>
                       <span className="min-w-0 flex-1 truncate text-sm">{product.description}</span>
+                      {!product.active && (
+                        <span className="bg-muted text-muted-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase">
+                          Inactivo
+                        </span>
+                      )}
                       {showPrice && (
                         <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
                           {formatCurrencyUSD(product.price_usd)}
