@@ -63,7 +63,7 @@ export function SettingsPage() {
             </div>
             <div className="border-border/50 flex items-center justify-between border-b py-1.5">
               <span className="text-muted-foreground text-xs">Versión</span>
-              <span className="font-mono text-sm tabular-nums">0.1.0</span>
+              <span className="font-mono text-sm tabular-nums">1.0.0</span>
             </div>
             <div className="flex items-center justify-between py-1.5">
               <span className="text-muted-foreground text-xs">Autor</span>
