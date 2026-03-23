@@ -65,7 +65,7 @@ function UserInitials({ name }: { name: string }) {
 }
 
 export function AppSidebar() {
-  const { mutate: logout } = useLogout();
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   const handleLogOut = () => logout();
 
@@ -163,6 +163,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogOut}
+              disabled={isLoggingOut}
               tooltip="Cerrar sesión"
               className="text-sidebar-foreground/50 hover:bg-red-400/10 hover:text-red-400"
             >

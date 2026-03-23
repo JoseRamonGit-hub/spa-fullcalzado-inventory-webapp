@@ -20,7 +20,6 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Unidades" className="justify-end" />,
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
-    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("total_returns", {
     enableSorting: true,
@@ -37,7 +36,6 @@ export const columns = [
         </span>
       );
     },
-    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("total_usd", {
     enableSorting: true,

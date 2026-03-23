@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run supabase:env && vite --host",
+    "dev": "bash scripts/setup-env.sh && vite --host",
     "build": "npm run generate-routes && tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write ./src",
@@ -15,7 +15,7 @@
     "test:all": "vitest run && npx supabase test db",
     "generate-routes": "tsr generate",
     "watch-routes": "tsr watch",
-    "supabase:env": "npx supabase status -o env | grep -E 'API_URL|PUBLISHABLE_KEY' | sed 's/API_URL/VITE_SUPABASE_URL/' | sed 's/UBLISHABLE_KEY/VITE_SUPABASE_ANON_KEY/' >.env.development",
+    "supabase:env": "bash scripts/setup-env.sh",
     "supabase:start": "supabase start",
     "supabase:reset": "npx supabase db reset",
     "supabase:seed": "npx supabase db seed"

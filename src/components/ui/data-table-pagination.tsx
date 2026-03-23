@@ -22,7 +22,7 @@ export function DataTablePagination<TData>({
   pageCount,
   canPreviousPage,
   canNextPage,
-  pageSizeOptions = [10, 20, 30, 50],
+  pageSizeOptions = [10, 20, 30, 50, 100],
 }: DataTablePaginationProps<TData>) {
   const from = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const to = Math.min((pageIndex + 1) * pageSize, totalRows);

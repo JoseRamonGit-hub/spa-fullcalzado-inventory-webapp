@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Lock, LockOpen } from "lucide-react";
+import { Plus, Pencil, Lock, LockOpen } from "lucide-react";
 import { useAppForm } from "@/hooks/form";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -165,7 +165,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
             )}
           </form.AppField>
         </div>
-        <div className="flex h-8 items-center">
+        <div className="hidden h-8 items-center sm:flex">
           {isExistingMode ? (
             <Badge variant="secondary" className="text-[10px] whitespace-nowrap">
               Producto existente
@@ -179,7 +179,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
       </div>
 
       {/* Row 2: Description + Price + Quantity + Unlock + Submit */}
-      <fieldset className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-[2fr_auto_auto_auto_auto]">
+      <fieldset className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-[2fr_auto_auto_auto]">
         <div className="col-span-2 sm:col-span-1">
           <form.AppField
             name="description"
@@ -258,33 +258,35 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           </form.AppField>
         </div>
 
-        {isExistingMode && (
-          <div className="flex items-end">
+        <div className="col-span-2 flex items-end gap-2 sm:col-span-1">
+          {isExistingMode && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   type="button"
                   variant={isUnlocked ? "secondary" : "outline"}
                   size="icon"
-                  className="size-8 shrink-0"
+                  className="size-8 shrink-0 max-sm:h-9 max-sm:w-auto max-sm:flex-1 max-sm:gap-1.5 max-sm:px-3"
                   onClick={() => setIsUnlocked((prev) => !prev)}
                   aria-label={isUnlocked ? "Bloquear datos del producto" : "Editar datos del producto"}
                 >
                   {isUnlocked ? (
                     <LockOpen className="size-3.5" aria-hidden="true" />
                   ) : (
-                    <Lock className="size-3.5" aria-hidden="true" />
+                    <>
+                      <Pencil className="size-3.5 sm:hidden" aria-hidden="true" />
+                      <Lock className="size-3.5 hidden sm:block" aria-hidden="true" />
+                    </>
                   )}
+                  <span className="text-xs sm:hidden">{isUnlocked ? "Bloquear" : "Editar"}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">
                 {isUnlocked ? "Bloquear" : "Editar datos"}
               </TooltipContent>
             </Tooltip>
-          </div>
-        )}
+          )}
 
-        <div className="col-span-2 flex items-end sm:col-span-1">
           <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (
               <Tooltip>
@@ -292,12 +294,13 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
                   <Button
                     type="submit"
                     variant="outline"
+                    className="size-8 shrink-0 max-sm:h-9 max-sm:w-auto max-sm:flex-1 max-sm:gap-1.5 max-sm:px-3"
                     size="icon"
-                    className="size-8 shrink-0"
                     disabled={!canSubmit || isSubmitting}
                     aria-label="Agregar item al lote"
                   >
                     <Plus className="size-4" aria-hidden="true" />
+                    <span className="text-xs sm:hidden">Agregar</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">

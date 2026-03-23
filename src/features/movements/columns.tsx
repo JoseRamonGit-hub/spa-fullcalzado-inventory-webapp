@@ -137,7 +137,7 @@ export const columns = [
             <span className="text-muted-foreground">→</span>
             <span className="text-foreground font-medium">{stockAfter}</span>
             <span
-              className={cn("hidden text-[10px] md:inline-block", isIncrease ? "text-emerald-500" : "text-red-500")}
+              className={cn("text-[10px]", isIncrease ? "text-emerald-500" : "text-red-500")}
             >
               ({sign}
               {quantity})
@@ -157,7 +157,7 @@ export const columns = [
             <span className="text-muted-foreground">{stock_before}</span>
             <span className="text-muted-foreground">→</span>
             <span className="text-foreground font-medium">{stockAfter}</span>
-            <span className={cn("hidden text-[10px] md:inline-block", isInflow ? "text-emerald-500" : "text-red-500")}>
+            <span className={cn("text-[10px]", isInflow ? "text-emerald-500" : "text-red-500")}>
               ({sign}
               {quantity})
             </span>
@@ -206,7 +206,6 @@ export const columns = [
         <span className="text-muted-foreground block text-right tabular-nums">{formatCurrencyUSD(price_usd)}</span>
       );
     },
-    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("users.fullname", {
     header: "Usuario",

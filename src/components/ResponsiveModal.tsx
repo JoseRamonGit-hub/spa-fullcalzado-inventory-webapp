@@ -62,7 +62,7 @@ export function ResponsiveModal({
             </DialogDescription>
           )}
         </DialogHeader>
-        <DialogBody className="min-h-0">{children}</DialogBody>
+        <DialogBody className={cn("min-h-0", isMobile && "px-4 py-3")}>{children}</DialogBody>
         <DialogFooter>{footer}</DialogFooter>
       </DialogContent>
     </Dialog>

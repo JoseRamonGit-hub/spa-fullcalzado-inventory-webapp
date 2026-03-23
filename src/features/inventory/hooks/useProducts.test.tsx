@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useProducts, productKeys } from "./useProductQueries";
-import { useCreateProduct, useUpdateProduct, useDeleteProduct } from "./useProductMutations";
+import { useCreateProduct, useUpdateProduct, useToggleProductActive } from "./useProductMutations";
 import { productsService } from "@/services/productsService";
 import type { Product, ProductInsert, EditProductPayload } from "@/types";
 import type { ReactNode } from "react";
@@ -16,14 +16,14 @@ vi.mock("@/services/productsService", () => ({
     update: vi.fn(),
     editProduct: vi.fn(),
     createMany: vi.fn(),
-    delete: vi.fn(),
+    toggleActive: vi.fn(),
   },
 }));
 
 const mockGetAll = vi.mocked(productsService.getAll);
 const mockCreate = vi.mocked(productsService.create);
 const mockEditProduct = vi.mocked(productsService.editProduct);
-const mockDelete = vi.mocked(productsService.delete);
+const mockToggleActive = vi.mocked(productsService.toggleActive);
 
 const fakeProduct: Product = {
   id: "prod-1",
@@ -130,24 +130,24 @@ describe("useProducts", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["movements"] });
     });
 
-    it("delete product invalidates lists and specific detail query", async () => {
-      mockDelete.mockResolvedValueOnce(undefined);
+    it("toggle product active invalidates lists and specific detail query", async () => {
+      mockToggleActive.mockResolvedValueOnce(undefined);
 
-      const { result } = renderHook(() => useDeleteProduct(), {
+      const { result } = renderHook(() => useToggleProductActive(), {
         wrapper: createWrapper(),
       });
 
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
 
       act(() => {
-        result.current.mutate("prod-1");
+        result.current.mutate({ id: "prod-1", active: false });
       });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockDelete).toHaveBeenCalledWith("prod-1");
+      expect(mockToggleActive).toHaveBeenCalledWith("prod-1", false);
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.detail("prod-1") });
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists() });
     });

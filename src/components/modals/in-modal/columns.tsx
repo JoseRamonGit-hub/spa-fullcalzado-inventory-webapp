@@ -57,7 +57,6 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
     accessorKey: "description",
     header: "Descripción",
     cell: ({ getValue }) => <span className="block max-w-40 truncate md:max-w-100">{getValue<string>()}</span>,
-    meta: { hideOnMobile: true },
   },
   {
     id: "quantityOrStock",
@@ -74,7 +73,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
           <span className="text-foreground font-medium">
             {pendingBatchItem.currentStock + pendingBatchItem.addedQuantity}
           </span>
-          <span className="text-muted-foreground hidden text-[10px] md:inline-block">
+          <span className="text-muted-foreground text-[10px]">
             ({pendingBatchItem.addedQuantity > 0 ? "+" : ""}
             {pendingBatchItem.addedQuantity})
           </span>
@@ -104,7 +103,6 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
       }
       return <span className="text-muted-foreground block text-right">—</span>;
     },
-    meta: { hideOnMobile: true },
   },
   {
     id: "actions",

@@ -13,6 +13,7 @@ import { useEffect, useCallback } from "react";
 import { useModalStore } from "@/hooks/useModalStore";
 import { useTheme } from "next-themes";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { OfflineBanner } from "@/components/offline-banner";
 import { useSidebarStore } from "@/hooks/useSidebarStore";
 import { formatCurrencyVES } from "@/utils/formatters";
 
@@ -152,6 +153,8 @@ function AppLayout() {
             </div>
           </div>
         </header>
+
+        <OfflineBanner />
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden pb-(--bottombar-height) md:pb-0">
           <Outlet />

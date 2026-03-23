@@ -3,14 +3,14 @@ import type { Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<Product>();
 
 export type InventoryTableMeta = {
   onEdit?: (product: Product) => void;
-  onDelete?: (product: Product) => void;
+  onToggleStatus?: (product: Product) => void;
   isAdmin?: boolean;
 };
 
@@ -117,13 +117,17 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-destructive h-5 w-7 p-0"
+              className={`h-5 w-7 p-0 ${
+                product.active
+                  ? "text-muted-foreground hover:text-destructive"
+                  : "text-muted-foreground hover:text-success"
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
-                meta?.onDelete?.(product);
+                meta?.onToggleStatus?.(product);
               }}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              {product.active ? <Trash2 className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}
             </Button>
           </div>
         );

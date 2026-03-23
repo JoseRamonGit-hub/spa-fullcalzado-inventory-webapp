@@ -5,7 +5,7 @@ import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { getColumns } from "./columns";
 import { EditProductModal } from "./components/edit-product-modal";
-import { DeleteProductModal } from "./components/delete-product-modal";
+import { ToggleStatusModal } from "./components/toggle-status-modal";
 import { MobileActionDrawer } from "./components/mobile-action-drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Product } from "@/types";
@@ -35,7 +35,7 @@ export function InventoryPage() {
 
   // Action modals state
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
+  const [toggleStatusProduct, setToggleStatusProduct] = useState<Product | null>(null);
   const [mobileActionProduct, setMobileActionProduct] = useState<Product | null>(null);
 
   const handleRowClick = useCallback(
@@ -50,7 +50,7 @@ export function InventoryPage() {
   const tableMeta = useMemo(
     () => ({
       onEdit: (product: Product) => setEditProduct(product),
-      onDelete: (product: Product) => setDeleteProduct(product),
+      onToggleStatus: (product: Product) => setToggleStatusProduct(product),
       isAdmin,
     }),
     [isAdmin],
@@ -90,11 +90,11 @@ export function InventoryPage() {
         />
       )}
 
-      {deleteProduct && (
-        <DeleteProductModal
-          open={!!deleteProduct}
-          onOpenChange={(open) => !open && setDeleteProduct(null)}
-          product={deleteProduct}
+      {toggleStatusProduct && (
+        <ToggleStatusModal
+          open={!!toggleStatusProduct}
+          onOpenChange={(open) => !open && setToggleStatusProduct(null)}
+          product={toggleStatusProduct}
         />
       )}
 
@@ -105,9 +105,9 @@ export function InventoryPage() {
           setMobileActionProduct(null);
           setEditProduct(p);
         }}
-        onDelete={(p) => {
+        onToggleStatus={(p) => {
           setMobileActionProduct(null);
-          setDeleteProduct(p);
+          setToggleStatusProduct(p);
         }}
       />
     </section>

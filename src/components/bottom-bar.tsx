@@ -126,8 +126,8 @@ export function BottomBar() {
                 setReturnModalOpen(true);
               }}
             >
-              <div className="bg-warning/10 flex h-10 w-10 items-center justify-center rounded-lg">
-                <IterationCcw className="text-warning h-5 w-5" />
+              <div className="bg-refund/12 flex h-10 w-10 items-center justify-center rounded-lg">
+                <IterationCcw className="text-refund h-5 w-5" />
               </div>
               <div className="flex flex-col items-start">
                 <span className="text-sm font-semibold">Registrar Devolución</span>
