@@ -8,13 +8,15 @@ export function useLogout() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: () => authService.logout(),
-    onSettled: async () => {
-      // Always runs, even if signOut() threw (best-effort).
-      // supabase.auth.signOut({ scope: 'local' }) always clears local
-      // storage regardless of network errors, so our app state must match.
+    mutationFn: async () => {
+      // Clear local state immediately — no network required.
       useAuthStore.getState().clearAuth();
       queryClient.clear();
+      // Best-effort: revoke the server-side session in the background.
+      // Not awaited so a dropped connection never blocks the UX.
+      authService.logout().catch(() => {});
+    },
+    onSuccess: async () => {
       await router.navigate({ to: "/login", replace: true });
     },
   });
