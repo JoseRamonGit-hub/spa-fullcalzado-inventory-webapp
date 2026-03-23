@@ -9,7 +9,6 @@ export const pendingSaleColumns: ColumnDef<PendingSale>[] = [
     id: "index",
     header: "#",
     cell: ({ row }) => <span className="text-muted-foreground tabular-nums">{row.index + 1}</span>,
-    meta: { hideOnMobile: true },
   },
   {
     accessorKey: "code",
@@ -20,7 +19,6 @@ export const pendingSaleColumns: ColumnDef<PendingSale>[] = [
     accessorKey: "description",
     header: "Descripción",
     cell: ({ getValue }) => <span className="block max-w-40 truncate md:max-w-60">{getValue<string>()}</span>,
-    meta: { hideOnMobile: true },
   },
   {
     accessorKey: "quantity",
@@ -33,7 +31,6 @@ export const pendingSaleColumns: ColumnDef<PendingSale>[] = [
     cell: ({ getValue }) => (
       <span className="block text-right tabular-nums">{formatCurrencyUSD(getValue<number>())}</span>
     ),
-    meta: { hideOnMobile: true },
   },
   {
     accessorKey: "totalUsd",
@@ -52,7 +49,6 @@ export const pendingSaleColumns: ColumnDef<PendingSale>[] = [
         {formatCurrencyVES(getValue<number>())}
       </span>
     ),
-    meta: { hideOnMobile: true },
   },
   {
     id: "actions",

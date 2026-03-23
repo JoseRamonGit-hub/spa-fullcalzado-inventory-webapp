@@ -73,12 +73,12 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
           />
         }
       >
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-3 md:gap-4">
           <header>
             <UnifiedEntryForm pendingBatchItems={pendingBatchItems} onAddPendingBatchItem={addPendingBatchItem} />
           </header>
 
-          <article className="bg-card -mx-2 flex h-56 flex-col overflow-hidden rounded-md border md:h-64">
+          <article className="bg-card -mx-2 flex h-40 flex-col overflow-hidden rounded-md border md:h-64">
             <DataTable
               columns={pendingItemColumns}
               data={pendingBatchItems}

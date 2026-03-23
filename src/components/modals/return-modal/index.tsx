@@ -179,8 +179,8 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
           />
         }
       >
-        <section className="flex flex-col gap-4">
-          <header className="-mx-6 -mt-6">
+        <section className="flex flex-col gap-3 md:gap-4">
+          <header className="-mx-4 -mt-3 md:-mx-6 md:-mt-6">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ReturnTabValue)} className="gap-0">
               <TabsList className="h-10 w-full rounded-none border-x-0 border-t-0 p-0">
                 <TabsTrigger value="return" className="flex-1 gap-1.5 rounded-none" aria-keyshortcuts="Alt+D">
@@ -230,7 +230,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
             </Tabs>
           </header>
 
-          <article className="bg-card -mx-2 flex h-56 flex-col overflow-hidden rounded-md border md:h-64">
+          <article className="bg-card -mx-2 flex h-40 flex-col overflow-hidden rounded-md border md:h-64">
             <ReturnItemsPanel
               returnItems={returnItems}
               exchangeItems={exchangeItems}

@@ -91,14 +91,14 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
           />
         }
       >
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-3 md:gap-4">
           <ProductSaleForm
             currentExchangeRate={currentExchangeRate}
             isExchangeRateReady={isExchangeRateReady}
             onAddPendingSale={addPendingSale}
           />
 
-          <article className="bg-card h-56 overflow-hidden rounded-md border md:h-64">
+          <article className="bg-card -mx-2 flex h-40 flex-col overflow-hidden rounded-md border md:h-64">
             <DataTable
               columns={pendingSaleColumns}
               data={pendingSales}

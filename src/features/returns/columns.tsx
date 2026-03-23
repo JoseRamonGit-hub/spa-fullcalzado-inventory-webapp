@@ -43,7 +43,6 @@ export const columns = [
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatDate(row.original.created_at)}</span>
     ),
-    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("time", {
     enableSorting: true,
@@ -51,7 +50,6 @@ export const columns = [
     cell: ({ row }) => (
       <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
     ),
-    meta: { hideOnMobile: true },
   }),
   columnHelper.display({
     id: "items",
@@ -95,7 +93,6 @@ export const columns = [
     cell: ({ getValue }) => (
       <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(getValue())}</span>
     ),
-    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("notes", {
     header: "Notas",
@@ -113,6 +110,5 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Usuario" />,
     cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
-    meta: { hideOnMobile: true },
   }),
 ] as ColumnDef<ReturnWithRelations>[];

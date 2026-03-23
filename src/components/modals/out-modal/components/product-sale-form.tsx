@@ -179,11 +179,12 @@ export function ProductSaleForm({
                     type="submit"
                     variant="outline"
                     size="icon"
-                    className="size-8 shrink-0"
+                    className="size-8 shrink-0 max-sm:h-9 max-sm:w-auto max-sm:flex-1 max-sm:gap-1.5 max-sm:px-3"
                     disabled={!canSubmit || isSubmitting}
                     aria-label="Agregar producto"
                   >
                     <Plus className="size-4" aria-hidden="true" />
+                    <span className="text-xs sm:hidden">Agregar</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">
