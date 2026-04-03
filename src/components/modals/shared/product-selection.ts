@@ -1,33 +1,15 @@
-import { useCallback, useMemo } from "react";
 import { useProducts } from "@/features/inventory/hooks/useProductQueries";
-import type { Product } from "@/types/index";
-import type { ProductSearchResult } from "@/components/product-search";
-
-function toProductSearchResult(product: Product): ProductSearchResult {
-  return {
-    id: product.id,
-    code: product.code,
-    description: product.description,
-    price_usd: product.price_usd,
-    stock: product.stock,
-  };
-}
+import { toSearchResult } from "@/components/product-search";
 
 export function useProductLookup() {
   const { data: products } = useProducts();
 
-  const productsById = useMemo(
-    () => new Map((products ?? []).map((product) => [product.id, toProductSearchResult(product)])),
-    [products],
-  );
+  const productsById = new Map((products ?? []).map((product) => [product.id, toSearchResult(product)]));
 
-  const getProductById = useCallback(
-    (productId: string) => {
-      if (!productId) return null;
-      return productsById.get(productId) ?? null;
-    },
-    [productsById],
-  );
+  function getProductById(productId: string) {
+    if (!productId) return null;
+    return productsById.get(productId) ?? null;
+  }
 
   return { getProductById };
 }
