@@ -276,44 +276,45 @@ export function ProductSearch({
 
   return (
     <div className={cn(SHELL_CLASS_NAME, className)}>
-      <Command
-        ref={commandRootRef}
-        shouldFilter={false}
-        className={cn(
-          "relative",
-          CONTROL_CLASS_NAME,
-          "**:data-[slot=command-input-wrapper]:h-full **:data-[slot=command-input-wrapper]:border-b-0",
-          "**:data-[slot=command-input]:h-full **:data-[slot=command-input]:py-0",
-          isInvalid ? INVALID_CLASS_NAME : VALID_CLASS_NAME,
-        )}
-      >
-        <CommandInput
-          placeholder="Buscar por código o descripción…"
-          value={search}
-          onValueChange={(v) => {
-            updateSearch(v);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onBlur={handleInputBlur}
-          onKeyDown={handleInputKeyDown}
-          className="text-sm"
-          autoComplete="off"
-          autoCorrect="off"
-          spellCheck={false}
-        />
-
-        {showDropdown && (
-          <SearchDropdown
-            products={filteredProducts}
-            showPrice={showPrice}
-            onMouseDown={() => {
-              skipBlurRef.current = true;
+      <div className="relative">
+        <Command
+          ref={commandRootRef}
+          shouldFilter={false}
+          className={cn(
+            CONTROL_CLASS_NAME,
+            "**:data-[slot=command-input-wrapper]:h-full **:data-[slot=command-input-wrapper]:border-b-0",
+            "**:data-[slot=command-input]:h-full **:data-[slot=command-input]:py-0",
+            isInvalid ? INVALID_CLASS_NAME : VALID_CLASS_NAME,
+          )}
+        >
+          <CommandInput
+            placeholder="Buscar por código o descripción…"
+            value={search}
+            onValueChange={(v) => {
+              updateSearch(v);
+              setOpen(true);
             }}
-            onSelect={handleSelect}
+            onFocus={() => setOpen(true)}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            className="text-sm"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
-        )}
-      </Command>
+
+          {showDropdown && (
+            <SearchDropdown
+              products={filteredProducts}
+              showPrice={showPrice}
+              onMouseDown={() => {
+                skipBlurRef.current = true;
+              }}
+              onSelect={handleSelect}
+            />
+          )}
+        </Command>
+      </div>
     </div>
   );
 }
