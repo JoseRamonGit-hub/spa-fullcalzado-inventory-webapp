@@ -10,7 +10,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
-interface ResponsiveModalProps {
+type ResponsiveModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
@@ -21,7 +21,7 @@ interface ResponsiveModalProps {
   dialogClassName?: string;
   descriptionSrOnly?: boolean;
   footer?: React.ReactNode;
-}
+};
 
 export function ResponsiveModal({
   open,

@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 
-interface PendingItem {
+type PendingItem = {
   tempId: string;
-}
+};
 
 export function usePendingItems<Item extends PendingItem>() {
   const [items, setItems] = useState<Item[]>([]);

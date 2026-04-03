@@ -21,7 +21,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 
-interface ResponsiveAlertModalProps {
+type ResponsiveAlertModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
@@ -33,7 +33,7 @@ interface ResponsiveAlertModalProps {
   isPending?: boolean;
   /** Optional rich content rendered between header and footer */
   children?: ReactNode;
-}
+};
 
 export function ResponsiveAlertModal({
   open,

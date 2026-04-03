@@ -1,9 +1,9 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-interface MetricsSkeletonProps {
+type MetricsSkeletonProps = {
   count: number;
-}
+};
 
 export function MetricsSkeleton({ count }: MetricsSkeletonProps) {
   return (

@@ -13,11 +13,11 @@ const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
 const REQUIRED_FIELD_ERROR = "Requerido";
 const MINIMUM_VALUE_ERROR = "Mín. 1";
 
-interface ProductSaleFormProps {
+type ProductSaleFormProps = {
   currentExchangeRate: number;
   isExchangeRateReady?: boolean;
   onAddPendingSale: (sale: PendingSale) => void;
-}
+};
 
 export function ProductSaleForm({
   currentExchangeRate,

@@ -9,7 +9,7 @@ import {
 } from "@/components/modals/shared/modal-ui";
 import { getStripedRowClass } from "@/components/modals/shared/modal-table-utils";
 
-interface ConfirmSalesDialogProps {
+type ConfirmSalesDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   pendingSales: PendingSale[];
@@ -19,7 +19,7 @@ interface ConfirmSalesDialogProps {
   totalAmountVes: number;
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void;
-}
+};
 
 export function ConfirmSalesDialog({
   isOpen,

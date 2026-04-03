@@ -9,7 +9,7 @@ import {
 } from "@/components/modals/shared/modal-ui";
 import { getStripedRowClass } from "@/components/modals/shared/modal-table-utils";
 
-interface ConfirmReturnDialogProps {
+type ConfirmReturnDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   returnItems: readonly PendingReturnItem[];
@@ -23,7 +23,7 @@ interface ConfirmReturnDialogProps {
   isSubmissionPending: boolean;
   notes: string;
   onConfirmSubmit: () => void;
-}
+};
 
 export function ConfirmReturnDialog({
   isOpen,

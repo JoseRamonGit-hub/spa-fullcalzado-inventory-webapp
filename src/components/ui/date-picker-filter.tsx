@@ -18,14 +18,14 @@ function toCaracasDateString(date: Date): string {
   return formatDateForBackend(date);
 }
 
-interface DatePickerFilterProps {
+type DatePickerFilterProps = {
   /** The currently selected date string in "YYYY-MM-DD" format, or undefined for no filter */
   value?: string;
   onChange: (value: string | undefined) => void;
   placeholder?: string;
   /** Optional max CSS width for the trigger button  */
   className?: string;
-}
+};
 
 export function DatePickerFilter({
   value,

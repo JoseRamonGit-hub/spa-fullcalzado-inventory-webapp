@@ -1,11 +1,11 @@
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
-interface SalesSummaryBlockProps {
+type SalesSummaryBlockProps = {
   currentExchangeRate: number;
   isExchangeRateLoading: boolean;
   totalAmountUsd: number;
   totalAmountVes: number;
-}
+};
 
 export function SalesSummaryBlock({
   currentExchangeRate,

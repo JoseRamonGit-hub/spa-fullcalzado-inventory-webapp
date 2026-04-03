@@ -11,7 +11,7 @@ const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
 const REQUIRED_FIELD_ERROR = "Requerido";
 const MINIMUM_VALUE_ERROR = "Mín. 1";
 
-interface ProductReturnFormProps {
+type ProductReturnFormProps = {
   currentExchangeRate: number;
   isExchangeRateReady?: boolean;
   requireStock?: boolean;
@@ -24,7 +24,7 @@ interface ProductReturnFormProps {
     priceVes: number;
     availableStock: number;
   }) => void;
-}
+};
 
 export function ProductReturnForm({
   currentExchangeRate,

@@ -16,10 +16,10 @@ const MIN_1 = "Mín. 1";
 const MIN_PRICE = 0;
 const MIN_QUANTITY = 1;
 
-interface UnifiedEntryFormProps {
+type UnifiedEntryFormProps = {
   pendingBatchItems: BatchItem[];
   onAddPendingBatchItem: (item: BatchItem) => void;
-}
+};
 
 export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: UnifiedEntryFormProps) {
   const formRef = useRef<HTMLFormElement>(null);

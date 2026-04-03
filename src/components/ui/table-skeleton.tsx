@@ -1,10 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableRow, TableCell } from "@/components/ui/table";
 
-interface TableSkeletonProps {
+type TableSkeletonProps = {
   columnCount: number;
   rowCount?: number;
-}
+};
 
 // Width patterns to organically simulate real data columns
 // (code, description, numeric, numeric, numeric, badge, actions)

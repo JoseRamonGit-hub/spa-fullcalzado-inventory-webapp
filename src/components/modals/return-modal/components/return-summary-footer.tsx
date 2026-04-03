@@ -4,7 +4,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
 
-interface ReturnSummaryFooterProps {
+type ReturnSummaryFooterProps = {
   hasReturnItems: boolean;
   returnType: "exchange" | "refund";
   creditUsd: number;
@@ -17,7 +17,7 @@ interface ReturnSummaryFooterProps {
   notes: string;
   onNotesChange: (notes: string) => void;
   onOpenConfirmDialog: () => void;
-}
+};
 
 export function ReturnSummaryFooter({
   hasReturnItems,

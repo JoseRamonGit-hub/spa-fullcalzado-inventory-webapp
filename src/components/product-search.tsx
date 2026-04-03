@@ -8,23 +8,23 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
-export interface ProductSearchResult {
+export type ProductSearchResult = {
   id: string;
   code: string;
   description: string;
   price_usd: number;
   stock: number;
-}
+};
 
-export interface ProductSearchOptions {
+export type ProductSearchOptions = {
   requireStock?: boolean;
   showPrice?: boolean;
   autoFocus?: boolean;
   /** When false (default), selecting an inactive product shows a warning and is blocked. */
   allowInactive?: boolean;
-}
+};
 
-interface ProductSearchProps {
+type ProductSearchProps = {
   value: string;
   onChange: (product: ProductSearchResult | null) => void;
   searchText?: string;
@@ -33,7 +33,7 @@ interface ProductSearchProps {
   options?: ProductSearchOptions;
   isInvalid?: boolean;
   className?: string;
-}
+};
 
 const RESULT_LIMIT = 3;
 const SHELL_CLASS_NAME = "min-h-8 w-full min-w-0";
@@ -276,45 +276,44 @@ export function ProductSearch({
 
   return (
     <div className={cn(SHELL_CLASS_NAME, className)}>
-      <div className="relative">
-        <Command
-          ref={commandRootRef}
-          shouldFilter={false}
-          className={cn(
-            CONTROL_CLASS_NAME,
-            "**:data-[slot=command-input-wrapper]:h-full **:data-[slot=command-input-wrapper]:border-b-0",
-            "**:data-[slot=command-input]:h-full **:data-[slot=command-input]:py-0",
-            isInvalid ? INVALID_CLASS_NAME : VALID_CLASS_NAME,
-          )}
-        >
-          <CommandInput
-            placeholder="Buscar por código o descripción…"
-            value={search}
-            onValueChange={(v) => {
-              updateSearch(v);
-              setOpen(true);
-            }}
-            onFocus={() => setOpen(true)}
-            onBlur={handleInputBlur}
-            onKeyDown={handleInputKeyDown}
-            className="text-sm"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-          />
+      <Command
+        ref={commandRootRef}
+        shouldFilter={false}
+        className={cn(
+          "relative",
+          CONTROL_CLASS_NAME,
+          "**:data-[slot=command-input-wrapper]:h-full **:data-[slot=command-input-wrapper]:border-b-0",
+          "**:data-[slot=command-input]:h-full **:data-[slot=command-input]:py-0",
+          isInvalid ? INVALID_CLASS_NAME : VALID_CLASS_NAME,
+        )}
+      >
+        <CommandInput
+          placeholder="Buscar por código o descripción…"
+          value={search}
+          onValueChange={(v) => {
+            updateSearch(v);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={handleInputBlur}
+          onKeyDown={handleInputKeyDown}
+          className="text-sm"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+        />
 
-          {showDropdown && (
-            <SearchDropdown
-              products={filteredProducts}
-              showPrice={showPrice}
-              onMouseDown={() => {
-                skipBlurRef.current = true;
-              }}
-              onSelect={handleSelect}
-            />
-          )}
-        </Command>
-      </div>
+        {showDropdown && (
+          <SearchDropdown
+            products={filteredProducts}
+            showPrice={showPrice}
+            onMouseDown={() => {
+              skipBlurRef.current = true;
+            }}
+            onSelect={handleSelect}
+          />
+        )}
+      </Command>
     </div>
   );
 }

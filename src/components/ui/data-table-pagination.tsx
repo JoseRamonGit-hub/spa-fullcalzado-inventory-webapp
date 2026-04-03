@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
-interface DataTablePaginationProps<TData> {
+type DataTablePaginationProps<TData> = {
   table: Table<TData>;
   pageIndex: number;
   pageSize: number;
@@ -12,7 +12,7 @@ interface DataTablePaginationProps<TData> {
   canPreviousPage: boolean;
   canNextPage: boolean;
   pageSizeOptions?: number[];
-}
+};
 
 export function DataTablePagination<TData>({
   table,

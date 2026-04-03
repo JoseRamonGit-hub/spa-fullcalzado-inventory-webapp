@@ -6,11 +6,11 @@ import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/mo
 const NEW_ITEM_KIND = "new";
 const EXISTING_ITEM_KIND = "existing";
 
-interface BatchSummaryFooterProps {
+type BatchSummaryFooterProps = {
   pendingBatchItems: BatchItem[];
   isSubmissionPending: boolean;
   onOpenConfirmDialog: () => void;
-}
+};
 
 export function BatchSummaryFooter({
   pendingBatchItems,

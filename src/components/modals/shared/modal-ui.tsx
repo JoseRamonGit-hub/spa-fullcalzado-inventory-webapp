@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
-interface ModalConfirmDialogProps {
+type ModalConfirmDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   icon: ReactNode;
@@ -27,31 +27,31 @@ interface ModalConfirmDialogProps {
   contentClassName?: string;
   confirmDisabled?: boolean;
   children: ReactNode;
-}
+};
 
-interface ConfirmDialogSectionProps {
+type ConfirmDialogSectionProps = {
   children: ReactNode;
   className?: string;
-}
+};
 
-interface ModalProductIdentityProps {
+type ModalProductIdentityProps = {
   code: string;
   description: string;
   descriptionClassName?: string;
-}
+};
 
-interface ModalShortcutActionButtonProps {
+type ModalShortcutActionButtonProps = {
   icon: ReactNode;
   label: string;
   disabled?: boolean;
   onClick: () => void;
   className?: string;
-}
+};
 
-interface ModalFooterActionRowProps {
+type ModalFooterActionRowProps = {
   message: ReactNode;
   children: ReactNode;
-}
+};
 
 export function ModalConfirmDialog({
   isOpen,

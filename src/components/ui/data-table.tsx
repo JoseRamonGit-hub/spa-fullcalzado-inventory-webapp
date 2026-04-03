@@ -20,7 +20,7 @@ import { PackageOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-interface DataTableProps<TData, TValue> {
+type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   emptyMessage?: string;
@@ -35,7 +35,7 @@ interface DataTableProps<TData, TValue> {
   expanded?: ExpandedState;
   onExpandedChange?: OnChangeFn<ExpandedState>;
   getRowClassName?: (row: Row<TData>, index: number) => string | undefined;
-}
+};
 
 export function DataTable<TData, TValue>({
   columns,

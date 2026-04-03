@@ -8,13 +8,13 @@ import { getStripedRowClass } from "@/components/modals/shared/modal-table-utils
 const NEW_ITEM_KIND = "new";
 const DEFAULT_FALLBACK_PRICE = 0;
 
-interface ConfirmBatchDialogProps {
+type ConfirmBatchDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   pendingBatchItems: BatchItem[];
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void;
-}
+};
 
 export function ConfirmBatchDialog({
   isOpen,

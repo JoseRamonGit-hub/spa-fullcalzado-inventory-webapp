@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 
-export interface CashCloseMetrics {
+export type CashCloseMetrics = {
   count: number;
   units: number;
   totalUsd: number;
@@ -13,16 +13,16 @@ export interface CashCloseMetrics {
   returnsCreditVes: number;
   netUsd: number;
   netVes: number;
-}
+};
 
-interface MetricsSummaryProps {
+type MetricsSummaryProps = {
   metrics: CashCloseMetrics;
   label: string;
   isFiltered: boolean;
   onOpenConfirm: () => void;
   isPending: boolean;
   hasUser: boolean;
-}
+};
 
 export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPending, hasUser }: MetricsSummaryProps) {
   const hasReturns = metrics.returnsCount > 0;

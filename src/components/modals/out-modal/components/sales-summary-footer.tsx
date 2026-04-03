@@ -3,7 +3,7 @@ import { SalesSummaryBlock } from "./sales-summary-block";
 import type { PendingSale } from "../types";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
 
-interface SalesSummaryFooterProps {
+type SalesSummaryFooterProps = {
   pendingSales: PendingSale[];
   currentExchangeRate: number;
   isExchangeRateLoading: boolean;
@@ -11,7 +11,7 @@ interface SalesSummaryFooterProps {
   totalAmountVes: number;
   isSubmissionPending: boolean;
   onOpenConfirmDialog: () => void;
-}
+};
 
 export function SalesSummaryFooter({
   pendingSales,
