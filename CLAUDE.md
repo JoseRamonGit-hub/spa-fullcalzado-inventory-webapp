@@ -44,6 +44,7 @@ Auth guard in `_app` is a synchronous Zustand check — the root route's `before
 ### Feature module pattern
 
 Each feature in `src/features/` follows this structure:
+
 - `page.tsx` — main page component (imported by the route file)
 - `hooks/` — React Query hooks with query key factories (e.g., `productKeys.list(date)`)
 - `components/` — feature-specific components (topbar, modals, etc.)
@@ -58,6 +59,7 @@ Route files in `src/routes/` are thin wrappers that import from `src/features/*/
 ### Modal system
 
 Two global modals managed by Zustand (`useModalStore`):
+
 - **InModal** (Ctrl+I) — inventory entry: create new products or add stock to existing ones in batches
 - **OutModal** (Ctrl+J) — record sales
 
@@ -76,3 +78,4 @@ Supabase PostgreSQL. Migrations in `supabase/migrations/`. SQL tests in `supabas
 - Search params are validated with Zod schemas in route files for type-safe URL state
 - React Query cache invalidation happens in mutation `onSuccess` callbacks within hooks
 - Test files live next to source files (`*.test.ts` / `*.test.tsx`)
+- Evitar en lo posible useCallback y useMemo, esta app ya usa el react compiler
