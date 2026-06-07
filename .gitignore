@@ -33,3 +33,5 @@ backups/
 
 # TanStack Router
 .tanstack/
+.vercel
+.env*
