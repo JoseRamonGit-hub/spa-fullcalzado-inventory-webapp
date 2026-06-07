@@ -92,8 +92,7 @@ export function DatePickerFilter({
             selected={selected}
             onSelect={handleSelect}
             defaultMonth={selected ?? new Date()}
-            toDate={new Date()}
-            initialFocus
+            autoFocus
             className="rounded-t-md"
             locale={es}
             disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
