@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { queryClient } from "@/lib/queryClient";
 
+// Test comment
 // Create router
 const router = createRouter({ routeTree });
 
