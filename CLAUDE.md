@@ -25,7 +25,6 @@ React 19 + TypeScript SPA for shoe store inventory management. Spanish-language 
 
 ### Stack
 
-- **Build**: Vite 7 with React Compiler (babel-plugin-react-compiler, restricted to `src/` files)
 - **Routing**: TanStack Router — file-based in `src/routes/`, auto-generates `src/routeTree.gen.ts`
 - **Server state**: TanStack React Query (staleTime: 30s, retry: 5)
 - **Client state**: Zustand (auth store persisted to localStorage as "auth-storage")
