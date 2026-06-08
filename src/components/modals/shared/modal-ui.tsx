@@ -11,7 +11,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
 interface ModalConfirmDialogProps {
@@ -123,11 +122,12 @@ export function ModalShortcutActionButton({
     <Button disabled={disabled} onClick={onClick} className={cn("w-full shrink-0 gap-3 md:w-auto", className)}>
       {icon}
       <span className="truncate">{label}</span>
-      <KbdGroup className="hidden opacity-60 md:flex" aria-hidden="true">
-        <Kbd>Shift ⇧</Kbd>
-        <span>+</span>
-        <Kbd>Enter</Kbd>
-      </KbdGroup>
+      <kbd className="kbd">shift+&#9166;</kbd>
+      {/* <KbdGroup className="hidden opacity-60 md:flex" aria-hidden="true"> */}
+      {/*   <Kbd>Shift ⇧</Kbd> */}
+      {/*   <span>+</span> */}
+      {/*   <Kbd>Enter</Kbd> */}
+      {/* </KbdGroup> */}
     </Button>
   );
 }
