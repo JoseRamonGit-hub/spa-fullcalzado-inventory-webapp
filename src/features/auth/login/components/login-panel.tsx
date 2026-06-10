@@ -22,13 +22,11 @@ export function LoginPanel() {
 
       {/* Branding */}
       <div className="relative z-10 flex h-full w-full flex-col justify-between">
-        <span className="text-[10px] font-semibold tracking-[0.2em] text-white/30 uppercase">
-          Sistema Interno
-        </span>
+        <span className="text-[10px] font-semibold tracking-[0.2em] text-white/30 uppercase">Sistema Interno</span>
 
         <div className="max-w-xs">
           <h2 className="font-heading mb-3 text-3xl leading-[1.1] font-bold tracking-tight text-white/95">
-            Full Calzados
+            Full Calzado
             <br />
             <span className="text-primary">C.A</span>
           </h2>

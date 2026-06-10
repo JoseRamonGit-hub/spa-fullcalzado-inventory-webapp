@@ -1,8 +1,9 @@
 import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import babel from "@rolldown/plugin-babel";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -14,22 +15,8 @@ export default defineConfig({
       target: "react",
       autoCodeSplitting: true,
     }),
-    react({
-      babel: {
-        plugins: [
-          [
-            "babel-plugin-react-compiler",
-            {
-              // Only compile app source files — skip node_modules.
-              // Prevents useMemoCache crashes in third-party libs (e.g. Sonner).
-              sources: (filename: string) => {
-                return filename.includes("src");
-              },
-            },
-          ],
-        ],
-      },
-    }),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
   ],
   resolve: {

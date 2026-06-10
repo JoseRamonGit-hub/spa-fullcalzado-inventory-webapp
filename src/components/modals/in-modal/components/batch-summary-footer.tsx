@@ -49,7 +49,7 @@ export function BatchSummaryFooter({
           label={
             isSubmissionPending
               ? "Procesando..."
-              : `Cargar ${!hasNoItems ? pendingBatchItems.length : ""} item${pendingBatchItems.length !== 1 ? "s" : ""}`
+              : `Cargar ${!hasNoItems ? pendingBatchItems.length : ""} producto${pendingBatchItems.length !== 1 ? "s" : ""}`
           }
           disabled={hasNoItems || isSubmissionPending}
           onClick={onOpenConfirmDialog}
