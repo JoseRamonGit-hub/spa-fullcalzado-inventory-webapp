@@ -1,12 +1,16 @@
 import { supabase } from "@/lib/supabase";
-import type { TransactionWithRelations, TransactionInsert } from "@/types/index";
+import type { TransactionWithRelations, TransactionCreateInput } from "@/types/index";
 import { formatDateForBackend } from "@/utils/formatters";
 
 const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as const;
 
 export const transactionsService = {
-  getAll: async (date?: string): Promise<TransactionWithRelations[]> => {
-    let query = supabase.from("transactions").select(TRANSACTION_SELECT).order("created_at", { ascending: false });
+  getAll: async (businessId: string, date?: string): Promise<TransactionWithRelations[]> => {
+    let query = supabase
+      .from("transactions")
+      .select(TRANSACTION_SELECT)
+      .eq("business_id", businessId)
+      .order("created_at", { ascending: false });
 
     if (date) {
       query = query.eq("date", date);
@@ -23,12 +27,13 @@ export const transactionsService = {
     return data;
   },
 
-  getToday: async (): Promise<TransactionWithRelations[]> => {
+  getToday: async (businessId: string): Promise<TransactionWithRelations[]> => {
     const today = formatDateForBackend(new Date());
 
     const { data, error } = await supabase
       .from("transactions")
       .select(TRANSACTION_SELECT)
+      .eq("business_id", businessId)
       .eq("date", today)
       .order("time", { ascending: false });
 
@@ -36,15 +41,11 @@ export const transactionsService = {
     return data;
   },
 
-  create: async (payload: TransactionInsert): Promise<TransactionWithRelations> => {
-    const { data, error } = await supabase.from("transactions").insert(payload).select(TRANSACTION_SELECT).single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  },
-
-  createMany: async (payload: TransactionInsert[]): Promise<TransactionWithRelations[]> => {
-    const { data, error } = await supabase.from("transactions").insert(payload).select(TRANSACTION_SELECT);
+  createMany: async (businessId: string, payload: TransactionCreateInput[]): Promise<TransactionWithRelations[]> => {
+    const { data, error } = await supabase
+      .from("transactions")
+      .insert(payload.map((transaction) => ({ ...transaction, business_id: businessId })))
+      .select(TRANSACTION_SELECT);
 
     if (error) throw new Error(error.message);
     return data;

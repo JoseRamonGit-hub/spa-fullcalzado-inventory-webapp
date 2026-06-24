@@ -1,17 +1,15 @@
-import "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { queryClient } from "@/lib/queryClient";
+import { authService } from "@/services/authService";
 
-// Redeploy
-// Create router
 const router = createRouter({ routeTree });
 
-// Register the router instance for type safety
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
@@ -29,10 +27,13 @@ declare module "@tanstack/react-router" {
  * This listener only handles TOKEN_REFRESHED to keep the user profile
  * in sync when Supabase silently refreshes the JWT.
  */
-supabase.auth.onAuthStateChange((event, session) => {
+const {
+  data: { subscription: authSubscription },
+} = supabase.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT") {
     // Session was terminated (user logged out, session expired, or revoked)
     useAuthStore.getState().clearAuth();
+    useBusinessStore.getState().clear();
     queryClient.clear();
 
     // Kick user out of protected routes immediately
@@ -46,7 +47,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     // Dispatch them asynchronously outside this event loop tick.
     setTimeout(async () => {
       try {
-        const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();
+        const profile = await authService.getProfile(session.user.id);
 
         if (profile) {
           useAuthStore.getState().setAuth(profile);
@@ -57,6 +58,10 @@ supabase.auth.onAuthStateChange((event, session) => {
     }, 0);
   }
 });
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => authSubscription.unsubscribe());
+}
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>

@@ -13,9 +13,33 @@
 --   - historical cash closes for previous days
 --
 -- Login credentials for all seeded users: password123
+-- Assignments:
+--   maria@tienda.com  -> admin, can access both businesses, defaults to Full
+--   carlos@tienda.com -> employee, Full Calzado
+--   ana@tienda.com    -> employee, Full Calzado + Zapatería Estilos, defaults to Full
+--   luis@tienda.com   -> employee, Zapatería Estilos
 -- ============================================================================
 
 BEGIN;
+
+-- The production migration intentionally leaves tenant columns without a
+-- default. Temporary defaults keep this historical dataset readable while
+-- making every omitted business_id belong to Full Calzado. They are removed
+-- before COMMIT.
+ALTER TABLE public.products
+  ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
+ALTER TABLE public.inventory_movements
+  ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
+ALTER TABLE public.transactions
+  ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
+ALTER TABLE public.returns
+  ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
+ALTER TABLE public.return_items
+  ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
+ALTER TABLE public.cash_closes
+  ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
+ALTER TABLE public.exchange_rates
+  ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
 
 -- ─── 0. Cleanup previous seeded rows ─────────────────────────────────────────
 
@@ -34,7 +58,9 @@ WHERE product_id IN (
   'b0000000-0000-0000-0000-000000000011',
   'b0000000-0000-0000-0000-000000000012',
   'b0000000-0000-0000-0000-000000000013',
-  'b0000000-0000-0000-0000-000000000014'
+  'b0000000-0000-0000-0000-000000000014',
+  'b1000000-0000-0000-0000-000000000001',
+  'b1000000-0000-0000-0000-000000000002'
 )
 OR return_id IN (
   SELECT id
@@ -63,7 +89,8 @@ WHERE id IN (
   'd0000000-0000-0000-0000-000000000013',
   'd0000000-0000-0000-0000-000000000014',
   'd0000000-0000-0000-0000-000000000015',
-  'd0000000-0000-0000-0000-000000000016'
+  'd0000000-0000-0000-0000-000000000016',
+  'd1000000-0000-0000-0000-000000000001'
 )
 OR return_id IN (
   SELECT id
@@ -98,17 +125,24 @@ WHERE id IN (
   'e0000000-0000-0000-0000-000000000001',
   'e0000000-0000-0000-0000-000000000002',
   'e0000000-0000-0000-0000-000000000003'
-);
+)
+OR business_id = '10000000-0000-0000-0000-000000000002';
 
 DELETE FROM public.exchange_rates
 WHERE id IN (
   'f0000000-0000-0000-0000-000000000001',
   'f0000000-0000-0000-0000-000000000002',
   'f0000000-0000-0000-0000-000000000003',
-  'f0000000-0000-0000-0000-000000000004'
-);
+  'f0000000-0000-0000-0000-000000000004',
+  'f1000000-0000-0000-0000-000000000001'
+)
+OR business_id = '10000000-0000-0000-0000-000000000002';
 
-DELETE FROM public.app_settings WHERE id = 1;
+DELETE FROM public.app_settings
+WHERE business_id IN (
+  '10000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002'
+);
 
 DELETE FROM public.products
 WHERE code IN (
@@ -125,7 +159,9 @@ WHERE code IN (
   'VN-41',
   'AS-35',
   'DC-40',
-  'OT-42'
+  'OT-42',
+  'NK-39',
+  'EST-40'
 );
 
 DELETE FROM auth.identities
@@ -172,7 +208,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'maria@tienda.com',
-    crypt('password123', gen_salt('bf')),
+    extensions.crypt('password123', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}',
     '{"fullname":"Maria Admin"}',
@@ -186,7 +222,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'carlos@tienda.com',
-    crypt('password123', gen_salt('bf')),
+    extensions.crypt('password123', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}',
     '{"fullname":"Carlos Perez"}',
@@ -200,7 +236,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'ana@tienda.com',
-    crypt('password123', gen_salt('bf')),
+    extensions.crypt('password123', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}',
     '{"fullname":"Ana Morales"}',
@@ -214,7 +250,7 @@ INSERT INTO auth.users (
     'authenticated',
     'authenticated',
     'luis@tienda.com',
-    crypt('password123', gen_salt('bf')),
+    extensions.crypt('password123', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}',
     '{"fullname":"Luis Rojas"}',
@@ -279,6 +315,7 @@ SET role = CASE id
     WHEN 'a0000000-0000-0000-0000-000000000001' THEN 'admin'::public.roles
     ELSE 'employee'::public.roles
   END,
+  is_active = true,
   created_at = CASE id
     WHEN 'a0000000-0000-0000-0000-000000000001' THEN now() - interval '30 days'
     WHEN 'a0000000-0000-0000-0000-000000000002' THEN now() - interval '24 days'
@@ -291,6 +328,59 @@ WHERE id IN (
   'a0000000-0000-0000-0000-000000000002',
   'a0000000-0000-0000-0000-000000000003',
   'a0000000-0000-0000-0000-000000000004'
+);
+
+UPDATE public.users
+SET default_business_id = CASE id
+    WHEN 'a0000000-0000-0000-0000-000000000004'
+      THEN '10000000-0000-0000-0000-000000000002'::uuid
+    ELSE '10000000-0000-0000-0000-000000000001'::uuid
+  END
+WHERE id IN (
+  'a0000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000002',
+  'a0000000-0000-0000-0000-000000000003',
+  'a0000000-0000-0000-0000-000000000004'
+);
+
+DELETE FROM public.user_business_access
+WHERE user_id IN (
+  'a0000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000002',
+  'a0000000-0000-0000-0000-000000000003',
+  'a0000000-0000-0000-0000-000000000004'
+);
+
+INSERT INTO public.user_business_access (user_id, business_id)
+VALUES
+  (
+    'a0000000-0000-0000-0000-000000000002',
+    '10000000-0000-0000-0000-000000000001'
+  ),
+  (
+    'a0000000-0000-0000-0000-000000000003',
+    '10000000-0000-0000-0000-000000000001'
+  ),
+  (
+    'a0000000-0000-0000-0000-000000000003',
+    '10000000-0000-0000-0000-000000000002'
+  ),
+  (
+    'a0000000-0000-0000-0000-000000000004',
+    '10000000-0000-0000-0000-000000000002'
+  );
+
+-- Trigger functions no longer invent a fallback actor. Seed operations that
+-- exercise application RPCs use an explicit authenticated identity.
+SELECT set_config(
+  'request.jwt.claim.sub',
+  'a0000000-0000-0000-0000-000000000001',
+  true
+);
+SELECT set_config(
+  'request.jwt.claims',
+  '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated"}',
+  true
 );
 
 -- ─── 2. Products ────────────────────────────────────────────────────────────
@@ -314,7 +404,7 @@ INSERT INTO public.products (
   ('b0000000-0000-0000-0000-000000000007', 'NB-43', 'New Balance 574 Core T43', 0, 53.00, true, now() - interval '14 days', now() - interval '14 days'),
   ('b0000000-0000-0000-0000-000000000008', 'RB-39', 'Reebok Classic Leather T39', 0, 41.00, true, now() - interval '13 days', now() - interval '13 days'),
   ('b0000000-0000-0000-0000-000000000009', 'SK-36', 'Skechers D-Lites T36', 0, 33.00, true, now() - interval '12 days', now() - interval '12 days'),
-  ('b0000000-0000-0000-0000-000000000010', 'CV-38', 'Converse Chuck Taylor T38', 0, 29.00, false, now() - interval '11 days', now() - interval '11 days'),
+  ('b0000000-0000-0000-0000-000000000010', 'CV-38', 'Converse Chuck Taylor T38', 0, 29.00, true, now() - interval '11 days', now() - interval '11 days'),
   ('b0000000-0000-0000-0000-000000000011', 'VN-41', 'Vans Old Skool T41', 0, 31.00, true, now() - interval '10 days', now() - interval '10 days'),
   ('b0000000-0000-0000-0000-000000000012', 'AS-35', 'Asics Gel-Contend T35', 0, 36.00, true, now() - interval '9 days', now() - interval '9 days'),
   ('b0000000-0000-0000-0000-000000000013', 'DC-40', 'DC Court Vulc T40', 0, 34.00, true, now() - interval '8 days', now() - interval '8 days'),
@@ -359,13 +449,20 @@ INSERT INTO public.exchange_rates (id, rate, source, updated_by, updated_at) VAL
   ('f0000000-0000-0000-0000-000000000003', 86.00, 'manual', 'a0000000-0000-0000-0000-000000000001', ((CURRENT_DATE - 3)::timestamp + time '08:30:00') AT TIME ZONE 'America/Caracas'),
   ('f0000000-0000-0000-0000-000000000004', 87.75, 'manual', 'a0000000-0000-0000-0000-000000000001', ((CURRENT_DATE - 1)::timestamp + time '08:00:00') AT TIME ZONE 'America/Caracas');
 
-INSERT INTO public.app_settings (id, exchange_rate_mode, updated_by, updated_at)
-VALUES (
-  1,
-  'manual',
-  'a0000000-0000-0000-0000-000000000001',
-  ((CURRENT_DATE - 1)::timestamp + time '08:05:00') AT TIME ZONE 'America/Caracas'
-);
+INSERT INTO public.app_settings (business_id, exchange_rate_mode, updated_by, updated_at)
+VALUES
+  (
+    '10000000-0000-0000-0000-000000000001',
+    'manual',
+    'a0000000-0000-0000-0000-000000000001',
+    ((CURRENT_DATE - 1)::timestamp + time '08:05:00') AT TIME ZONE 'America/Caracas'
+  ),
+  (
+    '10000000-0000-0000-0000-000000000002',
+    'manual',
+    'a0000000-0000-0000-0000-000000000004',
+    ((CURRENT_DATE - 1)::timestamp + time '08:10:00') AT TIME ZONE 'America/Caracas'
+  );
 
 -- ─── 4. Manual inventory entries / restocks ─────────────────────────────────
 
@@ -418,9 +515,9 @@ INSERT INTO public.transactions (
 -- ─── 6. Product edits ───────────────────────────────────────────────────────
 
 SELECT public.edit_product(
+  p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id := 'b0000000-0000-0000-0000-000000000008'::uuid,
-  p_price_usd  := 43.50,
-  p_user_id    := 'a0000000-0000-0000-0000-000000000001'::uuid
+  p_price_usd  := 43.50
 );
 
 WITH target AS (
@@ -442,11 +539,11 @@ SET updated_at = ((CURRENT_DATE - 1)::timestamp + time '18:10:00') AT TIME ZONE 
 WHERE id = 'b0000000-0000-0000-0000-000000000008';
 
 SELECT public.edit_product(
+  p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id  := 'b0000000-0000-0000-0000-000000000012'::uuid,
   p_description := 'Asics Gel-Contend T35 Edicion 2',
   p_price_usd   := 38.00,
-  p_stock       := 10,
-  p_user_id     := 'a0000000-0000-0000-0000-000000000001'::uuid
+  p_stock       := 10
 );
 
 WITH target AS (
@@ -470,11 +567,11 @@ WHERE id = 'b0000000-0000-0000-0000-000000000012';
 -- ─── 7. Returns and exchanges ───────────────────────────────────────────────
 
 SELECT public.process_return(
+  p_business_id   := '10000000-0000-0000-0000-000000000001'::uuid,
   p_type           := 'exchange',
   p_returned_items := '[{"product_id":"b0000000-0000-0000-0000-000000000001","quantity":1,"price_usd":45.00,"price_ves":3870.00}]'::jsonb,
   p_new_items      := '[{"product_id":"b0000000-0000-0000-0000-000000000003","quantity":1,"price_usd":56.00,"price_ves":4816.00}]'::jsonb,
   p_exchange_rate  := 86.00,
-  p_user_id        := 'a0000000-0000-0000-0000-000000000002'::uuid,
   p_notes          := 'Cambio talla cliente runner'
 );
 
@@ -501,11 +598,11 @@ WHERE return_id = (
 );
 
 SELECT public.process_return(
+  p_business_id   := '10000000-0000-0000-0000-000000000001'::uuid,
   p_type           := 'refund',
   p_returned_items := '[{"product_id":"b0000000-0000-0000-0000-000000000009","quantity":1,"price_usd":33.00,"price_ves":2895.75}]'::jsonb,
   p_new_items      := NULL,
   p_exchange_rate  := 87.75,
-  p_user_id        := 'a0000000-0000-0000-0000-000000000001'::uuid,
   p_notes          := 'Reintegro por defecto de fabrica'
 );
 
@@ -524,11 +621,11 @@ WHERE return_id = (
 );
 
 SELECT public.process_return(
+  p_business_id   := '10000000-0000-0000-0000-000000000001'::uuid,
   p_type           := 'exchange',
   p_returned_items := '[{"product_id":"b0000000-0000-0000-0000-000000000007","quantity":1,"price_usd":53.00,"price_ves":4650.75}]'::jsonb,
   p_new_items      := '[{"product_id":"b0000000-0000-0000-0000-000000000011","quantity":1,"price_usd":31.00,"price_ves":2720.25}]'::jsonb,
   p_exchange_rate  := 87.75,
-  p_user_id        := 'a0000000-0000-0000-0000-000000000001'::uuid,
   p_notes          := 'Cambio administrado con saldo a favor'
 );
 
@@ -558,6 +655,7 @@ WHERE return_id = (
 
 INSERT INTO public.cash_closes (
   id,
+  business_id,
   date,
   total_transactions,
   total_units_sold,
@@ -572,32 +670,79 @@ INSERT INTO public.cash_closes (
 )
 SELECT
   seed.id,
+  '10000000-0000-0000-0000-000000000001'::uuid,
   seed.close_date,
-  COALESCE((SELECT count(*) FROM public.transactions t WHERE t.date = seed.close_date), 0),
-  COALESCE((SELECT sum(quantity) FROM public.transactions t WHERE t.date = seed.close_date), 0),
-  COALESCE((SELECT sum(total_usd) FROM public.transactions t WHERE t.date = seed.close_date), 0)
-    - COALESCE((SELECT sum(credit_usd) FROM public.returns r WHERE r.date = seed.close_date), 0),
-  COALESCE((SELECT sum(total_ves) FROM public.transactions t WHERE t.date = seed.close_date), 0)
-    - COALESCE((SELECT sum(credit_ves) FROM public.returns r WHERE r.date = seed.close_date), 0),
+  COALESCE((
+    SELECT count(*)
+    FROM public.transactions t
+    WHERE t.business_id = '10000000-0000-0000-0000-000000000001'
+      AND t.date = seed.close_date
+  ), 0),
+  COALESCE((
+    SELECT sum(quantity)
+    FROM public.transactions t
+    WHERE t.business_id = '10000000-0000-0000-0000-000000000001'
+      AND t.date = seed.close_date
+  ), 0),
+  COALESCE((
+    SELECT sum(total_usd)
+    FROM public.transactions t
+    WHERE t.business_id = '10000000-0000-0000-0000-000000000001'
+      AND t.date = seed.close_date
+  ), 0)
+    - COALESCE((
+      SELECT sum(credit_usd)
+      FROM public.returns r
+      WHERE r.business_id = '10000000-0000-0000-0000-000000000001'
+        AND r.date = seed.close_date
+    ), 0),
+  COALESCE((
+    SELECT sum(total_ves)
+    FROM public.transactions t
+    WHERE t.business_id = '10000000-0000-0000-0000-000000000001'
+      AND t.date = seed.close_date
+  ), 0)
+    - COALESCE((
+      SELECT sum(credit_ves)
+      FROM public.returns r
+      WHERE r.business_id = '10000000-0000-0000-0000-000000000001'
+        AND r.date = seed.close_date
+    ), 0),
   COALESCE((
     SELECT er.rate
     FROM public.exchange_rates er
-    WHERE er.updated_at <= seed.closed_at
+    WHERE er.business_id = '10000000-0000-0000-0000-000000000001'
+      AND er.updated_at <= seed.closed_at
     ORDER BY er.updated_at DESC
     LIMIT 1
   ), 0),
   'a0000000-0000-0000-0000-000000000001',
   seed.closed_at,
-  COALESCE((SELECT count(*) FROM public.returns r WHERE r.date = seed.close_date), 0),
-  COALESCE((SELECT sum(credit_usd) FROM public.returns r WHERE r.date = seed.close_date), 0),
-  COALESCE((SELECT sum(credit_ves) FROM public.returns r WHERE r.date = seed.close_date), 0)
+  COALESCE((
+    SELECT count(*)
+    FROM public.returns r
+    WHERE r.business_id = '10000000-0000-0000-0000-000000000001'
+      AND r.date = seed.close_date
+  ), 0),
+  COALESCE((
+    SELECT sum(credit_usd)
+    FROM public.returns r
+    WHERE r.business_id = '10000000-0000-0000-0000-000000000001'
+      AND r.date = seed.close_date
+  ), 0),
+  COALESCE((
+    SELECT sum(credit_ves)
+    FROM public.returns r
+    WHERE r.business_id = '10000000-0000-0000-0000-000000000001'
+      AND r.date = seed.close_date
+  ), 0)
 FROM (
   VALUES
     ('e0000000-0000-0000-0000-000000000001'::uuid, CURRENT_DATE - 3, ((CURRENT_DATE - 3)::timestamp + time '18:30:00') AT TIME ZONE 'America/Caracas'),
     ('e0000000-0000-0000-0000-000000000002'::uuid, CURRENT_DATE - 2, ((CURRENT_DATE - 2)::timestamp + time '18:30:00') AT TIME ZONE 'America/Caracas'),
     ('e0000000-0000-0000-0000-000000000003'::uuid, CURRENT_DATE - 1, ((CURRENT_DATE - 1)::timestamp + time '18:30:00') AT TIME ZONE 'America/Caracas')
 ) AS seed(id, close_date, closed_at)
-ON CONFLICT (date) DO UPDATE SET
+ON CONFLICT (business_id, date) DO UPDATE SET
   total_transactions = EXCLUDED.total_transactions,
   total_units_sold = EXCLUDED.total_units_sold,
   total_usd = EXCLUDED.total_usd,
@@ -608,5 +753,116 @@ ON CONFLICT (date) DO UPDATE SET
   total_returns = EXCLUDED.total_returns,
   total_returns_usd = EXCLUDED.total_returns_usd,
   total_returns_ves = EXCLUDED.total_returns_ves;
+
+-- ─── 9. Zapatería Estilos isolated dataset ──────────────────────────────────
+
+SELECT set_config('app.suppress_log_entry', 'false', true);
+
+SELECT set_config(
+  'request.jwt.claim.sub',
+  'a0000000-0000-0000-0000-000000000004',
+  true
+);
+SELECT set_config(
+  'request.jwt.claims',
+  '{"sub":"a0000000-0000-0000-0000-000000000004","role":"authenticated"}',
+  true
+);
+
+INSERT INTO public.products (
+  id,
+  business_id,
+  code,
+  description,
+  stock,
+  price_usd,
+  active,
+  created_at,
+  updated_at
+) VALUES
+  (
+    'b1000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000002',
+    'NK-39',
+    'Nike Air Max 90 T39 - Estilos',
+    8,
+    47.00,
+    true,
+    now() - interval '2 days',
+    now() - interval '2 days'
+  ),
+  (
+    'b1000000-0000-0000-0000-000000000002',
+    '10000000-0000-0000-0000-000000000002',
+    'EST-40',
+    'Mocasín clásico T40',
+    5,
+    42.00,
+    true,
+    now() - interval '1 day',
+    now() - interval '1 day'
+  );
+
+INSERT INTO public.exchange_rates (
+  id,
+  business_id,
+  rate,
+  source,
+  updated_by,
+  updated_at
+) VALUES (
+  'f1000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002',
+  88.25,
+  'manual',
+  'a0000000-0000-0000-0000-000000000004',
+  ((CURRENT_DATE)::timestamp + time '08:15:00') AT TIME ZONE 'America/Caracas'
+);
+
+INSERT INTO public.transactions (
+  id,
+  business_id,
+  product_id,
+  quantity,
+  price_usd,
+  price_ves,
+  exchange_rate,
+  user_id,
+  date,
+  time,
+  created_at
+) VALUES (
+  'd1000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002',
+  'b1000000-0000-0000-0000-000000000001',
+  1,
+  47.00,
+  4147.75,
+  88.25,
+  'a0000000-0000-0000-0000-000000000004',
+  CURRENT_DATE,
+  '11:20:00',
+  ((CURRENT_DATE)::timestamp + time '11:20:00') AT TIME ZONE 'America/Caracas'
+);
+
+SELECT public.generate_daily_cash_close(
+  p_business_id := '10000000-0000-0000-0000-000000000002'::uuid
+);
+
+-- Restore the production contract: every application write must provide its
+-- business explicitly.
+ALTER TABLE public.products ALTER COLUMN business_id DROP DEFAULT;
+ALTER TABLE public.inventory_movements ALTER COLUMN business_id DROP DEFAULT;
+ALTER TABLE public.transactions ALTER COLUMN business_id DROP DEFAULT;
+ALTER TABLE public.returns ALTER COLUMN business_id DROP DEFAULT;
+ALTER TABLE public.return_items ALTER COLUMN business_id DROP DEFAULT;
+ALTER TABLE public.cash_closes ALTER COLUMN business_id DROP DEFAULT;
+ALTER TABLE public.exchange_rates ALTER COLUMN business_id DROP DEFAULT;
+
+UPDATE auth.users SET
+  email_change           = COALESCE(email_change, ''),
+  email_change_token_new = COALESCE(email_change_token_new, ''),
+  recovery_token         = COALESCE(recovery_token, ''),
+  confirmation_token     = COALESCE(confirmation_token, '');
 
 COMMIT;

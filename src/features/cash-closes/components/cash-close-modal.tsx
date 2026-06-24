@@ -1,5 +1,5 @@
 import { Lock, Hash, DollarSign, Banknote, ShoppingCart, AlertTriangle, IterationCcw } from "lucide-react";
-import { ResponsiveAlertModal } from "@/components/ResponsiveAlertModal";
+import { ResponsiveAlertModal } from "@/components/modals/shared/responsive-alert-modal";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { CashCloseMetrics } from "./metrics-summary";
 
@@ -22,11 +22,10 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
       title="Confirmar Cierre de Caja"
       description="Estás a punto de cerrar el día de hoy. Esta acción consolidará todas las ventas y devoluciones registradas."
       confirmLabel="Sí, cerrar el día"
-      cancelLabel="Cancelar"
       isPending={isPending}
       onConfirm={onConfirm}
     >
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3">
         <header className="bg-primary/8 border-primary/20 flex items-center gap-3 rounded-lg border px-4 py-3">
           <div className="bg-primary/15 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
             <Lock className="text-primary h-5 w-5" aria-hidden="true" />
@@ -40,7 +39,6 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           </div>
         </header>
 
-        {/* Sales summary */}
         <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
             <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
@@ -72,7 +70,6 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           </div>
         </div>
 
-        {/* Returns breakdown */}
         {hasReturns && (
           <>
             <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-orange-500/25">
@@ -99,7 +96,6 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
               </div>
             </div>
 
-            {/* Net totals */}
             <div className="bg-primary/8 border-primary/20 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
               <div className="flex flex-col gap-0.5 px-3 py-2.5">
                 <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">

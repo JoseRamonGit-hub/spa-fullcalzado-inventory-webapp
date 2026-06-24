@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent } from "react";
 
-interface ModalKeyboardShortcut {
+type ModalKeyboardShortcut = {
   key: string;
   altKey?: boolean;
   shiftKey?: boolean;
@@ -9,12 +9,12 @@ interface ModalKeyboardShortcut {
   when?: boolean;
   stopPropagation?: boolean;
   onTrigger: () => void;
-}
+};
 
-interface UseModalKeyboardShortcutsOptions {
+type UseModalKeyboardShortcutsOptions = {
   enabled: boolean;
   shortcuts: ModalKeyboardShortcut[];
-}
+};
 
 function matchesShortcut(event: KeyboardEvent, shortcut: ModalKeyboardShortcut) {
   return (

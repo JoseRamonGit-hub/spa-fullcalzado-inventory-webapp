@@ -30,24 +30,31 @@ export type Database = {
     Tables: {
       app_settings: {
         Row: {
+          business_id: string;
           exchange_rate_mode: Database["public"]["Enums"]["exchange_modes"] | null;
-          id: number;
           updated_at: string | null;
           updated_by: string | null;
         };
         Insert: {
+          business_id: string;
           exchange_rate_mode?: Database["public"]["Enums"]["exchange_modes"] | null;
-          id?: number;
           updated_at?: string | null;
           updated_by?: string | null;
         };
         Update: {
+          business_id?: string;
           exchange_rate_mode?: Database["public"]["Enums"]["exchange_modes"] | null;
-          id?: number;
           updated_at?: string | null;
           updated_by?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "app_settings_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: true;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "app_settings_updated_by_fkey";
             columns: ["updated_by"];
@@ -57,8 +64,36 @@ export type Database = {
           },
         ];
       };
+      businesses: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          name: string;
+          slug: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id: string;
+          is_active?: boolean;
+          name: string;
+          slug: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          slug?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       cash_closes: {
         Row: {
+          business_id: string;
           closed_at: string | null;
           closed_by: string;
           date: string;
@@ -73,6 +108,7 @@ export type Database = {
           total_ves: number;
         };
         Insert: {
+          business_id: string;
           closed_at?: string | null;
           closed_by: string;
           date?: string;
@@ -87,6 +123,7 @@ export type Database = {
           total_ves?: number;
         };
         Update: {
+          business_id?: string;
           closed_at?: string | null;
           closed_by?: string;
           date?: string;
@@ -102,6 +139,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "cash_closes_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "cash_closes_closed_by_fkey";
             columns: ["closed_by"];
             isOneToOne: false;
@@ -112,6 +156,7 @@ export type Database = {
       };
       exchange_rates: {
         Row: {
+          business_id: string;
           id: string;
           rate: number;
           source: Database["public"]["Enums"]["exchange_modes"];
@@ -119,6 +164,7 @@ export type Database = {
           updated_by: string | null;
         };
         Insert: {
+          business_id: string;
           id?: string;
           rate: number;
           source: Database["public"]["Enums"]["exchange_modes"];
@@ -126,6 +172,7 @@ export type Database = {
           updated_by?: string | null;
         };
         Update: {
+          business_id?: string;
           id?: string;
           rate?: number;
           source?: Database["public"]["Enums"]["exchange_modes"];
@@ -133,6 +180,13 @@ export type Database = {
           updated_by?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "exchange_rates_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "exchange_rates_updated_by_fkey";
             columns: ["updated_by"];
@@ -144,6 +198,7 @@ export type Database = {
       };
       inventory_movements: {
         Row: {
+          business_id: string;
           created_at: string | null;
           date: string;
           description_before: string | null;
@@ -159,6 +214,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          business_id: string;
           created_at?: string | null;
           date?: string;
           description_before?: string | null;
@@ -174,6 +230,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          business_id?: string;
           created_at?: string | null;
           date?: string;
           description_before?: string | null;
@@ -189,6 +246,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "inventory_movements_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "inventory_movements_product_id_fkey";
             columns: ["product_id"];
@@ -215,6 +279,7 @@ export type Database = {
       products: {
         Row: {
           active: boolean;
+          business_id: string;
           code: string;
           created_at: string | null;
           description: string;
@@ -225,6 +290,7 @@ export type Database = {
         };
         Insert: {
           active?: boolean;
+          business_id: string;
           code: string;
           created_at?: string | null;
           description: string;
@@ -235,6 +301,7 @@ export type Database = {
         };
         Update: {
           active?: boolean;
+          business_id?: string;
           code?: string;
           created_at?: string | null;
           description?: string;
@@ -243,10 +310,19 @@ export type Database = {
           stock?: number;
           updated_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "products_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       return_items: {
         Row: {
+          business_id: string;
           id: string;
           price_usd: number;
           price_ves: number;
@@ -255,6 +331,7 @@ export type Database = {
           return_id: string;
         };
         Insert: {
+          business_id: string;
           id?: string;
           price_usd: number;
           price_ves: number;
@@ -263,6 +340,7 @@ export type Database = {
           return_id: string;
         };
         Update: {
+          business_id?: string;
           id?: string;
           price_usd?: number;
           price_ves?: number;
@@ -271,6 +349,13 @@ export type Database = {
           return_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "return_items_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "return_items_product_id_fkey";
             columns: ["product_id"];
@@ -289,6 +374,7 @@ export type Database = {
       };
       returns: {
         Row: {
+          business_id: string;
           created_at: string | null;
           credit_usd: number;
           credit_ves: number;
@@ -303,6 +389,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          business_id: string;
           created_at?: string | null;
           credit_usd: number;
           credit_ves: number;
@@ -317,6 +404,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          business_id?: string;
           created_at?: string | null;
           credit_usd?: number;
           credit_ves?: number;
@@ -332,6 +420,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "returns_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "returns_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
@@ -342,6 +437,7 @@ export type Database = {
       };
       transactions: {
         Row: {
+          business_id: string;
           created_at: string | null;
           date: string;
           exchange_rate: number;
@@ -357,6 +453,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          business_id: string;
           created_at?: string | null;
           date?: string;
           exchange_rate: number;
@@ -372,6 +469,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          business_id?: string;
           created_at?: string | null;
           date?: string;
           exchange_rate?: number;
@@ -387,6 +485,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "transactions_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "transactions_product_id_fkey";
             columns: ["product_id"];
@@ -410,52 +515,119 @@ export type Database = {
           },
         ];
       };
+      user_business_access: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_business_access_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_business_access_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       users: {
         Row: {
           created_at: string | null;
+          default_business_id: string;
           email: string;
           fullname: string;
           id: string;
+          is_active: boolean;
           role: Database["public"]["Enums"]["roles"];
           updated_at: string | null;
         };
         Insert: {
           created_at?: string | null;
+          default_business_id: string;
           email: string;
           fullname: string;
           id: string;
+          is_active?: boolean;
           role?: Database["public"]["Enums"]["roles"];
           updated_at?: string | null;
         };
         Update: {
           created_at?: string | null;
+          default_business_id?: string;
           email?: string;
           fullname?: string;
           id?: string;
+          is_active?: boolean;
           role?: Database["public"]["Enums"]["roles"];
           updated_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "users_default_business_id_fkey";
+            columns: ["default_business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      admin_set_user_business_access: {
+        Args: {
+          p_business_ids: string[];
+          p_default_business_id: string;
+          p_user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["users"]["Row"];
+      };
+      admin_update_user: {
+        Args: {
+          p_business_ids: string[];
+          p_default_business_id: string;
+          p_fullname: string;
+          p_is_active: boolean;
+          p_role: Database["public"]["Enums"]["roles"];
+          p_user_id: string;
+        };
+        Returns: Database["public"]["Tables"]["users"]["Row"];
+      };
       edit_product: {
         Args: {
+          p_business_id: string;
           p_code?: string;
           p_description?: string;
           p_price_usd?: number;
           p_product_id: string;
           p_stock?: number;
-          p_user_id?: string;
         };
         Returns: Json;
       };
       generate_daily_cash_close: {
-        Args: { p_user_id: string };
+        Args: { p_business_id: string };
         Returns: {
+          business_id: string;
           closed_at: string | null;
           closed_by: string;
           date: string;
@@ -478,14 +650,22 @@ export type Database = {
       };
       process_return: {
         Args: {
+          p_business_id: string;
           p_exchange_rate?: number;
           p_new_items?: Json;
           p_notes?: string;
           p_returned_items: Json;
           p_type: string;
-          p_user_id?: string;
         };
         Returns: Json;
+      };
+      set_product_active: {
+        Args: {
+          p_active: boolean;
+          p_business_id: string;
+          p_product_id: string;
+        };
+        Returns: undefined;
       };
     };
     Enums: {

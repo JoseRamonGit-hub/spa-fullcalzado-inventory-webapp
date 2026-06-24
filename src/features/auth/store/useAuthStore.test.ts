@@ -58,8 +58,6 @@ describe("Auth Store", () => {
   beforeEach(() => {
     useAuthStore.setState({
       user: null,
-      isAuthenticated: false,
-      isInitialized: false,
     });
   });
 
@@ -68,12 +66,10 @@ describe("Auth Store", () => {
   // ═══════════════════════════════════════════════════════════
 
   describe("estado inicial", () => {
-    it("empieza sin usuario, no autenticado, no inicializado", () => {
+    it("empieza sin usuario y no autenticado", () => {
       const state = useAuthStore.getState();
 
       expect(state.user).toBeNull();
-      expect(state.isAuthenticated).toBe(false);
-      expect(state.isInitialized).toBe(false);
     });
   });
 
@@ -82,15 +78,13 @@ describe("Auth Store", () => {
   // ═══════════════════════════════════════════════════════════
 
   describe("setAuth()", () => {
-    it("establece el usuario y marca como autenticado e inicializado", () => {
+    it("establece el usuario y marca como autenticado", () => {
       // ACT: llamamos setAuth con nuestro usuario fake
       useAuthStore.getState().setAuth(mockUser);
 
-      // ASSERT: verificamos los 3 campos
+      // ASSERT
       const state = useAuthStore.getState();
       expect(state.user).toEqual(mockUser); // toEqual compara objetos por contenido
-      expect(state.isAuthenticated).toBe(true);
-      expect(state.isInitialized).toBe(true);
     });
 
     it("puede reemplazar un usuario existente", () => {
@@ -112,7 +106,7 @@ describe("Auth Store", () => {
   // ═══════════════════════════════════════════════════════════
 
   describe("clearAuth()", () => {
-    it("limpia el usuario y marca como no autenticado, pero MANTIENE isInitialized", () => {
+    it("limpia el usuario y marca como no autenticado", () => {
       // ARRANGE: partimos de un estado autenticado
       useAuthStore.getState().setAuth(mockUser);
 
@@ -122,11 +116,6 @@ describe("Auth Store", () => {
       // ASSERT
       const state = useAuthStore.getState();
       expect(state.user).toBeNull();
-      expect(state.isAuthenticated).toBe(false);
-      // ⚡ isInitialized se queda en true — esto es intencional.
-      // Significa "ya intentamos verificar la sesión" (aunque no hubiera una).
-      // Esto evita que __root.tsx vuelva a llamar a getAuthenticatedProfile().
-      expect(state.isInitialized).toBe(true);
     });
   });
 
@@ -140,16 +129,14 @@ describe("Auth Store", () => {
 
       // Login
       setAuth(mockUser);
-      expect(useAuthStore.getState().isAuthenticated).toBe(true);
+      expect(useAuthStore.getState().user).toEqual(mockUser);
 
       // Logout
       clearAuth();
-      expect(useAuthStore.getState().isAuthenticated).toBe(false);
       expect(useAuthStore.getState().user).toBeNull();
 
       // Login de nuevo (mismo usuario u otro)
       setAuth(mockUser);
-      expect(useAuthStore.getState().isAuthenticated).toBe(true);
       expect(useAuthStore.getState().user).toEqual(mockUser);
     });
   });

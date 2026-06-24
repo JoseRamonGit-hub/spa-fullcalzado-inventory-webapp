@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
 
-interface ReturnItemsPanelProps {
+type ReturnItemsPanelProps = {
   returnItems: readonly PendingReturnItem[];
   exchangeItems: readonly PendingExchangeItem[];
   onRemoveReturnItem: (id: string) => void;
   onRemoveExchangeItem: (id: string) => void;
-}
+};
 
 function ItemRow({
   code,

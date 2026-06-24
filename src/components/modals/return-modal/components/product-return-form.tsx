@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import { useAppForm } from "@/hooks/form";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -11,9 +11,9 @@ const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
 const REQUIRED_FIELD_ERROR = "Requerido";
 const MINIMUM_VALUE_ERROR = "Mín. 1";
 
-interface ProductReturnFormProps {
+type ProductReturnFormProps = {
   currentExchangeRate: number;
-  isExchangeRateReady?: boolean;
+  isExchangeRateReady: boolean;
   requireStock?: boolean;
   onAddItem: (item: {
     productId: string;
@@ -24,11 +24,11 @@ interface ProductReturnFormProps {
     priceVes: number;
     availableStock: number;
   }) => void;
-}
+};
 
 export function ProductReturnForm({
   currentExchangeRate,
-  isExchangeRateReady = true,
+  isExchangeRateReady,
   requireStock = false,
   onAddItem,
 }: ProductReturnFormProps) {
@@ -62,26 +62,23 @@ export function ProductReturnForm({
     },
   });
 
-  const handleFormSubmit = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      form.handleSubmit();
-    },
-    [form],
-  );
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    form.handleSubmit();
+  };
 
-  const handleAfterProductSelection = useCallback(() => {
+  const handleAfterProductSelection = () => {
     form.setFieldValue("quantity", 0);
     focusFirstNumberInput(formRef.current);
-  }, [form]);
+  };
 
-  const handleProductClear = useCallback(() => {
+  const handleProductClear = () => {
     form.setFieldValue("quantity", 0);
-  }, [form]);
+  };
 
   return (
-    <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-2">
+    <form ref={formRef} onSubmit={handleFormSubmit} className="flex flex-col gap-2">
       <fieldset disabled={!isExchangeRateReady} className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end">
         <div className="min-w-0 flex-1">
           <form.AppField

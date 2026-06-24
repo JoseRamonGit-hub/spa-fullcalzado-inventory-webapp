@@ -1,47 +1,47 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsService } from "@/services/productsService";
 import { productKeys } from "./useProductQueries";
-import type { ProductInsert, EditProductPayload } from "@/types/index";
-
-export function useCreateProduct() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: ProductInsert) => productsService.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-    },
-  });
-}
+import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
+import type { ProductCreateInput, EditProductPayload } from "@/types/index";
+import { activeBusinessMutationOptions } from "@/features/business/utils/active-business-mutation";
 
 export function useCreateManyProducts() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (payload: ProductInsert[]) => productsService.createMany(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+    ...activeBusinessMutationOptions((businessId, payload: ProductCreateInput[]) =>
+      productsService.createMany(businessId, payload),
+    ),
+    onSuccess: (_, __, { businessId }) => {
+      queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
+      queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
     },
   });
 }
 
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (payload: EditProductPayload) => productsService.editProduct(payload),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: productKeys.detail(variables.p_product_id) });
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: ["movements"] });
+    ...activeBusinessMutationOptions((businessId, payload: EditProductPayload) =>
+      productsService.editProduct(businessId, payload),
+    ),
+    onSuccess: (_, __, { businessId }) => {
+      queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
+      queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
     },
   });
 }
 
 export function useToggleProductActive() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ id, active }: { id: string; active: boolean }) => productsService.toggleActive(id, active),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: productKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+    ...activeBusinessMutationOptions((businessId, { id, active }: { id: string; active: boolean }) =>
+      productsService.toggleActive(businessId, id, active),
+    ),
+    onSuccess: (_, __, { businessId }) => {
+      queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
     },
   });
 }

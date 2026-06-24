@@ -85,13 +85,11 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 
 const DialogFooter = ({
   leftContent,
-  showCloseButton = false,
   className,
   children,
   ...props
 }: React.ComponentProps<"div"> & {
   leftContent?: React.ReactNode;
-  showCloseButton?: boolean;
 }) => (
   <div
     data-slot="dialog-footer"
@@ -102,14 +100,7 @@ const DialogFooter = ({
     {...props}
   >
     {leftContent ? <div className="hidden items-center gap-2 text-xs text-gray-500 sm:flex">{leftContent}</div> : null}
-    {/* <div className={cn("flex items-center justify-end gap-2")}> */}
     {children}
-    {/*       {showCloseButton && (
-        <DialogPrimitive.Close asChild>
-          <Button variant="outline">Close</Button>
-        </DialogPrimitive.Close>
-      )} */}
-    {/* </div> */}
   </div>
 );
 DialogFooter.displayName = "DialogFooter";

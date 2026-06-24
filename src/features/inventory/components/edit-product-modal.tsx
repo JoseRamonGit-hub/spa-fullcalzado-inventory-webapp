@@ -1,7 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { ResponsiveModal } from "@/components/ResponsiveModal";
+import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
 import { Button } from "@/components/ui/button";
 import {
   ConfirmDialogSummarySection,
@@ -80,7 +80,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
     },
   });
 
-  const handleConfirmSubmit = useCallback(() => {
+  const handleConfirmSubmit = () => {
     if (!pendingValues || !currentUser) return;
 
     const promise = updateProduct.mutateAsync(
@@ -90,7 +90,6 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
         p_description: pendingValues.description.trim(),
         p_price_usd: pendingValues.priceUsd,
         p_stock: pendingValues.stock,
-        p_user_id: currentUser.id,
       },
       {
         onSuccess: () => {
@@ -106,7 +105,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
       success: "Producto actualizado correctamente",
       error: "Error al actualizar el producto",
     });
-  }, [pendingValues, currentUser, updateProduct, product.id, onOpenChange]);
+  };
 
   const handleModalClose = (isOpen: boolean) => {
     if (!isOpen) {
@@ -117,14 +116,11 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
     onOpenChange(isOpen);
   };
 
-  const handleFormSubmit = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      form.handleSubmit();
-    },
-    [form],
-  );
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    form.handleSubmit();
+  };
 
   const changedFields = pendingValues ? getChangedFields(product, pendingValues) : [];
 
@@ -134,6 +130,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
         open={open}
         onOpenChange={handleModalClose}
         title="Editar Producto"
+        description="Modifica la información del producto seleccionado."
         footer={
           <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (

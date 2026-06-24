@@ -4,13 +4,21 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useLogin } from "./useLogin";
 import { authService } from "@/services/authService";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { toast } from "sonner";
 import type { User } from "@/types";
 import type { ReactNode } from "react";
+import { businessesService } from "@/services/businessesService";
 
 vi.mock("@/services/authService", () => ({
   authService: {
     login: vi.fn(),
+  },
+}));
+
+vi.mock("@/services/businessesService", () => ({
+  businessesService: {
+    getAccessible: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -48,8 +56,11 @@ describe("useLogin", () => {
     vi.clearAllMocks();
     useAuthStore.setState({
       user: null,
-      isAuthenticated: false,
-      isInitialized: false,
+    });
+    useBusinessStore.setState({
+      userId: null,
+      activeBusinessId: null,
+      selectedBusinessByUser: {},
     });
   });
 
@@ -73,7 +84,7 @@ describe("useLogin", () => {
 
     const state = useAuthStore.getState();
     expect(state.user).toEqual(fakeUser);
-    expect(state.isAuthenticated).toBe(true);
+    expect(businessesService.getAccessible).toHaveBeenCalled();
 
     expect(mockNavigate).toHaveBeenCalledWith({ to: "/inventory" });
   });
@@ -96,7 +107,7 @@ describe("useLogin", () => {
       expect(result.current.isError).toBe(true);
     });
 
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+    expect(useAuthStore.getState().user).toBeNull();
 
     expect(mockToastError).toHaveBeenCalledWith("Credenciales incorrectas");
 
@@ -118,7 +129,7 @@ describe("useLogin", () => {
       expect(result.current.isError).toBe(true);
     });
 
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+    expect(useAuthStore.getState().user).toBeNull();
 
     expect(mockToastError).toHaveBeenCalledWith("Failed to fetch");
 

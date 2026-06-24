@@ -1,4 +1,4 @@
-import { ResponsiveAlertModal } from "@/components/ResponsiveAlertModal";
+import { ResponsiveAlertModal } from "@/components/modals/shared/responsive-alert-modal";
 import { useToggleProductActive } from "@/features/inventory/hooks/useProductMutations";
 import { toast } from "sonner";
 import type { Product } from "@/types";
@@ -38,7 +38,6 @@ export function ToggleStatusModal({ open, onOpenChange, product }: ToggleStatusM
       }
       onConfirm={handleConfirm}
       confirmLabel={isDeactivating ? "Desactivar" : "Reactivar"}
-      cancelLabel="Cancelar"
       variant={isDeactivating ? "danger" : "default"}
       isPending={toggleActive.isPending}
     />

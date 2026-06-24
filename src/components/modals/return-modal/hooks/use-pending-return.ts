@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
 import { usePendingItems } from "@/components/modals/shared/use-pending-items";
 
@@ -23,25 +22,14 @@ export function usePendingReturn() {
     clearExchangeItems();
   };
 
-  // ── Calculated totals ─────────────────────────────────────
-  const creditUsd = useMemo(() => returnItems.reduce((acc, item) => acc + item.totalUsd, INITIAL_TOTAL), [returnItems]);
-
-  const creditVes = useMemo(() => returnItems.reduce((acc, item) => acc + item.totalVes, INITIAL_TOTAL), [returnItems]);
-
-  const newPurchaseUsd = useMemo(
-    () => exchangeItems.reduce((acc, item) => acc + item.totalUsd, INITIAL_TOTAL),
-    [exchangeItems],
-  );
-
-  const newPurchaseVes = useMemo(
-    () => exchangeItems.reduce((acc, item) => acc + item.totalVes, INITIAL_TOTAL),
-    [exchangeItems],
-  );
+  const creditUsd = returnItems.reduce((acc, item) => acc + item.totalUsd, INITIAL_TOTAL);
+  const creditVes = returnItems.reduce((acc, item) => acc + item.totalVes, INITIAL_TOTAL);
+  const newPurchaseUsd = exchangeItems.reduce((acc, item) => acc + item.totalUsd, INITIAL_TOTAL);
+  const newPurchaseVes = exchangeItems.reduce((acc, item) => acc + item.totalVes, INITIAL_TOTAL);
 
   const differenceUsd = newPurchaseUsd - creditUsd;
   const differenceVes = newPurchaseVes - creditVes;
 
-  // Type is 'refund' if there are no exchange items, 'exchange' otherwise
   const returnType = exchangeItems.length > 0 ? "exchange" : "refund";
 
   return {

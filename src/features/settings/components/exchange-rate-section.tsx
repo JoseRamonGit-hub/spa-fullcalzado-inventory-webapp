@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign, History, TrendingUp } from "lucide-react";
-import { useExchangeRate, useExchangeRateHistory } from "@/features/exchange_rates/useExchangeRateQueries";
-import { useUpdateExchangeRate } from "@/features/exchange_rates/useExchangeRateMutations";
+import { useExchangeRate, useExchangeRateHistory } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
+import { useUpdateExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateMutations";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
 import { formatCurrencyVES, formatDateTime } from "@/utils/formatters";
@@ -45,8 +45,7 @@ export function ExchangeRateSection() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Current rate display */}
+    <div className="flex flex-col gap-4">
       <div className="bg-primary/8 -mx-3 flex items-center gap-3 px-3 py-3 md:-mx-4 md:px-4">
         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <DollarSign className="text-primary h-5 w-5" />
@@ -69,7 +68,6 @@ export function ExchangeRateSection() {
         )}
       </div>
 
-      {/* Update form */}
       <form onSubmit={handleSubmit} className="flex gap-2">
         <Input
           type="number"
@@ -87,7 +85,6 @@ export function ExchangeRateSection() {
         </Button>
       </form>
 
-      {/* History toggle */}
       <div>
         <button
           type="button"

@@ -1,6 +1,6 @@
 import { IterationCcw } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import type { PendingReturnItem, PendingExchangeItem } from "../types";
+import type { PendingReturnItem, PendingExchangeItem, ReturnSummary } from "../types";
 import {
   ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
@@ -9,37 +9,32 @@ import {
 } from "@/components/modals/shared/modal-ui";
 import { getStripedRowClass } from "@/components/modals/shared/modal-table-utils";
 
-interface ConfirmReturnDialogProps {
+type ConfirmReturnDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   returnItems: readonly PendingReturnItem[];
   exchangeItems: readonly PendingExchangeItem[];
-  returnType: "exchange" | "refund";
-  creditUsd: number;
-  differenceUsd: number;
-  differenceVes: number;
+  summary: ReturnSummary;
   currentExchangeRate: number;
   isExchangeRateLoading: boolean;
   isSubmissionPending: boolean;
   notes: string;
   onConfirmSubmit: () => void;
-}
+};
 
 export function ConfirmReturnDialog({
   isOpen,
   onOpenChange,
   returnItems,
   exchangeItems,
-  returnType,
-  creditUsd,
-  differenceUsd,
-  differenceVes,
+  summary,
   currentExchangeRate,
   isExchangeRateLoading,
   isSubmissionPending,
   notes,
   onConfirmSubmit,
 }: ConfirmReturnDialogProps) {
+  const { returnType, creditUsd, differenceUsd, differenceVes } = summary;
   const isExchange = returnType === "exchange";
   const isExchangeRateReady = currentExchangeRate > 0;
   const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";

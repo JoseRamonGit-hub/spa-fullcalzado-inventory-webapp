@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { PendingSale } from "../types";
 import { usePendingItems } from "@/components/modals/shared/use-pending-items";
 
@@ -16,15 +15,8 @@ export interface UsePendingSalesReturn {
 export function usePendingSales(): UsePendingSalesReturn {
   const { items: pendingSales, addItem, removeItem, clearItems } = usePendingItems<PendingSale>();
 
-  const totalAmountUsd = useMemo(
-    () => pendingSales.reduce((accumulator, sale) => accumulator + sale.totalUsd, INITIAL_TOTAL),
-    [pendingSales],
-  );
-
-  const totalAmountVes = useMemo(
-    () => pendingSales.reduce((accumulator, sale) => accumulator + sale.totalVes, INITIAL_TOTAL),
-    [pendingSales],
-  );
+  const totalAmountUsd = pendingSales.reduce((accumulator, sale) => accumulator + sale.totalUsd, INITIAL_TOTAL);
+  const totalAmountVes = pendingSales.reduce((accumulator, sale) => accumulator + sale.totalVes, INITIAL_TOTAL);
 
   return {
     pendingSales,

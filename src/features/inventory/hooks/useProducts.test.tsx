@@ -2,18 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useProducts, productKeys } from "./useProductQueries";
-import { useCreateProduct, useUpdateProduct, useToggleProductActive } from "./useProductMutations";
+import { useUpdateProduct, useToggleProductActive } from "./useProductMutations";
 import { productsService } from "@/services/productsService";
-import type { Product, ProductInsert, EditProductPayload } from "@/types";
+import type { Product, EditProductPayload } from "@/types";
 import type { ReactNode } from "react";
+import { useBusinessStore } from "@/features/business/store/useBusinessStore";
+import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
+
+const BUSINESS_ID = "business-1";
 
 // Mock the entire service
 vi.mock("@/services/productsService", () => ({
   productsService: {
     getAll: vi.fn(),
-    getById: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
     editProduct: vi.fn(),
     createMany: vi.fn(),
     toggleActive: vi.fn(),
@@ -21,12 +22,12 @@ vi.mock("@/services/productsService", () => ({
 }));
 
 const mockGetAll = vi.mocked(productsService.getAll);
-const mockCreate = vi.mocked(productsService.create);
 const mockEditProduct = vi.mocked(productsService.editProduct);
 const mockToggleActive = vi.mocked(productsService.toggleActive);
 
 const fakeProduct: Product = {
   id: "prod-1",
+  business_id: BUSINESS_ID,
   code: "SHO-01",
   description: "Zapatos Nike",
   price_usd: 120,
@@ -54,6 +55,11 @@ function createWrapper() {
 describe("useProducts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useBusinessStore.setState({
+      userId: "user-1",
+      activeBusinessId: BUSINESS_ID,
+      selectedBusinessByUser: {},
+    });
   });
 
   describe("Queries", () => {
@@ -69,35 +75,11 @@ describe("useProducts", () => {
       });
 
       expect(result.current.data).toEqual([fakeProduct]);
-      expect(mockGetAll).toHaveBeenCalledTimes(1);
+      expect(mockGetAll).toHaveBeenCalledWith(BUSINESS_ID, undefined);
     });
   });
 
   describe("Mutations", () => {
-    it("create product invalidates lists query", async () => {
-      mockCreate.mockResolvedValueOnce(fakeProduct);
-
-      const { result } = renderHook(() => useCreateProduct(), {
-        wrapper: createWrapper(),
-      });
-
-      // Spy on queryClient invalidateQueries
-      const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
-
-      const insertData: ProductInsert = { code: "SHO-01", description: "Zapatos Nike", price_usd: 120, stock: 10 };
-
-      act(() => {
-        result.current.mutate(insertData);
-      });
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      });
-
-      expect(mockCreate).toHaveBeenCalledWith(insertData);
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists() });
-    });
-
     it("update product invalidates lists, detail, and movements", async () => {
       mockEditProduct.mockResolvedValueOnce(undefined);
 
@@ -113,7 +95,6 @@ describe("useProducts", () => {
         p_description: "Zapatos Nike",
         p_price_usd: 150,
         p_stock: 10,
-        p_user_id: "user-1",
       };
 
       act(() => {
@@ -124,13 +105,12 @@ describe("useProducts", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockEditProduct).toHaveBeenCalledWith(editPayload);
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.detail("prod-1") });
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists() });
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["movements"] });
+      expect(mockEditProduct).toHaveBeenCalledWith(BUSINESS_ID, editPayload);
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists(BUSINESS_ID) });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: movementKeys.business(BUSINESS_ID) });
     });
 
-    it("toggle product active invalidates lists and specific detail query", async () => {
+    it("toggle product active invalidates product lists", async () => {
       mockToggleActive.mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useToggleProductActive(), {
@@ -147,9 +127,8 @@ describe("useProducts", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockToggleActive).toHaveBeenCalledWith("prod-1", false);
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.detail("prod-1") });
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists() });
+      expect(mockToggleActive).toHaveBeenCalledWith(BUSINESS_ID, "prod-1", false);
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists(BUSINESS_ID) });
     });
   });
 });

@@ -4,7 +4,6 @@ import { TextFieldGroup } from "@/components/forms/text-field-group";
 import { handleFormFocusError } from "@/utils/form-focus";
 import { NumberField } from "@/components/forms/number-field";
 import { ProductSearchField } from "@/components/forms/product-search-field";
-import { LoginSubscribeButton } from "@/components/login-subscribe-button";
 
 const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts();
 
@@ -15,9 +14,7 @@ const { useAppForm: useBaseAppForm } = createFormHook({
     NumberField,
     ProductSearchField,
   },
-  formComponents: {
-    LoginButton: LoginSubscribeButton,
-  },
+  formComponents: {},
   fieldContext,
   formContext,
 });

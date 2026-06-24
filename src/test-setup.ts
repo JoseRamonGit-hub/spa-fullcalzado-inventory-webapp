@@ -19,11 +19,12 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+const localStorageData = new Map<string, string>();
 const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+  getItem: vi.fn((key: string) => localStorageData.get(key) ?? null),
+  setItem: vi.fn((key: string, value: string) => localStorageData.set(key, value)),
+  removeItem: vi.fn((key: string) => localStorageData.delete(key)),
+  clear: vi.fn(() => localStorageData.clear()),
 };
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
 
@@ -56,6 +57,10 @@ vi.mock("@/lib/supabase", () => ({
         })),
       })),
     })),
+    rpc: vi.fn(),
+    functions: {
+      invoke: vi.fn(),
+    },
   },
 }));
 

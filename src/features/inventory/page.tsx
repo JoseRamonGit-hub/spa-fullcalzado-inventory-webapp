@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useProducts } from "./hooks/useProductQueries";
-import { useProductFilters } from "./hooks/useProductFilters";
+import { useProductSearch } from "./hooks/useProductSearch";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { getColumns } from "./columns";
@@ -10,7 +10,7 @@ import { MobileActionDrawer } from "./components/mobile-action-drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Product } from "@/types";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
+import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
 import { Route } from "@/routes/_app/inventory";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -27,11 +27,7 @@ export function InventoryPage() {
   const isMobile = useIsMobile();
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
 
-  const { searchInput, setSearchInput, filteredProducts } = useProductFilters(products);
-
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value);
-  };
+  const { searchInput, setSearchInput, filteredProducts } = useProductSearch(products);
 
   // Action modals state
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -63,7 +59,7 @@ export function InventoryPage() {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <Topbar search={searchInput} onSearchChange={handleSearchChange} date={date} onDateChange={setDate} />
+      <Topbar search={searchInput} onSearchChange={setSearchInput} date={date} onDateChange={setDate} />
 
       {isLoading ? (
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />

@@ -136,9 +136,7 @@ export const columns = [
             <span className="text-muted-foreground">{stock_before}</span>
             <span className="text-muted-foreground">→</span>
             <span className="text-foreground font-medium">{stockAfter}</span>
-            <span
-              className={cn("text-[10px]", isIncrease ? "text-emerald-500" : "text-red-500")}
-            >
+            <span className={cn("text-[10px]", isIncrease ? "text-emerald-500" : "text-red-500")}>
               ({sign}
               {quantity})
             </span>

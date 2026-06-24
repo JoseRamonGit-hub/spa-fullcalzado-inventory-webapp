@@ -3,8 +3,10 @@ import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useSubmitSales } from "./use-submit-sales";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { PendingSale } from "../types";
 import type { ReactNode } from "react";
+import type { User } from "@/types";
 
 vi.mock("sonner", () => ({
   toast: { promise: vi.fn() },
@@ -17,7 +19,14 @@ vi.mock("@/services/transactionsService", () => ({
 const { transactionsService } = await import("@/services/transactionsService");
 const mockCreateMany = vi.mocked(transactionsService.createMany);
 
-const mockUser = { id: "user-123", email: "test@test.com", fullname: "Test", role: "admin", created_at: "" } as any;
+const mockUser = {
+  id: "user-123",
+  email: "test@test.com",
+  fullname: "Test",
+  role: "admin",
+  created_at: "",
+} as User;
+const BUSINESS_ID = "business-1";
 
 function makeSale(overrides: Partial<PendingSale> = {}): PendingSale {
   return {
@@ -51,14 +60,14 @@ describe("useSubmitSales", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ user: mockUser, isAuthenticated: true, isInitialized: true });
+    useAuthStore.setState({ user: mockUser });
+    useBusinessStore.setState({ activeBusinessId: BUSINESS_ID });
   });
 
   function renderSubmitSales(pendingSales: PendingSale[]) {
-    return renderHook(
-      () => useSubmitSales({ pendingSales, currentExchangeRate, clearPendingSales, onSuccess }),
-      { wrapper: createWrapper() },
-    );
+    return renderHook(() => useSubmitSales({ pendingSales, currentExchangeRate, clearPendingSales, onSuccess }), {
+      wrapper: createWrapper(),
+    });
   }
 
   it("no hace nada si no hay ventas pendientes", async () => {
@@ -71,7 +80,7 @@ describe("useSubmitSales", () => {
   });
 
   it("no hace nada si no hay usuario autenticado", async () => {
-    useAuthStore.setState({ user: null, isAuthenticated: false });
+    useAuthStore.setState({ user: null });
     const { result } = renderSubmitSales([makeSale()]);
 
     await act(() => result.current.submitPendingSales());
@@ -81,13 +90,13 @@ describe("useSubmitSales", () => {
   });
 
   it("envía las ventas con el payload correcto", async () => {
-    mockCreateMany.mockResolvedValue([{ id: "tx-1" }] as any);
+    mockCreateMany.mockResolvedValue([]);
     const sale = makeSale();
     const { result } = renderSubmitSales([sale]);
 
     await act(() => result.current.submitPendingSales());
 
-    expect(mockCreateMany).toHaveBeenCalledWith([
+    expect(mockCreateMany).toHaveBeenCalledWith(BUSINESS_ID, [
       {
         product_id: "prod-1",
         quantity: 2,
@@ -102,7 +111,7 @@ describe("useSubmitSales", () => {
   });
 
   it("envía múltiples ventas en un solo lote", async () => {
-    mockCreateMany.mockResolvedValue([{ id: "tx-1" }, { id: "tx-2" }] as any);
+    mockCreateMany.mockResolvedValue([]);
     const { result } = renderSubmitSales([
       makeSale({ tempId: "s1", productId: "prod-1" }),
       makeSale({ tempId: "s2", productId: "prod-2" }),
@@ -110,9 +119,12 @@ describe("useSubmitSales", () => {
 
     await act(() => result.current.submitPendingSales());
 
-    expect(mockCreateMany).toHaveBeenCalledWith(expect.arrayContaining([
-      expect.objectContaining({ product_id: "prod-1" }),
-      expect.objectContaining({ product_id: "prod-2" }),
-    ]));
+    expect(mockCreateMany).toHaveBeenCalledWith(
+      BUSINESS_ID,
+      expect.arrayContaining([
+        expect.objectContaining({ product_id: "prod-1" }),
+        expect.objectContaining({ product_id: "prod-2" }),
+      ]),
+    );
   });
 });

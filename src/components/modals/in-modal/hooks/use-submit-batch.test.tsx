@@ -3,8 +3,10 @@ import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useSubmitBatch } from "./use-submit-batch";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
 import type { ReactNode } from "react";
+import type { User } from "@/types";
 
 vi.mock("sonner", () => ({
   toast: { promise: vi.fn() },
@@ -24,7 +26,14 @@ const { inventoryMovementsService } = await import("@/services/inventoryMovement
 const mockCreateManyProducts = vi.mocked(productsService.createMany);
 const mockCreateManyMovements = vi.mocked(inventoryMovementsService.createMany);
 
-const mockUser = { id: "user-123", email: "test@test.com", fullname: "Test", role: "admin", created_at: "" } as any;
+const mockUser = {
+  id: "user-123",
+  email: "test@test.com",
+  fullname: "Test",
+  role: "admin",
+  created_at: "",
+} as User;
+const BUSINESS_ID = "business-1";
 
 const newItem: NewBatchItem = {
   kind: "new",
@@ -61,7 +70,8 @@ describe("useSubmitBatch", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ user: mockUser, isAuthenticated: true, isInitialized: true });
+    useAuthStore.setState({ user: mockUser });
+    useBusinessStore.setState({ activeBusinessId: BUSINESS_ID });
   });
 
   function renderSubmitBatch(pendingBatchItems: BatchItem[]) {
@@ -81,12 +91,12 @@ describe("useSubmitBatch", () => {
   });
 
   it("crea productos nuevos cuando hay items tipo 'new'", async () => {
-    mockCreateManyProducts.mockResolvedValue([{ id: "new-1" }] as any);
+    mockCreateManyProducts.mockResolvedValue([]);
     const { result } = renderSubmitBatch([newItem]);
 
     await act(() => result.current.submitPendingBatchItems());
 
-    expect(mockCreateManyProducts).toHaveBeenCalledWith([
+    expect(mockCreateManyProducts).toHaveBeenCalledWith(BUSINESS_ID, [
       { code: "SHO-01", description: "Zapatos Nike", price_usd: 120, stock: 5 },
     ]);
     expect(clearPendingBatchItems).toHaveBeenCalled();
@@ -94,12 +104,12 @@ describe("useSubmitBatch", () => {
   });
 
   it("crea movimientos cuando hay items tipo 'existing'", async () => {
-    mockCreateManyMovements.mockResolvedValue([{ id: "mov-1" }] as any);
+    mockCreateManyMovements.mockResolvedValue([]);
     const { result } = renderSubmitBatch([existingItem]);
 
     await act(() => result.current.submitPendingBatchItems());
 
-    expect(mockCreateManyMovements).toHaveBeenCalledWith([
+    expect(mockCreateManyMovements).toHaveBeenCalledWith(BUSINESS_ID, [
       {
         product_id: "prod-1",
         quantity: 3,
@@ -114,8 +124,8 @@ describe("useSubmitBatch", () => {
   });
 
   it("ejecuta ambas operaciones cuando hay items nuevos y existentes", async () => {
-    mockCreateManyProducts.mockResolvedValue([{ id: "new-1" }] as any);
-    mockCreateManyMovements.mockResolvedValue([{ id: "mov-1" }] as any);
+    mockCreateManyProducts.mockResolvedValue([]);
+    mockCreateManyMovements.mockResolvedValue([]);
     const { result } = renderSubmitBatch([newItem, existingItem]);
 
     await act(() => result.current.submitPendingBatchItems());
@@ -128,12 +138,13 @@ describe("useSubmitBatch", () => {
 
   it("usa priceUsd del item existente si está definido", async () => {
     const itemWithPrice: ExistingBatchItem = { ...existingItem, priceUsd: 150, originalPriceUsd: 100 };
-    mockCreateManyMovements.mockResolvedValue([{ id: "mov-1" }] as any);
+    mockCreateManyMovements.mockResolvedValue([]);
     const { result } = renderSubmitBatch([itemWithPrice]);
 
     await act(() => result.current.submitPendingBatchItems());
 
     expect(mockCreateManyMovements).toHaveBeenCalledWith(
+      BUSINESS_ID,
       expect.arrayContaining([expect.objectContaining({ price_usd: 150 })]),
     );
   });

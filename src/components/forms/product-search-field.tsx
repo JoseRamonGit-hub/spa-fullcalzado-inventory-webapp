@@ -1,5 +1,6 @@
 import { useFieldContext } from "@/hooks/form";
-import { ProductSearch, type ProductSearchResult, type ProductSearchOptions } from "@/components/product-search";
+import { ProductSearch } from "@/components/product-search";
+import type { ProductSearchOptions, ProductSearchResult } from "@/components/product-search/types";
 import { FieldWrapper, type FormFieldProps } from "./field-wrapper";
 
 type ProductSearchFieldProps = FormFieldProps &
@@ -35,7 +36,13 @@ export function ProductSearchField({
 
   return (
     <FieldWrapper label={label} description={description} compact={compact}>
-      <ProductSearch {...searchProps} options={options} value={field.state.value} onChange={handleChange} isInvalid={isInvalid} />
+      <ProductSearch
+        {...searchProps}
+        options={options}
+        value={field.state.value}
+        onChange={handleChange}
+        isInvalid={isInvalid}
+      />
     </FieldWrapper>
   );
 }

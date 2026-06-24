@@ -1,5 +1,5 @@
 import { useProducts } from "@/features/inventory/hooks/useProductQueries";
-import { toSearchResult } from "@/components/product-search";
+import { toSearchResult } from "@/components/product-search/utils";
 
 export function useProductLookup() {
   const { data: products } = useProducts();

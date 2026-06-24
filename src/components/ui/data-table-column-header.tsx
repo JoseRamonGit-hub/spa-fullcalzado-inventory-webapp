@@ -2,11 +2,11 @@ import type { Column } from "@tanstack/react-table";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface DataTableColumnHeaderProps<TData, TValue> {
+type DataTableColumnHeaderProps<TData, TValue> = {
   column: Column<TData, TValue>;
   title: string;
   className?: string;
-}
+};
 
 export function DataTableColumnHeader<TData, TValue>({
   column,

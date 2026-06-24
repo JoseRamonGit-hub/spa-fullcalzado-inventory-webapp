@@ -1,6 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import type { User } from "@/types";
 
+async function getProfile(userId: string): Promise<User | null> {
+  const { data } = await supabase.from("users").select("*").eq("id", userId).single();
+  return data ?? null;
+}
+
 export const authService = {
   /**
    * Sign in with email + password.
@@ -19,19 +24,17 @@ export const authService = {
       return { success: false, error: error?.message ?? "Credenciales incorrectas" };
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", data.user.id)
-      .single();
+    const profile = await getProfile(data.user.id);
 
-    if (profileError || !profile) {
+    if (!profile) {
       await supabase.auth.signOut({ scope: "local" });
       return { success: false, error: "No se encontró el perfil de usuario" };
     }
 
     return { success: true, user: profile };
   },
+
+  getProfile,
 
   /**
    * Sign out the current user.
@@ -80,8 +83,6 @@ export const authService = {
 
     if (!user) return null;
 
-    const { data: profile } = await supabase.from("users").select("*").eq("id", user.id).single();
-
-    return profile ?? null;
+    return getProfile(user.id);
   },
 };

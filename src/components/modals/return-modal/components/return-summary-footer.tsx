@@ -3,29 +3,22 @@ import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
+import type { ReturnSummary } from "../types";
 
-interface ReturnSummaryFooterProps {
+type ReturnSummaryFooterProps = {
   hasReturnItems: boolean;
-  returnType: "exchange" | "refund";
-  creditUsd: number;
-  newPurchaseUsd: number;
-  differenceUsd: number;
-  differenceVes: number;
+  summary: ReturnSummary;
   currentExchangeRate: number;
   isExchangeRateLoading: boolean;
   isSubmissionPending: boolean;
   notes: string;
   onNotesChange: (notes: string) => void;
   onOpenConfirmDialog: () => void;
-}
+};
 
 export function ReturnSummaryFooter({
   hasReturnItems,
-  returnType,
-  creditUsd,
-  newPurchaseUsd,
-  differenceUsd,
-  differenceVes,
+  summary,
   currentExchangeRate,
   isExchangeRateLoading,
   isSubmissionPending,
@@ -33,6 +26,7 @@ export function ReturnSummaryFooter({
   onNotesChange,
   onOpenConfirmDialog,
 }: ReturnSummaryFooterProps) {
+  const { returnType, creditUsd, newPurchaseUsd, differenceUsd, differenceVes } = summary;
   const userRole = useAuthStore((s) => s.user?.role);
   const isEmployee = userRole === "employee";
   const isExchangeRateReady = currentExchangeRate > 0;
@@ -42,7 +36,6 @@ export function ReturnSummaryFooter({
     ? "Cargando tasa de cambio vigente..."
     : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
 
-  // Employees cannot process refunds or negative differences
   const isBlockedByRole = isEmployee && (returnType === "refund" || differenceUsd < 0);
 
   const isBlockedByExchangeRate = !isExchangeRateReady;
@@ -82,7 +75,6 @@ export function ReturnSummaryFooter({
         rows={1}
       />
 
-      {/* Summary grid */}
       <section
         className={`bg-background grid gap-2 rounded-md border p-2 ${returnType === "exchange" ? "grid-cols-3 md:grid-cols-4" : "grid-cols-3"}`}
       >

@@ -1,24 +1,19 @@
 import { ShoppingCart } from "lucide-react";
-import { SalesSummaryBlock } from "./sales-summary-block";
 import type { PendingSale } from "../types";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
 
-interface SalesSummaryFooterProps {
+type SalesSummaryFooterProps = {
   pendingSales: PendingSale[];
   currentExchangeRate: number;
   isExchangeRateLoading: boolean;
-  totalAmountUsd: number;
-  totalAmountVes: number;
   isSubmissionPending: boolean;
   onOpenConfirmDialog: () => void;
-}
+};
 
 export function SalesSummaryFooter({
   pendingSales,
   currentExchangeRate,
   isExchangeRateLoading,
-  totalAmountUsd,
-  totalAmountVes,
   isSubmissionPending,
   onOpenConfirmDialog,
 }: SalesSummaryFooterProps) {
@@ -40,13 +35,6 @@ export function SalesSummaryFooter({
           <p className="text-muted-foreground mt-1">{exchangeRateMessage}</p>
         </section>
       )}
-
-      <SalesSummaryBlock
-        currentExchangeRate={currentExchangeRate}
-        isExchangeRateLoading={isExchangeRateLoading}
-        totalAmountUsd={totalAmountUsd}
-        totalAmountVes={totalAmountVes}
-      />
 
       <ModalFooterActionRow
         message={

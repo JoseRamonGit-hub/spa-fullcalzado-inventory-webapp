@@ -2,7 +2,7 @@ import { useFieldContext } from "@/hooks/form";
 import { Input } from "../ui/input";
 import { FieldWrapper, type FormFieldProps } from "./field-wrapper";
 
-type TextFieldProps = FormFieldProps & React.ComponentProps<"input"> & {};
+type TextFieldProps = FormFieldProps & React.ComponentProps<"input">;
 
 export function TextField({ label, description, compact, ...props }: TextFieldProps) {
   const field = useFieldContext<string>();

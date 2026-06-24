@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateManyTransactions } from "@/features/transactions/hooks/useTransactionMutations";
@@ -22,7 +21,7 @@ export function useSubmitSales({
 
   const isSubmissionPending = createTransactionsMutation.isPending;
 
-  const submitPendingSales = useCallback(async () => {
+  const submitPendingSales = async () => {
     const hasNoSales = pendingSales.length === 0;
     if (!currentUser || hasNoSales) return;
 
@@ -50,7 +49,7 @@ export function useSubmitSales({
     await salesPromise;
     clearPendingSales();
     onSuccess();
-  }, [currentUser, pendingSales, currentExchangeRate, createTransactionsMutation, clearPendingSales, onSuccess]);
+  };
 
   return { submitPendingSales, isSubmissionPending };
 }

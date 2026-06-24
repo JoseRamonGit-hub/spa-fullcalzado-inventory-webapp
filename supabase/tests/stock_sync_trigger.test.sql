@@ -35,7 +35,23 @@ DO $$
 BEGIN
   -- Crear usuario de prueba si no existe ninguno
   IF NOT EXISTS (SELECT 1 FROM public.users LIMIT 1) THEN
-    INSERT INTO auth.users (id, email, instance_id, aud, role, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
+    INSERT INTO auth.users (
+      id,
+      email,
+      instance_id,
+      aud,
+      role,
+      encrypted_password,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at,
+      confirmation_token,
+      recovery_token,
+      email_change_token_new,
+      email_change,
+      email_confirmed_at
+    )
     VALUES (
       '00000000-0000-0000-0000-000000000001'::uuid,
       'test@test.com',
@@ -43,19 +59,31 @@ BEGIN
       'authenticated', 'authenticated', crypt('password', gen_salt('bf')),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"fullname":"Test User"}'::jsonb,
-      now(), now(), '', now()
+      now(), now(), '', '', '', '', now()
     );
   END IF;
 END;
 $$;
 
+UPDATE public.users
+SET role = 'admin',
+    default_business_id = '10000000-0000-0000-0000-000000000001'
+WHERE id = (SELECT id FROM public.users ORDER BY created_at LIMIT 1);
+
+SELECT set_config(
+  'request.jwt.claim.sub',
+  (SELECT id::text FROM public.users ORDER BY created_at LIMIT 1),
+  true
+);
+
 -- Producto de prueba con stock inicial 0 (insertado sin trigger de log
 -- deshabilitando temporalmente el trigger para tener control total)
 ALTER TABLE public.products DISABLE TRIGGER on_product_stock_entry;
 
-INSERT INTO public.products (id, code, description, stock, price_usd, active)
+INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
 VALUES (
   '11111111-1111-1111-1111-111111111111'::uuid,
+  '10000000-0000-0000-0000-000000000001'::uuid,
   'TEST-TRIGGER-001',
   'Producto de prueba para test de trigger',
   0,
@@ -64,9 +92,10 @@ VALUES (
 );
 
 -- Producto separado para el Test 2 (Nuevo Producto)
-INSERT INTO public.products (id, code, description, stock, price_usd, active)
+INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
 VALUES (
   '22222222-2222-2222-2222-222222222222'::uuid,
+  '10000000-0000-0000-0000-000000000001'::uuid,
   'TEST-TRIGGER-002',
   'Producto de prueba para test de nuevo producto',
   0,
@@ -91,8 +120,9 @@ SELECT is(
 );
 
 -- 1b. Simular "Aumentar Existencia": INSERT directo en inventory_movements
-INSERT INTO public.inventory_movements (type, product_id, quantity, user_id, date, time)
+INSERT INTO public.inventory_movements (business_id, type, product_id, quantity, user_id, date, time)
 VALUES (
+  '10000000-0000-0000-0000-000000000001',
   'entry',
   '11111111-1111-1111-1111-111111111111',
   5,
@@ -109,8 +139,9 @@ SELECT is(
 );
 
 -- 1d. Insertar otra entrada para verificar acumulación
-INSERT INTO public.inventory_movements (type, product_id, quantity, user_id, date, time)
+INSERT INTO public.inventory_movements (business_id, type, product_id, quantity, user_id, date, time)
 VALUES (
+  '10000000-0000-0000-0000-000000000001',
   'entry',
   '11111111-1111-1111-1111-111111111111',
   3,
@@ -182,8 +213,9 @@ SELECT is(
 );
 
 -- 3b. Simular movimiento de salida (venta)
-INSERT INTO public.inventory_movements (type, product_id, quantity, user_id, date, time)
+INSERT INTO public.inventory_movements (business_id, type, product_id, quantity, user_id, date, time)
 VALUES (
+  '10000000-0000-0000-0000-000000000001',
   'exit',
   '11111111-1111-1111-1111-111111111111',
   2,

@@ -3,8 +3,10 @@ import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useSubmitReturn } from "./use-submit-return";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
 import type { ReactNode } from "react";
+import type { User } from "@/types";
 
 vi.mock("sonner", () => ({
   toast: { promise: vi.fn() },
@@ -17,7 +19,14 @@ vi.mock("@/services/returnsService", () => ({
 const { returnsService } = await import("@/services/returnsService");
 const mockProcessReturn = vi.mocked(returnsService.processReturn);
 
-const mockUser = { id: "user-123", email: "test@test.com", fullname: "Test", role: "admin", created_at: "" } as any;
+const mockUser = {
+  id: "user-123",
+  email: "test@test.com",
+  fullname: "Test",
+  role: "admin",
+  created_at: "",
+} as User;
+const BUSINESS_ID = "business-1";
 
 function makeReturnItem(overrides: Partial<PendingReturnItem> = {}): PendingReturnItem {
   return {
@@ -67,7 +76,8 @@ describe("useSubmitReturn", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ user: mockUser, isAuthenticated: true, isInitialized: true });
+    useAuthStore.setState({ user: mockUser });
+    useBusinessStore.setState({ activeBusinessId: BUSINESS_ID });
   });
 
   function renderSubmitReturn(
@@ -91,7 +101,7 @@ describe("useSubmitReturn", () => {
   }
 
   it("no hace nada si no hay usuario autenticado", async () => {
-    useAuthStore.setState({ user: null, isAuthenticated: false });
+    useAuthStore.setState({ user: null });
     const { result } = renderSubmitReturn([makeReturnItem()]);
 
     await act(() => result.current.submitReturn());
@@ -110,20 +120,17 @@ describe("useSubmitReturn", () => {
   });
 
   it("envía una devolución (refund) con el payload correcto", async () => {
-    mockProcessReturn.mockResolvedValue({ id: "return-1" } as any);
+    mockProcessReturn.mockResolvedValue(undefined);
     const returnItem = makeReturnItem();
     const { result } = renderSubmitReturn([returnItem], [], "refund");
 
     await act(() => result.current.submitReturn());
 
-    expect(mockProcessReturn).toHaveBeenCalledWith({
+    expect(mockProcessReturn).toHaveBeenCalledWith(BUSINESS_ID, {
       p_type: "refund",
-      p_returned_items: [
-        { product_id: "prod-1", quantity: 1, price_usd: 60, price_ves: 2400 },
-      ],
+      p_returned_items: [{ product_id: "prod-1", quantity: 1, price_usd: 60, price_ves: 2400 }],
       p_new_items: null,
       p_exchange_rate: 40,
-      p_user_id: "user-123",
       p_notes: "Producto defectuoso",
     });
     expect(clearAll).toHaveBeenCalled();
@@ -131,29 +138,24 @@ describe("useSubmitReturn", () => {
   });
 
   it("envía un intercambio (exchange) con items nuevos", async () => {
-    mockProcessReturn.mockResolvedValue({ id: "return-1" } as any);
+    mockProcessReturn.mockResolvedValue(undefined);
     const returnItem = makeReturnItem();
     const exchangeItem = makeExchangeItem();
     const { result } = renderSubmitReturn([returnItem], [exchangeItem], "exchange");
 
     await act(() => result.current.submitReturn());
 
-    expect(mockProcessReturn).toHaveBeenCalledWith({
+    expect(mockProcessReturn).toHaveBeenCalledWith(BUSINESS_ID, {
       p_type: "exchange",
-      p_returned_items: [
-        { product_id: "prod-1", quantity: 1, price_usd: 60, price_ves: 2400 },
-      ],
-      p_new_items: [
-        { product_id: "prod-2", quantity: 1, price_usd: 80, price_ves: 3200 },
-      ],
+      p_returned_items: [{ product_id: "prod-1", quantity: 1, price_usd: 60, price_ves: 2400 }],
+      p_new_items: [{ product_id: "prod-2", quantity: 1, price_usd: 80, price_ves: 3200 }],
       p_exchange_rate: 40,
-      p_user_id: "user-123",
       p_notes: "Producto defectuoso",
     });
   });
 
   it("envía p_notes como undefined cuando notes está vacío", async () => {
-    mockProcessReturn.mockResolvedValue({ id: "return-1" } as any);
+    mockProcessReturn.mockResolvedValue(undefined);
     const { result } = renderHook(
       () =>
         useSubmitReturn({
@@ -170,8 +172,6 @@ describe("useSubmitReturn", () => {
 
     await act(() => result.current.submitReturn());
 
-    expect(mockProcessReturn).toHaveBeenCalledWith(
-      expect.objectContaining({ p_notes: undefined }),
-    );
+    expect(mockProcessReturn).toHaveBeenCalledWith(BUSINESS_ID, expect.objectContaining({ p_notes: undefined }));
   });
 });

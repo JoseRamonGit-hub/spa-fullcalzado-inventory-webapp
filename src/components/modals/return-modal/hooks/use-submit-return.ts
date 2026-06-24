@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateReturn } from "@/features/returns/hooks/useReturnMutations";
@@ -23,13 +22,12 @@ export function useSubmitReturn({
   clearAll,
   onSuccess,
 }: UseSubmitReturnProps) {
-  const currentUser = useAuthStore((state) => state.user);
   const createReturnMutation = useCreateReturn();
 
   const isSubmissionPending = createReturnMutation.isPending;
 
-  const submitReturn = useCallback(async () => {
-    if (!currentUser || returnItems.length === 0) return;
+  const submitReturn = async () => {
+    if (!useAuthStore.getState().user || returnItems.length === 0) return;
 
     const payload = {
       p_type: returnType as "exchange" | "refund",
@@ -49,7 +47,6 @@ export function useSubmitReturn({
             }))
           : null,
       p_exchange_rate: currentExchangeRate,
-      p_user_id: currentUser.id,
       p_notes: notes || undefined,
     };
 
@@ -66,17 +63,7 @@ export function useSubmitReturn({
     await returnPromise;
     clearAll();
     onSuccess();
-  }, [
-    currentUser,
-    returnItems,
-    exchangeItems,
-    returnType,
-    currentExchangeRate,
-    notes,
-    createReturnMutation,
-    clearAll,
-    onSuccess,
-  ]);
+  };
 
   return { submitReturn, isSubmissionPending };
 }
