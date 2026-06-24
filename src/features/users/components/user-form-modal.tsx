@@ -135,7 +135,7 @@ export function UserFormModal({
           </div>
         </DialogHeader>
 
-        <DialogBody className="bg-background max-h-[38rem] px-4 py-4 sm:px-5">
+        <DialogBody className="bg-background max-h-152 px-4 py-4 sm:px-5">
           <form
             id="user-form"
             onSubmit={(event) => {
