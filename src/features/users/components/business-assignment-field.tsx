@@ -69,7 +69,7 @@ export function BusinessAssignmentField({
   };
 
   return (
-    <FieldSet className="gap-4">
+    <FieldSet className="gap-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <FieldLegend variant="label" className="mb-0">
@@ -83,65 +83,73 @@ export function BusinessAssignmentField({
       </div>
 
       <Field data-invalid={businessInvalid}>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {businesses.map((business) => {
-            const isSelected = selectedBusinessIds.includes(business.id);
+        {businesses.length > 0 ? (
+          <div className="custom-scrollbar grid max-h-44 gap-2 overflow-auto pr-1 sm:grid-cols-2">
+            {businesses.map((business) => {
+              const isSelected = selectedBusinessIds.includes(business.id);
 
-            return (
-              <button
-                key={business.id}
-                type="button"
-                aria-pressed={isSelected}
-                className={cn(
-                  "bg-card focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-16 items-center gap-3 rounded-lg border px-3 py-2.5 text-left shadow-xs transition-colors outline-none focus-visible:ring-[3px]",
-                  isSelected
-                    ? "border-primary/60 bg-primary/10 text-foreground ring-primary/20 ring-1"
-                    : "border-border/70 text-foreground hover:border-primary/30 hover:bg-accent/50",
-                )}
-                onClick={() => toggleBusiness(business.id)}
-              >
-                <span
+              return (
+                <button
+                  key={business.id}
+                  type="button"
+                  aria-pressed={isSelected}
                   className={cn(
-                    "flex size-9 shrink-0 items-center justify-center rounded-md transition-colors",
-                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                    "bg-card focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-12 items-center gap-2.5 rounded-md border px-3 py-2 text-left transition-colors outline-none focus-visible:ring-[3px]",
+                    isSelected
+                      ? "border-primary/60 bg-primary/8 text-foreground ring-primary/15 ring-1"
+                      : "border-border/70 text-foreground hover:border-primary/30 hover:bg-accent/40",
                   )}
+                  onClick={() => toggleBusiness(business.id)}
                 >
-                  <Store className="size-4" />
-                </span>
+                  <span
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-md transition-colors",
+                      isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    <Store className="size-3.5" />
+                  </span>
 
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="truncate text-sm font-semibold">{business.name}</span>
-                  <span className="text-muted-foreground truncate text-[11px]">{business.slug}</span>
-                </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="truncate text-sm font-medium">{business.name}</span>
+                    <span className="text-muted-foreground truncate text-[11px]">{business.slug}</span>
+                  </span>
 
-                {isSelected ? <CheckCircle2 className="text-primary size-4 shrink-0" /> : null}
-              </button>
-            );
-          })}
-        </div>
+                  {isSelected ? <CheckCircle2 className="text-primary size-4 shrink-0" /> : null}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-muted-foreground rounded-md border border-dashed px-3 py-4 text-sm">
+            No hay negocios disponibles para asignar.
+          </div>
+        )}
         {businessInvalid ? <FieldError errors={businessErrors} /> : null}
       </Field>
 
-      <Field data-invalid={defaultInvalid}>
-        <FieldLabel htmlFor="default_business_id">Negocio predeterminado</FieldLabel>
-        <NativeSelect
-          id="default_business_id"
-          value={defaultBusinessId}
-          onChange={(event) => onDefaultBusinessIdChange(event.target.value)}
-          wrapperClassName="w-full"
-          className="w-full"
-          aria-invalid={defaultInvalid}
-        >
-          <NativeSelectOption value="">Seleccionar negocio</NativeSelectOption>
-          {defaultOptions.map((business) => (
-            <NativeSelectOption key={business.id} value={business.id}>
-              {business.name}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-        <FieldDescription>Será la primera tienda activa al iniciar sesión.</FieldDescription>
-        {defaultInvalid ? <FieldError errors={defaultBusinessErrors} /> : null}
-      </Field>
+      <div className="border-border/70 bg-muted/20 rounded-md border p-3">
+        <Field data-invalid={defaultInvalid}>
+          <FieldLabel htmlFor="default_business_id">Negocio predeterminado</FieldLabel>
+          <NativeSelect
+            id="default_business_id"
+            value={defaultBusinessId}
+            onChange={(event) => onDefaultBusinessIdChange(event.target.value)}
+            wrapperClassName="w-full"
+            className="w-full"
+            aria-invalid={defaultInvalid}
+          >
+            <NativeSelectOption value="">Seleccionar negocio</NativeSelectOption>
+            {defaultOptions.map((business) => (
+              <NativeSelectOption key={business.id} value={business.id}>
+                {business.name}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          <FieldDescription className="text-xs">Será la primera tienda activa al iniciar sesión.</FieldDescription>
+          {defaultInvalid ? <FieldError errors={defaultBusinessErrors} /> : null}
+        </Field>
+      </div>
     </FieldSet>
   );
 }

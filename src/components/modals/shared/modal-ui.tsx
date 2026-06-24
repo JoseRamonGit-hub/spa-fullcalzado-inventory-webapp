@@ -74,7 +74,7 @@ export function ModalConfirmDialog({
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent className={contentClassName}>
         <AlertDialogHeader>
-          <AlertDialogMedia>{icon}</AlertDialogMedia>
+          <AlertDialogMedia className="mb-0 size-12 *:[svg:not([class*='size-'])]:size-6">{icon}</AlertDialogMedia>
           <div>
             <AlertDialogTitle>{title}</AlertDialogTitle>
             <ActiveBusinessContext className="mt-1" />

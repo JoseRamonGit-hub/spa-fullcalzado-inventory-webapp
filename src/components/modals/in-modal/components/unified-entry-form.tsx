@@ -159,11 +159,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           </form.AppField>
         </div>
         <div className="hidden h-8 items-center sm:flex">
-          {isExistingMode ? (
-            <Badge variant="secondary" className="text-[10px] whitespace-nowrap">
-              Producto existente
-            </Badge>
-          ) : searchText.trim() ? (
+          {!isExistingMode && searchText.trim() ? (
             <Badge variant="outline" className="text-[10px] whitespace-nowrap">
               Nuevo producto
             </Badge>
@@ -171,7 +167,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
         </div>
       </div>
 
-      <fieldset className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-[2fr_auto_auto_auto]">
+      <fieldset className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-[minmax(16rem,1fr)_10rem_9rem_auto]">
         <div className="col-span-2 sm:col-span-1">
           <form.AppField
             name="description"

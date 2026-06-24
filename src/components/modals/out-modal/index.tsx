@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
 import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
-import { DataTable } from "@/components/ui/data-table";
-import { pendingSaleColumns } from "./columns";
 
 import { usePendingSales } from "./hooks/use-pending-sales";
 import { useSubmitSales } from "./hooks/use-submit-sales";
@@ -11,6 +9,8 @@ import { ProductSaleForm } from "./components/product-sale-form";
 import { SalesSummaryFooter } from "./components/sales-summary-footer";
 import { ConfirmSalesDialog } from "./components/confirm-sales-dialog";
 import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
+import { PendingSalesPanel } from "./components/pending-sales-panel";
+import { SalesSummaryBlock } from "./components/sales-summary-block";
 
 type OutModalProps = {
   isOpen: boolean;
@@ -67,7 +67,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         onOpenChange={handleModalOpenChange}
         title="Registrar Ventas"
         description="Agrega productos al lote y confirma con Shift + Enter."
-        dialogClassName="sm:max-w-4xl"
+        dialogClassName="sm:max-w-5xl"
         avoidCloseFromOutsideClick
         avoidCloseFromEsc
         footer={
@@ -75,8 +75,6 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
             pendingSales={pendingSales}
             currentExchangeRate={currentExchangeRate}
             isExchangeRateLoading={isExchangeRateLoading}
-            totalAmountUsd={totalAmountUsd}
-            totalAmountVes={totalAmountVes}
             isSubmissionPending={isSubmissionPending}
             onOpenConfirmDialog={() => setIsConfirmDialogOpen(true)}
           />
@@ -89,15 +87,15 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
             onAddPendingSale={addPendingSale}
           />
 
-          <article className="bg-card -mx-2 flex h-40 flex-col overflow-hidden rounded-md border md:h-64">
-            <DataTable
-              columns={pendingSaleColumns}
-              data={pendingSales}
-              emptyMessage="Agrega ventas usando el buscador de arriba."
-              meta={{ onRemovePendingSale: removePendingSale }}
-              hidePagination
+          <div className="grid min-h-0 gap-3 md:grid-cols-[minmax(0,1fr)_17rem]">
+            <PendingSalesPanel pendingSales={pendingSales} onRemovePendingSale={removePendingSale} />
+            <SalesSummaryBlock
+              currentExchangeRate={currentExchangeRate}
+              isExchangeRateLoading={isExchangeRateLoading}
+              totalAmountUsd={totalAmountUsd}
+              totalAmountVes={totalAmountVes}
             />
-          </article>
+          </div>
         </section>
       </ResponsiveModal>
 

@@ -31,7 +31,7 @@ export type BatchItem = NewBatchItem | ExistingBatchItem;
 export const pendingItemColumns: ColumnDef<BatchItem>[] = [
   {
     id: "type",
-    header: "Tipo",
+    header: "Acción",
     cell: ({ row }) => {
       const isNewItem = row.original.kind === "new";
       return isNewItem ? (
@@ -39,8 +39,9 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
           Nuevo
         </Badge>
       ) : (
-        <Badge variant="secondary" className="px-1.5 py-0.5 text-[9px] uppercase">
-          +Stock
+        <Badge variant="outline" className="px-1.5 py-0.5 text-[9px] uppercase" title="Reposición de inventario">
+          <span className="sm:hidden">Rep.</span>
+          <span className="hidden sm:inline">Reposición</span>
         </Badge>
       );
     },
@@ -103,6 +104,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
       }
       return <span className="text-muted-foreground block text-right">—</span>;
     },
+    meta: { hideOnMobile: true },
   },
   {
     id: "actions",

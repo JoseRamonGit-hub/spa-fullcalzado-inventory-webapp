@@ -5,9 +5,7 @@ import {
   ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
   ModalConfirmDialog,
-  ModalProductIdentity,
 } from "@/components/modals/shared/modal-ui";
-import { getStripedRowClass } from "@/components/modals/shared/modal-table-utils";
 
 type ConfirmSalesDialogProps = {
   isOpen: boolean;
@@ -48,11 +46,11 @@ export function ConfirmSalesDialog({
       title="¿Confirmar registro de ventas?"
       description={
         <>
-          Estás a punto de registrar{" "}
+          Se registrarán{" "}
           <strong className="text-foreground">
             {pendingSalesCount} venta{isMultipleSales ? "s" : ""}
           </strong>
-          . Esta acción no se puede deshacer.
+          . Revisa productos y totales antes de confirmar.
         </>
       }
       confirmLabel="Confirmar ventas"
@@ -61,23 +59,29 @@ export function ConfirmSalesDialog({
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!isExchangeRateReady}
     >
-      <ConfirmDialogTableSection className="max-h-48">
+      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-48 shadow-xs">
         <table className="w-full">
           <thead>
-            <tr className="bg-muted/50 text-muted-foreground border-b">
-              <th className="px-2.5 py-1.5 text-left font-semibold tracking-wider uppercase">Producto</th>
-              <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Cant.</th>
-              <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Total USD</th>
+            <tr className="bg-muted/35 text-muted-foreground border-b">
+              <th className="px-3 py-2 text-left font-semibold tracking-wider uppercase">Producto</th>
+              <th className="px-3 py-2 text-right font-semibold tracking-wider uppercase">Cant.</th>
+              <th className="px-3 py-2 text-right font-semibold tracking-wider uppercase">Total USD</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {pendingSales.map((sale, index) => (
-              <tr key={sale.tempId} className={getStripedRowClass(index)}>
-                <td className="px-2.5 py-1">
-                  <ModalProductIdentity code={sale.code} description={sale.description} />
+          <tbody className="divide-border/60 divide-y">
+            {pendingSales.map((sale) => (
+              <tr key={sale.tempId} className="bg-card">
+                <td className="px-3 py-2.5 align-middle">
+                  <span className="product-code block whitespace-nowrap uppercase">{sale.code}</span>
+                  <span
+                    className="text-muted-foreground mt-0.5 line-clamp-2 block wrap-break-word"
+                    title={sale.description}
+                  >
+                    {sale.description}
+                  </span>
                 </td>
-                <td className="px-2.5 py-1 text-right tabular-nums">{sale.quantity}</td>
-                <td className="px-2.5 py-1 text-right font-semibold tabular-nums">
+                <td className="px-3 py-2.5 text-right align-middle font-semibold tabular-nums">{sale.quantity}</td>
+                <td className="px-3 py-2.5 text-right align-middle font-semibold tabular-nums">
                   {formatCurrencyUSD(sale.totalUsd)}
                 </td>
               </tr>
@@ -86,21 +90,28 @@ export function ConfirmSalesDialog({
         </table>
       </ConfirmDialogTableSection>
 
-      <ConfirmDialogSummarySection>
+      <ConfirmDialogSummarySection className="border-primary/20 bg-primary/5 gap-0 overflow-hidden p-0">
         {!isExchangeRateReady && <p className="text-warning mb-1">{exchangeRateMessage}</p>}
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Tasa</span>
-          <span className="font-medium tabular-nums">{exchangeRateDisplayValue}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Total lote USD</span>
-          <span className="text-foreground font-bold tabular-nums">{formatCurrencyUSD(totalAmountUsd)}</span>
-        </div>
-        <div className="border-primary/20 flex justify-between border-t pt-1">
-          <span className="text-muted-foreground">Total lote Bs</span>
-          <span className="text-foreground font-bold tabular-nums">
+
+        <div className="flex items-start justify-between gap-4 p-3">
+          <div>
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Total del lote</p>
+            <p className="text-muted-foreground mt-1">Se cobrará al confirmar ventas</p>
+          </div>
+          <p className="text-right text-2xl leading-none font-bold tabular-nums">
             {isExchangeRateReady ? formatCurrencyVES(totalAmountVes) : "—"}
-          </span>
+          </p>
+        </div>
+
+        <div className="bg-card/85 border-primary/15 grid grid-cols-2 gap-3 border-t px-3 py-2.5">
+          <div>
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">USD</p>
+            <p className="mt-0.5 font-semibold tabular-nums">{formatCurrencyUSD(totalAmountUsd)}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Tasa</p>
+            <p className="mt-0.5 font-medium tabular-nums">{exchangeRateDisplayValue}</p>
+          </div>
         </div>
       </ConfirmDialogSummarySection>
     </ModalConfirmDialog>

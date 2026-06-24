@@ -22,7 +22,7 @@ type ProductSearchProps = {
 };
 
 const RESULT_LIMIT = 3;
-const SHELL_CLASS_NAME = "min-h-8 w-full min-w-0";
+const SHELL_CLASS_NAME = "h-8 w-full min-w-0";
 const CONTROL_CLASS_NAME =
   "bg-card h-8 w-full rounded-md border shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]";
 const INVALID_CLASS_NAME = "border-destructive ring-destructive/20 dark:ring-destructive/40";
@@ -55,28 +55,32 @@ function SelectedProductChip({
   return (
     <div
       className={cn(
-        "bg-accent/40 focus-within:border-ring focus-within:ring-ring/50 flex h-8 items-center gap-2 overflow-hidden rounded-md border px-3.5 py-1 transition-[color,box-shadow] focus-within:ring-[3px]",
-        isInvalid ? INVALID_CLASS_NAME : "border-border/60",
+        "bg-primary/5 focus-within:border-ring focus-within:ring-ring/50 flex h-8 items-center gap-2 overflow-hidden rounded-md border px-2 transition-[color,box-shadow] focus-within:ring-[3px]",
+        isInvalid ? INVALID_CLASS_NAME : "border-primary/25",
       )}
       onKeyDown={onKeyDown}
     >
-      <span className="product-code shrink-0 text-sm uppercase">{product.code}</span>
+      <span className="product-code bg-primary/10 border-primary/20 inline-flex h-6 shrink-0 items-center rounded-sm border px-2 text-xs uppercase">
+        {product.code}
+      </span>
       <span className="min-w-0 flex-1 truncate text-sm font-semibold">{product.description}</span>
       {showPrice && (
-        <span className="text-muted-foreground hidden shrink-0 text-xs tabular-nums sm:inline">
+        <span className="text-muted-foreground hidden shrink-0 text-xs tabular-nums md:inline">
           {formatCurrencyUSD(product.price_usd)}
         </span>
       )}
-      <span className="text-muted-foreground shrink-0 text-xs tabular-nums">Stock [{product.stock}]</span>
+      <span className="text-muted-foreground bg-background/70 border-border/70 hidden h-6 shrink-0 items-center rounded-sm border px-2 text-xs tabular-nums sm:inline-flex">
+        {product.stock} en inventario
+      </span>
       <Button
         type="button"
         variant="ghost"
-        size="icon"
+        size="icon-xs"
         onClick={onClear}
-        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-5 shrink-0 rounded"
+        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
         aria-label="Cambiar producto (Esc / Backspace)"
       >
-        <X className="size-3" aria-hidden="true" />
+        <X aria-hidden="true" />
       </Button>
     </div>
   );
@@ -107,7 +111,9 @@ function SearchDropdown({
               onSelect={onSelect}
               className={cn("flex items-center gap-2 px-2.5 py-2", !product.active && "opacity-50")}
             >
-              <span className="product-code text-xs uppercase">{product.code}</span>
+              <span className="product-code bg-primary/10 border-primary/20 inline-flex h-6 shrink-0 items-center rounded-sm border px-2 text-xs uppercase">
+                {product.code}
+              </span>
               <span className="min-w-0 flex-1 truncate text-sm">{product.description}</span>
               {!product.active && (
                 <span className="bg-muted text-muted-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase">
