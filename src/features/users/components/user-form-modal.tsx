@@ -138,13 +138,13 @@ export function UserFormModal({
   });
 
   useEffect(() => {
-    if (!open) {
-      setShouldRenderBusinessAccess(false);
-      return;
-    }
-
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
+      if (!open) {
+        setShouldRenderBusinessAccess(false);
+        return;
+      }
+
       secondFrame = window.requestAnimationFrame(() => setShouldRenderBusinessAccess(true));
     });
 
