@@ -9,14 +9,9 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
  */
 export const Route = createFileRoute("/_auth")({
   beforeLoad: () => {
-    const { isAuthenticated } = useAuthStore.getState();
-    if (isAuthenticated) {
+    if (useAuthStore.getState().user) {
       throw redirect({ to: "/inventory" });
     }
   },
-  component: AuthLayout,
+  component: Outlet,
 });
-
-function AuthLayout() {
-  return <Outlet />;
-}

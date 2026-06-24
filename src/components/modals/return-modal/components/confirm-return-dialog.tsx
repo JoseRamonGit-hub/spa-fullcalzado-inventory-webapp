@@ -1,6 +1,6 @@
 import { IterationCcw } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import type { PendingReturnItem, PendingExchangeItem } from "../types";
+import type { PendingReturnItem, PendingExchangeItem, ReturnSummary } from "../types";
 import {
   ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
@@ -14,10 +14,7 @@ type ConfirmReturnDialogProps = {
   onOpenChange: (isOpen: boolean) => void;
   returnItems: readonly PendingReturnItem[];
   exchangeItems: readonly PendingExchangeItem[];
-  returnType: "exchange" | "refund";
-  creditUsd: number;
-  differenceUsd: number;
-  differenceVes: number;
+  summary: ReturnSummary;
   currentExchangeRate: number;
   isExchangeRateLoading: boolean;
   isSubmissionPending: boolean;
@@ -30,16 +27,14 @@ export function ConfirmReturnDialog({
   onOpenChange,
   returnItems,
   exchangeItems,
-  returnType,
-  creditUsd,
-  differenceUsd,
-  differenceVes,
+  summary,
   currentExchangeRate,
   isExchangeRateLoading,
   isSubmissionPending,
   notes,
   onConfirmSubmit,
 }: ConfirmReturnDialogProps) {
+  const { returnType, creditUsd, differenceUsd, differenceVes } = summary;
   const isExchange = returnType === "exchange";
   const isExchangeRateReady = currentExchangeRate > 0;
   const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";

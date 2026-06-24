@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import { useAppForm } from "@/hooks/form";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
@@ -15,15 +15,11 @@ const MINIMUM_VALUE_ERROR = "Mín. 1";
 
 type ProductSaleFormProps = {
   currentExchangeRate: number;
-  isExchangeRateReady?: boolean;
+  isExchangeRateReady: boolean;
   onAddPendingSale: (sale: PendingSale) => void;
 };
 
-export function ProductSaleForm({
-  currentExchangeRate,
-  isExchangeRateReady = true,
-  onAddPendingSale,
-}: ProductSaleFormProps) {
+export function ProductSaleForm({ currentExchangeRate, isExchangeRateReady, onAddPendingSale }: ProductSaleFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { getProductById } = useProductLookup();
 
@@ -57,28 +53,24 @@ export function ProductSaleForm({
     },
   });
 
-  const handleFormSubmit = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      saleForm.handleSubmit();
-    },
-    [saleForm],
-  );
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    saleForm.handleSubmit();
+  };
 
-  const handleAfterProductSelection = useCallback(() => {
+  const handleAfterProductSelection = () => {
     saleForm.setFieldValue("quantity", 0);
     focusFirstNumberInput(formRef.current);
-  }, [saleForm]);
+  };
 
-  const handleProductClear = useCallback(() => {
+  const handleProductClear = () => {
     saleForm.setFieldValue("quantity", 0);
-  }, [saleForm]);
+  };
 
   return (
-    <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-2">
+    <form ref={formRef} onSubmit={handleFormSubmit} className="flex flex-col gap-2">
       <fieldset disabled={!isExchangeRateReady} className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end">
-        {/* Product search — stretches to fill available width */}
         <div className="min-w-0 flex-1">
           <saleForm.AppField
             name="productId"
@@ -101,7 +93,6 @@ export function ProductSaleForm({
           </saleForm.AppField>
         </div>
 
-        {/* Quantity + submit — pinned together */}
         <div className="flex shrink-0 items-end gap-2">
           <div className="relative w-28 shrink-0 md:w-32">
             <saleForm.Subscribe selector={(state) => state.values.productId}>
@@ -196,18 +187,6 @@ export function ProductSaleForm({
           </saleForm.Subscribe>
         </div>
       </fieldset>
-
-      {/* <div
-        className="text-muted-foreground hidden items-center gap-3 text-[10.5px] md:flex"
-        aria-label="Atajos de teclado"
-      >
-        <span className="inline-flex items-center gap-1">
-          <Kbd>Tab</Kbd> navega resultados
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <Kbd>Esc</Kbd> limpia selección
-        </span>
-      </div> */}
     </form>
   );
 }

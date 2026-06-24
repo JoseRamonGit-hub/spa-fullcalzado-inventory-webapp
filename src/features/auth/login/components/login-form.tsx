@@ -1,6 +1,7 @@
 import { useAppForm } from "@/hooks/form";
 import { $loginSchema, type LoginSchema } from "../schemas";
 import { HeaderLoginForm } from "./header-login-form";
+import { LoginSubmitButton } from "./login-submit-button";
 
 type LoginFormProps = {
   onSubmit: (data: LoginSchema) => void;
@@ -60,7 +61,7 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
 
         {/* Submit */}
         <form.AppForm>
-          <form.LoginButton isPending={isPending} />
+          <LoginSubmitButton isPending={isPending} />
         </form.AppForm>
       </div>
     </form>

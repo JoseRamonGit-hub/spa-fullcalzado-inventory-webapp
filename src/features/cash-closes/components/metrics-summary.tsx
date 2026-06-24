@@ -35,7 +35,7 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
   ];
 
   return (
-    <div className="space-y-3 border-b px-3 py-3 md:px-4">
+    <div className="flex flex-col gap-3 border-b px-3 py-3 md:px-4">
       <header className="flex items-center gap-1.5">
         {isFiltered && (
           <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
@@ -64,7 +64,10 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
               <item.icon className="text-primary h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <p className="truncate text-[9px] font-medium tracking-wider uppercase sm:text-[10px]">{item.label}</p>
             </div>
-            <p className="font-heading truncate text-sm leading-none font-bold tabular-nums sm:text-lg" title={item.value}>
+            <p
+              className="font-heading truncate text-sm leading-none font-bold tabular-nums sm:text-lg"
+              title={item.value}
+            >
               {item.value}
             </p>
           </li>
@@ -73,7 +76,7 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
 
       {/* Returns + Net row */}
       {hasReturns && (
-        <div className="border-border/40 space-y-3 border-t pt-3">
+        <div className="border-border/40 flex flex-col gap-3 border-t pt-3">
           <ul className="grid grid-cols-3 gap-y-4">
             <li className="flex min-w-0 flex-col gap-1.5 pl-0">
               <div className="text-muted-foreground flex items-center gap-1.5">

@@ -4,8 +4,12 @@ import type { CashClose, CashCloseWithRelations } from "@/types/index";
 const CASH_CLOSE_SELECT = "*, users(fullname)" as const;
 
 export const cashClosesService = {
-  getAll: async (date?: string): Promise<CashCloseWithRelations[]> => {
-    let query = supabase.from("cash_closes").select(CASH_CLOSE_SELECT).order("date", { ascending: false });
+  getAll: async (businessId: string, date?: string): Promise<CashCloseWithRelations[]> => {
+    let query = supabase
+      .from("cash_closes")
+      .select(CASH_CLOSE_SELECT)
+      .eq("business_id", businessId)
+      .order("date", { ascending: false });
 
     if (date) query = query.eq("date", date);
 
@@ -15,9 +19,9 @@ export const cashClosesService = {
     return data;
   },
 
-  generateDailyCashClose: async (userId: string): Promise<CashClose> => {
+  generateDailyCashClose: async (businessId: string): Promise<CashClose> => {
     const { data, error } = await supabase.rpc("generate_daily_cash_close", {
-      p_user_id: userId,
+      p_business_id: businessId,
     });
 
     if (error) throw new Error(error.message);

@@ -9,9 +9,9 @@ import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 const columnHelper = createColumnHelper<Product>();
 
 export type InventoryTableMeta = {
-  onEdit?: (product: Product) => void;
-  onToggleStatus?: (product: Product) => void;
-  isAdmin?: boolean;
+  onEdit: (product: Product) => void;
+  onToggleStatus: (product: Product) => void;
+  isAdmin: boolean;
 };
 
 type PriceBsCellProps = {
@@ -97,9 +97,9 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
       meta: { hideOnMobile: true },
       cell: ({ row, table }) => {
         const product = row.original;
-        const meta = table.options.meta as InventoryTableMeta | undefined;
+        const meta = table.options.meta as InventoryTableMeta;
 
-        if (!meta?.isAdmin) return null;
+        if (!meta.isAdmin) return null;
 
         return (
           <div className="flex items-center justify-center gap-1">
@@ -109,7 +109,7 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
               className="text-muted-foreground hover:text-primary h-5 w-7 p-0"
               onClick={(e) => {
                 e.stopPropagation();
-                meta?.onEdit?.(product);
+                meta.onEdit(product);
               }}
             >
               <Pencil className="h-3.5 w-3.5" />
@@ -124,7 +124,7 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
               }`}
               onClick={(e) => {
                 e.stopPropagation();
-                meta?.onToggleStatus?.(product);
+                meta.onToggleStatus(product);
               }}
             >
               {product.active ? <Trash2 className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}

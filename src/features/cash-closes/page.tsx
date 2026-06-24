@@ -105,14 +105,22 @@ export function CashClosesPage() {
     };
   }, [sourceTxs, sourceReturns]);
 
-  const handleConfirmClose = () => {
+  const handleConfirmClose = async () => {
     if (!user) return;
-    const promise = closeMutation.mutateAsync(user.id);
+
+    const promise = closeMutation.mutateAsync(undefined);
     toast.promise(promise, {
       loading: "Generando cierre de caja...",
       success: "Cierre realizado correctamente",
       error: "Error al realizar el cierre",
     });
+
+    try {
+      await promise;
+      setConfirmOpen(false);
+    } catch {
+      // The mutation error is presented by the toast while the dialog remains open.
+    }
   };
 
   const handleRowClick = (row: CashCloseWithRelations) => {

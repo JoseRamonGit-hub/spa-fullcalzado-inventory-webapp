@@ -45,7 +45,7 @@ export function BatchSummaryFooter({
         }
       >
         <ModalShortcutActionButton
-          icon={<PackagePlus data-icon="inline-start" className="h-4 w-4" />}
+          icon={<PackagePlus data-icon="inline-start" />}
           label={
             isSubmissionPending
               ? "Procesando..."
@@ -53,7 +53,6 @@ export function BatchSummaryFooter({
           }
           disabled={hasNoItems || isSubmissionPending}
           onClick={onOpenConfirmDialog}
-          className="max-md:w-full"
         />
       </ModalFooterActionRow>
     </footer>

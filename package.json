@@ -17,6 +17,7 @@
     "watch-routes": "tsr watch",
     "supabase:env": "bash scripts/setup-env.sh",
     "supabase:start": "supabase start",
+    "supabase:functions": "npx supabase functions serve",
     "supabase:reset": "npx supabase db reset",
     "supabase:seed": "npx supabase db seed"
   },
@@ -43,6 +44,7 @@
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0",
     "vaul": "^1.1.2",
+    "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
@@ -69,6 +71,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
+    "playwright": "^1.61.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "shadcn": "^4.10.0",

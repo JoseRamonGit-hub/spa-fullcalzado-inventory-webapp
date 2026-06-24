@@ -2,6 +2,8 @@ import type { Tables, TablesInsert, TablesUpdate } from "./supabase";
 
 // ── Row types (read from DB) ────────────────────────────────
 export type User = Tables<"users">;
+export type Business = Tables<"businesses">;
+export type UserBusinessAccess = Tables<"user_business_access">;
 export type Product = Tables<"products">;
 export type Transaction = Tables<"transactions">;
 export type InventoryMovement = Tables<"inventory_movements">;
@@ -19,6 +21,11 @@ export type CashCloseInsert = TablesInsert<"cash_closes">;
 export type ExchangeRateInsert = TablesInsert<"exchange_rates">;
 export type ReturnInsert = TablesInsert<"returns">;
 export type ReturnItemInsert = TablesInsert<"return_items">;
+
+export type ProductCreateInput = Omit<ProductInsert, "business_id">;
+export type TransactionCreateInput = Omit<TransactionInsert, "business_id">;
+export type InventoryMovementCreateInput = Omit<InventoryMovementInsert, "business_id">;
+export type ExchangeRateCreateInput = Omit<ExchangeRateInsert, "business_id">;
 
 // ── Update types (partial write to DB) ──────────────────────
 export type ProductUpdate = TablesUpdate<"products">;
@@ -63,7 +70,6 @@ export type EditProductPayload = {
   p_description: string;
   p_price_usd: number;
   p_stock: number;
-  p_user_id: string;
 };
 
 // ── Return RPC payload types ────────────────────────────────
@@ -84,6 +90,29 @@ export type ProcessReturnPayload = {
       }[]
     | null;
   p_exchange_rate: number;
-  p_user_id: string;
   p_notes?: string;
+};
+
+export type UserRole = User["role"];
+
+export type ManagedUser = User & {
+  business_ids: string[];
+};
+
+export type CreateUserInput = {
+  email: string;
+  password: string;
+  fullname: string;
+  role: UserRole;
+  business_ids: string[];
+  default_business_id: string;
+};
+
+export type UpdateUserInput = {
+  id: string;
+  fullname: string;
+  role: UserRole;
+  is_active: boolean;
+  business_ids: string[];
+  default_business_id: string;
 };

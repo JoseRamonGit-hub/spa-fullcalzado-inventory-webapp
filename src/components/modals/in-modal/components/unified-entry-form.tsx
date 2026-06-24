@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Lock, LockOpen } from "lucide-react";
 import { useAppForm } from "@/hooks/form";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Kbd } from "@/components/ui/kbd";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import type { ProductSearchResult } from "@/components/product-search";
+import type { ProductSearchResult } from "@/components/product-search/types";
 import { useProductLookup } from "@/components/modals/shared/product-selection";
 import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
 
@@ -35,8 +35,8 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
     defaultValues: {
       selectedProductId: "",
       description: "",
-      priceUsd: "" as unknown as number,
-      quantityOrInitialStock: "" as unknown as number,
+      priceUsd: 0,
+      quantityOrInitialStock: 0,
     },
     onSubmit: async ({ value }) => {
       if (isExistingMode) {
@@ -53,7 +53,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
         const product = getProductById(value.selectedProductId);
         if (!product) return;
 
-        const editedPrice = isUnlocked ? (value.priceUsd as number) : undefined;
+        const editedPrice = isUnlocked ? value.priceUsd : undefined;
         const hasPriceChange = editedPrice != null && editedPrice !== product.price_usd;
 
         const item: ExistingBatchItem = {
@@ -62,7 +62,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           productId: product.id,
           code: product.code,
           description: isUnlocked ? value.description.trim() : product.description,
-          addedQuantity: value.quantityOrInitialStock as number,
+          addedQuantity: value.quantityOrInitialStock,
           currentStock: product.stock,
           currentPriceUsd: product.price_usd,
           ...(hasPriceChange && { priceUsd: editedPrice, originalPriceUsd: product.price_usd }),
@@ -80,8 +80,8 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           kind: "new",
           code,
           description: value.description.trim(),
-          priceUsd: value.priceUsd as number,
-          initialStock: value.quantityOrInitialStock as number,
+          priceUsd: value.priceUsd,
+          initialStock: value.quantityOrInitialStock,
         };
         onAddPendingBatchItem(item);
       }
@@ -98,55 +98,48 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
     },
   });
 
-  const focusField = useCallback((name: string) => {
+  const focusField = (name: string) => {
     requestAnimationFrame(() => {
       formRef.current?.querySelector<HTMLInputElement>(`input[name="${name}"]`)?.focus();
     });
-  }, []);
+  };
 
-  const handleEnterWithNoResults = useCallback(() => {
+  const handleEnterWithNoResults = () => {
     focusField("description");
-  }, [focusField]);
+  };
 
-  const handleSearchTextChange = useCallback((text: string) => {
+  const handleSearchTextChange = (text: string) => {
     setSearchText(text);
-  }, []);
+  };
 
-  const handleAfterProductSelect = useCallback(
-    (product: ProductSearchResult) => {
-      setSelectedProduct(product);
-      setSearchText("");
-      form.setFieldValue("description", product.description);
-      form.setFieldValue("priceUsd", product.price_usd);
-      setIsUnlocked(false);
+  const handleAfterProductSelect = (product: ProductSearchResult) => {
+    setSelectedProduct(product);
+    setSearchText("");
+    form.setFieldValue("description", product.description);
+    form.setFieldValue("priceUsd", product.price_usd);
+    setIsUnlocked(false);
 
-      focusField("quantityOrInitialStock");
-    },
-    [form, focusField],
-  );
+    focusField("quantityOrInitialStock");
+  };
 
-  const handleProductClear = useCallback(() => {
+  const handleProductClear = () => {
     setSelectedProduct(null);
     setSearchText("");
     form.setFieldValue("description", "");
-    form.setFieldValue("priceUsd", "" as unknown as number);
+    form.setFieldValue("priceUsd", 0);
     setIsUnlocked(false);
-  }, [form]);
+  };
 
-  const handleFormSubmit = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      form.handleSubmit();
-    },
-    [form],
-  );
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    form.handleSubmit();
+  };
 
   const isFieldLocked = isExistingMode && !isUnlocked;
 
   return (
-    <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-3">
-      {/* Row 1: Product search + mode badge */}
+    <form ref={formRef} onSubmit={handleFormSubmit} className="flex flex-col gap-3">
       <div className="flex items-end gap-2">
         <div key={formResetKey} className="min-w-0 flex-1">
           <form.AppField name="selectedProductId">
@@ -178,7 +171,6 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
         </div>
       </div>
 
-      {/* Row 2: Description + Price + Quantity + Unlock + Submit */}
       <fieldset className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-[2fr_auto_auto_auto]">
         <div className="col-span-2 sm:col-span-1">
           <form.AppField
@@ -275,7 +267,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
                   ) : (
                     <>
                       <Pencil className="size-3.5 sm:hidden" aria-hidden="true" />
-                      <Lock className="size-3.5 hidden sm:block" aria-hidden="true" />
+                      <Lock className="hidden size-3.5 sm:block" aria-hidden="true" />
                     </>
                   )}
                   <span className="text-xs sm:hidden">{isUnlocked ? "Bloquear" : "Editar"}</span>

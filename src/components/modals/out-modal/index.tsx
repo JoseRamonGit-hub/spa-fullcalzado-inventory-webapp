@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
+import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
+import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingSaleColumns } from "./columns";
 
@@ -17,12 +17,10 @@ type OutModalProps = {
   onOpenChange: (isOpen: boolean) => void;
 };
 
-const INITIAL_FALLBACK_RATE = 0;
-
 export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
   const navigate = useNavigate();
   const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
-  const currentExchangeRate = exchangeRateData?.rate ?? INITIAL_FALLBACK_RATE;
+  const currentExchangeRate = exchangeRateData?.rate ?? 0;
   const isExchangeRateReady = !!exchangeRateData?.rate;
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -30,11 +28,11 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
   const { pendingSales, addPendingSale, removePendingSale, clearPendingSales, totalAmountUsd, totalAmountVes } =
     usePendingSales();
 
-  const handleSubmissionSuccess = useCallback(() => {
+  const handleSubmissionSuccess = () => {
     setIsConfirmDialogOpen(false);
     onOpenChange(false);
     navigate({ to: "/transactions" });
-  }, [onOpenChange, navigate]);
+  };
 
   const { submitPendingSales, isSubmissionPending } = useSubmitSales({
     pendingSales,
@@ -43,28 +41,22 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     onSuccess: handleSubmissionSuccess,
   });
 
-  const handleModalOpenChange = useCallback(
-    (isCurrentlyOpen: boolean) => {
-      if (!isCurrentlyOpen) {
-        clearPendingSales();
-      }
-      onOpenChange(isCurrentlyOpen);
-    },
-    [onOpenChange, clearPendingSales],
-  );
+  const handleModalOpenChange = (isCurrentlyOpen: boolean) => {
+    if (!isCurrentlyOpen) {
+      clearPendingSales();
+    }
+    onOpenChange(isCurrentlyOpen);
+  };
 
-  const keyboardShortcuts = useMemo(
-    () => [
-      {
-        key: "enter",
-        shiftKey: true,
-        when: pendingSales.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
-        stopPropagation: true,
-        onTrigger: () => setIsConfirmDialogOpen(true),
-      },
-    ],
-    [pendingSales.length, isConfirmDialogOpen, isExchangeRateReady],
-  );
+  const keyboardShortcuts = [
+    {
+      key: "enter",
+      shiftKey: true,
+      when: pendingSales.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
+      stopPropagation: true,
+      onTrigger: () => setIsConfirmDialogOpen(true),
+    },
+  ];
 
   useModalKeyboardShortcuts({ enabled: isOpen, shortcuts: keyboardShortcuts });
 
@@ -78,7 +70,6 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         dialogClassName="sm:max-w-4xl"
         avoidCloseFromOutsideClick
         avoidCloseFromEsc
-        descriptionSrOnly
         footer={
           <SalesSummaryFooter
             pendingSales={pendingSales}

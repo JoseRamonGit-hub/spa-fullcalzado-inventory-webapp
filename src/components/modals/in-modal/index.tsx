@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from "react";
-import { ResponsiveModal } from "@/components/ResponsiveModal";
+import { useState } from "react";
+import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
 import { DataTable } from "@/components/ui/data-table";
 import { pendingItemColumns } from "./columns";
 import { useBatch } from "./hooks/use-batch";
@@ -19,10 +19,10 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
 
   const { pendingBatchItems, addPendingBatchItem, removePendingBatchItem, clearPendingBatchItems } = useBatch();
 
-  const handleSubmissionSuccess = useCallback(() => {
+  const handleSubmissionSuccess = () => {
     setIsConfirmDialogOpen(false);
     onOpenChange(false);
-  }, [onOpenChange]);
+  };
 
   const { submitPendingBatchItems, isSubmissionPending } = useSubmitBatch({
     pendingBatchItems,
@@ -30,28 +30,22 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
     onSuccess: handleSubmissionSuccess,
   });
 
-  const handleModalOpenChange = useCallback(
-    (isCurrentlyOpen: boolean) => {
-      if (!isCurrentlyOpen) {
-        clearPendingBatchItems();
-      }
-      onOpenChange(isCurrentlyOpen);
-    },
-    [onOpenChange, clearPendingBatchItems],
-  );
+  const handleModalOpenChange = (isCurrentlyOpen: boolean) => {
+    if (!isCurrentlyOpen) {
+      clearPendingBatchItems();
+    }
+    onOpenChange(isCurrentlyOpen);
+  };
 
-  const keyboardShortcuts = useMemo(
-    () => [
-      {
-        key: "enter",
-        shiftKey: true,
-        when: pendingBatchItems.length > 0,
-        stopPropagation: true,
-        onTrigger: () => setIsConfirmDialogOpen(true),
-      },
-    ],
-    [pendingBatchItems.length],
-  );
+  const keyboardShortcuts = [
+    {
+      key: "enter",
+      shiftKey: true,
+      when: pendingBatchItems.length > 0,
+      stopPropagation: true,
+      onTrigger: () => setIsConfirmDialogOpen(true),
+    },
+  ];
 
   useModalKeyboardShortcuts({ enabled: isOpen, shortcuts: keyboardShortcuts });
 
@@ -64,7 +58,6 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
         description="Busca un producto existente o ingresa un código nuevo para agregarlo al lote."
         dialogClassName="min-w-4xl"
         avoidCloseFromOutsideClick
-        descriptionSrOnly
         footer={
           <BatchSummaryFooter
             pendingBatchItems={pendingBatchItems}

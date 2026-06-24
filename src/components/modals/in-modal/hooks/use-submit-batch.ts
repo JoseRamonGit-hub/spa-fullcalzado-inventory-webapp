@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { toast } from "sonner";
 import { useCreateManyProducts } from "@/features/inventory/hooks/useProductMutations";
 import { useCreateManyMovements } from "@/features/movements/hooks/useMovementMutations";
@@ -18,9 +17,9 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
 
   const isSubmissionPending = createManyProductsMutation.isPending || createManyMovementsMutation.isPending;
 
-  const submitPendingBatchItems = useCallback(async () => {
+  const submitPendingBatchItems = async () => {
     const hasNoItems = pendingBatchItems.length === 0;
-    if (hasNoItems) return;
+    if (!currentUser || hasNoItems) return;
 
     const newBatchItems = pendingBatchItems.filter((item): item is NewBatchItem => item.kind === "new");
     const existingBatchItems = pendingBatchItems.filter((item): item is ExistingBatchItem => item.kind === "existing");
@@ -38,7 +37,7 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
       batchOperations.push(createManyProductsMutation.mutateAsync(newProductsPayload));
     }
 
-    if (existingBatchItems.length > 0 && currentUser) {
+    if (existingBatchItems.length > 0) {
       const movementsPayload = existingBatchItems.map((item) => ({
         product_id: item.productId,
         quantity: item.addedQuantity,
@@ -63,14 +62,7 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
     await batchPromises;
     clearPendingBatchItems();
     onSuccess();
-  }, [
-    pendingBatchItems,
-    createManyProductsMutation,
-    createManyMovementsMutation,
-    currentUser,
-    clearPendingBatchItems,
-    onSuccess,
-  ]);
+  };
 
   return { submitPendingBatchItems, isSubmissionPending };
 }

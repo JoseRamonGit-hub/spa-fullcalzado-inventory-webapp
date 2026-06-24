@@ -59,8 +59,6 @@ export const columns = [
     id: "closed_by",
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Cerrado por" />,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.original.users?.fullname ?? "—"}</span>
-    ),
+    cell: ({ row }) => <span className="text-muted-foreground">{row.original.users?.fullname ?? "—"}</span>,
   }),
 ] as ColumnDef<CashCloseWithRelations>[];

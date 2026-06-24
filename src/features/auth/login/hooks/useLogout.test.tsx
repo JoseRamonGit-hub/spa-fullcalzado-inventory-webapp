@@ -46,14 +46,12 @@ describe("useLogout", () => {
     vi.clearAllMocks();
     useAuthStore.setState({
       user: null,
-      isAuthenticated: false,
-      isInitialized: false,
     });
   });
 
   it("limpia el store y navega a /login", async () => {
     useAuthStore.getState().setAuth(fakeUser);
-    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    expect(useAuthStore.getState().user).toEqual(fakeUser);
 
     mockLogout.mockResolvedValueOnce(undefined);
 
@@ -69,7 +67,6 @@ describe("useLogout", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
     expect(useAuthStore.getState().user).toBeNull();
 
     expect(mockNavigate).toHaveBeenCalledWith({
@@ -97,6 +94,6 @@ describe("useLogout", () => {
       });
     });
 
-    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+    expect(useAuthStore.getState().user).toBeNull();
   });
 });

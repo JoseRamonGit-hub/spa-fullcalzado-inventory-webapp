@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
-import { ResponsiveModal } from "@/components/ResponsiveModal";
-import { useExchangeRate } from "@/features/exchange_rates/useExchangeRateQueries";
+import { useState } from "react";
+import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
+import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { usePendingReturn } from "./hooks/use-pending-return";
@@ -9,7 +9,7 @@ import { ProductReturnForm } from "./components/product-return-form";
 import { ReturnItemsPanel } from "./components/return-items-panel";
 import { ReturnSummaryFooter } from "./components/return-summary-footer";
 import { ConfirmReturnDialog } from "./components/confirm-return-dialog";
-import type { PendingReturnItem, PendingExchangeItem } from "./types";
+import type { PendingReturnItem, PendingExchangeItem, ReturnSummary } from "./types";
 import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
 
 type ReturnTabValue = "return" | "exchange";
@@ -19,11 +19,9 @@ type ReturnModalProps = {
   onOpenChange: (isOpen: boolean) => void;
 };
 
-const INITIAL_FALLBACK_RATE = 0;
-
 export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
   const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
-  const currentExchangeRate = exchangeRateData?.rate ?? INITIAL_FALLBACK_RATE;
+  const currentExchangeRate = exchangeRateData?.rate ?? 0;
   const isExchangeRateReady = !!exchangeRateData?.rate;
 
   const [activeTab, setActiveTab] = useState<ReturnTabValue>("return");
@@ -44,112 +42,78 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
     differenceVes,
     returnType,
   } = usePendingReturn();
+  const summary: ReturnSummary = {
+    returnType,
+    creditUsd,
+    newPurchaseUsd,
+    differenceUsd,
+    differenceVes,
+  };
 
-  const handleSubmissionSuccess = useCallback(() => {
+  const handleSubmissionSuccess = () => {
     setIsConfirmDialogOpen(false);
     setNotes("");
     onOpenChange(false);
-  }, [onOpenChange]);
+  };
 
   const { submitReturn, isSubmissionPending } = useSubmitReturn({
     returnItems,
     exchangeItems,
-    returnType,
+    returnType: summary.returnType,
     currentExchangeRate,
     notes,
     clearAll,
     onSuccess: handleSubmissionSuccess,
   });
 
-  const handleModalOpenChange = useCallback(
-    (isCurrentlyOpen: boolean) => {
-      if (!isCurrentlyOpen) {
-        clearAll();
-        setNotes("");
-        setActiveTab("return");
-      }
-      onOpenChange(isCurrentlyOpen);
-    },
-    [onOpenChange, clearAll],
-  );
+  const handleModalOpenChange = (isCurrentlyOpen: boolean) => {
+    if (!isCurrentlyOpen) {
+      clearAll();
+      setNotes("");
+      setActiveTab("return");
+    }
+    onOpenChange(isCurrentlyOpen);
+  };
 
-  const keyboardShortcuts = useMemo(
-    () => [
-      {
-        key: "d",
-        altKey: true,
-        onTrigger: () => setActiveTab("return"),
-      },
-      {
-        key: "c",
-        altKey: true,
-        onTrigger: () => setActiveTab("exchange"),
-      },
-      {
-        key: "enter",
-        shiftKey: true,
-        when: returnItems.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
-        stopPropagation: true,
-        onTrigger: () => setIsConfirmDialogOpen(true),
-      },
-    ],
-    [returnItems.length, isConfirmDialogOpen, isExchangeRateReady],
-  );
+  const keyboardShortcuts = [
+    {
+      key: "d",
+      altKey: true,
+      onTrigger: () => setActiveTab("return"),
+    },
+    {
+      key: "c",
+      altKey: true,
+      onTrigger: () => setActiveTab("exchange"),
+    },
+    {
+      key: "enter",
+      shiftKey: true,
+      when: returnItems.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
+      stopPropagation: true,
+      onTrigger: () => setIsConfirmDialogOpen(true),
+    },
+  ];
 
   useModalKeyboardShortcuts({ enabled: isOpen, shortcuts: keyboardShortcuts });
 
-  // ── Handlers ───────────────────────────────────────────────
-  const handleAddReturnItem = useCallback(
-    (item: {
-      productId: string;
-      code: string;
-      description: string;
-      quantity: number;
-      priceUsd: number;
-      priceVes: number;
-    }) => {
-      const pendingItem: PendingReturnItem = {
-        tempId: crypto.randomUUID(),
-        productId: item.productId,
-        code: item.code,
-        description: item.description,
-        quantity: item.quantity,
-        priceUsd: item.priceUsd,
-        priceVes: item.priceVes,
-        totalUsd: item.quantity * item.priceUsd,
-        totalVes: item.quantity * item.priceVes,
-      };
-      addReturnItem(pendingItem);
-    },
-    [addReturnItem],
-  );
+  const handleAddReturnItem = (item: Omit<PendingReturnItem, "tempId" | "totalUsd" | "totalVes">) => {
+    addReturnItem({
+      ...item,
+      tempId: crypto.randomUUID(),
+      totalUsd: item.quantity * item.priceUsd,
+      totalVes: item.quantity * item.priceVes,
+    });
+  };
 
-  const handleAddExchangeItem = useCallback(
-    (item: {
-      productId: string;
-      code: string;
-      description: string;
-      quantity: number;
-      priceUsd: number;
-      priceVes: number;
-      availableStock: number;
-    }) => {
-      const pendingItem: PendingExchangeItem = {
-        tempId: crypto.randomUUID(),
-        productId: item.productId,
-        code: item.code,
-        description: item.description,
-        quantity: item.quantity,
-        priceUsd: item.priceUsd,
-        priceVes: item.priceVes,
-        totalUsd: item.quantity * item.priceUsd,
-        totalVes: item.quantity * item.priceVes,
-        availableStock: item.availableStock,
-      };
-      addExchangeItem(pendingItem);
-    },
-    [addExchangeItem],
-  );
+  const handleAddExchangeItem = (item: Omit<PendingExchangeItem, "tempId" | "totalUsd" | "totalVes">) => {
+    addExchangeItem({
+      ...item,
+      tempId: crypto.randomUUID(),
+      totalUsd: item.quantity * item.priceUsd,
+      totalVes: item.quantity * item.priceVes,
+    });
+  };
 
   return (
     <>
@@ -161,15 +125,10 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
         dialogClassName="sm:max-w-4xl"
         avoidCloseFromOutsideClick
         avoidCloseFromEsc
-        descriptionSrOnly
         footer={
           <ReturnSummaryFooter
             hasReturnItems={returnItems.length > 0}
-            returnType={returnType}
-            creditUsd={creditUsd}
-            newPurchaseUsd={newPurchaseUsd}
-            differenceUsd={differenceUsd}
-            differenceVes={differenceVes}
+            summary={summary}
             currentExchangeRate={currentExchangeRate}
             isExchangeRateLoading={isExchangeRateLoading}
             isSubmissionPending={isSubmissionPending}
@@ -246,10 +205,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
         onOpenChange={setIsConfirmDialogOpen}
         returnItems={returnItems}
         exchangeItems={exchangeItems}
-        returnType={returnType}
-        creditUsd={creditUsd}
-        differenceUsd={differenceUsd}
-        differenceVes={differenceVes}
+        summary={summary}
         currentExchangeRate={currentExchangeRate}
         isExchangeRateLoading={isExchangeRateLoading}
         isSubmissionPending={isSubmissionPending}

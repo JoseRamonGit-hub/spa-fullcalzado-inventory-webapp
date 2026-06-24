@@ -26,7 +26,23 @@ SELECT plan(16);
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.users LIMIT 1) THEN
-    INSERT INTO auth.users (id, email, instance_id, aud, role, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
+    INSERT INTO auth.users (
+      id,
+      email,
+      instance_id,
+      aud,
+      role,
+      encrypted_password,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at,
+      confirmation_token,
+      recovery_token,
+      email_change_token_new,
+      email_change,
+      email_confirmed_at
+    )
     VALUES (
       '00000000-0000-0000-0000-000000000001'::uuid,
       'test@test.com',
@@ -34,19 +50,31 @@ BEGIN
       'authenticated', 'authenticated', crypt('password', gen_salt('bf')),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"fullname":"Test User"}'::jsonb,
-      now(), now(), '', now()
+      now(), now(), '', '', '', '', now()
     );
   END IF;
 END;
 $$;
 
+UPDATE public.users
+SET role = 'admin',
+    default_business_id = '10000000-0000-0000-0000-000000000001'
+WHERE id = (SELECT id FROM public.users ORDER BY created_at LIMIT 1);
+
+SELECT set_config(
+  'request.jwt.claim.sub',
+  (SELECT id::text FROM public.users ORDER BY created_at LIMIT 1),
+  true
+);
+
 -- Create test products with stock=0 so the trigger fires but creates NO movements
 -- (log_product_entry only inserts when v_quantity > 0).
 -- Then use direct UPDATE with suppression to set desired stock without side effects.
 
-INSERT INTO public.products (id, code, description, stock, price_usd, active)
+INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
 VALUES (
   'aaaa0000-0000-0000-0000-000000000001'::uuid,
+  '10000000-0000-0000-0000-000000000001'::uuid,
   'TEST-EDIT-001',
   'Zapato original',
   0,
@@ -54,9 +82,10 @@ VALUES (
   true
 );
 
-INSERT INTO public.products (id, code, description, stock, price_usd, active)
+INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
 VALUES (
   'aaaa0000-0000-0000-0000-000000000002'::uuid,
+  '10000000-0000-0000-0000-000000000001'::uuid,
   'TEST-EDIT-002',
   'Bota de cuero',
   0,
@@ -64,9 +93,10 @@ VALUES (
   true
 );
 
-INSERT INTO public.products (id, code, description, stock, price_usd, active)
+INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
 VALUES (
   'aaaa0000-0000-0000-0000-000000000003'::uuid,
+  '10000000-0000-0000-0000-000000000001'::uuid,
   'TEST-ENTRY-001',
   'Sandalia test',
   0,
@@ -98,9 +128,9 @@ SELECT is(
 
 -- 1b. Call edit_product (change stock from 10 to 15)
 SELECT public.edit_product(
+  p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id := 'aaaa0000-0000-0000-0000-000000000001'::uuid,
-  p_stock      := 15,
-  p_user_id    := (SELECT id FROM public.users LIMIT 1)
+  p_stock      := 15
 );
 
 -- 1c. Exactly 1 movement created (not 2 — trigger suppressed)
@@ -134,11 +164,11 @@ SELECT is(
 
 -- 2a. Call edit_product changing description, price, and stock
 SELECT public.edit_product(
+  p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id  := 'aaaa0000-0000-0000-0000-000000000001'::uuid,
   p_description := 'Zapato editado',
   p_price_usd   := 30.00,
-  p_stock       := 20,
-  p_user_id     := (SELECT id FROM public.users LIMIT 1)
+  p_stock       := 20
 );
 
 -- Target the second edit movement deterministically via description_before IS NOT NULL
@@ -200,9 +230,9 @@ SELECT is(
 
 -- 3a. Edit only price (no stock change)
 SELECT public.edit_product(
+  p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id := 'aaaa0000-0000-0000-0000-000000000002'::uuid,
-  p_price_usd  := 45.00,
-  p_user_id    := (SELECT id FROM public.users LIMIT 1)
+  p_price_usd  := 45.00
 );
 
 -- 3b. Movement created with quantity=0
@@ -227,8 +257,8 @@ SELECT ok(
 -- ============================================================================
 
 SELECT throws_ok(
-  $$INSERT INTO public.inventory_movements (type, product_id, quantity, user_id, date, time)
-    VALUES ('entry', 'aaaa0000-0000-0000-0000-000000000003', 0,
+  $$INSERT INTO public.inventory_movements (business_id, type, product_id, quantity, user_id, date, time)
+    VALUES ('10000000-0000-0000-0000-000000000001', 'entry', 'aaaa0000-0000-0000-0000-000000000003', 0,
             (SELECT id FROM public.users LIMIT 1), current_date, current_time)$$,
   '23514',
   NULL,
@@ -240,9 +270,10 @@ SELECT throws_ok(
 -- ============================================================================
 
 -- 5a. Insert entry movement for product with stock=5, price=15.00
-INSERT INTO public.inventory_movements (type, product_id, quantity, user_id, date, time,
+INSERT INTO public.inventory_movements (business_id, type, product_id, quantity, user_id, date, time,
   stock_before, price_usd)
 VALUES (
+  '10000000-0000-0000-0000-000000000001',
   'entry',
   'aaaa0000-0000-0000-0000-000000000003',
   3,
@@ -281,9 +312,10 @@ SELECT is(
 -- (set_config with is_local=true persists for the entire transaction)
 SELECT set_config('app.suppress_log_entry', 'false', true);
 
-INSERT INTO public.products (id, code, description, stock, price_usd, active)
+INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
 VALUES (
   'aaaa0000-0000-0000-0000-000000000004'::uuid,
+  '10000000-0000-0000-0000-000000000001'::uuid,
   'TEST-NEW-001',
   'Producto nuevo con trigger',
   8,

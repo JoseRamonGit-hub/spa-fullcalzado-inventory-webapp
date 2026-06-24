@@ -29,7 +29,10 @@ export const columns = [
 
       return (
         <span className="flex justify-center">
-          <Badge variant={isExchange ? "exchange" : "refund"} title={isExchange ? "Cambio de artículo" : "Devolución sin cambio"}>
+          <Badge
+            variant={isExchange ? "exchange" : "refund"}
+            title={isExchange ? "Cambio de artículo" : "Devolución sin cambio"}
+          >
             <IterationCcw aria-hidden="true" />
             {isExchange ? "Cambio" : "Devolución"}
           </Badge>
@@ -90,9 +93,7 @@ export const columns = [
   }),
   columnHelper.accessor("exchange_rate", {
     header: "Tasa",
-    cell: ({ getValue }) => (
-      <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(getValue())}</span>
-    ),
+    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(getValue())}</span>,
   }),
   columnHelper.accessor("notes", {
     header: "Notas",

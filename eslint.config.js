@@ -8,7 +8,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores(["dist", "supabase/functions"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
@@ -26,6 +26,18 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+  },
+  {
+    files: ["src/components/ui/**/*.{ts,tsx}", "src/features/**/columns.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
+    files: ["src/components/ui/data-table.tsx"],
+    rules: {
+      "react-hooks/incompatible-library": "off",
     },
   },
   eslintPluginPrettierRecommended,
