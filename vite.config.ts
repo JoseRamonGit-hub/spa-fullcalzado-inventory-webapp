@@ -8,7 +8,7 @@ import babel from "@rolldown/plugin-babel";
 // https://vite.dev/config/
 export default defineConfig({
   server: {
-    allowedHosts: ["pattern-administration-aspect-orbit.trycloudflare.com"],
+    allowedHosts: ["promotion-instructional-forever-kidney.trycloudflare.com"],
   },
   plugins: [
     tanstackRouter({

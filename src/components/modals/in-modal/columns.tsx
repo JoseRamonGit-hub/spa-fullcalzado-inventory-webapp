@@ -45,9 +45,6 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
         </Badge>
       );
     },
-    meta: {
-      className: "w-[60px] md:w-[80px]",
-    },
   },
   {
     accessorKey: "code",
@@ -61,7 +58,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
   },
   {
     id: "quantityOrStock",
-    header: () => <span className="block text-right">Cant.</span>,
+    header: () => <span className="block text-right">Cantidad</span>,
     cell: ({ row }) => {
       const pendingBatchItem = row.original;
       if (pendingBatchItem.kind === "new") {
@@ -102,7 +99,7 @@ export const pendingItemColumns: ColumnDef<BatchItem>[] = [
           </div>
         );
       }
-      return <span className="text-muted-foreground block text-right">—</span>;
+      return <span className="text-muted-foreground block text-right">Sin cambio</span>;
     },
     meta: { hideOnMobile: true },
   },

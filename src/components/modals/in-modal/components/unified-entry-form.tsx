@@ -8,6 +8,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import type { ProductSearchResult } from "@/components/product-search/types";
 import { useProductLookup } from "@/components/modals/shared/product-selection";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
 
 const REQUIRED = "Requerido";
@@ -23,6 +24,7 @@ type UnifiedEntryFormProps = {
 
 export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: UnifiedEntryFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
+  const canEditExistingProduct = useAuthStore((state) => state.user?.role === "admin");
   const { getProductById } = useProductLookup();
   const [selectedProduct, setSelectedProduct] = useState<ProductSearchResult | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -53,7 +55,8 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
         const product = getProductById(value.selectedProductId);
         if (!product) return;
 
-        const editedPrice = isUnlocked ? value.priceUsd : undefined;
+        const canApplyAttributeEdits = canEditExistingProduct && isUnlocked;
+        const editedPrice = canApplyAttributeEdits ? value.priceUsd : undefined;
         const hasPriceChange = editedPrice != null && editedPrice !== product.price_usd;
 
         const item: ExistingBatchItem = {
@@ -61,7 +64,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           kind: "existing",
           productId: product.id,
           code: product.code,
-          description: isUnlocked ? value.description.trim() : product.description,
+          description: canApplyAttributeEdits ? value.description.trim() : product.description,
           addedQuantity: value.quantityOrInitialStock,
           currentStock: product.stock,
           currentPriceUsd: product.price_usd,
@@ -136,12 +139,12 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
     form.handleSubmit();
   };
 
-  const isFieldLocked = isExistingMode && !isUnlocked;
+  const isFieldLocked = isExistingMode && (!canEditExistingProduct || !isUnlocked);
 
   return (
-    <form ref={formRef} onSubmit={handleFormSubmit} className="flex flex-col gap-3">
-      <div className="flex items-end gap-2">
-        <div key={formResetKey} className="min-w-0 flex-1">
+    <form ref={formRef} onSubmit={handleFormSubmit}>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div key={formResetKey} className="col-span-2 min-w-0 md:col-span-1">
           <form.AppField name="selectedProductId">
             {(field) => (
               <field.ProductSearchField
@@ -158,7 +161,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
             )}
           </form.AppField>
         </div>
-        <div className="hidden h-8 items-center sm:flex">
+        <div className="mt-3 hidden h-8 items-end md:flex">
           {!isExistingMode && searchText.trim() ? (
             <Badge variant="outline" className="text-[10px] whitespace-nowrap">
               Nuevo producto
@@ -167,7 +170,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
         </div>
       </div>
 
-      <fieldset className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-[minmax(16rem,1fr)_10rem_9rem_auto]">
+      <fieldset className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 md:grid-cols-[minmax(0,1fr)_10rem_9rem_auto] md:items-end">
         <div className="col-span-2 sm:col-span-1">
           <form.AppField
             name="description"
@@ -207,7 +210,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           >
             {(field) => (
               <field.NumberField
-                label="Precio USD"
+                label="Precio en USD"
                 compact
                 step="0.01"
                 min={String(MIN_PRICE)}
@@ -234,7 +237,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           >
             {(field) => (
               <field.NumberField
-                label={isExistingMode ? "Cantidad" : "Stock"}
+                label="Cantidad a ingresar"
                 compact
                 min={String(MIN_QUANTITY)}
                 step="1"
@@ -246,8 +249,8 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
           </form.AppField>
         </div>
 
-        <div className="col-span-2 flex items-end gap-2 sm:col-span-1">
-          {isExistingMode && (
+        <div className="col-span-2 flex items-end gap-2 md:col-span-1">
+          {isExistingMode && canEditExistingProduct && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -271,6 +274,29 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
               </TooltipTrigger>
               <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">
                 {isUnlocked ? "Bloquear" : "Editar datos"}
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {isExistingMode && !canEditExistingProduct && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="max-sm:flex-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-8 shrink-0 max-sm:h-9 max-sm:w-full max-sm:gap-1.5 max-sm:px-3"
+                    disabled
+                    aria-label="Solo administradores pueden editar datos del producto"
+                  >
+                    <Lock className="size-3.5" aria-hidden="true" />
+                    <span className="text-xs sm:hidden">Bloqueado</span>
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={4} className="hidden md:block">
+                Solo admin puede editar descripción o precio
               </TooltipContent>
             </Tooltip>
           )}

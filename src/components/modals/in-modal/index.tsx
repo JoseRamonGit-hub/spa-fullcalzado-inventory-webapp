@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
-import { DataTable } from "@/components/ui/data-table";
-import { pendingItemColumns } from "./columns";
 import { useBatch } from "./hooks/use-batch";
 import { useSubmitBatch } from "./hooks/use-submit-batch";
 import { UnifiedEntryForm } from "./components/unified-entry-form";
 import { ConfirmBatchDialog } from "./components/confirm-batch-dialog";
 import { BatchSummaryFooter } from "./components/batch-summary-footer";
 import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
+import { PendingBatchPanel } from "./components/pending-batch-panel";
+import { BatchSummaryBlock } from "./components/batch-summary-block";
 
 type InModalProps = {
   isOpen: boolean;
@@ -56,7 +56,7 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
         onOpenChange={handleModalOpenChange}
         title="Carga de Inventario"
         description="Busca un producto existente o ingresa un código nuevo para agregarlo al lote."
-        dialogClassName="min-w-4xl"
+        dialogClassName="sm:max-w-5xl"
         avoidCloseFromOutsideClick
         footer={
           <BatchSummaryFooter
@@ -67,19 +67,15 @@ export function InModal({ isOpen, onOpenChange }: InModalProps) {
         }
       >
         <section className="flex flex-col gap-3 md:gap-4">
-          <header>
-            <UnifiedEntryForm pendingBatchItems={pendingBatchItems} onAddPendingBatchItem={addPendingBatchItem} />
-          </header>
+          <UnifiedEntryForm pendingBatchItems={pendingBatchItems} onAddPendingBatchItem={addPendingBatchItem} />
 
-          <article className="bg-card -mx-2 flex h-40 flex-col overflow-hidden rounded-md border md:h-64">
-            <DataTable
-              columns={pendingItemColumns}
-              data={pendingBatchItems}
-              emptyMessage="Busca un producto por código o descripción para comenzar."
-              meta={{ onRemovePendingBatchItem: removePendingBatchItem }}
-              hidePagination
+          <div className="grid min-h-0 gap-3 md:grid-cols-[minmax(0,1fr)_17rem]">
+            <PendingBatchPanel
+              pendingBatchItems={pendingBatchItems}
+              onRemovePendingBatchItem={removePendingBatchItem}
             />
-          </article>
+            <BatchSummaryBlock pendingBatchItems={pendingBatchItems} />
+          </div>
         </section>
       </ResponsiveModal>
 

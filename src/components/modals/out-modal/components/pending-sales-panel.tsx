@@ -1,5 +1,6 @@
 import { PackageOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { PendingSale } from "../types";
 
@@ -24,44 +25,67 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
       </header>
 
       {hasPendingSales ? (
-        <ul className="custom-scrollbar divide-border/60 min-h-0 flex-1 divide-y overflow-auto">
-          {pendingSales.map((sale) => (
-            <li
-              key={sale.tempId}
-              className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 px-3 py-2.5 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center"
-            >
-              <div className="min-w-0">
-                <span className="product-code block uppercase">{sale.code}</span>
-                <p className="mt-0.5 truncate text-sm font-medium">{sale.description}</p>
-                <p className="text-muted-foreground mt-1 text-xs tabular-nums md:hidden">
-                  {sale.quantity} x {formatCurrencyUSD(sale.priceUsd)}
-                </p>
-              </div>
-
-              <div className="text-muted-foreground hidden text-right text-xs tabular-nums md:block">
-                {sale.quantity} x {formatCurrencyUSD(sale.priceUsd)}
-              </div>
-
-              <div className="text-right">
-                <p className="text-sm font-bold tabular-nums">{formatCurrencyUSD(sale.totalUsd)}</p>
-                <p className="text-muted-foreground mt-0.5 text-[11px] tabular-nums">
-                  {formatCurrencyVES(sale.totalVes)}
-                </p>
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                className="text-muted-foreground hover:text-destructive self-start md:self-center"
-                onClick={() => onRemovePendingSale(sale.tempId)}
-                aria-label={`Eliminar ${sale.code}`}
-              >
-                <Trash2 aria-hidden="true" />
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <div className="custom-scrollbar min-h-0 flex-1 overflow-auto">
+          <Table className="min-w-2xl text-xs">
+            <TableHeader className="bg-muted/20 sticky top-0 z-10">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-muted-foreground h-7 px-2 text-[10px] font-semibold tracking-wider uppercase">
+                  Código
+                </TableHead>
+                <TableHead className="text-muted-foreground h-7 px-2 text-[10px] font-semibold tracking-wider uppercase">
+                  Descripción
+                </TableHead>
+                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
+                  Cant.
+                </TableHead>
+                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
+                  P. Unit.
+                </TableHead>
+                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
+                  Total USD
+                </TableHead>
+                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
+                  Total Bs.
+                </TableHead>
+                <TableHead className="h-7 w-8 px-1" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pendingSales.map((sale) => (
+                <TableRow key={sale.tempId} className="hover:bg-muted/25">
+                  <TableCell className="px-2 py-1.5">
+                    <span className="product-code uppercase">{sale.code}</span>
+                  </TableCell>
+                  <TableCell className="max-w-64 px-2 py-1.5">
+                    <span className="block truncate font-medium">{sale.description}</span>
+                  </TableCell>
+                  <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{sale.quantity}</TableCell>
+                  <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums">
+                    {formatCurrencyUSD(sale.priceUsd)}
+                  </TableCell>
+                  <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums">
+                    {formatCurrencyUSD(sale.totalUsd)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums">
+                    {formatCurrencyVES(sale.totalVes)}
+                  </TableCell>
+                  <TableCell className="px-1 py-1 text-right">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => onRemovePendingSale(sale.tempId)}
+                      aria-label={`Eliminar ${sale.code}`}
+                    >
+                      <Trash2 aria-hidden="true" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       ) : (
         <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
           <PackageOpen className="size-8 opacity-40" aria-hidden="true" />
