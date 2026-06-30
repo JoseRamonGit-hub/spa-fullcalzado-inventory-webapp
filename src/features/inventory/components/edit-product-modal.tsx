@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
 import {
-  ConfirmDialogSummarySection,
+  ConfirmDialogTableSection,
   ModalConfirmDialog,
   ModalProductIdentity,
 } from "@/components/modals/shared/modal-ui";
@@ -32,15 +32,22 @@ type PendingChanges = {
   stock: number;
 };
 
-type ChangedField = { label: string; from: string; to: string };
+type ChangedField = {
+  label: string;
+  from: string;
+  to: string;
+};
 
 function getChangedFields(product: Product, values: PendingChanges): ChangedField[] {
   const changes: ChangedField[] = [];
-  if (values.code.trim() !== product.code) {
-    changes.push({ label: "Código", from: product.code, to: values.code.trim() });
+  const nextCode = values.code.trim();
+  const nextDescription = values.description.trim();
+
+  if (nextCode !== product.code) {
+    changes.push({ label: "Código", from: product.code, to: nextCode });
   }
-  if (values.description.trim() !== product.description) {
-    changes.push({ label: "Descripción", from: product.description, to: values.description.trim() });
+  if (nextDescription !== product.description) {
+    changes.push({ label: "Descripción", from: product.description, to: nextDescription });
   }
   if (values.priceUsd !== product.price_usd) {
     changes.push({
@@ -52,13 +59,13 @@ function getChangedFields(product: Product, values: PendingChanges): ChangedFiel
   if (values.stock !== product.stock) {
     changes.push({ label: "Stock", from: String(product.stock), to: String(values.stock) });
   }
+
   return changes;
 }
 
 export function EditProductModal({ open, onOpenChange, product }: EditProductModalProps) {
   const updateProduct = useUpdateProduct();
   const currentUser = useAuthStore((state) => state.user);
-
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<PendingChanges | null>(null);
 
@@ -70,11 +77,11 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
       stock: product.stock,
     },
     onSubmit: async ({ value }) => {
-      const changes = getChangedFields(product, value);
-      if (changes.length === 0) {
+      if (getChangedFields(product, value).length === 0) {
         toast.info("No se detectaron cambios.");
         return;
       }
+
       setPendingValues(value);
       setConfirmOpen(true);
     },
@@ -107,13 +114,13 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
     });
   };
 
-  const handleModalClose = (isOpen: boolean) => {
-    if (!isOpen) {
+  const handleModalOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
       form.reset();
       setPendingValues(null);
       setConfirmOpen(false);
     }
-    onOpenChange(isOpen);
+    onOpenChange(nextOpen);
   };
 
   const handleFormSubmit = (event: React.FormEvent) => {
@@ -123,58 +130,70 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
   };
 
   const changedFields = pendingValues ? getChangedFields(product, pendingValues) : [];
+  const hasMultipleChanges = changedFields.length !== 1;
 
   return (
     <>
       <ResponsiveModal
         open={open}
-        onOpenChange={handleModalClose}
-        title="Editar Producto"
+        onOpenChange={handleModalOpenChange}
+        title="Editar producto"
         description="Modifica la información del producto seleccionado."
+        dialogClassName="sm:max-w-xl"
         footer={
-          <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
-            {([canSubmit, isSubmitting]) => (
-              <Button
-                type="submit"
-                form="edit-product-form"
-                className="mt-1 h-9 w-full gap-2"
-                disabled={!canSubmit || isSubmitting || updateProduct.isPending}
-              >
-                <Pencil className="h-4 w-4" />
-                Guardar Cambios
-              </Button>
-            )}
-          </form.Subscribe>
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => handleModalOpenChange(false)}>
+              Cancelar
+            </Button>
+            <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+              {([canSubmit, isSubmitting]) => (
+                <Button
+                  type="submit"
+                  form="edit-product-form"
+                  disabled={!canSubmit || isSubmitting || updateProduct.isPending}
+                >
+                  Revisar cambios
+                </Button>
+              )}
+            </form.Subscribe>
+          </div>
         }
       >
-        <form id="edit-product-form" onSubmit={handleFormSubmit} className="flex flex-col gap-3 p-4">
-          <form.AppField
-            name="code"
-            validators={{
-              onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
-              onChange: ({ value, fieldApi }) =>
-                fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
-            }}
-          >
-            {(field) => (
-              <field.TextField label="Código" compact required className="h-9 text-sm uppercase" autoComplete="off" />
-            )}
-          </form.AppField>
+        <form id="edit-product-form" onSubmit={handleFormSubmit} className="flex flex-col gap-4">
+          <header className="flex min-w-0 items-center justify-between gap-3 border-b pb-3">
+            <ModalProductIdentity code={product.code} description={product.description} />
+            <Badge variant={product.active ? "success" : "secondary"}>{product.active ? "Activo" : "Inactivo"}</Badge>
+          </header>
 
-          <form.AppField
-            name="description"
-            validators={{
-              onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
-              onChange: ({ value, fieldApi }) =>
-                fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
-            }}
-          >
-            {(field) => (
-              <field.TextField label="Descripción" compact required className="h-9 text-sm" autoComplete="off" />
-            )}
-          </form.AppField>
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[10rem_minmax(0,1fr)]">
+            <form.AppField
+              name="code"
+              validators={{
+                onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+                onChange: ({ value, fieldApi }) =>
+                  fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
+              }}
+            >
+              {(field) => (
+                <field.TextField label="Código" compact required className="h-9 text-sm uppercase" autoComplete="off" />
+              )}
+            </form.AppField>
 
-          <fieldset className="m-0 grid grid-cols-2 gap-3 border-0 p-0">
+            <form.AppField
+              name="description"
+              validators={{
+                onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+                onChange: ({ value, fieldApi }) =>
+                  fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
+              }}
+            >
+              {(field) => (
+                <field.TextField label="Descripción" compact required className="h-9 text-sm" autoComplete="off" />
+              )}
+            </form.AppField>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <form.AppField
               name="priceUsd"
               validators={{
@@ -214,46 +233,53 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
                 />
               )}
             </form.AppField>
-          </fieldset>
+          </div>
         </form>
       </ResponsiveModal>
 
       <ModalConfirmDialog
         isOpen={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="¿Confirmar edición?"
+        title="Confirmar edición"
         description={
           <>
-            Estás a punto de modificar{" "}
+            Se actualizará{hasMultipleChanges ? "n" : ""}{" "}
             <strong className="text-foreground">
-              {changedFields.length} campo{changedFields.length > 1 ? "s" : ""}
+              {changedFields.length} {hasMultipleChanges ? "campos" : "campo"}
             </strong>{" "}
-            del producto:
+            de <strong className="text-foreground">{product.code}</strong>. Revisa los valores.
           </>
         }
-        confirmLabel="Confirmar cambios"
+        confirmLabel="Guardar cambios"
         pendingLabel="Guardando..."
         isSubmissionPending={updateProduct.isPending}
         onConfirmSubmit={handleConfirmSubmit}
-        contentClassName="max-w-md"
+        contentClassName="data-[size=default]:sm:max-w-xl"
       >
-        <ConfirmDialogSummarySection>
-          <div className="mb-2">
-            <ModalProductIdentity code={product.code} description={product.description} />
-          </div>
-          <div className="divide-border divide-y">
-            {changedFields.map((change) => (
-              <div key={change.label} className="flex items-baseline justify-between gap-3 py-1.5 first:pt-0 last:pb-0">
-                <span className="text-muted-foreground shrink-0 font-medium">{change.label}</span>
-                <span className="inline-flex items-center gap-1.5 text-right tabular-nums">
-                  <span className="text-muted-foreground line-through">{change.from}</span>
-                  <span className="text-muted-foreground">→</span>
-                  <span className="text-foreground font-medium">{change.to}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </ConfirmDialogSummarySection>
+        <ConfirmDialogTableSection className="bg-card border-border/80 max-h-56">
+          <table className="w-full min-w-120">
+            <thead>
+              <tr className="bg-muted/35 text-muted-foreground border-b">
+                <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Campo</th>
+                <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Actual</th>
+                <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Nuevo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-border/60 divide-y">
+              {changedFields.map((change) => (
+                <tr key={change.label} className="bg-card">
+                  <td className="px-3 py-2 font-medium">{change.label}</td>
+                  <td className="text-muted-foreground max-w-48 truncate px-3 py-2" title={change.from}>
+                    {change.from}
+                  </td>
+                  <td className="max-w-48 truncate px-3 py-2 font-semibold" title={change.to}>
+                    {change.to}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ConfirmDialogTableSection>
       </ModalConfirmDialog>
     </>
   );

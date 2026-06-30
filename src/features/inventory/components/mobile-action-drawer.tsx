@@ -1,4 +1,4 @@
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import type { Product } from "@/types";
@@ -20,6 +20,7 @@ export function MobileActionDrawer({ product, onClose, onEdit, onToggleStatus }:
           <DrawerTitle className="text-sm font-bold tracking-wide uppercase">
             {product?.code} — {product?.description}
           </DrawerTitle>
+          <DrawerDescription className="sr-only">Selecciona una acción para el producto.</DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-3 p-4">
           <Button
