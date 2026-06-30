@@ -1,13 +1,15 @@
-import { IterationCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { PendingReturnItem, PendingExchangeItem, ReturnSummary } from "../types";
+import { getReturnPresentation } from "../return-presentation";
 import {
   ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
   ModalConfirmDialog,
   ModalProductIdentity,
 } from "@/components/modals/shared/modal-ui";
-import { getStripedRowClass } from "@/components/modals/shared/modal-table-utils";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmReturnDialogProps = {
   isOpen: boolean;
@@ -15,8 +17,7 @@ type ConfirmReturnDialogProps = {
   returnItems: readonly PendingReturnItem[];
   exchangeItems: readonly PendingExchangeItem[];
   summary: ReturnSummary;
-  currentExchangeRate: number;
-  isExchangeRateLoading: boolean;
+  exchangeRate: ModalExchangeRate;
   isSubmissionPending: boolean;
   notes: string;
   onConfirmSubmit: () => void;
@@ -28,56 +29,75 @@ export function ConfirmReturnDialog({
   returnItems,
   exchangeItems,
   summary,
-  currentExchangeRate,
-  isExchangeRateLoading,
+  exchangeRate,
   isSubmissionPending,
   notes,
   onConfirmSubmit,
 }: ConfirmReturnDialogProps) {
-  const { returnType, creditUsd, differenceUsd, differenceVes } = summary;
-  const isExchange = returnType === "exchange";
-  const isExchangeRateReady = currentExchangeRate > 0;
-  const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";
-  const exchangeRateMessage = isExchangeRateLoading
-    ? "Cargando tasa de cambio vigente..."
-    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
+  const { creditUsd, newPurchaseUsd } = summary;
+  const presentation = getReturnPresentation(summary, true);
+  const { isExchange } = presentation;
+  const returnCount = returnItems.length;
+  const exchangeCount = exchangeItems.length;
+  const allItems = [
+    ...returnItems.map((item) => ({ ...item, movement: "Entrada" as const })),
+    ...exchangeItems.map((item) => ({ ...item, movement: "Salida" as const })),
+  ];
 
   return (
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      icon={<IterationCcw className="text-warning" />}
-      title={isExchange ? "¿Confirmar cambio?" : "¿Confirmar devolución?"}
+      title={presentation.confirmTitle}
       description={
-        isExchange
-          ? "El cliente devuelve producto(s) y se lleva producto(s) nuevo(s). Esta acción no se puede deshacer."
-          : "Se registrará una devolución pura. El crédito se devuelve al cliente. Esta acción no se puede deshacer."
+        isExchange ? (
+          <>
+            Se registrarán <strong className="text-foreground">{returnCount} de entrada</strong> y{" "}
+            <strong className="text-foreground">{exchangeCount} de salida</strong>. Verifica productos e importes.
+          </>
+        ) : (
+          <>
+            Se registrará{returnCount === 1 ? "" : "n"}{" "}
+            <strong className="text-foreground">
+              {returnCount} {returnCount === 1 ? "producto" : "productos"} de entrada
+            </strong>
+            . Verifica el reembolso.
+          </>
+        )
       }
-      confirmLabel={isExchange ? "Confirmar cambio" : "Confirmar devolución"}
+      confirmLabel={presentation.actionLabel}
       pendingLabel="Registrando..."
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
-      confirmDisabled={!isExchangeRateReady}
+      confirmDisabled={!exchangeRate.isReady}
+      contentClassName="data-[size=default]:sm:max-w-xl"
     >
-      <ConfirmDialogTableSection className="max-h-36">
-        <table className="w-full">
+      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-52">
+        <table className="w-full min-w-120">
           <thead>
-            <tr className="bg-muted/50 text-muted-foreground border-b">
-              <th className="px-2.5 py-1.5 text-left font-semibold tracking-wider uppercase" colSpan={2}>
-                Productos devueltos
-              </th>
-              <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Cant.</th>
-              <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Crédito</th>
+            <tr className="bg-muted/35 text-muted-foreground border-b">
+              <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Movimiento</th>
+              <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Producto</th>
+              <th className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">Cant.</th>
+              <th className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">USD</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {returnItems.map((item, index) => (
-              <tr key={item.tempId} className={getStripedRowClass(index)}>
-                <td className="px-2.5 py-1" colSpan={2}>
+          <tbody className="divide-border/60 divide-y">
+            {allItems.map((item) => (
+              <tr key={item.tempId} className="bg-card">
+                <td className="px-3 py-2 align-middle">
+                  <Badge
+                    variant={item.movement === "Entrada" ? "success" : "destructive"}
+                    className="px-1.5 py-0.5 text-[9px]"
+                  >
+                    {item.movement}
+                  </Badge>
+                </td>
+                <td className="px-3 py-2 align-middle">
                   <ModalProductIdentity code={item.code} description={item.description} />
                 </td>
-                <td className="px-2.5 py-1 text-right tabular-nums">{item.quantity}</td>
-                <td className="px-2.5 py-1 text-right font-semibold tabular-nums">
+                <td className="px-3 py-2 text-right align-middle font-semibold tabular-nums">{item.quantity}</td>
+                <td className="px-3 py-2 text-right align-middle font-semibold tabular-nums">
                   {formatCurrencyUSD(item.totalUsd)}
                 </td>
               </tr>
@@ -86,65 +106,59 @@ export function ConfirmReturnDialog({
         </table>
       </ConfirmDialogTableSection>
 
-      {isExchange && exchangeItems.length > 0 && (
-        <ConfirmDialogTableSection className="max-h-36">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-muted/50 text-muted-foreground border-b">
-                <th className="px-2.5 py-1.5 text-left font-semibold tracking-wider uppercase" colSpan={2}>
-                  Productos nuevos
-                </th>
-                <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Cant.</th>
-                <th className="px-2.5 py-1.5 text-right font-semibold tracking-wider uppercase">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {exchangeItems.map((item, index) => (
-                <tr key={item.tempId} className={getStripedRowClass(index)}>
-                  <td className="px-2.5 py-1" colSpan={2}>
-                    <ModalProductIdentity code={item.code} description={item.description} />
-                  </td>
-                  <td className="px-2.5 py-1 text-right tabular-nums">{item.quantity}</td>
-                  <td className="px-2.5 py-1 text-right font-semibold tabular-nums">
-                    {formatCurrencyUSD(item.totalUsd)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </ConfirmDialogTableSection>
-      )}
+      <ConfirmDialogSummarySection className="border-primary/20 bg-card gap-0 overflow-hidden p-0">
+        {!exchangeRate.isReady && <p className="text-warning px-3 py-2">{exchangeRate.statusMessage}</p>}
 
-      <ConfirmDialogSummarySection>
-        {!isExchangeRateReady && <p className="text-warning mb-1">{exchangeRateMessage}</p>}
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Tasa</span>
-          <span className="font-medium tabular-nums">{exchangeRateDisplayValue}</span>
+        <div className="bg-primary/5 flex items-center justify-between gap-3 border-b px-3 py-2">
+          <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Diferencia</p>
+          <p className="font-semibold">{presentation.outcomeLabel}</p>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Crédito</span>
-          <span className="font-medium tabular-nums">{formatCurrencyUSD(creditUsd)}</span>
+
+        <div className="grid grid-cols-2 divide-x">
+          <div className="min-w-0 p-3">
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">USD</p>
+            <p
+              className={cn(
+                "mt-1 text-lg leading-tight font-bold whitespace-nowrap tabular-nums",
+                presentation.differenceClassName,
+              )}
+            >
+              {formatCurrencyUSD(presentation.differenceUsd)}
+            </p>
+          </div>
+          <div className="min-w-0 p-3 text-right">
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Bs.</p>
+            <p
+              className={cn(
+                "mt-1 text-lg leading-tight font-bold whitespace-nowrap tabular-nums",
+                presentation.differenceClassName,
+              )}
+            >
+              {exchangeRate.isReady ? formatCurrencyVES(presentation.differenceVes) : "—"}
+            </p>
+          </div>
         </div>
-        <div className="border-primary/20 flex justify-between border-t pt-1">
-          <span className="text-muted-foreground font-semibold">
-            {differenceUsd > 0 ? "Cliente paga" : differenceUsd < 0 ? "Tienda devuelve" : "Cambio exacto"}
-          </span>
-          <span
-            className={`font-bold tabular-nums ${differenceUsd > 0 ? "text-success" : differenceUsd < 0 ? "text-destructive" : "text-foreground"}`}
-          >
-            {formatCurrencyUSD(Math.abs(differenceUsd))}
-          </span>
-        </div>
-        {differenceUsd !== 0 && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground" />
-            <span className="text-muted-foreground tabular-nums">
-              {isExchangeRateReady ? formatCurrencyVES(Math.abs(differenceVes)) : "—"}
-            </span>
+
+        {isExchange && (
+          <div className="bg-muted/20 grid grid-cols-2 divide-x border-t">
+            <div className="min-w-0 px-3 py-2">
+              <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase">Crédito</p>
+              <p className="mt-0.5 font-medium tabular-nums">{formatCurrencyUSD(creditUsd)}</p>
+            </div>
+            <div className="min-w-0 px-3 py-2 text-right">
+              <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase">Nueva compra</p>
+              <p className="mt-0.5 font-medium tabular-nums">{formatCurrencyUSD(newPurchaseUsd)}</p>
+            </div>
           </div>
         )}
+
+        <div className="flex items-center justify-between gap-3 border-t px-3 py-2">
+          <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Tasa aplicada</p>
+          <p className="font-medium whitespace-nowrap tabular-nums">{exchangeRate.displayValue}</p>
+        </div>
+
         {notes && (
-          <div className="border-border/50 border-t pt-1">
+          <div className="border-t px-3 py-2">
             <span className="text-muted-foreground">Motivo: </span>
             <span className="text-foreground">{notes}</span>
           </div>

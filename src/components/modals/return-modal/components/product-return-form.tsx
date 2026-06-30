@@ -4,16 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Kbd } from "@/components/ui/kbd";
 import { Plus } from "lucide-react";
-import { focusFirstNumberInput, useProductLookup } from "@/components/modals/shared/product-selection";
-
-const MINIMUM_ALLOWED_QUANTITY = 1;
-const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
-const REQUIRED_FIELD_ERROR = "Requerido";
-const MINIMUM_VALUE_ERROR = "Mín. 1";
+import {
+  focusFirstNumberInput,
+  MINIMUM_PRODUCT_QUANTITY,
+  useProductLookup,
+  validateProductQuantity,
+  validateProductSelection,
+} from "@/components/modals/shared/product-selection";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ProductReturnFormProps = {
-  currentExchangeRate: number;
-  isExchangeRateReady: boolean;
+  exchangeRate: ModalExchangeRate;
   requireStock?: boolean;
   onAddItem: (item: {
     productId: string;
@@ -26,12 +27,7 @@ type ProductReturnFormProps = {
   }) => void;
 };
 
-export function ProductReturnForm({
-  currentExchangeRate,
-  isExchangeRateReady,
-  requireStock = false,
-  onAddItem,
-}: ProductReturnFormProps) {
+export function ProductReturnForm({ exchangeRate, requireStock = false, onAddItem }: ProductReturnFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { getProductById } = useProductLookup();
 
@@ -41,12 +37,12 @@ export function ProductReturnForm({
       quantity: 0,
     },
     onSubmit: async ({ value }) => {
-      if (!isExchangeRateReady) return;
+      if (!exchangeRate.isReady) return;
 
       const product = getProductById(value.productId);
       if (!product) return;
 
-      const priceVes = product.price_usd * currentExchangeRate;
+      const priceVes = product.price_usd * exchangeRate.value;
 
       onAddItem({
         productId: product.id,
@@ -79,12 +75,12 @@ export function ProductReturnForm({
 
   return (
     <form ref={formRef} onSubmit={handleFormSubmit} className="flex flex-col gap-2">
-      <fieldset disabled={!isExchangeRateReady} className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end">
+      <fieldset disabled={!exchangeRate.isReady} className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end">
         <div className="min-w-0 flex-1">
           <form.AppField
             name="productId"
             validators={{
-              onChange: ({ value }) => (!value ? PRODUCT_SELECTION_REQUIRED_ERROR : undefined),
+              onChange: ({ value }) => validateProductSelection(value),
             }}
           >
             {(field) => (
@@ -113,13 +109,7 @@ export function ProductReturnForm({
                     name="quantity"
                     validators={{
                       onChange: ({ value }) => {
-                        const isEmpty = value === undefined || value === null || String(value) === "";
-                        if (isEmpty) return REQUIRED_FIELD_ERROR;
-                        if (value < MINIMUM_ALLOWED_QUANTITY) return MINIMUM_VALUE_ERROR;
-                        if (requireStock && selectedProduct && value > selectedProduct.stock) {
-                          return `Stock insuficiente (disponible: ${selectedProduct.stock})`;
-                        }
-                        return undefined;
+                        return validateProductQuantity(value, requireStock ? selectedProduct?.stock : undefined);
                       },
                     }}
                   >
@@ -127,7 +117,7 @@ export function ProductReturnForm({
                       <field.NumberField
                         label="Cantidad"
                         compact
-                        min={String(MINIMUM_ALLOWED_QUANTITY)}
+                        min={String(MINIMUM_PRODUCT_QUANTITY)}
                         max={requireStock ? selectedProduct?.stock : undefined}
                         step="1"
                         placeholder={productId ? "0" : "Selecciona"}

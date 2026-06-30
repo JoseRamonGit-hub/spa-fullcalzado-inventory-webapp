@@ -1,18 +1,18 @@
-import { ShoppingCart } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { PendingSale } from "../types";
 import {
   ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
   ModalConfirmDialog,
+  ModalProductIdentity,
 } from "@/components/modals/shared/modal-ui";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmSalesDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   pendingSales: PendingSale[];
-  currentExchangeRate: number;
-  isExchangeRateLoading: boolean;
+  exchangeRate: ModalExchangeRate;
   totalAmountUsd: number;
   totalAmountVes: number;
   isSubmissionPending: boolean;
@@ -23,8 +23,7 @@ export function ConfirmSalesDialog({
   isOpen,
   onOpenChange,
   pendingSales,
-  currentExchangeRate,
-  isExchangeRateLoading,
+  exchangeRate,
   totalAmountUsd,
   totalAmountVes,
   isSubmissionPending,
@@ -32,56 +31,43 @@ export function ConfirmSalesDialog({
 }: ConfirmSalesDialogProps) {
   const pendingSalesCount = pendingSales.length;
   const isMultipleSales = pendingSalesCount > 1;
-  const isExchangeRateReady = currentExchangeRate > 0;
-  const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";
-  const exchangeRateMessage = isExchangeRateLoading
-    ? "Cargando tasa de cambio vigente..."
-    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
-
   return (
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      icon={<ShoppingCart className="text-primary" />}
-      title="¿Confirmar registro de ventas?"
+      title="Confirmar ventas"
       description={
         <>
-          Se registrarán{" "}
+          Se registrará{isMultipleSales ? "n" : ""}{" "}
           <strong className="text-foreground">
             {pendingSalesCount} venta{isMultipleSales ? "s" : ""}
           </strong>
-          . Revisa productos y totales antes de confirmar.
+          . Verifica productos e importes.
         </>
       }
-      confirmLabel="Confirmar ventas"
+      confirmLabel={`Registrar ${isMultipleSales ? "ventas" : "venta"}`}
       pendingLabel="Registrando..."
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
-      confirmDisabled={!isExchangeRateReady}
+      confirmDisabled={!exchangeRate.isReady}
     >
-      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-48 shadow-xs">
+      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-48">
         <table className="w-full">
           <thead>
             <tr className="bg-muted/35 text-muted-foreground border-b">
-              <th className="px-3 py-2 text-left font-semibold tracking-wider uppercase">Producto</th>
-              <th className="px-3 py-2 text-right font-semibold tracking-wider uppercase">Cant.</th>
-              <th className="px-3 py-2 text-right font-semibold tracking-wider uppercase">Total USD</th>
+              <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Producto</th>
+              <th className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">Cant.</th>
+              <th className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">USD</th>
             </tr>
           </thead>
           <tbody className="divide-border/60 divide-y">
             {pendingSales.map((sale) => (
               <tr key={sale.tempId} className="bg-card">
-                <td className="px-3 py-2.5 align-middle">
-                  <span className="product-code block whitespace-nowrap uppercase">{sale.code}</span>
-                  <span
-                    className="text-muted-foreground mt-0.5 line-clamp-2 block wrap-break-word"
-                    title={sale.description}
-                  >
-                    {sale.description}
-                  </span>
+                <td className="px-3 py-2 align-middle">
+                  <ModalProductIdentity code={sale.code} description={sale.description} />
                 </td>
-                <td className="px-3 py-2.5 text-right align-middle font-semibold tabular-nums">{sale.quantity}</td>
-                <td className="px-3 py-2.5 text-right align-middle font-semibold tabular-nums">
+                <td className="px-3 py-2 text-right align-middle font-semibold tabular-nums">{sale.quantity}</td>
+                <td className="px-3 py-2 text-right align-middle font-semibold tabular-nums">
                   {formatCurrencyUSD(sale.totalUsd)}
                 </td>
               </tr>
@@ -91,27 +77,26 @@ export function ConfirmSalesDialog({
       </ConfirmDialogTableSection>
 
       <ConfirmDialogSummarySection className="border-primary/20 bg-primary/5 gap-0 overflow-hidden p-0">
-        {!isExchangeRateReady && <p className="text-warning mb-1">{exchangeRateMessage}</p>}
+        {!exchangeRate.isReady && <p className="text-warning mb-1">{exchangeRate.statusMessage}</p>}
 
-        <div className="flex items-start justify-between gap-4 p-3">
-          <div>
-            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Total del lote</p>
-            <p className="text-muted-foreground mt-1">Se cobrará al confirmar ventas</p>
+        <div className="grid grid-cols-2 divide-x">
+          <div className="min-w-0 p-3">
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Total USD</p>
+            <p className="mt-1 text-lg leading-tight font-bold whitespace-nowrap tabular-nums">
+              {formatCurrencyUSD(totalAmountUsd)}
+            </p>
           </div>
-          <p className="text-right text-2xl leading-none font-bold tabular-nums">
-            {isExchangeRateReady ? formatCurrencyVES(totalAmountVes) : "—"}
-          </p>
+          <div className="min-w-0 p-3 text-right">
+            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Total Bs.</p>
+            <p className="mt-1 text-lg leading-tight font-bold whitespace-nowrap tabular-nums">
+              {exchangeRate.isReady ? formatCurrencyVES(totalAmountVes) : "—"}
+            </p>
+          </div>
         </div>
 
-        <div className="bg-card/85 border-primary/15 grid grid-cols-2 gap-3 border-t px-3 py-2.5">
-          <div>
-            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">USD</p>
-            <p className="mt-0.5 font-semibold tabular-nums">{formatCurrencyUSD(totalAmountUsd)}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Tasa</p>
-            <p className="mt-0.5 font-medium tabular-nums">{exchangeRateDisplayValue}</p>
-          </div>
+        <div className="bg-card/85 border-primary/15 flex items-center justify-between gap-3 border-t px-3 py-2">
+          <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Tasa aplicada</p>
+          <p className="font-medium whitespace-nowrap tabular-nums">{exchangeRate.displayValue}</p>
         </div>
       </ConfirmDialogSummarySection>
     </ModalConfirmDialog>

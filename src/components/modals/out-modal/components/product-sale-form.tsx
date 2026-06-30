@@ -6,20 +6,21 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { Plus } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { PendingSale } from "../types";
-import { focusFirstNumberInput, useProductLookup } from "@/components/modals/shared/product-selection";
-
-const MINIMUM_ALLOWED_QUANTITY = 1;
-const PRODUCT_SELECTION_REQUIRED_ERROR = "Selecciona un producto";
-const REQUIRED_FIELD_ERROR = "Requerido";
-const MINIMUM_VALUE_ERROR = "Mín. 1";
+import {
+  focusFirstNumberInput,
+  MINIMUM_PRODUCT_QUANTITY,
+  useProductLookup,
+  validateProductQuantity,
+  validateProductSelection,
+} from "@/components/modals/shared/product-selection";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ProductSaleFormProps = {
-  currentExchangeRate: number;
-  isExchangeRateReady: boolean;
+  exchangeRate: ModalExchangeRate;
   onAddPendingSale: (sale: PendingSale) => void;
 };
 
-export function ProductSaleForm({ currentExchangeRate, isExchangeRateReady, onAddPendingSale }: ProductSaleFormProps) {
+export function ProductSaleForm({ exchangeRate, onAddPendingSale }: ProductSaleFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { getProductById } = useProductLookup();
 
@@ -29,12 +30,12 @@ export function ProductSaleForm({ currentExchangeRate, isExchangeRateReady, onAd
       quantity: 0,
     },
     onSubmit: async ({ value }) => {
-      if (!isExchangeRateReady) return;
+      if (!exchangeRate.isReady) return;
 
       const product = getProductById(value.productId);
       if (!product) return;
 
-      const priceVes = product.price_usd * currentExchangeRate;
+      const priceVes = product.price_usd * exchangeRate.value;
 
       onAddPendingSale({
         tempId: crypto.randomUUID(),
@@ -71,14 +72,14 @@ export function ProductSaleForm({ currentExchangeRate, isExchangeRateReady, onAd
   return (
     <form ref={formRef} onSubmit={handleFormSubmit}>
       <fieldset
-        disabled={!isExchangeRateReady}
+        disabled={!exchangeRate.isReady}
         className="grid min-w-0 grid-cols-[minmax(0,8rem)_minmax(0,1fr)] gap-3 md:grid-cols-[minmax(0,1fr)_8rem_2.5rem] md:items-end"
       >
         <div className="col-span-2 min-w-0 md:col-span-1">
           <saleForm.AppField
             name="productId"
             validators={{
-              onChange: ({ value }) => (!value ? PRODUCT_SELECTION_REQUIRED_ERROR : undefined),
+              onChange: ({ value }) => validateProductSelection(value),
             }}
           >
             {(field) => (
@@ -106,13 +107,7 @@ export function ProductSaleForm({ currentExchangeRate, isExchangeRateReady, onAd
                   name="quantity"
                   validators={{
                     onChange: ({ value }) => {
-                      const isEmpty = value === undefined || value === null || String(value) === "";
-                      if (isEmpty) return REQUIRED_FIELD_ERROR;
-                      if (value < MINIMUM_ALLOWED_QUANTITY) return MINIMUM_VALUE_ERROR;
-                      if (selectedProduct && value > selectedProduct.stock) {
-                        return `Stock insuficiente (disponible: ${selectedProduct.stock})`;
-                      }
-                      return undefined;
+                      return validateProductQuantity(value, selectedProduct?.stock);
                     },
                   }}
                 >
@@ -120,7 +115,7 @@ export function ProductSaleForm({ currentExchangeRate, isExchangeRateReady, onAd
                     <field.NumberField
                       label="Cantidad"
                       compact
-                      min={String(MINIMUM_ALLOWED_QUANTITY)}
+                      min={String(MINIMUM_PRODUCT_QUANTITY)}
                       max={selectedProduct?.stock}
                       step="1"
                       placeholder={productId ? "0" : "Selecciona"}
@@ -139,10 +134,10 @@ export function ProductSaleForm({ currentExchangeRate, isExchangeRateReady, onAd
           >
             {({ quantity, productId }) => {
               const product = getProductById(productId);
-              if (!product || !quantity || quantity < MINIMUM_ALLOWED_QUANTITY || quantity > product.stock) return null;
+              if (!product || !quantity || quantity < MINIMUM_PRODUCT_QUANTITY || quantity > product.stock) return null;
 
               const totalUsd = quantity * product.price_usd;
-              const totalVes = quantity * product.price_usd * currentExchangeRate;
+              const totalVes = quantity * product.price_usd * exchangeRate.value;
 
               return (
                 <div className="bg-popover text-popover-foreground animate-in fade-in slide-in-from-top-1 absolute top-full left-0 z-30 mt-1.5 w-44 rounded-md border px-2.5 py-2 text-[11px] shadow-md">

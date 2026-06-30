@@ -7,7 +7,6 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ import { cn } from "@/lib/utils";
 type ModalConfirmDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  icon: ReactNode;
   title: string;
   description: ReactNode;
   confirmLabel: string;
@@ -54,7 +52,6 @@ type ModalFooterActionRowProps = {
 export function ModalConfirmDialog({
   isOpen,
   onOpenChange,
-  icon,
   title,
   description,
   confirmLabel,
@@ -72,21 +69,23 @@ export function ModalConfirmDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
-      <AlertDialogContent className={contentClassName}>
-        <AlertDialogHeader>
-          <AlertDialogMedia className="mb-0 size-12 *:[svg:not([class*='size-'])]:size-6">{icon}</AlertDialogMedia>
-          <div>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
-            <ActiveBusinessContext className="mt-1" />
-            <AlertDialogDescription className="mt-1">{description}</AlertDialogDescription>
-          </div>
+      <AlertDialogContent
+        className={cn("max-h-[calc(100dvh-2rem)] gap-3 overflow-y-auto p-4 sm:gap-4 sm:p-5", contentClassName)}
+      >
+        <AlertDialogHeader className="flex flex-col items-stretch gap-0 text-left sm:place-items-start sm:text-left">
+          <AlertDialogTitle className="text-base leading-tight">{title}</AlertDialogTitle>
+          <ActiveBusinessContext className="mt-1" />
+          <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
         </AlertDialogHeader>
 
         {children}
 
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isSubmissionPending}>Cancelar</AlertDialogCancel>
+        <AlertDialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+          <AlertDialogCancel className="w-full sm:w-auto" disabled={isSubmissionPending}>
+            Cancelar
+          </AlertDialogCancel>
           <AlertDialogAction
+            className="w-full sm:w-auto"
             onClick={(event) => {
               event.preventDefault();
               void onConfirmSubmit();
@@ -117,10 +116,12 @@ export function ConfirmDialogSummarySection({ children, className }: ConfirmDial
 
 export function ModalProductIdentity({ code, description }: ModalProductIdentityProps) {
   return (
-    <>
-      <span className="product-code mr-1.5 uppercase">{code}</span>
-      <span className="text-muted-foreground inline-flex max-w-64 truncate">{description}</span>
-    </>
+    <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
+      <span className="product-code shrink-0 uppercase">{code}</span>
+      <span className="text-muted-foreground max-w-52 truncate" title={description}>
+        {description}
+      </span>
+    </span>
   );
 }
 
@@ -129,7 +130,7 @@ export function ModalShortcutActionButton({ icon, label, disabled = false, onCli
     <Button disabled={disabled} onClick={onClick} className="w-full shrink-0 gap-3 md:w-auto">
       {icon}
       <span className="truncate">{label}</span>
-      <kbd className="kbd">shift+&#9166;</kbd>
+      <kbd className="kbd hidden md:inline-flex">shift+&#9166;</kbd>
     </Button>
   );
 }

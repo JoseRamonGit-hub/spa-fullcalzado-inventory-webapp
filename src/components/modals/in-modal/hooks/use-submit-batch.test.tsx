@@ -4,7 +4,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useSubmitBatch } from "./use-submit-batch";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
+import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../types";
 import type { ReactNode } from "react";
 import type { User } from "@/types";
 

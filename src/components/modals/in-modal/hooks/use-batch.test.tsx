@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useBatch } from "./use-batch";
-import type { NewBatchItem, ExistingBatchItem } from "../columns";
+import type { NewBatchItem, ExistingBatchItem } from "../types";
 
 const newItem: NewBatchItem = {
   kind: "new",

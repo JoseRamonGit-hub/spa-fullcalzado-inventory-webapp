@@ -1,21 +1,13 @@
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type SalesSummaryBlockProps = {
-  currentExchangeRate: number;
-  isExchangeRateLoading: boolean;
+  exchangeRate: ModalExchangeRate;
   totalAmountUsd: number;
   totalAmountVes: number;
 };
 
-export function SalesSummaryBlock({
-  currentExchangeRate,
-  isExchangeRateLoading,
-  totalAmountUsd,
-  totalAmountVes,
-}: SalesSummaryBlockProps) {
-  const isExchangeRateReady = currentExchangeRate > 0;
-  const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";
-
+export function SalesSummaryBlock({ exchangeRate, totalAmountUsd, totalAmountVes }: SalesSummaryBlockProps) {
   return (
     <>
       {/* Desktop: payment summary */}
@@ -34,7 +26,7 @@ export function SalesSummaryBlock({
           <div className="border-border/70 border-t pt-3">
             <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">Total Bs</p>
             <p className="text-foreground/75 mt-1 text-sm font-semibold tabular-nums">
-              {isExchangeRateReady ? formatCurrencyVES(totalAmountVes) : "—"}
+              {exchangeRate.isReady ? formatCurrencyVES(totalAmountVes) : "—"}
             </p>
           </div>
         </div>
@@ -42,7 +34,7 @@ export function SalesSummaryBlock({
         <div className="border-border/70 border-t pt-3">
           <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">Tasa</p>
           <p className="text-muted-foreground mt-1 text-xs font-medium tabular-nums">
-            {isExchangeRateLoading ? "..." : exchangeRateDisplayValue}
+            {exchangeRate.isLoading ? "..." : exchangeRate.displayValue}
           </p>
         </div>
       </section>
@@ -58,13 +50,13 @@ export function SalesSummaryBlock({
           <div className="min-w-0">
             <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Bs</p>
             <p className="truncate text-xs font-semibold tabular-nums">
-              {isExchangeRateReady ? formatCurrencyVES(totalAmountVes) : "—"}
+              {exchangeRate.isReady ? formatCurrencyVES(totalAmountVes) : "—"}
             </p>
           </div>
           <div className="min-w-0">
             <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Tasa</p>
             <p className="truncate text-xs font-medium tabular-nums">
-              {isExchangeRateLoading ? "..." : exchangeRateDisplayValue}
+              {exchangeRate.isLoading ? "..." : exchangeRate.displayValue}
             </p>
           </div>
         </div>

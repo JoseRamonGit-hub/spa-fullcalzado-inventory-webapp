@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrencyUSD } from "@/utils/formatters";
-import type { BatchItem } from "../columns";
+import type { BatchItem } from "../types";
 
 type PendingBatchPanelProps = {
   pendingBatchItems: BatchItem[];
@@ -74,19 +74,22 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
 
       {hasPendingBatchItems ? (
         <div className="custom-scrollbar min-h-0 flex-1 overflow-auto">
-          <Table className="min-w-[40rem] text-xs">
+          <Table className="min-w-[36rem] text-xs md:min-w-[40rem]">
             <TableHeader className="bg-muted/20 sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-muted-foreground h-7 px-2 text-[10px] font-semibold tracking-wider uppercase">
+                <TableHead className="text-muted-foreground h-7 w-20 px-2 text-[10px] font-semibold tracking-wider uppercase">
                   Acción
                 </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-[10px] font-semibold tracking-wider uppercase">
+                <TableHead className="text-muted-foreground h-7 w-44 px-2 text-[10px] font-semibold tracking-wider uppercase md:hidden">
+                  Producto
+                </TableHead>
+                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
                   Código
                 </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-[10px] font-semibold tracking-wider uppercase">
+                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
                   Descripción
                 </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
+                <TableHead className="text-muted-foreground h-7 w-28 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
                   Cantidad
                 </TableHead>
                 <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
@@ -101,10 +104,16 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
                   <TableCell className="px-2 py-1.5">
                     <BatchActionBadge item={item} />
                   </TableCell>
-                  <TableCell className="px-2 py-1.5">
+                  <TableCell className="max-w-44 px-2 py-1.5 md:hidden">
+                    <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
+                      <span className="product-code shrink-0 uppercase">{item.code}</span>
+                      <span className="truncate font-medium">{item.description}</span>
+                    </span>
+                  </TableCell>
+                  <TableCell className="hidden px-2 py-1.5 md:table-cell">
                     <span className="product-code uppercase">{item.code}</span>
                   </TableCell>
-                  <TableCell className="max-w-72 px-2 py-1.5">
+                  <TableCell className="hidden max-w-72 px-2 py-1.5 md:table-cell">
                     <span className="block truncate font-medium">{item.description}</span>
                   </TableCell>
                   <TableCell className="px-2 py-1.5 text-right">

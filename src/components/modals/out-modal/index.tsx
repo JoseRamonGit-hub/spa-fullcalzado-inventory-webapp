@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
-import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
+import { useModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 import { usePendingSales } from "./hooks/use-pending-sales";
 import { useSubmitSales } from "./hooks/use-submit-sales";
@@ -19,9 +19,7 @@ type OutModalProps = {
 
 export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
   const navigate = useNavigate();
-  const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
-  const currentExchangeRate = exchangeRateData?.rate ?? 0;
-  const isExchangeRateReady = !!exchangeRateData?.rate;
+  const exchangeRate = useModalExchangeRate();
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
@@ -36,7 +34,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
 
   const { submitPendingSales, isSubmissionPending } = useSubmitSales({
     pendingSales,
-    currentExchangeRate,
+    currentExchangeRate: exchangeRate.value,
     clearPendingSales,
     onSuccess: handleSubmissionSuccess,
   });
@@ -52,7 +50,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     {
       key: "enter",
       shiftKey: true,
-      when: pendingSales.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
+      when: pendingSales.length > 0 && !isConfirmDialogOpen && exchangeRate.isReady,
       stopPropagation: true,
       onTrigger: () => setIsConfirmDialogOpen(true),
     },
@@ -73,25 +71,19 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         footer={
           <SalesSummaryFooter
             pendingSales={pendingSales}
-            currentExchangeRate={currentExchangeRate}
-            isExchangeRateLoading={isExchangeRateLoading}
+            exchangeRate={exchangeRate}
             isSubmissionPending={isSubmissionPending}
             onOpenConfirmDialog={() => setIsConfirmDialogOpen(true)}
           />
         }
       >
         <section className="flex flex-col gap-3 md:gap-4">
-          <ProductSaleForm
-            currentExchangeRate={currentExchangeRate}
-            isExchangeRateReady={isExchangeRateReady}
-            onAddPendingSale={addPendingSale}
-          />
+          <ProductSaleForm exchangeRate={exchangeRate} onAddPendingSale={addPendingSale} />
 
           <div className="grid min-h-0 gap-3 md:grid-cols-[minmax(0,1fr)_17rem]">
             <PendingSalesPanel pendingSales={pendingSales} onRemovePendingSale={removePendingSale} />
             <SalesSummaryBlock
-              currentExchangeRate={currentExchangeRate}
-              isExchangeRateLoading={isExchangeRateLoading}
+              exchangeRate={exchangeRate}
               totalAmountUsd={totalAmountUsd}
               totalAmountVes={totalAmountVes}
             />
@@ -103,8 +95,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         isOpen={isConfirmDialogOpen}
         onOpenChange={setIsConfirmDialogOpen}
         pendingSales={pendingSales}
-        currentExchangeRate={currentExchangeRate}
-        isExchangeRateLoading={isExchangeRateLoading}
+        exchangeRate={exchangeRate}
         totalAmountUsd={totalAmountUsd}
         totalAmountVes={totalAmountVes}
         isSubmissionPending={isSubmissionPending}

@@ -1,11 +1,21 @@
-import { PackagePlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrencyUSD } from "@/utils/formatters";
-import type { BatchItem } from "../columns";
-import { ConfirmDialogTableSection, ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
+import type { BatchItem } from "../types";
+import {
+  ConfirmDialogTableSection,
+  ModalConfirmDialog,
+  ModalProductIdentity,
+} from "@/components/modals/shared/modal-ui";
 
-const NEW_ITEM_KIND = "new";
 const DEFAULT_FALLBACK_PRICE = 0;
+
+function BatchActionBadge({ item }: { item: BatchItem }) {
+  return (
+    <Badge variant="outline" className="px-1.5 py-0.5 text-[9px]">
+      {item.kind === "new" ? "Nuevo" : "Reposición"}
+    </Badge>
+  );
+}
 
 type ConfirmBatchDialogProps = {
   isOpen: boolean;
@@ -22,55 +32,43 @@ export function ConfirmBatchDialog({
   isSubmissionPending,
   onConfirmSubmit,
 }: ConfirmBatchDialogProps) {
+  const isMultipleProducts = pendingBatchItems.length !== 1;
   const productLabel = pendingBatchItems.length === 1 ? "producto" : "productos";
-
-  const renderNewItemCell = () => (
-    <Badge variant="outline" className="px-1.5 py-0.5 text-[9px]">
-      Nuevo
-    </Badge>
-  );
-
-  const renderExistingItemCell = () => (
-    <Badge variant="outline" className="px-1.5 py-0.5 text-[9px]">
-      Reposición
-    </Badge>
-  );
 
   return (
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      icon={<PackagePlus className="text-primary" />}
-      title="¿Confirmar carga de inventario?"
+      title="Confirmar carga"
       description={
         <>
-          Se cargarán{" "}
+          Se procesará{isMultipleProducts ? "n" : ""}{" "}
           <strong className="text-foreground">
             {pendingBatchItems.length} {productLabel}
-          </strong>{" "}
-          al inventario. Revisa las cantidades antes de confirmar.
+          </strong>
+          . Verifica las cantidades.
         </>
       }
-      confirmLabel="Confirmar carga"
+      confirmLabel={`Cargar ${isMultipleProducts ? "productos" : "producto"}`}
       pendingLabel="Procesando..."
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
-      contentClassName="max-w-xl"
+      contentClassName="sm:max-w-xl"
     >
-      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-64 shadow-xs">
+      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-64">
         <table className="w-full min-w-100">
           <thead>
             <tr className="bg-muted/45 text-muted-foreground border-b text-left">
-              <th scope="col" className="px-3 py-2 font-semibold tracking-wider uppercase">
+              <th scope="col" className="px-3 py-1.5 font-semibold tracking-wider uppercase">
                 Acción
               </th>
-              <th scope="col" className="px-3 py-2 font-semibold tracking-wider uppercase">
+              <th scope="col" className="px-3 py-1.5 font-semibold tracking-wider uppercase">
                 Producto
               </th>
-              <th scope="col" className="px-3 py-2 text-right font-semibold tracking-wider uppercase">
+              <th scope="col" className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">
                 Cant.
               </th>
-              <th scope="col" className="px-3 py-2 text-right font-semibold tracking-wider uppercase">
+              <th scope="col" className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">
                 Precio
               </th>
             </tr>
@@ -78,20 +76,14 @@ export function ConfirmBatchDialog({
           <tbody className="divide-border/60 divide-y">
             {pendingBatchItems.map((item) => (
               <tr key={item.tempId} className="bg-card">
-                <td className="px-3 py-2.5 align-middle">
-                  {item.kind === NEW_ITEM_KIND ? renderNewItemCell() : renderExistingItemCell()}
+                <td className="px-3 py-2 align-middle">
+                  <BatchActionBadge item={item} />
                 </td>
-                <td className="px-3 py-2.5 align-middle">
-                  <span className="product-code block whitespace-nowrap uppercase">{item.code}</span>
-                  <span
-                    className="text-muted-foreground mt-0.5 line-clamp-2 block wrap-break-word"
-                    title={item.description}
-                  >
-                    {item.description}
-                  </span>
+                <td className="px-3 py-2 align-middle">
+                  <ModalProductIdentity code={item.code} description={item.description} />
                 </td>
-                <td className="px-3 py-2.5 text-right align-middle whitespace-nowrap tabular-nums">
-                  {item.kind === NEW_ITEM_KIND ? (
+                <td className="px-3 py-2 text-right align-middle whitespace-nowrap tabular-nums">
+                  {item.kind === "new" ? (
                     <span className="text-foreground font-semibold">{item.initialStock}</span>
                   ) : (
                     <span className="inline-flex w-full items-center justify-end gap-1">
@@ -105,8 +97,8 @@ export function ConfirmBatchDialog({
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2.5 text-right align-middle font-semibold whitespace-nowrap tabular-nums">
-                  {item.kind === NEW_ITEM_KIND ? (
+                <td className="px-3 py-2 text-right align-middle font-semibold whitespace-nowrap tabular-nums">
+                  {item.kind === "new" ? (
                     formatCurrencyUSD(item.priceUsd ?? DEFAULT_FALLBACK_PRICE)
                   ) : item.priceUsd != null &&
                     item.originalPriceUsd != null &&

@@ -1,38 +1,32 @@
 import { ShoppingCart } from "lucide-react";
 import type { PendingSale } from "../types";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type SalesSummaryFooterProps = {
   pendingSales: PendingSale[];
-  currentExchangeRate: number;
-  isExchangeRateLoading: boolean;
+  exchangeRate: ModalExchangeRate;
   isSubmissionPending: boolean;
   onOpenConfirmDialog: () => void;
 };
 
 export function SalesSummaryFooter({
   pendingSales,
-  currentExchangeRate,
-  isExchangeRateLoading,
+  exchangeRate,
   isSubmissionPending,
   onOpenConfirmDialog,
 }: SalesSummaryFooterProps) {
   const pendingSalesCount = pendingSales.length;
   const hasPendingSales = pendingSalesCount > 0;
   const isMultipleSales = pendingSalesCount > 1;
-  const isExchangeRateReady = currentExchangeRate > 0;
-  const exchangeRateTitle = isExchangeRateLoading ? "Cargando tasa" : "Tasa no disponible";
-  const exchangeRateMessage = isExchangeRateLoading
-    ? "Cargando tasa de cambio vigente..."
-    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
-  const canSubmit = hasPendingSales && !isSubmissionPending && isExchangeRateReady;
+  const canSubmit = hasPendingSales && !isSubmissionPending && exchangeRate.isReady;
 
   return (
     <footer className="flex w-full flex-col gap-3">
-      {!isExchangeRateReady && (
+      {!exchangeRate.isReady && (
         <section className="border-warning/40 bg-warning/8 rounded-md border px-3 py-2 text-xs">
-          <p className="text-warning-foreground font-medium">{exchangeRateTitle}</p>
-          <p className="text-muted-foreground mt-1">{exchangeRateMessage}</p>
+          <p className="text-warning-foreground font-medium">{exchangeRate.statusTitle}</p>
+          <p className="text-muted-foreground mt-1">{exchangeRate.statusMessage}</p>
         </section>
       )}
 
@@ -41,7 +35,7 @@ export function SalesSummaryFooter({
           <span className="tabular-nums">
             {!hasPendingSales
               ? "Sin ventas pendientes"
-              : `${pendingSalesCount} venta${isMultipleSales ? "s" : ""} en cola`}
+              : `${isMultipleSales ? "Ventas listas" : "Venta lista"} para confirmar`}
           </span>
         }
       >

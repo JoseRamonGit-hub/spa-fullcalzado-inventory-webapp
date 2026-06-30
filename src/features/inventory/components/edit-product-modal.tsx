@@ -221,7 +221,6 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
       <ModalConfirmDialog
         isOpen={confirmOpen}
         onOpenChange={setConfirmOpen}
-        icon={<Pencil className="text-primary" />}
         title="¿Confirmar edición?"
         description={
           <>

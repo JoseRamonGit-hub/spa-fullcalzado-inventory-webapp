@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { useCreateManyProducts } from "@/features/inventory/hooks/useProductMutations";
 import { useCreateManyMovements } from "@/features/movements/hooks/useMovementMutations";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
+import { isExistingBatchItem, isNewBatchItem, type BatchItem } from "../types";
 
 type UseSubmitBatchProps = {
   pendingBatchItems: BatchItem[];
@@ -21,8 +21,8 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
     const hasNoItems = pendingBatchItems.length === 0;
     if (!currentUser || hasNoItems) return;
 
-    const newBatchItems = pendingBatchItems.filter((item): item is NewBatchItem => item.kind === "new");
-    const existingBatchItems = pendingBatchItems.filter((item): item is ExistingBatchItem => item.kind === "existing");
+    const newBatchItems = pendingBatchItems.filter(isNewBatchItem);
+    const existingBatchItems = pendingBatchItems.filter(isExistingBatchItem);
 
     const batchOperations: Promise<unknown>[] = [];
 
