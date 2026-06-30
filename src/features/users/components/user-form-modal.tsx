@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import type { LucideIcon } from "lucide-react";
-import { ShieldCheck, Store, UserRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,9 +30,9 @@ type UserFormModalProps = {
 };
 
 type FormSectionProps = {
-  icon: LucideIcon;
   title: string;
-  description: string;
+  description?: string;
+  aside?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -52,38 +50,29 @@ function getInitialValues(user?: ManagedUser | null): UserFormValues {
   };
 }
 
-function FormSection({ icon: Icon, title, description, children }: FormSectionProps) {
+function FormSection({ title, description, aside, children }: FormSectionProps) {
   return (
-    <section className="border-border/70 grid gap-3 border-b px-1 py-5 last:border-b-0 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-6">
-      <div className="flex items-start gap-3">
-        <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md">
-          <Icon className="size-4" />
-        </div>
-        <div className="flex min-w-0 flex-col gap-1">
+    <section className="border-border/70 border-b py-5 last:border-b-0 sm:py-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h3 className="font-heading text-sm font-semibold">{title}</h3>
-          <p className="text-muted-foreground text-xs leading-relaxed">{description}</p>
+          {description ? <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{description}</p> : null}
         </div>
+        {aside}
       </div>
-      <div className="min-w-0">{children}</div>
+      {children}
     </section>
   );
 }
 
 function BusinessAssignmentPlaceholder() {
   return (
-    <div className="flex min-h-32 flex-col gap-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <span className="bg-muted h-3 w-32 rounded" />
-          <span className="bg-muted/70 h-2.5 w-56 max-w-full rounded" />
-        </div>
-        <span className="bg-muted size-6 rounded-md" />
-      </div>
+    <div className="flex min-h-36 flex-col gap-3">
       <div className="grid gap-2 sm:grid-cols-2">
         <span className="bg-card h-12 rounded-md border" />
         <span className="bg-card h-12 rounded-md border" />
       </div>
-      <span className="bg-card h-20 rounded-md border" />
+      <span className="bg-card h-16 rounded-md border" />
     </div>
   );
 }
@@ -156,7 +145,7 @@ export function UserFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-1.5rem)] gap-0 p-0 sm:max-w-3xl">
+      <DialogContent className="max-h-[calc(100dvh-1.5rem)] gap-0 p-0 sm:max-w-[44rem]">
         <DialogHeader className="border-b px-5 pt-4 pb-3 sm:px-6">
           <div className="flex items-start justify-between gap-4 pr-6">
             <div className="flex flex-col gap-1.5">
@@ -164,7 +153,9 @@ export function UserFormModal({
                 {isEditing ? "Editar usuario" : "Nuevo usuario"}
               </DialogTitle>
               <DialogDescription>
-                Gestiona credenciales, rol, acceso por negocio y tienda predeterminada.
+                {isEditing
+                  ? "Actualiza sus datos, permisos y acceso por negocio."
+                  : "Crea el acceso y define dónde podrá trabajar."}
               </DialogDescription>
             </div>
             {isEditing ? (
@@ -175,7 +166,7 @@ export function UserFormModal({
           </div>
         </DialogHeader>
 
-        <DialogBody className="bg-background max-h-[min(72dvh,42rem)] px-4 py-0 sm:px-6">
+        <DialogBody className="bg-background max-h-[min(76dvh,42rem)] px-5 py-0 sm:px-6">
           <form
             id="user-form"
             onSubmit={(event) => {
@@ -186,15 +177,14 @@ export function UserFormModal({
           >
             <FieldGroup className="gap-0">
               <FormSection
-                icon={UserRound}
-                title="Identidad"
+                title="Cuenta"
                 description={
                   isEditing
-                    ? "El correo se mantiene fijo para evitar inconsistencias con Supabase Auth."
-                    : "Estos datos crean el acceso inicial del usuario."
+                    ? "El correo no puede cambiarse desde este formulario."
+                    : "Datos que usará para identificarse e iniciar sesión."
                 }
               >
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className={isEditing ? "grid gap-3 sm:grid-cols-2" : "grid gap-3 sm:grid-cols-3"}>
                   <form.AppField name="fullname">
                     {(field) => <field.TextField label="Nombre" placeholder="María Admin" autoComplete="name" />}
                   </form.AppField>
@@ -210,10 +200,8 @@ export function UserFormModal({
                       />
                     )}
                   </form.AppField>
-                </div>
 
-                {!isEditing ? (
-                  <div className="mt-3">
+                  {!isEditing ? (
                     <form.AppField name="password">
                       {(field) => (
                         <field.TextFieldGroup
@@ -225,14 +213,13 @@ export function UserFormModal({
                         />
                       )}
                     </form.AppField>
-                  </div>
-                ) : null}
+                  ) : null}
+                </div>
               </FormSection>
 
               <FormSection
-                icon={ShieldCheck}
-                title="Permisos"
-                description="El rol define el alcance general; el estado controla si puede operar dentro de la app."
+                title="Acceso"
+                description="El rol define su alcance; el estado determina si puede ingresar y operar."
               >
                 <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
                   <form.AppField name="role">
@@ -253,7 +240,7 @@ export function UserFormModal({
                           ))}
                         </NativeSelect>
                         <FieldDescription className="text-xs">
-                          Admin ve todo; empleado opera solo negocios asignados.
+                          Administrador ve todo; empleado sólo lo asignado.
                         </FieldDescription>
                       </Field>
                     )}
@@ -279,20 +266,18 @@ export function UserFormModal({
                             <Badge variant="success">Activo al crear</Badge>
                           </div>
                         )}
-                        <FieldDescription className="text-xs">
-                          Un usuario inactivo pierde acceso operativo e inicio válido en la app.
-                        </FieldDescription>
+                        {isEditing ? (
+                          <FieldDescription className="text-xs">
+                            Inactivo impide iniciar sesión y operar.
+                          </FieldDescription>
+                        ) : null}
                       </Field>
                     )}
                   </form.AppField>
                 </div>
               </FormSection>
 
-              <FormSection
-                icon={Store}
-                title="Acceso por negocio"
-                description="Define en qué tiendas puede trabajar y cuál será su contexto inicial."
-              >
+              <FormSection title="Negocios" description="Selecciona dónde podrá operar y qué negocio verá al iniciar.">
                 <form.Subscribe
                   selector={(state) => ({
                     values: state.values,

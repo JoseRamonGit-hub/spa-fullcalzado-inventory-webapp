@@ -2,7 +2,6 @@ import type { ReturnSummary } from "./types";
 
 export type ReturnPresentation = {
   isExchange: boolean;
-  operationLabel: "Cambio" | "Devolución";
   outcomeLabel: "Sin resultado" | "Tienda devuelve" | "Cliente paga" | "Cambio exacto";
   differenceUsd: number;
   differenceVes: number;
@@ -30,7 +29,6 @@ export function getReturnPresentation(summary: ReturnSummary, hasReturnItems: bo
 
   return {
     isExchange,
-    operationLabel: isExchange ? "Cambio" : "Devolución",
     outcomeLabel,
     differenceUsd: hasReturnItems ? summary.differenceUsd : 0,
     differenceVes: hasReturnItems ? summary.differenceVes : 0,

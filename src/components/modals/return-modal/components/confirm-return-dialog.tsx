@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { PendingReturnItem, PendingExchangeItem, ReturnSummary } from "../types";
@@ -10,6 +9,7 @@ import {
   ModalProductIdentity,
 } from "@/components/modals/shared/modal-ui";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
+import { ReturnMovementBadge } from "./return-movement-badge";
 
 type ConfirmReturnDialogProps = {
   isOpen: boolean;
@@ -86,12 +86,7 @@ export function ConfirmReturnDialog({
             {allItems.map((item) => (
               <tr key={item.tempId} className="bg-card">
                 <td className="px-3 py-2 align-middle">
-                  <Badge
-                    variant={item.movement === "Entrada" ? "success" : "destructive"}
-                    className="px-1.5 py-0.5 text-[9px]"
-                  >
-                    {item.movement}
-                  </Badge>
+                  <ReturnMovementBadge kind={item.movement === "Entrada" ? "entry" : "exit"} />
                 </td>
                 <td className="px-3 py-2 align-middle">
                   <ModalProductIdentity code={item.code} description={item.description} />

@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftRight, Menu, Package, Plus, Tags, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, Menu, Package, Plus, ShoppingCart, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { MobileQuickActionsDrawer } from "@/components/layout/mobile-quick-actions-drawer";
@@ -8,8 +8,8 @@ import { MobileMenuSheet } from "./mobile-menu-sheet";
 
 const MOBILE_NAV_ITEMS = [
   { title: "Inventario", url: "/inventory", icon: Package },
-  { title: "Ventas", url: "/transactions", icon: Tags },
-  { title: "Movs", url: "/movements", icon: ArrowLeftRight },
+  { title: "Ventas", url: "/transactions", icon: ShoppingCart },
+  { title: "Movimientos", url: "/movements", icon: ArrowLeftRight },
 ] as const;
 
 function MobileNavItem({
@@ -29,15 +29,15 @@ function MobileNavItem({
     <Link
       to={url}
       className={cn(
-        "relative flex h-full w-14 flex-col items-center justify-center gap-0.5 py-1 transition-colors",
-        isActive ? "text-primary" : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80",
+        "relative flex h-full w-full flex-col items-center justify-center gap-0.5 py-1 transition-colors",
+        isActive ? "text-primary" : "text-sidebar-foreground/65 hover:text-sidebar-foreground",
       )}
     >
       {isActive ? (
         <span className="bg-primary absolute top-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full" />
       ) : null}
       <Icon className={cn("size-5", isActive && "stroke-[2.5]")} />
-      <span className={cn("mt-0.5 text-[9px] leading-none", isActive ? "font-bold" : "font-medium")}>{title}</span>
+      <span className={cn("mt-0.5 text-[10px] leading-none", isActive ? "font-bold" : "font-medium")}>{title}</span>
     </Link>
   );
 }
@@ -59,29 +59,29 @@ export function BottomBar() {
             <MobileNavItem key={item.url} {...item} currentPath={currentPath} />
           ))}
 
-          <div className="relative flex h-full w-full flex-col items-center justify-center">
-            <div className="relative -mt-8">
-              <span className="bg-primary/30 fab-ping absolute inset-0 rounded-full" />
-              <button
-                onClick={() => setActionDrawerOpen(true)}
-                disabled={!hasActiveBusiness}
-                className="bg-primary text-primary-foreground fab-glow relative flex size-14 items-center justify-center rounded-full transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-                aria-label="Nueva acción"
-              >
-                <Plus className="size-7 stroke-3" />
-              </button>
-            </div>
+          <div className="relative h-full w-full">
+            <button
+              onClick={() => setActionDrawerOpen(true)}
+              disabled={!hasActiveBusiness}
+              className="bg-primary text-primary-foreground fab-glow absolute -top-4 left-1/2 flex size-14 -translate-x-1/2 items-center justify-center rounded-full transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              aria-label="Nueva operación"
+            >
+              <Plus className="size-7 stroke-3" />
+            </button>
+            <span className="text-sidebar-foreground/75 absolute right-0 bottom-1 left-0 text-center text-[10px] leading-none font-medium">
+              Nuevo
+            </span>
           </div>
 
           <MobileNavItem {...MOBILE_NAV_ITEMS[2]} currentPath={currentPath} />
 
           <button
             onClick={() => setMenuOpen(true)}
-            className="text-sidebar-foreground/50 hover:text-sidebar-foreground/80 flex h-full w-14 flex-col items-center justify-center gap-0.5 py-1 transition-colors"
+            className="text-sidebar-foreground/65 hover:text-sidebar-foreground flex h-full w-full flex-col items-center justify-center gap-0.5 py-1 transition-colors"
             aria-label="Abrir menú"
           >
             <Menu className="size-5" />
-            <span className="mt-0.5 text-[9px] leading-none font-medium">Menú</span>
+            <span className="mt-0.5 text-[10px] leading-none font-medium">Menú</span>
           </button>
         </div>
       </nav>

@@ -65,7 +65,12 @@ export function UsersPage() {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <Topbar search={search} onSearchChange={setSearch} onCreateUser={openCreateModal} />
+      <Topbar
+        search={search}
+        totalUsers={usersQuery.data?.length ?? 0}
+        onSearchChange={setSearch}
+        onCreateUser={openCreateModal}
+      />
 
       {isLoading ? (
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
@@ -77,7 +82,7 @@ export function UsersPage() {
         <DataTable
           columns={columns}
           data={filteredUsers}
-          emptyMessage="No hay usuarios registrados."
+          emptyMessage={search.trim() ? "No se encontraron usuarios." : "No hay usuarios registrados."}
           onRowClick={openEditModal}
           meta={{ businesses, onEdit: openEditModal }}
           getRowId={(row) => row.id}

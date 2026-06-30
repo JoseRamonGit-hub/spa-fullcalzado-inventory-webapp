@@ -29,10 +29,10 @@ function getDefaultBusinessOptions(role: UserRole, selectedBusinessIds: string[]
 
 function getBusinessHint(role: UserRole) {
   if (role === "admin") {
-    return "Opcional para administradores. Si no asignas ninguno, seguirá viendo todos los negocios.";
+    return "Sin selección, tendrá acceso a todos los negocios.";
   }
 
-  return "Selecciona una o más tiendas. El empleado solo podrá operar en esas tiendas.";
+  return "Selecciona uno o más negocios para este empleado.";
 }
 
 export function BusinessAssignmentField({
@@ -73,7 +73,7 @@ export function BusinessAssignmentField({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <FieldLegend variant="label" className="mb-0">
-            Negocios asignados
+            Asignados
           </FieldLegend>
           <FieldDescription>{getBusinessHint(role)}</FieldDescription>
         </div>
@@ -84,7 +84,7 @@ export function BusinessAssignmentField({
 
       <Field data-invalid={businessInvalid}>
         {businesses.length > 0 ? (
-          <div className="custom-scrollbar grid max-h-44 gap-2 overflow-auto pr-1 sm:grid-cols-2">
+          <div className="custom-scrollbar grid max-h-40 gap-2 overflow-auto pr-1 sm:grid-cols-2">
             {businesses.map((business) => {
               const isSelected = selectedBusinessIds.includes(business.id);
 
@@ -94,7 +94,7 @@ export function BusinessAssignmentField({
                   type="button"
                   aria-pressed={isSelected}
                   className={cn(
-                    "bg-card focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-12 items-center gap-2.5 rounded-md border px-3 py-2 text-left transition-colors outline-none focus-visible:ring-[3px]",
+                    "bg-card focus-visible:border-ring focus-visible:ring-ring/50 flex min-h-11 items-center gap-2.5 rounded-md border px-3 py-2 text-left transition-colors outline-none focus-visible:ring-[3px]",
                     isSelected
                       ? "border-primary/60 bg-primary/8 text-foreground ring-primary/15 ring-1"
                       : "border-border/70 text-foreground hover:border-primary/30 hover:bg-accent/40",
@@ -128,28 +128,26 @@ export function BusinessAssignmentField({
         {businessInvalid ? <FieldError errors={businessErrors} /> : null}
       </Field>
 
-      <div className="border-border/70 bg-muted/20 rounded-md border p-3">
-        <Field data-invalid={defaultInvalid}>
-          <FieldLabel htmlFor="default_business_id">Negocio predeterminado</FieldLabel>
-          <NativeSelect
-            id="default_business_id"
-            value={defaultBusinessId}
-            onChange={(event) => onDefaultBusinessIdChange(event.target.value)}
-            wrapperClassName="w-full"
-            className="w-full"
-            aria-invalid={defaultInvalid}
-          >
-            <NativeSelectOption value="">Seleccionar negocio</NativeSelectOption>
-            {defaultOptions.map((business) => (
-              <NativeSelectOption key={business.id} value={business.id}>
-                {business.name}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-          <FieldDescription className="text-xs">Será la primera tienda activa al iniciar sesión.</FieldDescription>
-          {defaultInvalid ? <FieldError errors={defaultBusinessErrors} /> : null}
-        </Field>
-      </div>
+      <Field data-invalid={defaultInvalid}>
+        <FieldLabel htmlFor="default_business_id">Negocio al iniciar</FieldLabel>
+        <NativeSelect
+          id="default_business_id"
+          value={defaultBusinessId}
+          onChange={(event) => onDefaultBusinessIdChange(event.target.value)}
+          wrapperClassName="w-full"
+          className="w-full"
+          aria-invalid={defaultInvalid}
+        >
+          <NativeSelectOption value="">Seleccionar negocio</NativeSelectOption>
+          {defaultOptions.map((business) => (
+            <NativeSelectOption key={business.id} value={business.id}>
+              {business.name}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+        <FieldDescription className="text-xs">Será el contexto activo al entrar al sistema.</FieldDescription>
+        {defaultInvalid ? <FieldError errors={defaultBusinessErrors} /> : null}
+      </Field>
     </FieldSet>
   );
 }

@@ -22,7 +22,7 @@ export function MobileQuickActionsDrawer({ open, onOpenChange }: MobileQuickActi
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader className="border-b">
-          <DrawerTitle className="text-sm font-bold tracking-wide uppercase">¿Qué desea hacer?</DrawerTitle>
+          <DrawerTitle className="text-sm font-bold tracking-wide uppercase">Nueva operación</DrawerTitle>
         </DrawerHeader>
         <div className="flex flex-col gap-3 p-4 pb-10">
           <Button
@@ -34,8 +34,8 @@ export function MobileQuickActionsDrawer({ open, onOpenChange }: MobileQuickActi
               <PackagePlus className="text-primary size-5" />
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold">Registrar Ingreso</span>
-              <span className="text-muted-foreground text-xs">Agregar productos al inventario</span>
+              <span className="text-sm font-semibold">Cargar inventario</span>
+              <span className="text-muted-foreground text-xs">Agregar o reponer productos</span>
             </div>
           </Button>
 
