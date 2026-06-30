@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
+import { cn } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<Product>();
 
@@ -105,29 +106,29 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
           <div className="flex items-center justify-center gap-1">
             <Button
               variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-primary h-5 w-7 p-0"
+              size="icon-xs"
+              className="text-muted-foreground hover:text-primary"
+              aria-label={`Editar ${product.code}`}
+              title="Editar producto"
               onClick={(e) => {
                 e.stopPropagation();
                 meta.onEdit(product);
               }}
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil aria-hidden="true" />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
-              className={`h-5 w-7 p-0 ${
-                product.active
-                  ? "text-muted-foreground hover:text-destructive"
-                  : "text-muted-foreground hover:text-success"
-              }`}
+              size="icon-xs"
+              className={cn("text-muted-foreground", product.active ? "hover:text-destructive" : "hover:text-success")}
+              aria-label={`${product.active ? "Desactivar" : "Reactivar"} ${product.code}`}
+              title={product.active ? "Desactivar producto" : "Reactivar producto"}
               onClick={(e) => {
                 e.stopPropagation();
                 meta.onToggleStatus(product);
               }}
             >
-              {product.active ? <Trash2 className="h-3.5 w-3.5" /> : <RotateCcw className="h-3.5 w-3.5" />}
+              {product.active ? <Trash2 aria-hidden="true" /> : <RotateCcw aria-hidden="true" />}
             </Button>
           </div>
         );
