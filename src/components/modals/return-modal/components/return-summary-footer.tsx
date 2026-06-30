@@ -1,5 +1,4 @@
 import { IterationCcw } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
@@ -9,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { ReturnSummary } from "../types";
 import { getReturnPresentation } from "../return-presentation";
+import { ReturnMovementBadge } from "./return-movement-badge";
 
 type ReturnSummaryFooterProps = {
   hasReturnItems: boolean;
@@ -68,9 +68,7 @@ export function ReturnSummaryFooter({
       <section className="bg-card overflow-hidden rounded-md border">
         <header className="flex items-center justify-between gap-3 border-b px-3 py-2">
           <span className="flex min-w-0 items-center gap-2">
-            <Badge variant={presentation.isExchange ? "exchange" : "refund"} className="px-1.5 py-0.5 text-[9px]">
-              {presentation.operationLabel}
-            </Badge>
+            <ReturnMovementBadge kind={presentation.isExchange ? "exchange" : "refund"} />
             <span className="truncate text-xs font-semibold">{presentation.outcomeLabel}</span>
           </span>
           <span className="text-muted-foreground shrink-0 text-[10px] tabular-nums">

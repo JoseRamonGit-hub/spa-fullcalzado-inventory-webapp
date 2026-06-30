@@ -10,7 +10,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { ReceiptText, ArrowLeftRight, IterationCcw, LogOut, Package, Settings, Tags, Users } from "lucide-react";
+import {
+  ReceiptText,
+  ArrowLeftRight,
+  IterationCcw,
+  LogOut,
+  Package,
+  Settings,
+  ShoppingCart,
+  Users,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -30,7 +39,7 @@ const NAV_ITEMS = [
   {
     title: "Ventas",
     url: "/transactions",
-    icon: Tags,
+    icon: ShoppingCart,
   },
   {
     title: "Devoluciones",

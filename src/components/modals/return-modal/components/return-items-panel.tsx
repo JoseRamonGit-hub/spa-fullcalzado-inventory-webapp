@@ -1,11 +1,11 @@
 import { PackageOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import { sumCurrencyTotals } from "@/components/modals/shared/currency-totals";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
+import { ReturnMovementBadge } from "./return-movement-badge";
 
 type ReturnItemsPanelProps = {
   returnItems: readonly PendingReturnItem[];
@@ -52,24 +52,12 @@ function ItemRow({ code, description, quantity, totalUsd, striped, onRemove }: I
   );
 }
 
-function GroupRow({
-  label,
-  count,
-  totalUsd,
-  variant,
-}: {
-  label: "Entrada" | "Salida";
-  count: number;
-  totalUsd: number;
-  variant: "success" | "destructive";
-}) {
+function GroupRow({ count, totalUsd, kind }: { count: number; totalUsd: number; kind: "entry" | "exit" }) {
   return (
     <TableRow className="bg-muted/35 hover:bg-muted/35">
       <TableCell colSpan={2} className="px-3 py-1.5">
         <span className="flex items-center gap-2">
-          <Badge variant={variant} className="px-1.5 py-0.5 text-[9px]">
-            {label}
-          </Badge>
+          <ReturnMovementBadge kind={kind} />
           <span className="text-muted-foreground text-[10px] font-medium tabular-nums">
             {count} {count === 1 ? "producto" : "productos"}
           </span>
@@ -125,7 +113,7 @@ export function ReturnItemsPanel({
         <TableBody>
           {returnItems.length > 0 && (
             <>
-              <GroupRow label="Entrada" count={returnItems.length} totalUsd={returnTotals.usd} variant="success" />
+              <GroupRow count={returnItems.length} totalUsd={returnTotals.usd} kind="entry" />
               {returnItems.map((item, index) => (
                 <ItemRow
                   key={item.tempId}
@@ -142,12 +130,7 @@ export function ReturnItemsPanel({
 
           {exchangeItems.length > 0 && (
             <>
-              <GroupRow
-                label="Salida"
-                count={exchangeItems.length}
-                totalUsd={exchangeTotals.usd}
-                variant="destructive"
-              />
+              <GroupRow count={exchangeItems.length} totalUsd={exchangeTotals.usd} kind="exit" />
               {exchangeItems.map((item, index) => (
                 <ItemRow
                   key={item.tempId}
