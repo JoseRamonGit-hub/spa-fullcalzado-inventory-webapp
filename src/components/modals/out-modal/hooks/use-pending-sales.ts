@@ -1,7 +1,6 @@
 import type { PendingSale } from "../types";
+import { sumCurrencyTotals } from "@/components/modals/shared/currency-totals";
 import { usePendingItems } from "@/components/modals/shared/use-pending-items";
-
-const INITIAL_TOTAL = 0;
 
 export interface UsePendingSalesReturn {
   pendingSales: PendingSale[];
@@ -15,15 +14,14 @@ export interface UsePendingSalesReturn {
 export function usePendingSales(): UsePendingSalesReturn {
   const { items: pendingSales, addItem, removeItem, clearItems } = usePendingItems<PendingSale>();
 
-  const totalAmountUsd = pendingSales.reduce((accumulator, sale) => accumulator + sale.totalUsd, INITIAL_TOTAL);
-  const totalAmountVes = pendingSales.reduce((accumulator, sale) => accumulator + sale.totalVes, INITIAL_TOTAL);
+  const totals = sumCurrencyTotals(pendingSales);
 
   return {
     pendingSales,
     addPendingSale: addItem,
     removePendingSale: removeItem,
     clearPendingSales: clearItems,
-    totalAmountUsd,
-    totalAmountVes,
+    totalAmountUsd: totals.usd,
+    totalAmountVes: totals.ves,
   };
 }

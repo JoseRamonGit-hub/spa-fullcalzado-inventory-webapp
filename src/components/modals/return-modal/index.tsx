@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
-import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
+import { useModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { usePendingReturn } from "./hooks/use-pending-return";
@@ -20,9 +20,7 @@ type ReturnModalProps = {
 };
 
 export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
-  const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
-  const currentExchangeRate = exchangeRateData?.rate ?? 0;
-  const isExchangeRateReady = !!exchangeRateData?.rate;
+  const exchangeRate = useModalExchangeRate();
 
   const [activeTab, setActiveTab] = useState<ReturnTabValue>("return");
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -60,7 +58,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
     returnItems,
     exchangeItems,
     returnType: summary.returnType,
-    currentExchangeRate,
+    currentExchangeRate: exchangeRate.value,
     notes,
     clearAll,
     onSuccess: handleSubmissionSuccess,
@@ -89,7 +87,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
     {
       key: "enter",
       shiftKey: true,
-      when: returnItems.length > 0 && !isConfirmDialogOpen && isExchangeRateReady,
+      when: returnItems.length > 0 && !isConfirmDialogOpen && exchangeRate.isReady,
       stopPropagation: true,
       onTrigger: () => setIsConfirmDialogOpen(true),
     },
@@ -123,14 +121,14 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
         title="Devolución"
         description="Registra devoluciones o cambios de productos."
         dialogClassName="sm:max-w-4xl"
+        bodyClassName="md:overflow-y-hidden"
         avoidCloseFromOutsideClick
         avoidCloseFromEsc
         footer={
           <ReturnSummaryFooter
             hasReturnItems={returnItems.length > 0}
             summary={summary}
-            currentExchangeRate={currentExchangeRate}
-            isExchangeRateLoading={isExchangeRateLoading}
+            exchangeRate={exchangeRate}
             isSubmissionPending={isSubmissionPending}
             notes={notes}
             onNotesChange={setNotes}
@@ -171,20 +169,11 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
               </TabsList>
 
               <TabsContent value="return" className="px-4 pt-3 md:px-6 md:pt-4">
-                <ProductReturnForm
-                  currentExchangeRate={currentExchangeRate}
-                  isExchangeRateReady={isExchangeRateReady}
-                  onAddItem={handleAddReturnItem}
-                />
+                <ProductReturnForm exchangeRate={exchangeRate} onAddItem={handleAddReturnItem} />
               </TabsContent>
 
               <TabsContent value="exchange" className="px-4 pt-3 md:px-6 md:pt-4">
-                <ProductReturnForm
-                  currentExchangeRate={currentExchangeRate}
-                  isExchangeRateReady={isExchangeRateReady}
-                  requireStock
-                  onAddItem={handleAddExchangeItem}
-                />
+                <ProductReturnForm exchangeRate={exchangeRate} requireStock onAddItem={handleAddExchangeItem} />
               </TabsContent>
             </Tabs>
           </header>
@@ -206,8 +195,7 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
         returnItems={returnItems}
         exchangeItems={exchangeItems}
         summary={summary}
-        currentExchangeRate={currentExchangeRate}
-        isExchangeRateLoading={isExchangeRateLoading}
+        exchangeRate={exchangeRate}
         isSubmissionPending={isSubmissionPending}
         notes={notes}
         onConfirmSubmit={submitReturn}

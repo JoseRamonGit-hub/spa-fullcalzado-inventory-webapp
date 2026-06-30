@@ -9,7 +9,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import type { ProductSearchResult } from "@/components/product-search/types";
 import { useProductLookup } from "@/components/modals/shared/product-selection";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../columns";
+import type { BatchItem, NewBatchItem, ExistingBatchItem } from "../types";
 
 const REQUIRED = "Requerido";
 const INVALID = "Inválido";

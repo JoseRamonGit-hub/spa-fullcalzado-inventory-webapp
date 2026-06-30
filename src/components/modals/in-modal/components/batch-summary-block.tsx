@@ -1,18 +1,24 @@
-import type { BatchItem } from "../columns";
+import type { BatchItem } from "../types";
 
 type BatchSummaryBlockProps = {
   pendingBatchItems: BatchItem[];
 };
 
 function getBatchStats(pendingBatchItems: BatchItem[]) {
-  const newItemsCount = pendingBatchItems.filter((item) => item.kind === "new").length;
-  const restockItemsCount = pendingBatchItems.filter((item) => item.kind === "existing").length;
-  const totalUnits = pendingBatchItems.reduce((total, item) => {
-    if (item.kind === "new") return total + item.initialStock;
-    return total + item.addedQuantity;
-  }, 0);
+  return pendingBatchItems.reduce(
+    (stats, item) => {
+      if (item.kind === "new") {
+        stats.newItemsCount += 1;
+        stats.totalUnits += item.initialStock;
+      } else {
+        stats.restockItemsCount += 1;
+        stats.totalUnits += item.addedQuantity;
+      }
 
-  return { newItemsCount, restockItemsCount, totalUnits };
+      return stats;
+    },
+    { newItemsCount: 0, restockItemsCount: 0, totalUnits: 0 },
+  );
 }
 
 export function BatchSummaryBlock({ pendingBatchItems }: BatchSummaryBlockProps) {
@@ -20,13 +26,13 @@ export function BatchSummaryBlock({ pendingBatchItems }: BatchSummaryBlockProps)
 
   return (
     <>
-      <section className="bg-card hidden h-72 flex-col justify-between rounded-md border p-4 md:flex">
+      <section className="bg-card hidden h-72 flex-col rounded-md border p-4 md:flex">
         <div>
           <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">Resumen del lote</p>
           <p className="text-muted-foreground mt-1 text-xs">Cambios preparados antes de confirmar.</p>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="my-auto flex flex-col gap-3">
           <div>
             <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
               Unidades a ingresar
@@ -44,11 +50,6 @@ export function BatchSummaryBlock({ pendingBatchItems }: BatchSummaryBlockProps)
               <p className="text-foreground/75 mt-1 text-sm font-semibold tabular-nums">{restockItemsCount}</p>
             </div>
           </div>
-        </div>
-
-        <div className="border-border/70 border-t pt-3">
-          <p className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">Confirmación</p>
-          <p className="text-muted-foreground mt-1 text-xs">El lote se procesa al confirmar la carga.</p>
         </div>
       </section>
 

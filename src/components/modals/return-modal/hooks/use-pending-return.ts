@@ -1,7 +1,6 @@
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
+import { sumCurrencyTotals } from "@/components/modals/shared/currency-totals";
 import { usePendingItems } from "@/components/modals/shared/use-pending-items";
-
-const INITIAL_TOTAL = 0;
 
 export function usePendingReturn() {
   const {
@@ -22,13 +21,11 @@ export function usePendingReturn() {
     clearExchangeItems();
   };
 
-  const creditUsd = returnItems.reduce((acc, item) => acc + item.totalUsd, INITIAL_TOTAL);
-  const creditVes = returnItems.reduce((acc, item) => acc + item.totalVes, INITIAL_TOTAL);
-  const newPurchaseUsd = exchangeItems.reduce((acc, item) => acc + item.totalUsd, INITIAL_TOTAL);
-  const newPurchaseVes = exchangeItems.reduce((acc, item) => acc + item.totalVes, INITIAL_TOTAL);
+  const credit = sumCurrencyTotals(returnItems);
+  const newPurchase = sumCurrencyTotals(exchangeItems);
 
-  const differenceUsd = newPurchaseUsd - creditUsd;
-  const differenceVes = newPurchaseVes - creditVes;
+  const differenceUsd = newPurchase.usd - credit.usd;
+  const differenceVes = newPurchase.ves - credit.ves;
 
   const returnType = exchangeItems.length > 0 ? "exchange" : "refund";
 
@@ -40,10 +37,10 @@ export function usePendingReturn() {
     addExchangeItem,
     removeExchangeItem,
     clearAll,
-    creditUsd,
-    creditVes,
-    newPurchaseUsd,
-    newPurchaseVes,
+    creditUsd: credit.usd,
+    creditVes: credit.ves,
+    newPurchaseUsd: newPurchase.usd,
+    newPurchaseVes: newPurchase.ves,
     differenceUsd,
     differenceVes,
     returnType,

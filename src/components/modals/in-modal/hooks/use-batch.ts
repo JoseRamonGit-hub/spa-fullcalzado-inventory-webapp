@@ -1,4 +1,4 @@
-import type { BatchItem } from "../columns";
+import type { BatchItem } from "../types";
 import { usePendingItems } from "@/components/modals/shared/use-pending-items";
 
 export interface UseBatchReturn {

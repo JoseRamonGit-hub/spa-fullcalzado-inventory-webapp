@@ -1,15 +1,19 @@
 import { IterationCcw } from "lucide-react";
-import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { cn } from "@/lib/utils";
+import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { ReturnSummary } from "../types";
+import { getReturnPresentation } from "../return-presentation";
 
 type ReturnSummaryFooterProps = {
   hasReturnItems: boolean;
   summary: ReturnSummary;
-  currentExchangeRate: number;
-  isExchangeRateLoading: boolean;
+  exchangeRate: ModalExchangeRate;
   isSubmissionPending: boolean;
   notes: string;
   onNotesChange: (notes: string) => void;
@@ -19,112 +23,88 @@ type ReturnSummaryFooterProps = {
 export function ReturnSummaryFooter({
   hasReturnItems,
   summary,
-  currentExchangeRate,
-  isExchangeRateLoading,
+  exchangeRate,
   isSubmissionPending,
   notes,
   onNotesChange,
   onOpenConfirmDialog,
 }: ReturnSummaryFooterProps) {
-  const { returnType, creditUsd, newPurchaseUsd, differenceUsd, differenceVes } = summary;
-  const userRole = useAuthStore((s) => s.user?.role);
+  const { returnType, differenceUsd } = summary;
+  const userRole = useAuthStore((state) => state.user?.role);
+  const presentation = getReturnPresentation(summary, hasReturnItems);
   const isEmployee = userRole === "employee";
-  const isExchangeRateReady = currentExchangeRate > 0;
-  const exchangeRateDisplayValue = isExchangeRateReady ? formatCurrencyVES(currentExchangeRate) : "Sin tasa vigente";
-  const exchangeRateTitle = isExchangeRateLoading ? "Cargando tasa" : "Tasa no disponible";
-  const exchangeRateMessage = isExchangeRateLoading
-    ? "Cargando tasa de cambio vigente..."
-    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
 
   const isBlockedByRole = isEmployee && (returnType === "refund" || differenceUsd < 0);
-
-  const isBlockedByExchangeRate = !isExchangeRateReady;
+  const isBlockedByExchangeRate = !exchangeRate.isReady;
   const canSubmit = hasReturnItems && !isSubmissionPending && !isBlockedByRole && !isBlockedByExchangeRate;
 
-  const buttonLabel =
-    returnType === "exchange"
-      ? isSubmissionPending
-        ? "Registrando..."
-        : "Registrar cambio"
-      : isSubmissionPending
-        ? "Registrando..."
-        : "Registrar devolución";
+  const buttonLabel = isSubmissionPending ? "Registrando..." : presentation.actionLabel;
 
   const blockedTooltip = isBlockedByRole
     ? returnType === "refund"
       ? "Solo un administrador puede procesar devoluciones"
       : "Solo un administrador puede procesar cambios con saldo a favor"
     : isBlockedByExchangeRate
-      ? exchangeRateMessage
+      ? exchangeRate.statusMessage
       : undefined;
 
   return (
     <footer className="flex w-full flex-col gap-3">
-      {!isExchangeRateReady && (
+      {!exchangeRate.isReady && (
         <section className="border-warning/40 bg-warning/8 rounded-md border px-3 py-2 text-xs">
-          <p className="text-warning-foreground font-medium">{exchangeRateTitle}</p>
-          <p className="text-muted-foreground mt-1">{exchangeRateMessage}</p>
+          <p className="text-warning-foreground font-medium">{exchangeRate.statusTitle}</p>
+          <p className="text-muted-foreground mt-1">{exchangeRate.statusMessage}</p>
         </section>
       )}
 
-      <textarea
+      <Input
         value={notes}
-        onChange={(e) => onNotesChange(e.target.value)}
+        onChange={(event) => onNotesChange(event.target.value)}
         placeholder="Motivo de la devolución (opcional)"
-        className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring/50 h-9 w-full resize-none rounded-md border px-3 py-2 text-xs focus-visible:ring-[3px] focus-visible:outline-none"
-        rows={1}
+        aria-label="Motivo de la devolución"
+        className="h-9 text-xs"
       />
 
-      <section
-        className={`bg-background grid gap-2 rounded-md border p-2 ${returnType === "exchange" ? "grid-cols-3 md:grid-cols-4" : "grid-cols-3"}`}
-      >
-        <div className={`min-w-0 ${returnType === "exchange" ? "hidden md:block" : ""}`}>
-          <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Tasa</p>
-          <p className="text-muted-foreground truncate text-[11px] font-medium tabular-nums">
-            {exchangeRateDisplayValue}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Crédito</p>
-          <p className="truncate text-[11px] font-semibold tabular-nums">{formatCurrencyUSD(creditUsd)}</p>
-          <p className="text-muted-foreground truncate text-[10px] tabular-nums">
-            {isExchangeRateReady ? formatCurrencyVES(creditUsd * currentExchangeRate) : "—"}
-          </p>
-        </div>
-        {returnType === "exchange" && (
-          <div className="min-w-0">
-            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Nueva Compra</p>
-            <p className="truncate text-[11px] font-semibold tabular-nums">{formatCurrencyUSD(newPurchaseUsd)}</p>
-            <p className="text-muted-foreground truncate text-[10px] tabular-nums">
-              {isExchangeRateReady ? formatCurrencyVES(newPurchaseUsd * currentExchangeRate) : "—"}
+      <section className="bg-card overflow-hidden rounded-md border">
+        <header className="flex items-center justify-between gap-3 border-b px-3 py-2">
+          <span className="flex min-w-0 items-center gap-2">
+            <Badge variant={presentation.isExchange ? "exchange" : "refund"} className="px-1.5 py-0.5 text-[9px]">
+              {presentation.operationLabel}
+            </Badge>
+            <span className="truncate text-xs font-semibold">{presentation.outcomeLabel}</span>
+          </span>
+          <span className="text-muted-foreground shrink-0 text-[10px] tabular-nums">
+            Tasa {exchangeRate.displayValue}
+          </span>
+        </header>
+
+        <div className="bg-primary/5 grid grid-cols-2 divide-x">
+          <div className="min-w-0 px-3 py-2">
+            <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase">Diferencia USD</p>
+            <p
+              className={cn(
+                "mt-0.5 text-base leading-tight font-bold whitespace-nowrap tabular-nums",
+                presentation.differenceClassName,
+              )}
+            >
+              {formatCurrencyUSD(presentation.differenceUsd)}
             </p>
           </div>
-        )}
-        <div className="min-w-0">
-          <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Diferencia</p>
-          <p
-            className={`truncate text-[11px] font-bold tabular-nums ${differenceUsd > 0 ? "text-success" : differenceUsd < 0 ? "text-destructive" : ""}`}
-          >
-            {differenceUsd > 0 ? "+" : ""}
-            {formatCurrencyUSD(differenceUsd)}
-          </p>
-          <p className="text-muted-foreground truncate text-[10px] tabular-nums">
-            {isExchangeRateReady ? `${differenceVes > 0 ? "+" : ""}${formatCurrencyVES(differenceVes)}` : "—"}
-          </p>
+          <div className="min-w-0 px-3 py-2 text-right">
+            <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase">Diferencia Bs.</p>
+            <p
+              className={cn(
+                "mt-0.5 text-base leading-tight font-bold whitespace-nowrap tabular-nums",
+                presentation.differenceClassName,
+              )}
+            >
+              {exchangeRate.isReady ? formatCurrencyVES(presentation.differenceVes) : "—"}
+            </p>
+          </div>
         </div>
       </section>
 
-      <ModalFooterActionRow
-        message={
-          differenceUsd > 0
-            ? "Cliente paga la diferencia"
-            : differenceUsd < 0
-              ? "Tienda devuelve la diferencia"
-              : hasReturnItems
-                ? "Cambio exacto — sin pago"
-                : "Agrega productos a devolver"
-        }
-      >
+      <ModalFooterActionRow message={hasReturnItems ? presentation.outcomeLabel : "Agrega productos de entrada"}>
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="w-full md:w-auto">

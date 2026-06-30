@@ -26,19 +26,22 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
 
       {hasPendingSales ? (
         <div className="custom-scrollbar min-h-0 flex-1 overflow-auto">
-          <Table className="min-w-2xl text-xs">
+          <Table className="min-w-[42rem] text-xs">
             <TableHeader className="bg-muted/20 sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-muted-foreground h-7 px-2 text-[10px] font-semibold tracking-wider uppercase">
+                <TableHead className="text-muted-foreground h-7 w-48 px-2 text-[10px] font-semibold tracking-wider uppercase md:hidden">
+                  Producto
+                </TableHead>
+                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
                   Código
                 </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-[10px] font-semibold tracking-wider uppercase">
+                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
                   Descripción
                 </TableHead>
                 <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
                   Cant.
                 </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
+                <TableHead className="text-muted-foreground hidden h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase md:table-cell">
                   P. Unit.
                 </TableHead>
                 <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
@@ -47,20 +50,29 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
                 <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
                   Total Bs.
                 </TableHead>
+                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase md:hidden">
+                  P. Unit.
+                </TableHead>
                 <TableHead className="h-7 w-8 px-1" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {pendingSales.map((sale) => (
                 <TableRow key={sale.tempId} className="hover:bg-muted/25">
-                  <TableCell className="px-2 py-1.5">
+                  <TableCell className="max-w-48 px-2 py-1.5 md:hidden">
+                    <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
+                      <span className="product-code shrink-0 uppercase">{sale.code}</span>
+                      <span className="truncate font-medium">{sale.description}</span>
+                    </span>
+                  </TableCell>
+                  <TableCell className="hidden px-2 py-1.5 md:table-cell">
                     <span className="product-code uppercase">{sale.code}</span>
                   </TableCell>
-                  <TableCell className="max-w-64 px-2 py-1.5">
+                  <TableCell className="hidden max-w-64 px-2 py-1.5 md:table-cell">
                     <span className="block truncate font-medium">{sale.description}</span>
                   </TableCell>
                   <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{sale.quantity}</TableCell>
-                  <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums">
+                  <TableCell className="text-muted-foreground hidden px-2 py-1.5 text-right tabular-nums md:table-cell">
                     {formatCurrencyUSD(sale.priceUsd)}
                   </TableCell>
                   <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums">
@@ -68,6 +80,9 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
                   </TableCell>
                   <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums">
                     {formatCurrencyVES(sale.totalVes)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums md:hidden">
+                    {formatCurrencyUSD(sale.priceUsd)}
                   </TableCell>
                   <TableCell className="px-1 py-1 text-right">
                     <Button

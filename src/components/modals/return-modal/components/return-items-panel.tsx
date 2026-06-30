@@ -1,6 +1,10 @@
-import { PackageOpen, Undo2, ArrowRightLeft, Trash2 } from "lucide-react";
+import { PackageOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
+import { sumCurrencyTotals } from "@/components/modals/shared/currency-totals";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
 
 type ReturnItemsPanelProps = {
@@ -10,42 +14,72 @@ type ReturnItemsPanelProps = {
   onRemoveExchangeItem: (id: string) => void;
 };
 
-function ItemRow({
-  code,
-  description,
-  quantity,
-  totalUsd,
-  striped,
-  onRemove,
-}: {
+type ItemRowProps = {
   code: string;
   description: string;
   quantity: number;
   totalUsd: number;
   striped: boolean;
   onRemove: () => void;
+};
+
+function ItemRow({ code, description, quantity, totalUsd, striped, onRemove }: ItemRowProps) {
+  return (
+    <TableRow className={cn("bg-card hover:bg-muted/30", striped && "bg-table-stripe")}>
+      <TableCell className="px-3 py-1.5">
+        <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
+          <span className="product-code shrink-0 uppercase">{code}</span>
+          <span className="text-muted-foreground max-w-64 truncate" title={description}>
+            {description}
+          </span>
+        </span>
+      </TableCell>
+      <TableCell className="px-3 py-1.5 text-right font-medium tabular-nums">{quantity}</TableCell>
+      <TableCell className="px-3 py-1.5 text-right font-semibold tabular-nums">{formatCurrencyUSD(totalUsd)}</TableCell>
+      <TableCell className="w-10 px-1.5 py-1 text-right">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive size-7"
+          onClick={onRemove}
+          aria-label={`Eliminar ${code}`}
+        >
+          <Trash2 data-icon="inline-start" />
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function GroupRow({
+  label,
+  count,
+  totalUsd,
+  variant,
+}: {
+  label: "Entrada" | "Salida";
+  count: number;
+  totalUsd: number;
+  variant: "success" | "destructive";
 }) {
   return (
-    <div
-      className={`border-border/40 flex items-center gap-3 border-b px-4 py-1.5 ${striped ? "bg-table-stripe" : ""}`}
-    >
-      <span className="product-code text-xs uppercase">{code}</span>
-      <span className="text-muted-foreground hidden min-w-0 flex-1 truncate text-[13px] md:block">{description}</span>
-      <span className="text-muted-foreground ml-auto text-[13px] tabular-nums md:ml-0">{quantity}</span>
-      <span className="text-muted-foreground w-20 text-right text-[13px] tabular-nums">
+    <TableRow className="bg-muted/35 hover:bg-muted/35">
+      <TableCell colSpan={2} className="px-3 py-1.5">
+        <span className="flex items-center gap-2">
+          <Badge variant={variant} className="px-1.5 py-0.5 text-[9px]">
+            {label}
+          </Badge>
+          <span className="text-muted-foreground text-[10px] font-medium tabular-nums">
+            {count} {count === 1 ? "producto" : "productos"}
+          </span>
+        </span>
+      </TableCell>
+      <TableCell className="px-3 py-1.5 text-right text-xs font-bold tabular-nums">
         {formatCurrencyUSD(totalUsd)}
-      </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="text-muted-foreground hover:text-destructive h-6 w-6 shrink-0"
-        onClick={onRemove}
-        aria-label={`Eliminar ${code}`}
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </Button>
-    </div>
+      </TableCell>
+      <TableCell />
+    </TableRow>
   );
 }
 
@@ -61,70 +95,74 @@ export function ReturnItemsPanel({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground flex flex-col items-center gap-2">
-          <PackageOpen className="h-8 w-8 opacity-40" />
-          <span className="text-sm">Agrega productos a devolver.</span>
+          <PackageOpen className="size-8 opacity-40" />
+          <span className="text-sm">Agrega productos de entrada para comenzar.</span>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="custom-scrollbar h-full overflow-y-auto">
-      {/* ── Return items group ─────────────────────────────── */}
-      {returnItems.length > 0 && (
-        <div>
-          <div className="bg-muted/50 sticky top-0 z-10 flex items-center justify-between border-b px-4 py-1.5">
-            <div className="flex items-center gap-1.5">
-              <Undo2 className="text-muted-foreground size-3" />
-              <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                Entrada ({returnItems.length})
-              </span>
-            </div>
-            <span className="text-foreground text-xs font-bold tabular-nums">
-              {formatCurrencyUSD(returnItems.reduce((sum, i) => sum + i.totalUsd, 0))}
-            </span>
-          </div>
-          {returnItems.map((item, index) => (
-            <ItemRow
-              key={item.tempId}
-              code={item.code}
-              description={item.description}
-              quantity={item.quantity}
-              totalUsd={item.totalUsd}
-              striped={index % 2 === 1}
-              onRemove={() => onRemoveReturnItem(item.tempId)}
-            />
-          ))}
-        </div>
-      )}
+  const returnTotals = sumCurrencyTotals(returnItems);
+  const exchangeTotals = sumCurrencyTotals(exchangeItems);
 
-      {/* ── Exchange items group ───────────────────────────── */}
-      {exchangeItems.length > 0 && (
-        <div>
-          <div className="bg-muted/50 sticky top-0 z-10 flex items-center justify-between border-b px-4 py-1.5">
-            <div className="flex items-center gap-1.5">
-              <ArrowRightLeft className="text-muted-foreground size-3" />
-              <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                Salida ({exchangeItems.length})
-              </span>
-            </div>
-            <span className="text-foreground text-xs font-bold tabular-nums">
-              {formatCurrencyUSD(exchangeItems.reduce((sum, i) => sum + i.totalUsd, 0))}
-            </span>
-          </div>
-          {exchangeItems.map((item, index) => (
-            <ItemRow
-              key={item.tempId}
-              code={item.code}
-              description={item.description}
-              quantity={item.quantity}
-              totalUsd={item.totalUsd}
-              striped={index % 2 === 1}
-              onRemove={() => onRemoveExchangeItem(item.tempId)}
-            />
-          ))}
-        </div>
-      )}
+  return (
+    <div className="custom-scrollbar h-full overflow-auto">
+      <Table className="min-w-130 text-xs">
+        <TableHeader className="bg-card sticky top-0">
+          <TableRow className="bg-muted/20 hover:bg-muted/20">
+            <TableHead className="h-8 px-3 text-[10px] font-semibold tracking-wider uppercase">Producto</TableHead>
+            <TableHead className="h-8 w-20 px-3 text-right text-[10px] font-semibold tracking-wider uppercase">
+              Cant.
+            </TableHead>
+            <TableHead className="h-8 w-28 px-3 text-right text-[10px] font-semibold tracking-wider uppercase">
+              Total USD
+            </TableHead>
+            <TableHead className="h-8 w-10 px-1.5">
+              <span className="sr-only">Acciones</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {returnItems.length > 0 && (
+            <>
+              <GroupRow label="Entrada" count={returnItems.length} totalUsd={returnTotals.usd} variant="success" />
+              {returnItems.map((item, index) => (
+                <ItemRow
+                  key={item.tempId}
+                  code={item.code}
+                  description={item.description}
+                  quantity={item.quantity}
+                  totalUsd={item.totalUsd}
+                  striped={index % 2 === 1}
+                  onRemove={() => onRemoveReturnItem(item.tempId)}
+                />
+              ))}
+            </>
+          )}
+
+          {exchangeItems.length > 0 && (
+            <>
+              <GroupRow
+                label="Salida"
+                count={exchangeItems.length}
+                totalUsd={exchangeTotals.usd}
+                variant="destructive"
+              />
+              {exchangeItems.map((item, index) => (
+                <ItemRow
+                  key={item.tempId}
+                  code={item.code}
+                  description={item.description}
+                  quantity={item.quantity}
+                  totalUsd={item.totalUsd}
+                  striped={index % 2 === 1}
+                  onRemove={() => onRemoveExchangeItem(item.tempId)}
+                />
+              ))}
+            </>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

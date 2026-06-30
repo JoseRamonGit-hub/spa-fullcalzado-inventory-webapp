@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { Package, X } from "lucide-react";
 import { useProducts } from "@/features/inventory/hooks/useProductQueries";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/index";
@@ -69,6 +69,14 @@ function SelectedProductChip({
           {formatCurrencyUSD(product.price_usd)}
         </span>
       )}
+      <span
+        className="text-muted-foreground bg-background/70 border-border/70 inline-flex h-6 shrink-0 items-center gap-1 rounded-sm border px-1.5 text-xs tabular-nums sm:hidden"
+        aria-label={`${product.stock} en inventario`}
+        title={`${product.stock} en inventario`}
+      >
+        <Package className="size-3" aria-hidden="true" />
+        {product.stock}
+      </span>
       <span className="text-muted-foreground bg-background/70 border-border/70 hidden h-6 shrink-0 items-center rounded-sm border px-2 text-xs tabular-nums sm:inline-flex">
         {product.stock} en inventario
       </span>
