@@ -476,7 +476,7 @@ SELECT results_eq(
       )
   $$,
   $$ VALUES (3, 1, 1) $$,
-  'La devolución aumenta el stock y registra sus efectos'
+  'La devolución aumenta las existencias del Producto y registra sus efectos'
 );
 
 SELECT is(
