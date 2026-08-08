@@ -26,8 +26,9 @@ export function useUpdateProduct() {
     ...activeBusinessMutationOptions((businessId, payload: EditProductPayload) =>
       productsService.editProduct(businessId, payload),
     ),
-    onSuccess: (_, __, { businessId }) => {
+    onSuccess: (_, payload, { businessId }) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
+      queryClient.invalidateQueries({ queryKey: productKeys.detail(businessId, payload.p_product_id) });
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
     },
   });
@@ -40,8 +41,9 @@ export function useToggleProductActive() {
     ...activeBusinessMutationOptions((businessId, { id, active }: { id: string; active: boolean }) =>
       productsService.toggleActive(businessId, id, active),
     ),
-    onSuccess: (_, __, { businessId }) => {
+    onSuccess: (_, { id }, { businessId }) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
+      queryClient.invalidateQueries({ queryKey: productKeys.detail(businessId, id) });
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
     },
   });

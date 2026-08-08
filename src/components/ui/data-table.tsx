@@ -25,6 +25,7 @@ type DataTableProps<TData, TValue> = {
   data: TData[];
   emptyMessage?: string;
   onRowClick?: (row: TData) => void;
+  getRowAriaLabel?: (row: TData) => string;
   meta?: Record<string, unknown>;
   isLoading?: boolean;
   getRowId?: (originalRow: TData, index: number) => string;
@@ -42,6 +43,7 @@ export function DataTable<TData, TValue>({
   data,
   emptyMessage = "No hay resultados.",
   onRowClick,
+  getRowAriaLabel,
   meta,
   isLoading,
   getRowId,
@@ -154,10 +156,18 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    tabIndex={onRowClick ? 0 : undefined}
+                    aria-label={onRowClick ? getRowAriaLabel?.(row.original) : undefined}
                     className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""} ${getRowClassName?.(row, index) ?? ""}`}
                     onClick={() => {
                       if (renderSubRow) row.toggleExpanded();
                       onRowClick?.(row.original);
+                    }}
+                    onKeyDown={(event) => {
+                      if (!onRowClick || event.currentTarget !== event.target) return;
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      event.preventDefault();
+                      onRowClick(row.original);
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

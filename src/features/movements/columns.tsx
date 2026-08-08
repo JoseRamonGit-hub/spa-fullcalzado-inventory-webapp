@@ -10,7 +10,7 @@ import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 
 const columnHelper = createColumnHelper<InventoryMovementWithRelations>();
 
-export function getTypeInfo(movement: InventoryMovementWithRelations) {
+export function getTypeInfo(movement: Pick<InventoryMovementWithRelations, "type" | "return_id">) {
   const { type, return_id } = movement;
   const isExchangeExit = type === "exit" && return_id;
 

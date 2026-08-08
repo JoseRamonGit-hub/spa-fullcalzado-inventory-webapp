@@ -36,12 +36,20 @@ export function InventoryPage() {
 
   const handleRowClick = useCallback(
     (product: Product) => {
-      if (isMobile && isAdmin) {
+      if (isMobile) {
         setMobileActionProduct(product);
+        return;
       }
+
+      navigate({ to: "/inventory/$productId", params: { productId: product.id } });
     },
-    [isMobile, isAdmin],
+    [isMobile, navigate],
   );
+
+  const openProductDetail = (product: Product) => {
+    setMobileActionProduct(null);
+    navigate({ to: "/inventory/$productId", params: { productId: product.id } });
+  };
 
   const tableMeta = useMemo(
     () => ({
@@ -73,6 +81,7 @@ export function InventoryPage() {
           data={filteredProducts}
           emptyMessage="No hay productos registrados."
           onRowClick={handleRowClick}
+          getRowAriaLabel={(product) => `Ver detalles de ${product.code}`}
           meta={tableMeta}
           getRowId={(row) => row.id}
         />
@@ -96,7 +105,9 @@ export function InventoryPage() {
 
       <MobileActionDrawer
         product={mobileActionProduct}
+        isAdmin={isAdmin}
         onClose={() => setMobileActionProduct(null)}
+        onViewDetail={openProductDetail}
         onEdit={(p) => {
           setMobileActionProduct(null);
           setEditProduct(p);

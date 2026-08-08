@@ -20,6 +20,7 @@ import { Route as AppReturnsRouteImport } from './routes/_app/returns'
 import { Route as AppMovementsRouteImport } from './routes/_app/movements'
 import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
 import { Route as AppCashClosesRouteImport } from './routes/_app/cash-closes'
+import { Route as AppInventoryProductIdRouteImport } from './routes/_app/inventory_.$productId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -74,6 +75,11 @@ const AppCashClosesRoute = AppCashClosesRouteImport.update({
   path: '/cash-closes',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
+  id: '/inventory_/$productId',
+  path: '/inventory/$productId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AppTransactionsRoute
   '/users': typeof AppUsersRoute
   '/login': typeof AuthLoginRoute
+  '/inventory/$productId': typeof AppInventoryProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof AppTransactionsRoute
   '/users': typeof AppUsersRoute
   '/login': typeof AuthLoginRoute
+  '/inventory/$productId': typeof AppInventoryProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/_app/transactions': typeof AppTransactionsRoute
   '/_app/users': typeof AppUsersRoute
   '/_auth/login': typeof AuthLoginRoute
+  '/_app/inventory_/$productId': typeof AppInventoryProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/users'
     | '/login'
+    | '/inventory/$productId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/users'
     | '/login'
+    | '/inventory/$productId'
   id:
     | '__root__'
     | '/'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/_app/transactions'
     | '/_app/users'
     | '/_auth/login'
+    | '/_app/inventory_/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -234,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCashClosesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inventory_/$productId': {
+      id: '/_app/inventory_/$productId'
+      path: '/inventory/$productId'
+      fullPath: '/inventory/$productId'
+      preLoaderRoute: typeof AppInventoryProductIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -245,6 +264,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppUsersRoute: typeof AppUsersRoute
+  AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -255,6 +275,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppUsersRoute: AppUsersRoute,
+  AppInventoryProductIdRoute: AppInventoryProductIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

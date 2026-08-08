@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { Product, ProductCreateInput, EditProductPayload } from "@/types/index";
+import type { Product, ProductCreateInput, EditProductPayload, ProductDetail } from "@/types/index";
 
 export const productsService = {
   getAll: async (businessId: string, date?: string): Promise<Product[]> => {
@@ -17,6 +17,31 @@ export const productsService = {
 
     if (error) throw new Error(error.message);
     return data;
+  },
+
+  getDetail: async (businessId: string, productId: string): Promise<ProductDetail | null> => {
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (productError) throw new Error(productError.message);
+    if (!product) return null;
+
+    const { data: lastActivity, error: activityError } = await supabase
+      .from("inventory_movements")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("product_id", productId)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (activityError) throw new Error(activityError.message);
+    return { product, lastActivity };
   },
 
   createMany: async (businessId: string, payload: ProductCreateInput[]): Promise<Product[]> => {

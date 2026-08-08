@@ -62,6 +62,11 @@ export type InventoryMovementWithRelations = InventoryMovement & {
   users: Pick<User, "fullname">;
 };
 
+export type ProductDetail = {
+  product: Product;
+  lastActivity: InventoryMovement | null;
+};
+
 // ── Return types with joined relations ──────────────────────
 export type ReturnItemWithProduct = ReturnItem & {
   products: Pick<Product, "code" | "description">;
