@@ -101,6 +101,11 @@ SELECT throws_ok(
 );
 
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000002', true);
+SELECT set_config(
+  'test.atomic_sale_visible_baseline',
+  (SELECT count(*)::text FROM public.sales),
+  true
+);
 
 SELECT lives_ok(
   $$
@@ -285,16 +290,11 @@ SELECT throws_ok(
 
 SELECT is(
   (
-    SELECT count(DISTINCT sale.id)::integer
-    FROM public.sales sale
-    JOIN public.transactions transaction_line
-      ON transaction_line.sale_id = sale.id
-    WHERE transaction_line.product_id IN (
-      '29000000-0000-0000-0000-000000000001',
-      '29000000-0000-0000-0000-000000000002'
-    )
+    SELECT count(*)::integer
+    FROM public.sales
+    WHERE business_id = '10000000-0000-0000-0000-000000000001'
   ),
-  1,
+  current_setting('test.atomic_sale_visible_baseline')::integer + 1,
   'La validación de pertenencia tampoco deja cabecera parcial'
 );
 
@@ -327,18 +327,8 @@ SELECT lives_ok(
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000002', true);
 
 SELECT is(
-  (
-    SELECT count(DISTINCT sale.id)::integer
-    FROM public.sales sale
-    JOIN public.transactions transaction_line
-      ON transaction_line.sale_id = sale.id
-    WHERE transaction_line.product_id IN (
-      '29000000-0000-0000-0000-000000000001',
-      '29000000-0000-0000-0000-000000000002',
-      '29000000-0000-0000-0000-000000000003'
-    )
-  ),
-  1,
+  (SELECT count(*)::integer FROM public.sales),
+  current_setting('test.atomic_sale_visible_baseline')::integer + 1,
   'RLS oculta las Ventas de otros Negocios'
 );
 
@@ -407,7 +397,7 @@ SELECT throws_ok(
   $$,
   'P0001',
   'Existencia insuficiente para el producto SALE-ATOMIC-04',
-  'La liquidación no puede exceder el stock disponible'
+  'La liquidación no puede exceder las existencias del Producto'
 );
 
 SELECT results_eq(
@@ -427,7 +417,7 @@ SELECT results_eq(
       )
   $$,
   $$ VALUES (2, 1, 1) $$,
-  'La liquidación fallida no deja stock, Renglones ni eventos parciales'
+  'La liquidación fallida no altera existencias ni deja Renglones o eventos parciales'
 );
 
 SELECT throws_ok(
