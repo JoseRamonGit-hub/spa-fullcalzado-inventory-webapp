@@ -1,8 +1,6 @@
-import { useMemo, useState } from "react";
-import { useCashCloses } from "./hooks/useCashCloseQueries";
+import { useState } from "react";
+import { useCashCloses, useCashCloseSummary } from "./hooks/useCashCloseQueries";
 import { useGenerateCashClose } from "./hooks/useCashCloseMutations";
-import { useTransactions, useTodayTransactions } from "@/features/transactions/hooks/useTransactionQueries";
-import { useReturns, useTodayReturns } from "@/features/returns/hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
@@ -10,11 +8,23 @@ import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { formatDate } from "@/utils/formatters";
-import type { CashCloseWithRelations } from "@/types";
+import type { CashCloseSummary, CashCloseWithRelations } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
 import { MetricsSummary } from "./components/metrics-summary";
 import { CashCloseModal } from "./components/cash-close-modal";
 import { Route } from "@/routes/_app/cash-closes";
+
+const EMPTY_CASH_CLOSE_SUMMARY: CashCloseSummary = {
+  billedOperations: 0,
+  units: 0,
+  totalUsd: 0,
+  totalVes: 0,
+  returnsCount: 0,
+  returnsCreditUsd: 0,
+  returnsCreditVes: 0,
+  netUsd: 0,
+  netVes: 0,
+};
 
 export function CashClosesPage() {
   const { date } = Route.useSearch();
@@ -22,26 +32,7 @@ export function CashClosesPage() {
   const isFiltered = !!date;
 
   const { data: cashCloses, isLoading, isError } = useCashCloses(date);
-  const {
-    data: filteredTxs,
-    isLoading: isFilteredTxsLoading,
-    isError: isFilteredTxsError,
-  } = useTransactions(date, { enabled: isFiltered });
-  const {
-    data: todayTxs,
-    isLoading: isTodayTxsLoading,
-    isError: isTodayTxsError,
-  } = useTodayTransactions({ enabled: !isFiltered });
-  const {
-    data: filteredReturns,
-    isLoading: isFilteredReturnsLoading,
-    isError: isFilteredReturnsError,
-  } = useReturns(date, { enabled: isFiltered });
-  const {
-    data: todayReturns,
-    isLoading: isTodayReturnsLoading,
-    isError: isTodayReturnsError,
-  } = useTodayReturns({ enabled: !isFiltered });
+  const { data: cashCloseSummary, isLoading: isMetricsLoading, isError: hasMetricsError } = useCashCloseSummary(date);
   const closeMutation = useGenerateCashClose();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate({ from: "/cash-closes" });
@@ -50,60 +41,7 @@ export function CashClosesPage() {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const sourceTxs = isFiltered ? filteredTxs : todayTxs;
-  const sourceReturns = isFiltered ? filteredReturns : todayReturns;
-  const isMetricsLoading = isFiltered
-    ? isFilteredTxsLoading || isFilteredReturnsLoading
-    : isTodayTxsLoading || isTodayReturnsLoading;
-  const hasMetricsError = isFiltered
-    ? isFilteredTxsError || isFilteredReturnsError
-    : isTodayTxsError || isTodayReturnsError;
-
-  const todayMetrics = useMemo(() => {
-    const zero = {
-      count: 0,
-      units: 0,
-      totalUsd: 0,
-      totalVes: 0,
-      returnsCount: 0,
-      returnsCreditUsd: 0,
-      returnsCreditVes: 0,
-      netUsd: 0,
-      netVes: 0,
-    };
-
-    // Guard: if transactions haven't loaded yet, return zeros to avoid a
-    // negative net when returns cache is warm but transactions are still fetching.
-    if (sourceTxs === undefined) return zero;
-
-    const txMetrics = sourceTxs.reduce(
-      (acc, tx) => ({
-        count: acc.count + 1,
-        units: acc.units + tx.quantity,
-        totalUsd: acc.totalUsd + tx.price_usd * tx.quantity,
-        totalVes: acc.totalVes + tx.price_ves * tx.quantity,
-      }),
-      { count: 0, units: 0, totalUsd: 0, totalVes: 0 },
-    );
-
-    const retMetrics = (sourceReturns || []).reduce(
-      (acc, ret) => ({
-        count: acc.count + 1,
-        creditUsd: acc.creditUsd + ret.credit_usd,
-        creditVes: acc.creditVes + ret.credit_ves,
-      }),
-      { count: 0, creditUsd: 0, creditVes: 0 },
-    );
-
-    return {
-      ...txMetrics,
-      returnsCount: retMetrics.count,
-      returnsCreditUsd: retMetrics.creditUsd,
-      returnsCreditVes: retMetrics.creditVes,
-      netUsd: txMetrics.totalUsd - retMetrics.creditUsd,
-      netVes: txMetrics.totalVes - retMetrics.creditVes,
-    };
-  }, [sourceTxs, sourceReturns]);
+  const todayMetrics = cashCloseSummary ?? EMPTY_CASH_CLOSE_SUMMARY;
 
   const handleConfirmClose = async () => {
     if (!user) return;

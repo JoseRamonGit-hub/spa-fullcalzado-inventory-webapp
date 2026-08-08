@@ -74,6 +74,7 @@ export type Database = {
           date: string;
           exchange_rate: number;
           id: string;
+          total_billed_operations: number | null;
           total_returns: number;
           total_returns_usd: number;
           total_returns_ves: number;
@@ -89,6 +90,7 @@ export type Database = {
           date?: string;
           exchange_rate: number;
           id?: string;
+          total_billed_operations?: number | null;
           total_returns?: number;
           total_returns_usd?: number;
           total_returns_ves?: number;
@@ -104,6 +106,7 @@ export type Database = {
           date?: string;
           exchange_rate?: number;
           id?: string;
+          total_billed_operations?: number | null;
           total_returns?: number;
           total_returns_usd?: number;
           total_returns_ves?: number;
@@ -694,6 +697,7 @@ export type Database = {
           date: string;
           exchange_rate: number;
           id: string;
+          total_billed_operations: number | null;
           total_returns: number;
           total_returns_usd: number;
           total_returns_ves: number;
@@ -708,6 +712,21 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      get_cash_close_summary: {
+        Args: { p_business_id: string; p_date?: string };
+        Returns: {
+          billed_operations: number;
+          net_usd: number;
+          net_ves: number;
+          total_returns: number;
+          total_returns_usd: number;
+          total_returns_ves: number;
+          total_transactions: number;
+          total_units_sold: number;
+          total_usd: number;
+          total_ves: number;
+        }[];
       };
       process_return: {
         Args: {

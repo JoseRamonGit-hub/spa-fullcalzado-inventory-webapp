@@ -7,6 +7,8 @@ export const cashCloseKeys = {
   business: (businessId: string | null) => [...cashCloseKeys.all, businessId] as const,
   lists: (businessId: string | null) => [...cashCloseKeys.business(businessId), "list"] as const,
   list: (businessId: string | null, date?: string) => [...cashCloseKeys.lists(businessId), { date }] as const,
+  summaries: (businessId: string | null) => [...cashCloseKeys.business(businessId), "summary"] as const,
+  summary: (businessId: string | null, date?: string) => [...cashCloseKeys.summaries(businessId), { date }] as const,
 };
 
 export function useCashCloses(date?: string) {
@@ -15,5 +17,15 @@ export function useCashCloses(date?: string) {
   return useQuery({
     queryKey: cashCloseKeys.list(businessId, date),
     queryFn: businessId ? () => cashClosesService.getAll(businessId, date) : skipToken,
+  });
+}
+
+export function useCashCloseSummary(date?: string) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: cashCloseKeys.summary(businessId, date),
+    queryFn: businessId ? () => cashClosesService.getSummary(businessId, date) : skipToken,
+    refetchInterval: date ? false : 30_000,
   });
 }

@@ -33,7 +33,8 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           <div className="min-w-0">
             <p className="text-foreground text-sm font-semibold">Cierre del {today}</p>
             <p className="text-muted-foreground text-xs">
-              {metrics.count} venta{metrics.count !== 1 ? "s" : ""}
+              {metrics.billedOperations} operación{metrics.billedOperations !== 1 ? "es" : ""} facturada
+              {metrics.billedOperations !== 1 ? "s" : ""}
               {hasReturns && ` · ${metrics.returnsCount} devolución${metrics.returnsCount !== 1 ? "es" : ""}`}
             </p>
           </div>
@@ -58,9 +59,9 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           </div>
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
             <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-              <Hash className="h-3 w-3" aria-hidden="true" /> Ventas
+              <Hash className="h-3 w-3" aria-hidden="true" /> Operaciones facturadas
             </span>
-            <span className="text-foreground text-sm font-bold tabular-nums">{metrics.count}</span>
+            <span className="text-foreground text-sm font-bold tabular-nums">{metrics.billedOperations}</span>
           </div>
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
             <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">

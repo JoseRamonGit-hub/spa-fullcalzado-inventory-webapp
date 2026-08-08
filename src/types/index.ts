@@ -40,6 +40,18 @@ export type CashCloseWithRelations = CashClose & {
   users: Pick<User, "fullname">;
 };
 
+export type CashCloseSummary = {
+  billedOperations: number;
+  units: number;
+  totalUsd: number;
+  totalVes: number;
+  returnsCount: number;
+  returnsCreditUsd: number;
+  returnsCreditVes: number;
+  netUsd: number;
+  netVes: number;
+};
+
 export type TransactionWithRelations = Transaction & {
   products: Pick<Product, "code" | "description">;
   users: Pick<User, "fullname">;

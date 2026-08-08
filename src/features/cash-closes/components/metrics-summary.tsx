@@ -3,18 +3,9 @@ import { Button } from "@/components/ui/button";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
+import type { CashCloseSummary } from "@/types";
 
-export type CashCloseMetrics = {
-  count: number;
-  units: number;
-  totalUsd: number;
-  totalVes: number;
-  returnsCount: number;
-  returnsCreditUsd: number;
-  returnsCreditVes: number;
-  netUsd: number;
-  netVes: number;
-};
+export type CashCloseMetrics = CashCloseSummary;
 
 function MetricLabel({ children }: { children: string }) {
   return <OverflowTooltip className="text-[10px] font-semibold uppercase">{children}</OverflowTooltip>;
@@ -41,7 +32,7 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
   const hasReturns = metrics.returnsCount > 0;
 
   const salesItems = [
-    { label: "Ventas", value: String(metrics.count), icon: Hash },
+    { label: "Operaciones facturadas", value: String(metrics.billedOperations), icon: Hash },
     { label: "Unidades", value: String(metrics.units), icon: ShoppingCart },
     { label: "Total Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign },
     { label: "Total Facturado Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote },
