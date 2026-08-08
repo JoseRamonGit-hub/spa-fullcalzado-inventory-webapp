@@ -658,6 +658,7 @@ INSERT INTO public.cash_closes (
   business_id,
   date,
   total_transactions,
+  total_billed_operations,
   total_units_sold,
   total_usd,
   total_ves,
@@ -678,6 +679,7 @@ SELECT
     WHERE t.business_id = '10000000-0000-0000-0000-000000000001'
       AND t.date = seed.close_date
   ), 0),
+  NULL::integer,
   COALESCE((
     SELECT sum(quantity)
     FROM public.transactions t
@@ -744,6 +746,7 @@ FROM (
 ) AS seed(id, close_date, closed_at)
 ON CONFLICT (business_id, date) DO UPDATE SET
   total_transactions = EXCLUDED.total_transactions,
+  total_billed_operations = NULL,
   total_units_sold = EXCLUDED.total_units_sold,
   total_usd = EXCLUDED.total_usd,
   total_ves = EXCLUDED.total_ves,
