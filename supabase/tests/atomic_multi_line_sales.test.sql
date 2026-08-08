@@ -5,7 +5,7 @@
 
 BEGIN;
 
-SELECT plan(26);
+SELECT plan(32);
 SELECT set_config('app.suppress_log_entry', 'true', true);
 
 INSERT INTO public.products (
@@ -285,9 +285,14 @@ SELECT throws_ok(
 
 SELECT is(
   (
-    SELECT count(*)::integer
-    FROM public.sales
-    WHERE business_id = '10000000-0000-0000-0000-000000000001'
+    SELECT count(DISTINCT sale.id)::integer
+    FROM public.sales sale
+    JOIN public.transactions transaction_line
+      ON transaction_line.sale_id = sale.id
+    WHERE transaction_line.product_id IN (
+      '29000000-0000-0000-0000-000000000001',
+      '29000000-0000-0000-0000-000000000002'
+    )
   ),
   1,
   'La validación de pertenencia tampoco deja cabecera parcial'
@@ -322,7 +327,17 @@ SELECT lives_ok(
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000002', true);
 
 SELECT is(
-  (SELECT count(*)::integer FROM public.sales),
+  (
+    SELECT count(DISTINCT sale.id)::integer
+    FROM public.sales sale
+    JOIN public.transactions transaction_line
+      ON transaction_line.sale_id = sale.id
+    WHERE transaction_line.product_id IN (
+      '29000000-0000-0000-0000-000000000001',
+      '29000000-0000-0000-0000-000000000002',
+      '29000000-0000-0000-0000-000000000003'
+    )
+  ),
   1,
   'RLS oculta las Ventas de otros Negocios'
 );
@@ -358,6 +373,120 @@ SELECT is(
   ),
   2,
   'La liquidación del Producto inactivo reduce su stock'
+);
+
+SELECT results_eq(
+  $$
+    SELECT
+      (
+        SELECT count(*)::integer
+        FROM public.transactions
+        WHERE product_id = '29000000-0000-0000-0000-000000000004'
+          AND sale_id IS NOT NULL
+      ),
+      (
+        SELECT count(*)::integer
+        FROM public.inventory_movements
+        WHERE product_id = '29000000-0000-0000-0000-000000000004'
+          AND type = 'exit'
+          AND quantity = 2
+          AND stock_before = 4
+      )
+  $$,
+  $$ VALUES (1, 1) $$,
+  'La liquidación genera su Renglón y evento de inventario'
+);
+
+SELECT throws_ok(
+  $$
+    SELECT public.create_sale(
+      '10000000-0000-0000-0000-000000000001',
+      '[{"product_id":"29000000-0000-0000-0000-000000000004","quantity":3,"price_usd":25,"price_ves":2250}]'::jsonb,
+      90
+    )
+  $$,
+  'P0001',
+  'Existencia insuficiente para el producto SALE-ATOMIC-04',
+  'La liquidación no puede exceder el stock disponible'
+);
+
+SELECT results_eq(
+  $$
+    SELECT
+      (SELECT stock FROM public.products WHERE id = '29000000-0000-0000-0000-000000000004'),
+      (
+        SELECT count(*)::integer
+        FROM public.transactions
+        WHERE product_id = '29000000-0000-0000-0000-000000000004'
+      ),
+      (
+        SELECT count(*)::integer
+        FROM public.inventory_movements
+        WHERE product_id = '29000000-0000-0000-0000-000000000004'
+          AND type = 'exit'
+      )
+  $$,
+  $$ VALUES (2, 1, 1) $$,
+  'La liquidación fallida no deja stock, Renglones ni eventos parciales'
+);
+
+SELECT throws_ok(
+  $$
+    INSERT INTO public.inventory_movements (
+      business_id,
+      type,
+      product_id,
+      quantity,
+      user_id
+    )
+    VALUES (
+      '10000000-0000-0000-0000-000000000001',
+      'entry',
+      '29000000-0000-0000-0000-000000000004',
+      1,
+      'a0000000-0000-0000-0000-000000000002'
+    )
+  $$,
+  'P0001',
+  'No se puede agregar existencia a un producto inactivo',
+  'Un Producto inactivo continúa bloqueando la reposición'
+);
+
+SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
+
+SELECT lives_ok(
+  $$
+    SELECT public.process_return(
+      '10000000-0000-0000-0000-000000000001',
+      'refund',
+      '[{"product_id":"29000000-0000-0000-0000-000000000004","quantity":1,"price_usd":25,"price_ves":2250}]'::jsonb,
+      NULL,
+      90,
+      'Devolución de Producto inactivo en liquidación'
+    )
+  $$,
+  'Una devolución legítima acepta el Producto inactivo'
+);
+
+SELECT results_eq(
+  $$
+    SELECT
+      (SELECT stock FROM public.products WHERE id = '29000000-0000-0000-0000-000000000004'),
+      (
+        SELECT count(*)::integer
+        FROM public.return_items
+        WHERE product_id = '29000000-0000-0000-0000-000000000004'
+      ),
+      (
+        SELECT count(*)::integer
+        FROM public.inventory_movements
+        WHERE product_id = '29000000-0000-0000-0000-000000000004'
+          AND type = 'return'
+          AND stock_before = 2
+      )
+  $$,
+  $$ VALUES (3, 1, 1) $$,
+  'La devolución aumenta el stock y registra sus efectos'
 );
 
 SELECT is(
