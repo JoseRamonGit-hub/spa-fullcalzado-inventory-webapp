@@ -1,31 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       app_settings: {
@@ -254,18 +229,18 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "inventory_movements_product_id_fkey";
-            columns: ["product_id"];
+            foreignKeyName: "inventory_movements_business_product_fkey";
+            columns: ["business_id", "product_id"];
             isOneToOne: false;
             referencedRelation: "products";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
-            foreignKeyName: "inventory_movements_return_id_fkey";
-            columns: ["return_id"];
+            foreignKeyName: "inventory_movements_business_return_fkey";
+            columns: ["business_id", "return_id"];
             isOneToOne: false;
             referencedRelation: "returns";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
             foreignKeyName: "inventory_movements_user_id_fkey";
@@ -357,18 +332,18 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "return_items_product_id_fkey";
-            columns: ["product_id"];
+            foreignKeyName: "return_items_business_product_fkey";
+            columns: ["business_id", "product_id"];
             isOneToOne: false;
             referencedRelation: "products";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
-            foreignKeyName: "return_items_return_id_fkey";
-            columns: ["return_id"];
+            foreignKeyName: "return_items_business_return_fkey";
+            columns: ["business_id", "return_id"];
             isOneToOne: false;
             referencedRelation: "returns";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
         ];
       };
@@ -435,6 +410,48 @@ export type Database = {
           },
         ];
       };
+      sales: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          date: string;
+          id: string;
+          time: string;
+          user_id: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          time?: string;
+          user_id: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          time?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sales_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sales_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       transactions: {
         Row: {
           business_id: string;
@@ -447,6 +464,7 @@ export type Database = {
           product_id: string;
           quantity: number;
           return_id: string | null;
+          sale_id: string | null;
           time: string;
           total_usd: number | null;
           total_ves: number | null;
@@ -463,6 +481,7 @@ export type Database = {
           product_id: string;
           quantity: number;
           return_id?: string | null;
+          sale_id?: string | null;
           time?: string;
           total_usd?: number | null;
           total_ves?: number | null;
@@ -479,6 +498,7 @@ export type Database = {
           product_id?: string;
           quantity?: number;
           return_id?: string | null;
+          sale_id?: string | null;
           time?: string;
           total_usd?: number | null;
           total_ves?: number | null;
@@ -493,18 +513,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "transactions_product_id_fkey";
-            columns: ["product_id"];
+            foreignKeyName: "transactions_business_product_fkey";
+            columns: ["business_id", "product_id"];
             isOneToOne: false;
             referencedRelation: "products";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
-            foreignKeyName: "transactions_return_id_fkey";
-            columns: ["return_id"];
+            foreignKeyName: "transactions_business_return_fkey";
+            columns: ["business_id", "return_id"];
             isOneToOne: false;
             referencedRelation: "returns";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
+          },
+          {
+            foreignKeyName: "transactions_business_sale_fkey";
+            columns: ["business_id", "sale_id"];
+            isOneToOne: false;
+            referencedRelation: "sales";
+            referencedColumns: ["business_id", "id"];
           },
           {
             foreignKeyName: "transactions_user_id_fkey";
@@ -600,7 +627,22 @@ export type Database = {
           p_default_business_id: string;
           p_user_id: string;
         };
-        Returns: Database["public"]["Tables"]["users"]["Row"];
+        Returns: {
+          created_at: string | null;
+          default_business_id: string;
+          email: string;
+          fullname: string;
+          id: string;
+          is_active: boolean;
+          role: Database["public"]["Enums"]["roles"];
+          updated_at: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "users";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       admin_update_user: {
         Args: {
@@ -611,7 +653,26 @@ export type Database = {
           p_role: Database["public"]["Enums"]["roles"];
           p_user_id: string;
         };
-        Returns: Database["public"]["Tables"]["users"]["Row"];
+        Returns: {
+          created_at: string | null;
+          default_business_id: string;
+          email: string;
+          fullname: string;
+          id: string;
+          is_active: boolean;
+          role: Database["public"]["Enums"]["roles"];
+          updated_at: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "users";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_sale: {
+        Args: { p_business_id: string; p_exchange_rate: number; p_items: Json };
+        Returns: string;
       };
       edit_product: {
         Args: {
@@ -660,11 +721,7 @@ export type Database = {
         Returns: Json;
       };
       set_product_active: {
-        Args: {
-          p_active: boolean;
-          p_business_id: string;
-          p_product_id: string;
-        };
+        Args: { p_active: boolean; p_business_id: string; p_product_id: string };
         Returns: undefined;
       };
     };
@@ -790,9 +847,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       exchange_modes: ["manual", "bcv"],

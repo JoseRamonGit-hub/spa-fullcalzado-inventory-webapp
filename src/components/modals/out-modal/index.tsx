@@ -63,8 +63,8 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
       <ResponsiveModal
         open={isOpen}
         onOpenChange={handleModalOpenChange}
-        title="Registrar Ventas"
-        description="Agrega productos al lote y confirma con Shift + Enter."
+        title="Registrar Venta"
+        description="Agrega productos a la Venta y confirma con Shift + Enter."
         dialogClassName="sm:max-w-5xl"
         avoidCloseFromOutsideClick
         avoidCloseFromEsc

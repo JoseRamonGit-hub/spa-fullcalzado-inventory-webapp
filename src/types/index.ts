@@ -12,6 +12,7 @@ export type ExchangeRate = Tables<"exchange_rates">;
 export type AppSettings = Tables<"app_settings">;
 export type Return = Tables<"returns">;
 export type ReturnItem = Tables<"return_items">;
+export type Sale = Tables<"sales">;
 
 // ── Insert types (write to DB — omits auto-generated fields) ─
 export type ProductInsert = TablesInsert<"products">;
@@ -21,6 +22,7 @@ export type CashCloseInsert = TablesInsert<"cash_closes">;
 export type ExchangeRateInsert = TablesInsert<"exchange_rates">;
 export type ReturnInsert = TablesInsert<"returns">;
 export type ReturnItemInsert = TablesInsert<"return_items">;
+export type SaleInsert = TablesInsert<"sales">;
 
 export type ProductCreateInput = Omit<ProductInsert, "business_id">;
 export type TransactionCreateInput = Omit<TransactionInsert, "business_id">;
@@ -91,6 +93,16 @@ export type ProcessReturnPayload = {
     | null;
   p_exchange_rate: number;
   p_notes?: string;
+};
+
+export type ProcessSalePayload = {
+  p_items: {
+    product_id: string;
+    quantity: number;
+    price_usd: number;
+    price_ves: number;
+  }[];
+  p_exchange_rate: number;
 };
 
 export type UserRole = User["role"];

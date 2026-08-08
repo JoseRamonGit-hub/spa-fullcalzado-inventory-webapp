@@ -3,15 +3,15 @@ import { transactionsService } from "@/services/transactionsService";
 import { transactionKeys } from "./useTransactionQueries";
 import { productKeys } from "@/features/inventory/hooks/useProductQueries";
 import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
-import type { TransactionCreateInput } from "@/types/index";
+import type { ProcessSalePayload } from "@/types/index";
 import { activeBusinessMutationOptions } from "@/features/business/utils/active-business-mutation";
 
-export function useCreateManyTransactions() {
+export function useCreateSale() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    ...activeBusinessMutationOptions((businessId, payload: TransactionCreateInput[]) =>
-      transactionsService.createMany(businessId, payload),
+    ...activeBusinessMutationOptions((businessId, payload: ProcessSalePayload) =>
+      transactionsService.createSale(businessId, payload),
     ),
     onSuccess: (_, __, { businessId }) => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.business(businessId) });

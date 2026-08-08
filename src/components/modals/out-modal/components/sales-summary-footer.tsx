@@ -18,8 +18,10 @@ export function SalesSummaryFooter({
 }: SalesSummaryFooterProps) {
   const pendingSalesCount = pendingSales.length;
   const hasPendingSales = pendingSalesCount > 0;
-  const isMultipleSales = pendingSalesCount > 1;
   const canSubmit = hasPendingSales && !isSubmissionPending && exchangeRate.isReady;
+  const pendingProductLabel = `${pendingSalesCount} producto${pendingSalesCount === 1 ? "" : "s"} listo${
+    pendingSalesCount === 1 ? "" : "s"
+  } para confirmar`;
 
   return (
     <footer className="flex w-full flex-col gap-3">
@@ -33,21 +35,13 @@ export function SalesSummaryFooter({
       <ModalFooterActionRow
         message={
           <span className="tabular-nums">
-            {!hasPendingSales
-              ? "Sin ventas pendientes"
-              : `${isMultipleSales ? "Ventas listas" : "Venta lista"} para confirmar`}
+            {hasPendingSales ? pendingProductLabel : "Sin productos pendientes"}
           </span>
         }
       >
         <ModalShortcutActionButton
           icon={<ShoppingCart data-icon="inline-start" />}
-          label={
-            isSubmissionPending
-              ? "Registrando..."
-              : hasPendingSales
-                ? `Registrar ${pendingSalesCount} venta${isMultipleSales ? "s" : ""}`
-                : "Registrar ventas"
-          }
+          label={isSubmissionPending ? "Registrando..." : "Registrar venta"}
           disabled={!canSubmit}
           onClick={onOpenConfirmDialog}
         />

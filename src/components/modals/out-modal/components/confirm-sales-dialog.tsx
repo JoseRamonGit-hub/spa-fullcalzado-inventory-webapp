@@ -30,23 +30,21 @@ export function ConfirmSalesDialog({
   isSubmissionPending,
   onConfirmSubmit,
 }: ConfirmSalesDialogProps) {
-  const pendingSalesCount = pendingSales.length;
-  const isMultipleSales = pendingSalesCount > 1;
+  const lineCount = pendingSales.length;
+  const lineLabel = lineCount === 1 ? "1 Renglón de venta" : `${lineCount} Renglones de venta`;
   return (
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="Confirmar ventas"
+      title="Confirmar venta"
       description={
         <>
-          Se registrará{isMultipleSales ? "n" : ""}{" "}
-          <strong className="text-foreground">
-            {pendingSalesCount} venta{isMultipleSales ? "s" : ""}
-          </strong>
-          . Verifica productos e importes.
+          <strong className="text-foreground">{lineLabel}</strong>
+          {" se asociará"}
+          {lineCount === 1 ? "" : "n"} a una sola Venta. Verifica productos e importes.
         </>
       }
-      confirmLabel={`Registrar ${isMultipleSales ? "ventas" : "venta"}`}
+      confirmLabel="Registrar venta"
       pendingLabel="Registrando..."
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}

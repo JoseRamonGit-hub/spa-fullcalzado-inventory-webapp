@@ -13,11 +13,11 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("@/services/transactionsService", () => ({
-  transactionsService: { createMany: vi.fn() },
+  transactionsService: { createSale: vi.fn() },
 }));
 
 const { transactionsService } = await import("@/services/transactionsService");
-const mockCreateMany = vi.mocked(transactionsService.createMany);
+const mockCreateSale = vi.mocked(transactionsService.createSale);
 
 const mockUser = {
   id: "user-123",
@@ -75,7 +75,7 @@ describe("useSubmitSales", () => {
 
     await act(() => result.current.submitPendingSales());
 
-    expect(mockCreateMany).not.toHaveBeenCalled();
+    expect(mockCreateSale).not.toHaveBeenCalled();
     expect(clearPendingSales).not.toHaveBeenCalled();
   });
 
@@ -85,33 +85,34 @@ describe("useSubmitSales", () => {
 
     await act(() => result.current.submitPendingSales());
 
-    expect(mockCreateMany).not.toHaveBeenCalled();
+    expect(mockCreateSale).not.toHaveBeenCalled();
     expect(clearPendingSales).not.toHaveBeenCalled();
   });
 
   it("envía las ventas con el payload correcto", async () => {
-    mockCreateMany.mockResolvedValue([]);
+    mockCreateSale.mockResolvedValue(undefined);
     const sale = makeSale();
     const { result } = renderSubmitSales([sale]);
 
     await act(() => result.current.submitPendingSales());
 
-    expect(mockCreateMany).toHaveBeenCalledWith(BUSINESS_ID, [
-      {
-        product_id: "prod-1",
-        quantity: 2,
-        price_usd: 60,
-        price_ves: 2400,
-        exchange_rate: 40,
-        user_id: "user-123",
-      },
-    ]);
+    expect(mockCreateSale).toHaveBeenCalledWith(BUSINESS_ID, {
+      p_items: [
+        {
+          product_id: "prod-1",
+          quantity: 2,
+          price_usd: 60,
+          price_ves: 2400,
+        },
+      ],
+      p_exchange_rate: 40,
+    });
     expect(clearPendingSales).toHaveBeenCalled();
     expect(onSuccess).toHaveBeenCalled();
   });
 
-  it("envía múltiples ventas en un solo lote", async () => {
-    mockCreateMany.mockResolvedValue([]);
+  it("envía una sola Venta con múltiples Renglones", async () => {
+    mockCreateSale.mockResolvedValue(undefined);
     const { result } = renderSubmitSales([
       makeSale({ tempId: "s1", productId: "prod-1" }),
       makeSale({ tempId: "s2", productId: "prod-2" }),
@@ -119,12 +120,15 @@ describe("useSubmitSales", () => {
 
     await act(() => result.current.submitPendingSales());
 
-    expect(mockCreateMany).toHaveBeenCalledWith(
+    expect(mockCreateSale).toHaveBeenCalledTimes(1);
+    expect(mockCreateSale).toHaveBeenCalledWith(
       BUSINESS_ID,
-      expect.arrayContaining([
-        expect.objectContaining({ product_id: "prod-1" }),
-        expect.objectContaining({ product_id: "prod-2" }),
-      ]),
+      expect.objectContaining({
+        p_items: expect.arrayContaining([
+          expect.objectContaining({ product_id: "prod-1" }),
+          expect.objectContaining({ product_id: "prod-2" }),
+        ]),
+      }),
     );
   });
 });

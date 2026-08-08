@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useCreateManyTransactions } from "@/features/transactions/hooks/useTransactionMutations";
+import { useCreateSale } from "@/features/transactions/hooks/useTransactionMutations";
 import type { PendingSale } from "../types";
 
 type UseSubmitSalesProps = {
@@ -17,36 +17,34 @@ export function useSubmitSales({
   onSuccess,
 }: UseSubmitSalesProps) {
   const currentUser = useAuthStore((state) => state.user);
-  const createTransactionsMutation = useCreateManyTransactions();
+  const createSaleMutation = useCreateSale();
 
-  const isSubmissionPending = createTransactionsMutation.isPending;
+  const isSubmissionPending = createSaleMutation.isPending;
 
   const submitPendingSales = async () => {
     const hasNoSales = pendingSales.length === 0;
     if (!currentUser || hasNoSales) return;
 
-    const transactionPayload = pendingSales.map((sale) => ({
-      product_id: sale.productId,
-      quantity: sale.quantity,
-      price_usd: sale.priceUsd,
-      price_ves: sale.priceVes,
-      exchange_rate: currentExchangeRate,
-      user_id: currentUser.id,
-    }));
-
-    const salesPromise = createTransactionsMutation.mutateAsync(transactionPayload);
-    const totalSalesCount = pendingSales.length;
-    const isMultipleSales = totalSalesCount > 1;
-
-    toast.promise(salesPromise, {
-      loading: `Registrando ${totalSalesCount} venta${isMultipleSales ? "s" : ""}...`,
-      success: `${totalSalesCount} venta${isMultipleSales ? "s" : ""} registrada${
-        isMultipleSales ? "s" : ""
-      } correctamente`,
-      error: "Error al registrar las ventas",
+    const salePromise = createSaleMutation.mutateAsync({
+      p_items: pendingSales.map((sale) => ({
+        product_id: sale.productId,
+        quantity: sale.quantity,
+        price_usd: sale.priceUsd,
+        price_ves: sale.priceVes,
+      })),
+      p_exchange_rate: currentExchangeRate,
     });
 
-    await salesPromise;
+    const lineCount = pendingSales.length;
+    const lineLabel = lineCount === 1 ? "1 renglón" : `${lineCount} renglones`;
+
+    toast.promise(salePromise, {
+      loading: `Registrando venta con ${lineLabel}...`,
+      success: "Venta registrada correctamente",
+      error: "Error al registrar la venta",
+    });
+
+    await salePromise;
     clearPendingSales();
     onSuccess();
   };
