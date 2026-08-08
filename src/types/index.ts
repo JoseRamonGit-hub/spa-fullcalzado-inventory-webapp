@@ -25,7 +25,11 @@ export type DashboardDailyMetrics = Omit<
   exchange_rate_updated_at: string | null;
 };
 
-export type DashboardSalesPeriodPreset = "today" | "week" | "month";
+export type DashboardSalesPeriodPreset = "today" | "week" | "month" | "custom";
+
+export type DashboardSalesPeriodRequest =
+  | { preset: Exclude<DashboardSalesPeriodPreset, "custom"> }
+  | { preset: "custom"; startDate: string; endDate: string };
 
 export type DashboardSalesPeriodBucket = {
   index: number;

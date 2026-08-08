@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Boxes, CircleDollarSign, RefreshCw, TriangleAlert, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./components/dashboard-metric-card";
 import { SalesPeriodSection } from "./components/sales-period-section";
 import { useDashboardMetrics } from "./hooks/useDashboardMetrics";
+import { DEFAULT_SALES_PERIOD, type DashboardSalesPeriodSelection } from "./sales-period";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
 const RATE_SOURCE_LABELS = {
@@ -13,6 +15,9 @@ const RATE_SOURCE_LABELS = {
 
 export function DashboardPage() {
   const metricsQuery = useDashboardMetrics();
+  const [salesPeriod, setSalesPeriod] = useState<DashboardSalesPeriodSelection>({
+    preset: DEFAULT_SALES_PERIOD,
+  });
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
@@ -91,7 +96,7 @@ export function DashboardPage() {
             </div>
           )}
 
-          <SalesPeriodSection />
+          <SalesPeriodSection selection={salesPeriod} onSelectionChange={setSalesPeriod} />
         </div>
       </div>
     </section>

@@ -6,7 +6,7 @@
 
 BEGIN;
 
-SELECT plan(17);
+SELECT plan(25);
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
 SELECT set_config('app.suppress_log_entry', 'true', true);
 
@@ -267,7 +267,7 @@ SELECT throws_ok(
     SELECT *
     FROM private.get_dashboard_sales_period(
       '10000000-0000-0000-0000-000000000001',
-      'custom',
+      'unsupported',
       '2024-03-27'
     )
   $$,
@@ -280,6 +280,135 @@ SELECT is(
   (SELECT count(*)::integer FROM private.get_dashboard_sales_period('10000000-0000-0000-0000-000000000001', 'month', '2024-02-15')),
   5,
   'Febrero bisiesto conserva el intervalo 29'
+);
+
+SELECT results_eq(
+  $$
+    SELECT bucket_label
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-03-27',
+      '2024-03-20',
+      '2024-03-27'
+    )
+  $$,
+  $$ VALUES ('20/03/24–26/03/24'::text), ('27/03/24') $$,
+  'Ocho días se agrupan en bloques consecutivos anclados en el inicio'
+);
+
+SELECT results_eq(
+  $$
+    SELECT bucket_label
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-01-02',
+      '2023-12-27',
+      '2024-01-02'
+    )
+  $$,
+  $$
+    VALUES
+      ('27/12/23'::text), ('28/12/23'), ('29/12/23'), ('30/12/23'),
+      ('31/12/23'), ('01/01/24'), ('02/01/24')
+  $$,
+  'Siete días conservan buckets diarios con etiquetas correctas al cruzar de año'
+);
+
+SELECT is(
+  (
+    SELECT count(*)::integer
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-03-27',
+      '2024-01-28',
+      '2024-03-27'
+    )
+  ),
+  9,
+  'Sesenta días conservan bloques de hasta siete días'
+);
+
+SELECT ok(
+  (
+    SELECT bool_and(
+      bucket_start = '2024-01-28'::date + bucket_index * 7
+      AND bucket_end - bucket_start between 0 and 6
+    )
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-03-27',
+      '2024-01-28',
+      '2024-03-27'
+    )
+  ),
+  'Los bloques de sesenta días son consecutivos, anclados y no superan siete días'
+);
+
+SELECT results_eq(
+  $$
+    SELECT bucket_label
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-02-29',
+      '2023-12-31',
+      '2024-02-29'
+    )
+  $$,
+  $$ VALUES ('12/2023'::text), ('01/2024'), ('02/2024') $$,
+  'Sesenta y un días se agrupan por meses calendario incluso al cruzar de año'
+);
+
+SELECT results_eq(
+  $$
+    SELECT current_total_usd, current_operations, comparison_start, comparison_end
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-03-27',
+      '2024-03-20',
+      '2024-03-27'
+    )
+    LIMIT 1
+  $$,
+  $$ VALUES (135::numeric, 4, '2024-03-12'::date, '2024-03-19'::date) $$,
+  'El rango personalizado agrega el Negocio y compara el bloque contiguo de igual duración'
+);
+
+SELECT throws_ok(
+  $$
+    SELECT *
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-03-27',
+      '2024-03-27',
+      '2024-03-20'
+    )
+  $$,
+  'P0001',
+  'La fecha de fin no puede ser anterior al inicio',
+  'El servidor rechaza un rango con orden inverso'
+);
+
+SELECT throws_ok(
+  $$
+    SELECT *
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'custom',
+      '2024-03-27',
+      '2024-03-27',
+      '2024-03-28'
+    )
+  $$,
+  'P0001',
+  'El rango no puede incluir fechas futuras',
+  'El servidor rechaza fechas posteriores al día de Caracas'
 );
 
 SET LOCAL ROLE authenticated;

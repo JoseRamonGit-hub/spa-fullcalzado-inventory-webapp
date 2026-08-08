@@ -1,20 +1,34 @@
 import { useState, type ReactNode } from "react";
+import { es } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { CalendarRange, RefreshCw, TriangleAlert } from "lucide-react";
+import { CalendarDays, CalendarRange, RefreshCw, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import type { DashboardSalesPeriodPreset } from "@/types";
-import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
+import type { DashboardSalesPeriodPreset, DashboardSalesPeriodRequest } from "@/types";
+import {
+  formatCalendarDateForBackend,
+  formatCalendarDateString,
+  formatCurrencyUSD,
+  formatDateForBackend,
+} from "@/utils/formatters";
 import { useDashboardSalesPeriod } from "../hooks/useDashboardMetrics";
-import { DEFAULT_SALES_PERIOD, getBillingComparison, SALES_PERIOD_OPTIONS } from "../sales-period";
+import {
+  analyzeCustomSalesRange,
+  getBillingComparison,
+  SALES_PERIOD_OPTIONS,
+  type DashboardSalesPeriodSelection,
+} from "../sales-period";
 
 const chartConfig = {
   totalUsd: {
@@ -27,11 +41,27 @@ const PERIOD_DESCRIPTION: Record<DashboardSalesPeriodPreset, string> = {
   today: "Comparado con ayer",
   week: "Comparado con los mismos días de la semana anterior",
   month: "Comparado con los mismos días disponibles del mes anterior",
+  custom: "Comparado con el bloque contiguo anterior de igual duración",
 };
 
-export function SalesPeriodSection() {
-  const [preset, setPreset] = useState<DashboardSalesPeriodPreset>(DEFAULT_SALES_PERIOD);
-  const salesQuery = useDashboardSalesPeriod(preset);
+type SalesPeriodSectionProps = {
+  selection: DashboardSalesPeriodSelection;
+  onSelectionChange: (selection: DashboardSalesPeriodSelection) => void;
+};
+
+export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriodSectionProps) {
+  const today = formatDateForBackend(new Date());
+  const customAnalysis =
+    selection.preset === "custom"
+      ? analyzeCustomSalesRange(selection.customStartDate, selection.customEndDate, today)
+      : null;
+  const request: DashboardSalesPeriodRequest | null =
+    selection.preset === "custom"
+      ? customAnalysis?.isValid && selection.customStartDate && selection.customEndDate
+        ? { preset: "custom", startDate: selection.customStartDate, endDate: selection.customEndDate }
+        : null
+      : { preset: selection.preset };
+  const salesQuery = useDashboardSalesPeriod(request);
 
   return (
     <Card className="gap-0 py-0">
@@ -46,44 +76,120 @@ export function SalesPeriodSection() {
           </div>
         </div>
 
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          value={preset}
-          onValueChange={(value) => value && setPreset(value as DashboardSalesPeriodPreset)}
-          aria-label="Período de facturación"
-          className="w-full md:w-auto"
-        >
-          {SALES_PERIOD_OPTIONS.map((option) => (
-            <ToggleGroupItem key={option.value} value={option.value} className="flex-1 md:flex-none">
-              {option.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:items-end">
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            size="sm"
+            value={selection.preset}
+            onValueChange={(value) =>
+              value && onSelectionChange({ ...selection, preset: value as DashboardSalesPeriodPreset })
+            }
+            aria-label="Período de facturación"
+            className="grid w-full grid-cols-2 md:flex md:w-auto"
+          >
+            {SALES_PERIOD_OPTIONS.map((option) => (
+              <ToggleGroupItem key={option.value} value={option.value} className="min-w-0 md:flex-none">
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          {selection.preset === "custom" ? (
+            <CustomRangePicker selection={selection} today={today} onSelectionChange={onSelectionChange} />
+          ) : null}
+        </div>
       </CardHeader>
       <Separator />
 
       <CardContent className="p-4" aria-live="polite" aria-busy={salesQuery.isFetching}>
-        {salesQuery.isPending ? (
-          <SalesPeriodSkeleton />
-        ) : salesQuery.isError ? (
-          <Alert variant="destructive">
-            <TriangleAlert aria-hidden="true" />
-            <AlertTitle>No se pudo cargar la facturación</AlertTitle>
-            <AlertDescription>
-              <p>Verifica la conexión e inténtalo de nuevo.</p>
-              <Button variant="outline" size="sm" onClick={() => salesQuery.refetch()}>
-                <RefreshCw data-icon="inline-start" />
-                Reintentar
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <SalesPeriodContent data={salesQuery.data} />
-        )}
+        <div className="flex flex-col gap-3">
+          {customAnalysis?.isValid && customAnalysis.warning ? (
+            <Alert>
+              <TriangleAlert aria-hidden="true" />
+              <AlertTitle>Rango extenso</AlertTitle>
+              <AlertDescription>{customAnalysis.warning}</AlertDescription>
+            </Alert>
+          ) : null}
+          {selection.preset === "custom" && !customAnalysis?.isValid ? (
+            <Empty className="border py-6 md:py-6">
+              <EmptyHeader>
+                <EmptyTitle>{customAnalysis?.error ?? "Selecciona un rango personalizado"}</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          ) : salesQuery.isPending ? (
+            <SalesPeriodSkeleton />
+          ) : salesQuery.isError ? (
+            <Alert variant="destructive">
+              <TriangleAlert aria-hidden="true" />
+              <AlertTitle>No se pudo cargar la facturación</AlertTitle>
+              <AlertDescription>
+                <p>Verifica la conexión e inténtalo de nuevo.</p>
+                <Button variant="outline" size="sm" onClick={() => salesQuery.refetch()}>
+                  <RefreshCw data-icon="inline-start" />
+                  Reintentar
+                </Button>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <SalesPeriodContent data={salesQuery.data} />
+          )}
+        </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodSectionProps & { today: string }) {
+  const selectedRange = toCalendarRange(selection.customStartDate, selection.customEndDate);
+  const [open, setOpen] = useState(false);
+  const [draftRange, setDraftRange] = useState<DateRange | undefined>(selectedRange);
+  const draftStartDate = formatCalendarDateForBackend(draftRange?.from);
+  const draftEndDate = formatCalendarDateForBackend(draftRange?.to);
+  const draftAnalysis = analyzeCustomSalesRange(draftStartDate || undefined, draftEndDate || undefined, today);
+  const todayDate = toCalendarDate(today);
+
+  const applyRange = () => {
+    if (!draftAnalysis.isValid || !draftStartDate || !draftEndDate) return;
+
+    onSelectionChange({ preset: "custom", customStartDate: draftStartDate, customEndDate: draftEndDate });
+    setOpen(false);
+  };
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (nextOpen) setDraftRange(selectedRange);
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="w-full justify-start md:w-auto">
+          <CalendarDays data-icon="inline-start" aria-hidden="true" />
+          {formatCustomRangeLabel(selection.customStartDate, selection.customEndDate)}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="end">
+        <PopoverTitle className="sr-only">Seleccionar rango personalizado de Ventas</PopoverTitle>
+        <Calendar
+          mode="range"
+          selected={draftRange}
+          onSelect={setDraftRange}
+          defaultMonth={draftRange?.from ?? todayDate}
+          disabled={{ after: todayDate }}
+          locale={es}
+          autoFocus
+        />
+        <div className="flex items-center justify-between gap-3 border-t p-3">
+          <p className={cn("text-muted-foreground text-xs", !draftAnalysis.isValid && "text-destructive")}>
+            {draftAnalysis.isValid ? `${draftAnalysis.durationDays} días inclusivos` : draftAnalysis.error}
+          </p>
+          <Button size="sm" disabled={!draftAnalysis.isValid} onClick={applyRange}>
+            Aplicar rango
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -147,32 +253,35 @@ function SalesPeriodContent({ data }: SalesPeriodContentProps) {
         </div>
       ) : data.preset !== "today" ? (
         <div className="flex flex-col gap-3">
-          <ChartContainer
-            config={chartConfig}
-            className="h-52 w-full"
-            role="img"
-            aria-label="Facturación por intervalo"
-          >
-            <BarChart accessibilityLayer data={chartData} margin={{ left: 4, right: 4, top: 12 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    hideIndicator
-                    formatter={(value) => (
-                      <div className="flex min-w-36 items-center justify-between gap-3">
-                        <span className="text-muted-foreground">Total facturado</span>
-                        <span className="font-mono font-medium tabular-nums">{formatCurrencyUSD(Number(value))}</span>
-                      </div>
-                    )}
-                  />
-                }
-              />
-              <Bar dataKey="totalUsd" fill="var(--color-totalUsd)" radius={[4, 4, 0, 0]} maxBarSize={52} />
-            </BarChart>
-          </ChartContainer>
+          <div className="w-full overflow-x-auto">
+            <ChartContainer
+              config={chartConfig}
+              className="h-52 w-full"
+              style={data.preset === "custom" ? { minWidth: Math.max(480, data.buckets.length * 72) } : undefined}
+              role="img"
+              aria-label="Facturación por intervalo"
+            >
+              <BarChart accessibilityLayer data={chartData} margin={{ left: 4, right: 4, top: 12 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent
+                      hideIndicator
+                      formatter={(value) => (
+                        <div className="flex min-w-36 items-center justify-between gap-3">
+                          <span className="text-muted-foreground">Total facturado</span>
+                          <span className="font-mono font-medium tabular-nums">{formatCurrencyUSD(Number(value))}</span>
+                        </div>
+                      )}
+                    />
+                  }
+                />
+                <Bar dataKey="totalUsd" fill="var(--color-totalUsd)" radius={[4, 4, 0, 0]} maxBarSize={52} />
+              </BarChart>
+            </ChartContainer>
+          </div>
 
           <SalesBucketValues data={data} />
         </div>
@@ -185,17 +294,34 @@ function SalesBucketValues({ data, showLabels = false }: SalesPeriodContentProps
   return (
     <div
       className={cn(
-        "grid gap-1",
-        data.preset === "week" ? "grid-cols-7" : data.buckets.length === 4 ? "grid-cols-4" : "grid-cols-5",
+        "grid gap-1 overflow-x-auto",
+        data.preset === "week"
+          ? "grid-cols-7"
+          : data.preset === "month"
+            ? data.buckets.length === 4
+              ? "grid-cols-4"
+              : "grid-cols-5"
+            : undefined,
       )}
+      style={
+        data.preset === "custom"
+          ? { gridTemplateColumns: `repeat(${data.buckets.length}, minmax(72px, 1fr))` }
+          : undefined
+      }
+      aria-label="Valores de facturación por intervalo"
     >
       {data.buckets.map((bucket) => (
-        <div key={bucket.index} className="flex min-w-0 flex-col items-center gap-0.5 text-center">
-          {showLabels && (
+        <div
+          key={bucket.index}
+          className="focus-visible:ring-ring flex min-w-0 flex-col items-center gap-0.5 rounded-sm text-center focus-visible:ring-2 focus-visible:outline-none"
+          tabIndex={0}
+          aria-label={`${bucket.label}: ${bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible"}`}
+        >
+          {showLabels || data.preset === "custom" ? (
             <span className="text-muted-foreground text-[9px] font-semibold tracking-wide uppercase">
               {bucket.label}
             </span>
-          )}
+          ) : null}
           <span
             className={cn(
               "max-w-full truncate font-mono text-[9px] tabular-nums",
@@ -209,6 +335,24 @@ function SalesBucketValues({ data, showLabels = false }: SalesPeriodContentProps
       ))}
     </div>
   );
+}
+
+function toCalendarDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+
+  return new Date(year, month - 1, day);
+}
+
+function toCalendarRange(startDate: string | undefined, endDate: string | undefined): DateRange | undefined {
+  if (!startDate) return undefined;
+
+  return { from: toCalendarDate(startDate), to: endDate ? toCalendarDate(endDate) : undefined };
+}
+
+function formatCustomRangeLabel(startDate: string | undefined, endDate: string | undefined) {
+  if (!startDate || !endDate) return "Seleccionar fechas";
+
+  return `${formatCalendarDateString(startDate)} – ${formatCalendarDateString(endDate)}`;
 }
 
 function formatPeriodRange(startDate: string, endDate: string) {

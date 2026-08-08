@@ -743,7 +743,12 @@ export type Database = {
         }[];
       };
       get_dashboard_sales_period: {
-        Args: { p_business_id: string; p_period?: string };
+        Args: {
+          p_business_id: string;
+          p_end_date?: string;
+          p_period?: string;
+          p_start_date?: string;
+        };
         Returns: {
           average_ticket_usd: number;
           bucket_end: string;

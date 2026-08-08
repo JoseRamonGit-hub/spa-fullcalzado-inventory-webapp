@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { DashboardDailyMetrics, DashboardSalesPeriod, DashboardSalesPeriodPreset } from "@/types";
+import type { DashboardDailyMetrics, DashboardSalesPeriod, DashboardSalesPeriodRequest } from "@/types";
 
 export const dashboardService = {
   getDailyMetrics: async (businessId: string, signal?: AbortSignal): Promise<DashboardDailyMetrics> => {
@@ -13,10 +13,15 @@ export const dashboardService = {
   },
   getSalesPeriod: async (
     businessId: string,
-    preset: DashboardSalesPeriodPreset,
+    request: DashboardSalesPeriodRequest,
     signal?: AbortSignal,
   ): Promise<DashboardSalesPeriod> => {
-    let query = supabase.rpc("get_dashboard_sales_period", { p_business_id: businessId, p_period: preset });
+    let query = supabase.rpc("get_dashboard_sales_period", {
+      p_business_id: businessId,
+      p_period: request.preset,
+      p_start_date: request.preset === "custom" ? request.startDate : undefined,
+      p_end_date: request.preset === "custom" ? request.endDate : undefined,
+    });
     if (signal) query = query.abortSignal(signal);
 
     const { data, error } = await query;
@@ -26,7 +31,7 @@ export const dashboardService = {
     if (!summary) throw new Error("El servidor no devolvió el período de facturación");
 
     return {
-      preset,
+      preset: request.preset,
       currentStart: summary.current_start,
       currentEnd: summary.current_end,
       comparisonStart: summary.comparison_start,
