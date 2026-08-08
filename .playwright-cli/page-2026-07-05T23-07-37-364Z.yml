@@ -1,0 +1,48 @@
+- generic [ref=e2]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - complementary [ref=e7]:
+          - img [ref=e8]
+          - generic [ref=e10]:
+            - generic [ref=e11]: Sistema Interno
+            - generic [ref=e12]:
+              - heading "Full Calzado C.A" [level=2] [ref=e13]:
+                - text: Full Calzado
+                - text: C.A
+              - paragraph [ref=e14]: Panel de gestión de inventario, ventas y cierres de caja para tu equipo.
+              - generic [ref=e15]:
+                - generic [ref=e16]: Inventario
+                - generic [ref=e17]: ·
+                - generic [ref=e18]: Ventas
+                - generic [ref=e19]: ·
+                - generic [ref=e20]: Caja
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - img [ref=e25]
+            - heading "Bienvenido de nuevo" [level=1] [ref=e28]
+            - paragraph [ref=e29]: Ingresa tus credenciales para acceder al sistema
+          - generic [ref=e30]:
+            - group [ref=e31]:
+              - generic [ref=e32]:
+                - generic [ref=e33]: Correo Electrónico
+                - paragraph
+                - textbox "Correo Electrónico" [active] [invalid] [ref=e34]:
+                  - /placeholder: admin@fullcalzado.com
+                - alert [ref=e45]: Correo electrónico inválido
+            - group [ref=e35]:
+              - generic [ref=e36]:
+                - generic [ref=e37]: Contraseña
+                - paragraph
+                - group [ref=e38]:
+                  - textbox "Contraseña" [ref=e39]:
+                    - /placeholder: ••••••••
+                    - text: password123
+                  - group [ref=e40]:
+                    - button [ref=e41]:
+                      - img
+          - button "Entrar al panel" [disabled]:
+            - text: Entrar al panel
+            - img
+      - generic [ref=e44]: Full Calzado © 2026 — Anderson R. Román
+  - region "Notifications alt+T"

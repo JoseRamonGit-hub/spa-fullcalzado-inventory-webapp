@@ -1,12 +1,53 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
+import { ChevronRight, IterationCcw } from "lucide-react";
 import type { ReturnWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { formatDate, formatTime, formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
-import { ChevronRight, IterationCcw } from "lucide-react";
+import { formatCurrencyUSD, formatCurrencyVES, formatDate, formatTime } from "@/utils/formatters";
+import { getReturnMovementTotals, getReturnOutcome } from "./return-display";
 
 const columnHelper = createColumnHelper<ReturnWithRelations>();
+
+function ReturnTypeBadge({ type }: Pick<ReturnWithRelations, "type">) {
+  const isExchange = type === "exchange";
+
+  return (
+    <Badge variant={isExchange ? "exchange" : "refund"} title={isExchange ? "Cambio de artículo" : "Devolución"}>
+      <IterationCcw aria-hidden="true" />
+      {isExchange ? "Cambio" : "Devolución"}
+    </Badge>
+  );
+}
+
+function MovementTotals({ record }: { record: ReturnWithRelations }) {
+  const movements = getReturnMovementTotals(record);
+
+  return (
+    <span className="text-muted-foreground flex items-center gap-2 text-xs font-medium tabular-nums">
+      <span>
+        {movements.entries} {movements.entries === 1 ? "entrada" : "entradas"}
+      </span>
+      <span aria-hidden="true">·</span>
+      <span>
+        {movements.exits} {movements.exits === 1 ? "salida" : "salidas"}
+      </span>
+    </span>
+  );
+}
+
+function Outcome({ record }: { record: ReturnWithRelations }) {
+  const outcome = getReturnOutcome(record);
+
+  return (
+    <div className="flex items-center gap-x-2 tabular-nums">
+      <span className="text-foreground text-xs font-medium">{outcome.label}</span>
+      <span className={cn("font-semibold", outcome.className)}>{formatCurrencyUSD(outcome.usd)}</span>
+      <span className={cn("font-semibold", outcome.className)}>{formatCurrencyVES(outcome.ves)}</span>
+    </div>
+  );
+}
 
 export const columns = [
   columnHelper.display({
@@ -21,95 +62,47 @@ export const columns = [
     ),
     size: 32,
   }),
+  columnHelper.accessor("created_at", {
+    enableSorting: true,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Registro" />,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground text-xs tabular-nums">
+        {formatDate(row.original.created_at)} · {formatTime(row.original.created_at)}
+      </span>
+    ),
+  }),
   columnHelper.accessor("type", {
-    header: () => <div className="text-center">Tipo</div>,
-    cell: ({ getValue }) => {
-      const type = getValue();
-      const isExchange = type === "exchange";
-
-      return (
-        <span className="flex justify-center">
-          <Badge
-            variant={isExchange ? "exchange" : "refund"}
-            title={isExchange ? "Cambio de artículo" : "Devolución sin cambio"}
-          >
-            <IterationCcw aria-hidden="true" />
-            {isExchange ? "Cambio" : "Devolución"}
-          </Badge>
-        </span>
-      );
-    },
-  }),
-  columnHelper.accessor("date", {
-    enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{formatDate(row.original.created_at)}</span>
-    ),
-  }),
-  columnHelper.accessor("time", {
-    enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Hora" />,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
-    ),
+    header: "Tipo",
+    cell: ({ getValue }) => <ReturnTypeBadge type={getValue()} />,
   }),
   columnHelper.display({
-    id: "items",
-    header: "Artículos",
-    cell: ({ row }) => {
-      const returnCount = row.original.return_items.length;
-      const exchangeCount = row.original.transactions.length;
-      return (
-        <span className="text-muted-foreground text-xs tabular-nums">
-          {returnCount} dev.{exchangeCount > 0 ? ` / ${exchangeCount} camb.` : ""}
-        </span>
-      );
-    },
+    id: "movements",
+    header: "Movimientos",
+    cell: ({ row }) => <MovementTotals record={row.original} />,
   }),
-  columnHelper.accessor("credit_usd", {
-    enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Crédito" className="justify-end" />,
-    cell: ({ getValue }) => (
-      <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
-    ),
-  }),
-  columnHelper.accessor("difference_usd", {
-    header: () => <div className="text-right">Diferencia</div>,
-    cell: ({ getValue }) => {
-      const v = getValue();
-      return (
-        <span
-          className={cn(
-            "block text-right font-medium tabular-nums",
-            v > 0 ? "text-success" : v < 0 ? "text-destructive" : "text-muted-foreground",
-          )}
-        >
-          {v > 0 ? "+" : ""}
-          {formatCurrencyUSD(v)}
-        </span>
-      );
-    },
-  }),
-  columnHelper.accessor("exchange_rate", {
-    header: "Tasa",
-    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(getValue())}</span>,
+  columnHelper.display({
+    id: "outcome",
+    header: "Resultado",
+    cell: ({ row }) => <Outcome record={row.original} />,
   }),
   columnHelper.accessor("notes", {
-    header: "Notas",
+    header: "Motivo",
     cell: ({ getValue }) => {
       const notes = getValue();
       return notes ? (
-        <span className="text-muted-foreground block max-w-[120px] truncate text-xs">{notes}</span>
+        <OverflowTooltip className="text-muted-foreground max-w-52 text-xs">{notes}</OverflowTooltip>
       ) : (
         <span className="text-muted-foreground/50 text-xs">—</span>
       );
     },
-    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("users.fullname", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Usuario" />,
-    cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
+    cell: ({ getValue }) => (
+      <OverflowTooltip focusable={false} className="text-muted-foreground max-w-44">
+        {getValue()}
+      </OverflowTooltip>
+    ),
   }),
 ] as ColumnDef<ReturnWithRelations>[];

@@ -1,0 +1,245 @@
+- generic [ref=e2]:
+  - generic [ref=e45]:
+    - generic [ref=e48]:
+      - list [ref=e50]:
+        - listitem [ref=e51]:
+          - 'button "Cambiar negocio. Negocio actual: Full Calzado C.A." [ref=e52]':
+            - img [ref=e54]
+            - generic [ref=e57]:
+              - generic [ref=e58]: Full Calzado C.A.
+              - generic [ref=e59]: Cambiar negocio
+            - img [ref=e60]
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e65]: Plataforma
+          - list [ref=e67]:
+            - listitem [ref=e68]:
+              - link "Inventario" [ref=e69] [cursor=pointer]:
+                - /url: /inventory
+                - img [ref=e70]
+                - generic [ref=e74]: Inventario
+            - listitem [ref=e75]:
+              - link "Movimientos" [ref=e76] [cursor=pointer]:
+                - /url: /movements
+                - img [ref=e77]
+                - generic [ref=e80]: Movimientos
+            - listitem [ref=e81]:
+              - link "Ventas" [ref=e82] [cursor=pointer]:
+                - /url: /transactions
+                - img [ref=e83]
+                - generic [ref=e87]: Ventas
+            - listitem [ref=e88]:
+              - link "Devoluciones" [active] [ref=e89] [cursor=pointer]:
+                - /url: /returns
+                - img [ref=e90]
+                - generic [ref=e93]: Devoluciones
+            - listitem [ref=e94]:
+              - link "Cierres de Caja" [ref=e95] [cursor=pointer]:
+                - /url: /cash-closes
+                - img [ref=e96]
+                - generic [ref=e98]: Cierres de Caja
+        - list [ref=e101]:
+          - listitem [ref=e102]:
+            - link "Usuarios" [ref=e103] [cursor=pointer]:
+              - /url: /users
+              - img [ref=e104]
+              - generic [ref=e109]: Usuarios
+          - listitem [ref=e110]:
+            - link "Ajustes" [ref=e111] [cursor=pointer]:
+              - /url: /settings
+              - img [ref=e112]
+              - generic [ref=e115]: Ajustes
+      - list [ref=e117]:
+        - listitem [ref=e118]:
+          - generic [ref=e120]:
+            - generic [ref=e121]: Maria Admin
+            - generic [ref=e122]: maria@tienda.com
+        - listitem [ref=e123]:
+          - button "Cerrar sesión" [ref=e124]:
+            - img [ref=e125]
+            - generic [ref=e128]: Cerrar sesión
+    - main [ref=e129]:
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - button "Toggle Sidebar" [ref=e132]:
+            - img
+            - generic [ref=e133]: Toggle Sidebar
+          - button "Carga de Inventario Ctrl+I" [ref=e134]:
+            - img
+            - generic [ref=e135]: Carga de Inventario
+            - generic [ref=e136]: Ctrl+I
+          - button "Venta Ctrl+J" [ref=e137]:
+            - img
+            - generic [ref=e138]: Venta
+            - generic [ref=e139]: Ctrl+J
+          - button "Devolución Ctrl+K" [ref=e140]:
+            - img
+            - generic [ref=e141]: Devolución
+            - generic [ref=e142]: Ctrl+K
+        - generic [ref=e143]:
+          - button "Cambiar tema" [ref=e144]:
+            - img
+            - generic [ref=e145]: Cambiar tema
+          - generic [ref=e146]:
+            - generic [ref=e147]: TASA
+            - generic [ref=e148]: 87,75 Bs.
+      - generic [ref=e475]:
+        - generic [ref=e476]:
+          - heading "Devoluciones" [level=1] [ref=e479]
+          - button "Últimos 30 días" [ref=e480]:
+            - img
+            - generic [ref=e481]: Últimos 30 días
+        - region "Resumen de los últimos 30 días" [ref=e482]:
+          - paragraph [ref=e483]: Resumen de los últimos 30 días
+          - generic [ref=e484]:
+            - generic [ref=e485]:
+              - paragraph [ref=e486]: Operaciones
+              - generic [ref=e488]: "4"
+            - generic [ref=e489]:
+              - paragraph [ref=e490]: Entradas
+              - generic [ref=e492]: 4 unidades
+            - generic [ref=e493]:
+              - paragraph [ref=e494]: Salidas
+              - generic [ref=e496]: 3 unidades
+            - generic [ref=e497]:
+              - paragraph [ref=e498]: Crédito generado
+              - generic [ref=e499]:
+                - generic [ref=e500]:
+                  - generic [ref=e501]: USD
+                  - generic [ref=e502]: $169.00
+                - generic [ref=e503]:
+                  - generic [ref=e504]: Bs.
+                  - generic [ref=e505]: 14.751,00 Bs.
+        - generic [ref=e506]:
+          - table [ref=e509]:
+            - rowgroup [ref=e510]:
+              - row "Registro Tipo Movimientos Resultado Motivo Usuario" [ref=e511]:
+                - columnheader [ref=e512]
+                - columnheader "Registro" [ref=e513]:
+                  - button "Registro" [ref=e515]:
+                    - text: Registro
+                    - img [ref=e516]
+                - columnheader "Tipo" [ref=e519]
+                - columnheader "Movimientos" [ref=e520]
+                - columnheader "Resultado" [ref=e521]
+                - columnheader "Motivo" [ref=e522]
+                - columnheader "Usuario" [ref=e523]:
+                  - button "Usuario" [ref=e525]:
+                    - text: Usuario
+                    - img [ref=e526]
+            - rowgroup [ref=e529]:
+              - row "30 jun. 2026 · 06:39 a. m. Cambio 1 entrada 1 salida Cliente paga $23.00 2.018,25 Bs. — Maria Admin" [ref=e530] [cursor=pointer]:
+                - cell [ref=e531]:
+                  - img [ref=e533]
+                - cell "30 jun. 2026 · 06:39 a. m." [ref=e535]:
+                  - generic [ref=e537]: 30 jun. 2026 · 06:39 a. m.
+                - cell "Cambio" [ref=e538]:
+                  - generic "Cambio de artículo" [ref=e539]:
+                    - img
+                    - text: Cambio
+                - cell "1 entrada 1 salida" [ref=e540]:
+                  - generic [ref=e541]:
+                    - generic [ref=e542]: 1 entrada
+                    - generic [ref=e543]: ·
+                    - generic [ref=e544]: 1 salida
+                - cell "Cliente paga $23.00 2.018,25 Bs." [ref=e545]:
+                  - generic [ref=e546]:
+                    - generic [ref=e547]: Cliente paga
+                    - generic [ref=e548]: $23.00
+                    - generic [ref=e549]: 2.018,25 Bs.
+                - cell "—" [ref=e550]
+                - cell "Maria Admin" [ref=e551]:
+                  - generic [ref=e552]: Maria Admin
+              - row "24 jun. 2026 · 12:45 p. m. Cambio 1 entrada 1 salida Tienda devuelve $22.00 1.930,50 Bs. Cambio administrado con saldo a favor Maria Admin" [ref=e553] [cursor=pointer]:
+                - cell [ref=e554]:
+                  - img [ref=e556]
+                - cell "24 jun. 2026 · 12:45 p. m." [ref=e558]:
+                  - generic [ref=e560]: 24 jun. 2026 · 12:45 p. m.
+                - cell "Cambio" [ref=e561]:
+                  - generic "Cambio de artículo" [ref=e562]:
+                    - img
+                    - text: Cambio
+                - cell "1 entrada 1 salida" [ref=e563]:
+                  - generic [ref=e564]:
+                    - generic [ref=e565]: 1 entrada
+                    - generic [ref=e566]: ·
+                    - generic [ref=e567]: 1 salida
+                - cell "Tienda devuelve $22.00 1.930,50 Bs." [ref=e568]:
+                  - generic [ref=e569]:
+                    - generic [ref=e570]: Tienda devuelve
+                    - generic [ref=e571]: $22.00
+                    - generic [ref=e572]: 1.930,50 Bs.
+                - cell "Cambio administrado con saldo a favor" [ref=e573]:
+                  - generic [ref=e574]: Cambio administrado con saldo a favor
+                - cell "Maria Admin" [ref=e575]:
+                  - generic [ref=e576]: Maria Admin
+              - row "23 jun. 2026 · 05:40 p. m. Devolución 1 entrada 0 salidas Tienda devuelve $33.00 2.895,75 Bs. Reintegro por defecto de fabrica Maria Admin" [ref=e577] [cursor=pointer]:
+                - cell [ref=e578]:
+                  - img [ref=e580]
+                - cell "23 jun. 2026 · 05:40 p. m." [ref=e582]:
+                  - generic [ref=e584]: 23 jun. 2026 · 05:40 p. m.
+                - cell "Devolución" [ref=e585]:
+                  - generic "Devolución" [ref=e586]:
+                    - img
+                    - text: Devolución
+                - cell "1 entrada 0 salidas" [ref=e587]:
+                  - generic [ref=e588]:
+                    - generic [ref=e589]: 1 entrada
+                    - generic [ref=e590]: ·
+                    - generic [ref=e591]: 0 salidas
+                - cell "Tienda devuelve $33.00 2.895,75 Bs." [ref=e592]:
+                  - generic [ref=e593]:
+                    - generic [ref=e594]: Tienda devuelve
+                    - generic [ref=e595]: $33.00
+                    - generic [ref=e596]: 2.895,75 Bs.
+                - cell "Reintegro por defecto de fabrica" [ref=e597]:
+                  - generic [ref=e598]: Reintegro por defecto de fabrica
+                - cell "Maria Admin" [ref=e599]:
+                  - generic [ref=e600]: Maria Admin
+              - row "22 jun. 2026 · 05:10 p. m. Cambio 1 entrada 1 salida Cliente paga $11.00 946,00 Bs. Cambio talla cliente runner Maria Admin" [ref=e601] [cursor=pointer]:
+                - cell [ref=e602]:
+                  - img [ref=e604]
+                - cell "22 jun. 2026 · 05:10 p. m." [ref=e606]:
+                  - generic [ref=e608]: 22 jun. 2026 · 05:10 p. m.
+                - cell "Cambio" [ref=e609]:
+                  - generic "Cambio de artículo" [ref=e610]:
+                    - img
+                    - text: Cambio
+                - cell "1 entrada 1 salida" [ref=e611]:
+                  - generic [ref=e612]:
+                    - generic [ref=e613]: 1 entrada
+                    - generic [ref=e614]: ·
+                    - generic [ref=e615]: 1 salida
+                - cell "Cliente paga $11.00 946,00 Bs." [ref=e616]:
+                  - generic [ref=e617]:
+                    - generic [ref=e618]: Cliente paga
+                    - generic [ref=e619]: $11.00
+                    - generic [ref=e620]: 946,00 Bs.
+                - cell "Cambio talla cliente runner" [ref=e621]:
+                  - generic [ref=e622]: Cambio talla cliente runner
+                - cell "Maria Admin" [ref=e623]:
+                  - generic [ref=e624]: Maria Admin
+          - generic [ref=e625]:
+            - paragraph [ref=e626]: 1–4 de 4
+            - generic [ref=e627]:
+              - generic [ref=e628]:
+                - generic [ref=e629]: Filas
+                - generic [ref=e630]:
+                  - combobox [ref=e631]:
+                    - option "10"
+                    - option "20" [selected]
+                    - option "30"
+                    - option "50"
+                    - option "100"
+                  - img
+              - generic [ref=e632]: Pág. 1/1
+              - generic [ref=e633]:
+                - button [disabled]:
+                  - img
+                - button [disabled]:
+                  - img
+                - button [disabled]:
+                  - img
+                - button [disabled]:
+                  - img
+  - region "Notifications alt+T"

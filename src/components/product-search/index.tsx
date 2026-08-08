@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { Product } from "@/types/index";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { toast } from "sonner";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import type { ProductSearchOptions, ProductSearchResult } from "./types";
@@ -63,7 +64,7 @@ function SelectedProductChip({
       <span className="product-code bg-primary/10 border-primary/20 inline-flex h-6 shrink-0 items-center rounded-sm border px-2 text-xs uppercase">
         {product.code}
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{product.description}</span>
+      <OverflowTooltip className="flex-1 text-sm font-semibold">{product.description}</OverflowTooltip>
       {showPrice && (
         <span className="text-muted-foreground hidden shrink-0 text-xs tabular-nums md:inline">
           {formatCurrencyUSD(product.price_usd)}
@@ -122,7 +123,7 @@ function SearchDropdown({
               <span className="product-code bg-primary/10 border-primary/20 inline-flex h-6 shrink-0 items-center rounded-sm border px-2 text-xs uppercase">
                 {product.code}
               </span>
-              <span className="min-w-0 flex-1 truncate text-sm">{product.description}</span>
+              <OverflowTooltip className="flex-1 text-sm">{product.description}</OverflowTooltip>
               {!product.active && (
                 <span className="bg-muted text-muted-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase">
                   Inactivo

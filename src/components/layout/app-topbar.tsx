@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
@@ -86,7 +87,9 @@ export function AppTopbar() {
         </Button>
 
         <div className="flex items-center gap-1.5 md:hidden">
-          <span className="text-foreground max-w-30 truncate text-xs font-medium">{user?.fullname || "Usuario"}</span>
+          <OverflowTooltip className="text-foreground max-w-36 text-xs font-medium">
+            {user?.fullname || "Usuario"}
+          </OverflowTooltip>
           <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
             {user?.role || "—"}
           </span>

@@ -3,6 +3,7 @@ import type { Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
@@ -50,7 +51,7 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
     columnHelper.accessor("description", {
       enableSorting: true,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
-      cell: ({ getValue }) => <span className="max-w-table-row block truncate">{getValue()}</span>,
+      cell: ({ getValue }) => <OverflowTooltip className="max-w-table-row">{getValue()}</OverflowTooltip>,
     }),
     columnHelper.accessor("stock", {
       enableSorting: true,

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { ActiveBusinessContext } from "@/features/business/components/active-business-context";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
 
 type ModalConfirmDialogProps = {
@@ -118,9 +119,7 @@ export function ModalProductIdentity({ code, description }: ModalProductIdentity
   return (
     <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
       <span className="product-code shrink-0 uppercase">{code}</span>
-      <span className="text-muted-foreground max-w-52 truncate" title={description}>
-        {description}
-      </span>
+      <OverflowTooltip className="text-muted-foreground max-w-52">{description}</OverflowTooltip>
     </span>
   );
 }

@@ -84,9 +84,9 @@ export function formatCurrencyUSD(value: number): string {
   return currencyUsdFormatter.format(value);
 }
 
-export function formatCurrencyVES(value: number): string {
-  if (typeof value !== "number" || isNaN(value)) return "0,00 Bs.";
-  return `${currencyVesFormatter.format(value)} Bs.`;
+export function formatCurrencyVES(value: number, options?: { includeCurrency?: boolean }): string {
+  const formattedValue = typeof value !== "number" || isNaN(value) ? "0,00" : currencyVesFormatter.format(value);
+  return options?.includeCurrency === false ? formattedValue : `${formattedValue} Bs.`;
 }
 
 export function formatDate(dateInput?: DateInput): string {

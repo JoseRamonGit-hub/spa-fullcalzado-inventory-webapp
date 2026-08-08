@@ -1,6 +1,7 @@
 import { PackageOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import { sumCurrencyTotals } from "@/components/modals/shared/currency-totals";
@@ -29,9 +30,7 @@ function ItemRow({ code, description, quantity, totalUsd, striped, onRemove }: I
       <TableCell className="px-3 py-1.5">
         <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
           <span className="product-code shrink-0 uppercase">{code}</span>
-          <span className="text-muted-foreground max-w-64 truncate" title={description}>
-            {description}
-          </span>
+          <OverflowTooltip className="text-muted-foreground max-w-64">{description}</OverflowTooltip>
         </span>
       </TableCell>
       <TableCell className="px-3 py-1.5 text-right font-medium tabular-nums">{quantity}</TableCell>
@@ -98,13 +97,9 @@ export function ReturnItemsPanel({
       <Table className="min-w-130 text-xs">
         <TableHeader className="bg-card sticky top-0">
           <TableRow className="bg-muted/20 hover:bg-muted/20">
-            <TableHead className="h-8 px-3 text-[10px] font-semibold tracking-wider uppercase">Producto</TableHead>
-            <TableHead className="h-8 w-20 px-3 text-right text-[10px] font-semibold tracking-wider uppercase">
-              Cant.
-            </TableHead>
-            <TableHead className="h-8 w-28 px-3 text-right text-[10px] font-semibold tracking-wider uppercase">
-              Total USD
-            </TableHead>
+            <TableHead className="h-8 px-3">Producto</TableHead>
+            <TableHead className="h-8 w-20 px-3 text-right">Cant.</TableHead>
+            <TableHead className="h-8 w-28 px-3 text-right">Total USD</TableHead>
             <TableHead className="h-8 w-10 px-1.5">
               <span className="sr-only">Acciones</span>
             </TableHead>

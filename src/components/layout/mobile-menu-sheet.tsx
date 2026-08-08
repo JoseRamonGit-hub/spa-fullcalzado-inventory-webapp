@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Settings, ReceiptText, IterationCcw, Moon, Sun, LogOut, Users } from "lucide-react";
 import { BusinessSwitcher } from "@/features/business/components/business-switcher";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
 
 const SECONDARY_NAV = [
@@ -36,8 +37,8 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
               {user?.fullname?.charAt(0) || "U"}
             </div>
             <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-semibold">{user?.fullname || "Usuario"}</span>
-              <span className="text-muted-foreground truncate text-[11px]">{user?.email || ""}</span>
+              <OverflowTooltip className="text-sm font-semibold">{user?.fullname || "Usuario"}</OverflowTooltip>
+              <OverflowTooltip className="text-muted-foreground text-[11px]">{user?.email || ""}</OverflowTooltip>
             </div>
             <span className="bg-primary/12 text-primary shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
               {user?.role || "—"}

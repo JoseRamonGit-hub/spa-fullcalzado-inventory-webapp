@@ -142,9 +142,7 @@ export function ProductSaleForm({ exchangeRate, onAddPendingSale }: ProductSaleF
               return (
                 <div className="bg-popover text-popover-foreground animate-in fade-in slide-in-from-top-1 absolute top-full left-0 z-30 mt-1.5 w-44 rounded-md border px-2.5 py-2 text-[11px] shadow-md">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
-                      Subtotal
-                    </span>
+                    <span className="text-muted-foreground text-[10px] font-semibold uppercase">Subtotal</span>
                     <span className="font-semibold tabular-nums">{formatCurrencyUSD(totalUsd)}</span>
                   </div>
                   <div className="border-border/60 mt-1.5 flex items-center justify-between gap-3 border-t pt-1.5">

@@ -24,6 +24,7 @@ import { Link } from "@tanstack/react-router";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { BusinessSwitcher } from "@/features/business/components/business-switcher";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 
 const NAV_ITEMS = [
   {
@@ -135,10 +136,12 @@ export function AppSidebar() {
             <SidebarMenuButton asChild tooltip={user?.fullname || "Usuario"} className="py-6">
               <div className="flex w-full items-center gap-2">
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="text-sidebar-foreground truncate text-xs font-medium">
+                  <OverflowTooltip className="text-sidebar-foreground text-xs font-medium">
                     {user?.fullname || "Usuario"}
-                  </span>
-                  <span className="text-sidebar-foreground/50 truncate text-[11px]">{user?.email || ""}</span>
+                  </OverflowTooltip>
+                  <OverflowTooltip className="text-sidebar-foreground/50 text-[11px]">
+                    {user?.email || ""}
+                  </OverflowTooltip>
                 </div>
               </div>
             </SidebarMenuButton>

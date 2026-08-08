@@ -1,6 +1,7 @@
 import { PackageOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import type { PendingSale } from "../types";
 
@@ -17,7 +18,7 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
     <section className="bg-card -mx-2 flex h-56 min-h-0 flex-col overflow-hidden rounded-md border md:mx-0 md:h-72">
       <header className="bg-muted/35 border-b px-3 py-2">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Venta en curso</h3>
+          <h3 className="text-muted-foreground text-[10px] font-semibold uppercase">Venta en curso</h3>
           <span className="text-muted-foreground text-xs tabular-nums">
             {hasPendingSales ? `${pendingSalesCount} producto${pendingSalesCount === 1 ? "" : "s"}` : "Sin productos"}
           </span>
@@ -29,30 +30,14 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
           <Table className="min-w-[42rem] text-xs">
             <TableHeader className="bg-muted/20 sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-muted-foreground h-7 w-48 px-2 text-[10px] font-semibold tracking-wider uppercase md:hidden">
-                  Producto
-                </TableHead>
-                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
-                  Código
-                </TableHead>
-                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
-                  Descripción
-                </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
-                  Cant.
-                </TableHead>
-                <TableHead className="text-muted-foreground hidden h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase md:table-cell">
-                  P. Unit.
-                </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
-                  Total USD
-                </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
-                  Total Bs.
-                </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase md:hidden">
-                  P. Unit.
-                </TableHead>
+                <TableHead className="w-48 px-2 md:hidden">Producto</TableHead>
+                <TableHead className="hidden px-2 md:table-cell">Código</TableHead>
+                <TableHead className="hidden px-2 md:table-cell">Descripción</TableHead>
+                <TableHead className="px-2 text-right">Cant.</TableHead>
+                <TableHead className="hidden px-2 text-right md:table-cell">P. Unit.</TableHead>
+                <TableHead className="px-2 text-right">Total USD</TableHead>
+                <TableHead className="px-2 text-right">Total Bs.</TableHead>
+                <TableHead className="px-2 text-right md:hidden">P. Unit.</TableHead>
                 <TableHead className="h-7 w-8 px-1" />
               </TableRow>
             </TableHeader>
@@ -62,14 +47,14 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
                   <TableCell className="max-w-48 px-2 py-1.5 md:hidden">
                     <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
                       <span className="product-code shrink-0 uppercase">{sale.code}</span>
-                      <span className="truncate font-medium">{sale.description}</span>
+                      <OverflowTooltip className="flex-1 font-medium">{sale.description}</OverflowTooltip>
                     </span>
                   </TableCell>
                   <TableCell className="hidden px-2 py-1.5 md:table-cell">
                     <span className="product-code uppercase">{sale.code}</span>
                   </TableCell>
                   <TableCell className="hidden max-w-64 px-2 py-1.5 md:table-cell">
-                    <span className="block truncate font-medium">{sale.description}</span>
+                    <OverflowTooltip className="font-medium">{sale.description}</OverflowTooltip>
                   </TableCell>
                   <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{sale.quantity}</TableCell>
                   <TableCell className="text-muted-foreground hidden px-2 py-1.5 text-right tabular-nums md:table-cell">

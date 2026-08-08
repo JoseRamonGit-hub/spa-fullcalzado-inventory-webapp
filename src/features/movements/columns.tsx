@@ -6,6 +6,7 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import { IterationCcw, Pencil } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 
 const columnHelper = createColumnHelper<InventoryMovementWithRelations>();
 
@@ -97,7 +98,7 @@ export const columns = [
 
       return (
         <span className="max-w-table-row flex items-center gap-1.5">
-          <span className="block truncate">{description}</span>
+          <OverflowTooltip className="flex-1">{description}</OverflowTooltip>
           {hasDescriptionChange && (
             <Tooltip>
               <TooltipTrigger asChild>

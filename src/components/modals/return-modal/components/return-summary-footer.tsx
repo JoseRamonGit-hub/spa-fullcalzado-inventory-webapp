@@ -78,7 +78,7 @@ export function ReturnSummaryFooter({
 
         <div className="bg-primary/5 grid grid-cols-2 divide-x">
           <div className="min-w-0 px-3 py-2">
-            <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase">Diferencia USD</p>
+            <p className="text-muted-foreground text-[10px] font-semibold uppercase">Diferencia USD</p>
             <p
               className={cn(
                 "mt-0.5 text-base leading-tight font-bold whitespace-nowrap tabular-nums",
@@ -89,7 +89,7 @@ export function ReturnSummaryFooter({
             </p>
           </div>
           <div className="min-w-0 px-3 py-2 text-right">
-            <p className="text-muted-foreground text-[9px] font-semibold tracking-wider uppercase">Diferencia Bs.</p>
+            <p className="text-muted-foreground text-[10px] font-semibold uppercase">Diferencia Bs.</p>
             <p
               className={cn(
                 "mt-0.5 text-base leading-tight font-bold whitespace-nowrap tabular-nums",
