@@ -6,7 +6,7 @@ import type { Business, User } from "@/types";
 import { businessKeys } from "@/features/business/hooks/useBusinessQueries";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import { ConfirmSalesDialog } from "./confirm-sales-dialog";
+import { ConfirmSaleDialog } from "./confirm-sale-dialog";
 import type { PendingSaleLine } from "../types";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -72,7 +72,7 @@ function createWrapper() {
   };
 }
 
-describe("ConfirmSalesDialog", () => {
+describe("ConfirmSaleDialog", () => {
   beforeAll(() => {
     vi.stubGlobal(
       "ResizeObserver",
@@ -91,7 +91,7 @@ describe("ConfirmSalesDialog", () => {
 
   it("presenta varios Productos como Renglones de una sola Venta", () => {
     render(
-      <ConfirmSalesDialog
+      <ConfirmSaleDialog
         isOpen
         onOpenChange={vi.fn()}
         pendingSaleLines={saleLines}

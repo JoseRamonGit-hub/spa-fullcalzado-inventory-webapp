@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { useSubmitSale } from "./use-submit-sales";
+import { useSubmitSale } from "./use-submit-sale";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { PendingSaleLine } from "../types";

@@ -9,7 +9,7 @@ import {
 } from "@/components/modals/shared/modal-ui";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
-type ConfirmSalesDialogProps = {
+type ConfirmSaleDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   pendingSaleLines: PendingSaleLine[];
@@ -20,7 +20,7 @@ type ConfirmSalesDialogProps = {
   onConfirmSubmit: () => void;
 };
 
-export function ConfirmSalesDialog({
+export function ConfirmSaleDialog({
   isOpen,
   onOpenChange,
   pendingSaleLines,
@@ -29,7 +29,7 @@ export function ConfirmSalesDialog({
   totalAmountVes,
   isSubmissionPending,
   onConfirmSubmit,
-}: ConfirmSalesDialogProps) {
+}: ConfirmSaleDialogProps) {
   const lineCount = pendingSaleLines.length;
   const lineLabel = lineCount === 1 ? "1 Renglón de venta" : `${lineCount} Renglones de venta`;
   return (

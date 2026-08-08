@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { usePendingSaleLines } from "./use-pending-sales";
+import { usePendingSaleLines } from "./use-pending-sale-lines";
 import type { PendingSaleLine } from "../types";
 
 function makeSaleLine(overrides: Partial<PendingSaleLine> = {}): PendingSaleLine {

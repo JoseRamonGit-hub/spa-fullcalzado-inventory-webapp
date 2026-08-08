@@ -1,5 +1,5 @@
--- One row represents one checkout confirmation. Historical transaction rows
--- remain ungrouped because transactions.sale_id is intentionally nullable.
+-- Una fila representa una Venta confirmada. Los Renglones históricos permanecen
+-- sin agrupar porque transactions.sale_id es intencionalmente nullable.
 create table public.sales (
   id uuid primary key default gen_random_uuid(),
   business_id uuid not null,

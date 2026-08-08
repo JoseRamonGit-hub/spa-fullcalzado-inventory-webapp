@@ -3,11 +3,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
 import { useModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
-import { usePendingSaleLines } from "./hooks/use-pending-sales";
-import { useSubmitSale } from "./hooks/use-submit-sales";
+import { usePendingSaleLines } from "./hooks/use-pending-sale-lines";
+import { useSubmitSale } from "./hooks/use-submit-sale";
 import { ProductSaleForm } from "./components/product-sale-form";
 import { SalesSummaryFooter } from "./components/sales-summary-footer";
-import { ConfirmSalesDialog } from "./components/confirm-sales-dialog";
+import { ConfirmSaleDialog } from "./components/confirm-sale-dialog";
 import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
 import { PendingSaleLinesPanel } from "./components/pending-sales-panel";
 import { SalesSummaryBlock } from "./components/sales-summary-block";
@@ -100,7 +100,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         </section>
       </ResponsiveModal>
 
-      <ConfirmSalesDialog
+      <ConfirmSaleDialog
         isOpen={isConfirmDialogOpen}
         onOpenChange={setIsConfirmDialogOpen}
         pendingSaleLines={pendingSaleLines}

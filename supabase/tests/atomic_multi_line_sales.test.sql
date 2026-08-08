@@ -113,7 +113,7 @@ SELECT lives_ok(
       90
     )
   $$,
-  'Una confirmación multi-Producto crea una Venta atómica'
+  'Una confirmación multi-Renglón crea una Venta atómica'
 );
 
 SELECT is(

@@ -2,7 +2,7 @@ import type { PendingSaleLine } from "../types";
 import { sumCurrencyTotals } from "@/components/modals/shared/currency-totals";
 import { usePendingItems } from "@/components/modals/shared/use-pending-items";
 
-export interface UsePendingSaleLinesReturn {
+export interface PendingSaleLinesState {
   pendingSaleLines: PendingSaleLine[];
   addPendingSaleLine: (saleLine: PendingSaleLine) => void;
   removePendingSaleLine: (tempId: string) => void;
@@ -11,7 +11,7 @@ export interface UsePendingSaleLinesReturn {
   totalAmountVes: number;
 }
 
-export function usePendingSaleLines(): UsePendingSaleLinesReturn {
+export function usePendingSaleLines(): PendingSaleLinesState {
   const { items: pendingSaleLines, addItem, removeItem, clearItems } = usePendingItems<PendingSaleLine>();
 
   const totals = sumCurrencyTotals(pendingSaleLines);

@@ -3,7 +3,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateSale } from "@/features/transactions/hooks/useTransactionMutations";
 import type { PendingSaleLine } from "../types";
 
-type UseSubmitSaleProps = {
+type SubmitSaleOptions = {
   pendingSaleLines: PendingSaleLine[];
   currentExchangeRate: number;
   clearPendingSaleLines: () => void;
@@ -15,7 +15,7 @@ export function useSubmitSale({
   currentExchangeRate,
   clearPendingSaleLines,
   onSuccess,
-}: UseSubmitSaleProps) {
+}: SubmitSaleOptions) {
   const currentUser = useAuthStore((state) => state.user);
   const createSaleMutation = useCreateSale();
 
