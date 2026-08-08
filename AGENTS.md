@@ -74,3 +74,17 @@ Supabase PostgreSQL. Migrations in `supabase/migrations/`. SQL tests in `supabas
 - React Query cache invalidation happens in mutation `onSuccess` callbacks within hooks
 - Test files live next to source files (`*.test.ts` / `*.test.tsx`)
 - Evitar en lo posible useCallback y useMemo, esta app ya usa el react compiler
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in this repository’s GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage uses the canonical `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix` labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Domain documentation uses a single-context layout. See `docs/agents/domain.md`.
