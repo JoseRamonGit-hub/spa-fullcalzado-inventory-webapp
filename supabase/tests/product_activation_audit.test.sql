@@ -5,7 +5,7 @@
 
 BEGIN;
 
-SELECT plan(16);
+SELECT plan(17);
 SELECT set_config('app.suppress_log_entry', 'true', true);
 
 INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
@@ -69,6 +69,15 @@ SELECT ok(
    WHERE product_id = '32000000-0000-0000-0000-000000000001'
      AND type = 'deactivation'),
   'Deactivation records its timestamp'
+);
+
+SELECT ok(
+  (SELECT date = (now() at time zone 'America/Caracas')::date
+      AND time = (now() at time zone 'America/Caracas')::time
+   FROM public.inventory_movements
+   WHERE product_id = '32000000-0000-0000-0000-000000000001'
+     AND type = 'deactivation'),
+  'Deactivation records the Caracas date and time'
 );
 
 SELECT is(
