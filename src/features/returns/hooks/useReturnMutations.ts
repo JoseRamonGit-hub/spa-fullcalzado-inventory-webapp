@@ -7,6 +7,7 @@ import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
 import { cashCloseKeys } from "@/features/cash-closes/hooks/useCashCloseQueries";
 import type { ProcessReturnPayload } from "@/types/index";
 import { activeBusinessMutationOptions } from "@/features/business/utils/active-business-mutation";
+import { dashboardKeys } from "@/features/dashboard/hooks/useDashboardMetrics";
 
 export function useCreateReturn() {
   const queryClient = useQueryClient();
@@ -21,6 +22,7 @@ export function useCreateReturn() {
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
       queryClient.invalidateQueries({ queryKey: returnKeys.business(businessId) });
       queryClient.invalidateQueries({ queryKey: cashCloseKeys.summaries(businessId) });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.business(businessId) });
     },
   });
 }

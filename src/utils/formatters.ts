@@ -135,3 +135,11 @@ export function formatCalendarDate(date?: Date): string {
 
   return calendarDateDisplayFormatter.format(new Date(`${dateString}T00:00:00Z`));
 }
+
+/** Formats a backend YYYY-MM-DD value without applying the browser timezone. */
+export function formatCalendarDateString(dateString?: string): string {
+  if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return "";
+
+  const date = new Date(`${dateString}T00:00:00Z`);
+  return isNaN(date.getTime()) ? "" : calendarDateDisplayFormatter.format(date);
+}

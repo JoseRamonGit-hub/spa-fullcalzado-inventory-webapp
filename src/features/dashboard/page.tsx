@@ -2,6 +2,7 @@ import { Boxes, CircleDollarSign, RefreshCw, TriangleAlert, WalletCards } from "
 import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./components/dashboard-metric-card";
+import { SalesPeriodSection } from "./components/sales-period-section";
 import { useDashboardMetrics } from "./hooks/useDashboardMetrics";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
@@ -89,6 +90,8 @@ export function DashboardPage() {
               />
             </div>
           )}
+
+          <SalesPeriodSection />
         </div>
       </div>
     </section>

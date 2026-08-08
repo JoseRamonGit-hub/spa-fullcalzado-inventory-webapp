@@ -742,6 +742,27 @@ export type Database = {
           total_billed_usd: number;
         }[];
       };
+      get_dashboard_sales_period: {
+        Args: { p_business_id: string; p_period?: string };
+        Returns: {
+          average_ticket_usd: number;
+          bucket_end: string;
+          bucket_index: number;
+          bucket_label: string;
+          bucket_start: string;
+          bucket_total_usd: number;
+          comparison_end: string;
+          comparison_start: string;
+          current_end: string;
+          current_operations: number;
+          current_start: string;
+          current_total_usd: number;
+          is_available: boolean;
+          period: string;
+          previous_operations: number;
+          previous_total_usd: number;
+        }[];
+      };
       get_product_history: {
         Args: {
           p_business_id: string;

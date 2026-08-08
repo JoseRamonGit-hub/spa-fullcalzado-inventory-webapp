@@ -25,6 +25,31 @@ export type DashboardDailyMetrics = Omit<
   exchange_rate_updated_at: string | null;
 };
 
+export type DashboardSalesPeriodPreset = "today" | "week" | "month";
+
+export type DashboardSalesPeriodBucket = {
+  index: number;
+  label: string;
+  startDate: string;
+  endDate: string;
+  isAvailable: boolean;
+  totalUsd: number;
+};
+
+export type DashboardSalesPeriod = {
+  preset: DashboardSalesPeriodPreset;
+  currentStart: string;
+  currentEnd: string;
+  comparisonStart: string;
+  comparisonEnd: string;
+  totalUsd: number;
+  previousTotalUsd: number;
+  operations: number;
+  previousOperations: number;
+  averageTicketUsd: number;
+  buckets: DashboardSalesPeriodBucket[];
+};
+
 // ── Insert types (write to DB — omits auto-generated fields) ─
 export type ProductInsert = TablesInsert<"products">;
 export type TransactionInsert = TablesInsert<"transactions">;
