@@ -27,42 +27,42 @@ export function MobileQuickActionsDrawer({ open, onOpenChange }: MobileQuickActi
         <div className="flex flex-col gap-3 p-4 pb-10">
           <Button
             variant="outline"
-            className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
+            className="h-14 w-full justify-start gap-3 px-4 text-base"
             onClick={() => openModal(setInModalOpen)}
           >
             <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
-              <PackagePlus className="text-primary size-5" />
+              <PackagePlus className="text-primary size-5" aria-hidden="true" />
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold">Cargar inventario</span>
+              <span className="text-foreground text-sm font-semibold">Cargar inventario</span>
               <span className="text-muted-foreground text-xs">Agregar o reponer productos</span>
             </div>
           </Button>
 
           <Button
             variant="outline"
-            className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
+            className="h-14 w-full justify-start gap-3 px-4 text-base"
             onClick={() => openModal(setOutModalOpen)}
           >
-            <div className="bg-success/10 flex size-10 items-center justify-center rounded-lg">
-              <ShoppingCart className="text-success size-5" />
+            <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+              <ShoppingCart className="text-primary size-5" aria-hidden="true" />
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold">Registrar Venta</span>
+              <span className="text-foreground text-sm font-semibold">Registrar Venta</span>
               <span className="text-muted-foreground text-xs">Vender un producto del inventario</span>
             </div>
           </Button>
 
           <Button
             variant="outline"
-            className="bg-card h-14 w-full justify-start gap-3 px-4 text-base"
+            className="h-14 w-full justify-start gap-3 px-4 text-base"
             onClick={() => openModal(setReturnModalOpen)}
           >
-            <div className="bg-refund/12 flex size-10 items-center justify-center rounded-lg">
-              <IterationCcw className="text-refund size-5" />
+            <div className="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
+              <IterationCcw className="text-primary size-5" aria-hidden="true" />
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold">Registrar Devolución</span>
+              <span className="text-foreground text-sm font-semibold">Registrar Devolución</span>
               <span className="text-muted-foreground text-xs">Cambio o devolución de producto</span>
             </div>
           </Button>

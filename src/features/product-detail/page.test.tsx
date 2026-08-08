@@ -70,6 +70,7 @@ describe("ProductDetailPage", () => {
   it("shows the current product, the active-rate price and latest audited event", () => {
     render(<ProductDetailPage />);
 
+    expect(screen.getByRole("heading", { name: "Historial de movimientos" })).toBeInTheDocument();
     expect(screen.getByText("FC-101")).toBeInTheDocument();
     expect(screen.getByText("Deportivo clásico")).toBeInTheDocument();
     expect(screen.getByText("$25.00")).toBeInTheDocument();

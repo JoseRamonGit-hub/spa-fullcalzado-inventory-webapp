@@ -10,41 +10,47 @@ import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRate
 import { useProductDetail } from "@/features/inventory/hooks/useProductQueries";
 import { getMovementTypeInfo } from "@/features/movements/movement-presentation";
 import { Route } from "@/routes/_app/inventory_.$productId";
+import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
+
+function getDetailItemClassName(index: number) {
+  return cn(
+    "border-border/50 flex min-w-0 flex-col gap-1 px-3",
+    index % 2 === 0 ? "border-l-0 pl-0" : "border-l",
+    index % 4 === 0 ? "sm:border-l-0 sm:pl-0" : "sm:border-l sm:pl-4",
+    index === 0 ? "xl:border-l-0 xl:pl-0" : "xl:border-l xl:pl-4",
+    index === 6 && "col-span-2 sm:col-span-2 xl:col-span-1 xl:pr-0",
+  );
+}
 
 function DetailSkeleton() {
   return (
-    <div
-      className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 md:p-4 lg:grid-cols-4"
-      role="status"
-      aria-label="Cargando detalle del producto"
-    >
-      {Array.from({ length: 7 }).map((_, index) => (
-        <div
-          key={index}
-          className="border-border/60 bg-card flex min-h-24 flex-col gap-3 rounded-xl border p-4 shadow-sm"
-        >
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-5 w-32" />
-        </div>
-      ))}
-    </div>
+    <section className="shrink-0 border-b px-3 py-2.5 md:px-4" role="status" aria-label="Cargando detalle del producto">
+      <div className="grid grid-cols-2 gap-y-4 sm:grid-cols-4 xl:grid-cols-[0.9fr_2.6fr_0.9fr_1.1fr_1.3fr_0.9fr_minmax(17rem,2.3fr)]">
+        {Array.from({ length: 7 }).map((_, index) => (
+          <div key={index} className={getDetailItemClassName(index)}>
+            <Skeleton className="h-2.5 w-16" />
+            <Skeleton className="h-4 w-24 max-w-full" />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
 type DetailItemProps = {
+  index: number;
   label: string;
   children: React.ReactNode;
-  className?: string;
 };
 
-function DetailItem({ label, children, className }: DetailItemProps) {
+function DetailItem({ index, label, children }: DetailItemProps) {
   return (
-    <div
-      className={`border-border/60 bg-card flex min-h-24 flex-col gap-2 rounded-xl border p-4 shadow-sm ${className ?? ""}`}
-    >
-      <dt className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">{label}</dt>
-      <dd className="text-foreground flex min-h-7 items-center text-base font-semibold">{children}</dd>
+    <div className={getDetailItemClassName(index)}>
+      <dt className="text-muted-foreground text-[10px] leading-tight font-semibold uppercase">{label}</dt>
+      <dd className="text-foreground flex min-h-5 min-w-0 items-center text-sm leading-tight font-semibold">
+        {children}
+      </dd>
     </div>
   );
 }
@@ -107,50 +113,71 @@ export function ProductDetailPage() {
           </div>
         </div>
       ) : productQuery.data ? (
-        <dl className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 md:p-4 lg:grid-cols-4">
-          <DetailItem label="Código">
-            <span className="product-code font-bold uppercase">{productQuery.data.product.code}</span>
-          </DetailItem>
-          <DetailItem label="Descripción" className="lg:col-span-2">
-            <span className="text-sm leading-relaxed font-medium whitespace-normal">
-              {productQuery.data.product.description}
-            </span>
-          </DetailItem>
-          <DetailItem label="Estado">
-            <Badge variant={productQuery.data.product.active ? "success" : "secondary"}>
-              {productQuery.data.product.active ? "Activo" : "Inactivo"}
-            </Badge>
-          </DetailItem>
-          <DetailItem label="Stock">
-            <span className="tabular-nums">{productQuery.data.product.stock}</span>
-          </DetailItem>
-          <DetailItem label="Precio USD">
-            <span className="tabular-nums">{formatCurrencyUSD(productQuery.data.product.price_usd)}</span>
-          </DetailItem>
-          <DetailItem label="Precio VES">
-            {exchangeRateQuery.data ? (
-              <span className="tabular-nums">
-                {formatCurrencyVES(productQuery.data.product.price_usd * exchangeRateQuery.data.rate)}
-              </span>
-            ) : (
-              <span className="text-warning text-sm">Sin tasa</span>
-            )}
-          </DetailItem>
-          <DetailItem label="Última actividad">
-            {productQuery.data.lastActivity ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={getMovementTypeInfo(productQuery.data.lastActivity).variant}>
-                  {getMovementTypeInfo(productQuery.data.lastActivity).label}
-                </Badge>
-                <span className="text-muted-foreground text-xs font-normal tabular-nums">
-                  {formatDateTime(productQuery.data.lastActivity.created_at) || "Fecha no disponible"}
+        <>
+          <section className="shrink-0 border-b px-3 py-2.5 md:px-4" aria-label="Resumen del producto">
+            <dl className="grid grid-cols-2 gap-y-4 sm:grid-cols-4 xl:grid-cols-[0.9fr_2.6fr_0.9fr_1.1fr_1.3fr_0.9fr_minmax(17rem,2.3fr)]">
+              <DetailItem index={0} label="Código">
+                <span className="product-code truncate font-bold uppercase">{productQuery.data.product.code}</span>
+              </DetailItem>
+              <DetailItem index={1} label="Descripción">
+                <span className="truncate font-semibold" title={productQuery.data.product.description}>
+                  {productQuery.data.product.description}
                 </span>
-              </div>
-            ) : (
-              <span className="text-muted-foreground text-sm font-normal">Sin actividad registrada</span>
-            )}
-          </DetailItem>
-        </dl>
+              </DetailItem>
+              <DetailItem index={2} label="Stock actual">
+                <span
+                  className={cn(
+                    "tabular-nums",
+                    productQuery.data.product.stock === 0
+                      ? "text-destructive"
+                      : productQuery.data.product.stock <= 3
+                        ? "text-warning"
+                        : "text-foreground",
+                  )}
+                >
+                  {productQuery.data.product.stock}
+                </span>
+              </DetailItem>
+              <DetailItem index={3} label="Precio USD">
+                <span className="tabular-nums">{formatCurrencyUSD(productQuery.data.product.price_usd)}</span>
+              </DetailItem>
+              <DetailItem index={4} label="Precio VES">
+                {exchangeRateQuery.data ? (
+                  <span className="tabular-nums">
+                    {formatCurrencyVES(productQuery.data.product.price_usd * exchangeRateQuery.data.rate)}
+                  </span>
+                ) : (
+                  <span className="text-warning text-sm">Sin tasa</span>
+                )}
+              </DetailItem>
+              <DetailItem index={5} label="Estado">
+                <Badge variant={productQuery.data.product.active ? "success" : "secondary"}>
+                  {productQuery.data.product.active ? "Activo" : "Inactivo"}
+                </Badge>
+              </DetailItem>
+              <DetailItem index={6} label="Última actividad">
+                {productQuery.data.lastActivity ? (
+                  <div className="flex min-w-0 items-center gap-2 whitespace-nowrap">
+                    <Badge variant={getMovementTypeInfo(productQuery.data.lastActivity).variant}>
+                      {getMovementTypeInfo(productQuery.data.lastActivity).label}
+                    </Badge>
+                    <span className="text-muted-foreground text-xs font-normal tabular-nums">
+                      {formatDateTime(productQuery.data.lastActivity.created_at) || "Fecha no disponible"}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground text-xs font-normal">Sin actividad registrada</span>
+                )}
+              </DetailItem>
+            </dl>
+          </section>
+
+          <section className="shrink-0 px-3 py-3 md:px-4" aria-labelledby="product-history-title">
+            <h2 id="product-history-title" className="text-muted-foreground text-[10px] font-semibold uppercase">
+              Historial de movimientos
+            </h2>
+          </section>
+        </>
       ) : (
         <DetailSkeleton />
       )}
