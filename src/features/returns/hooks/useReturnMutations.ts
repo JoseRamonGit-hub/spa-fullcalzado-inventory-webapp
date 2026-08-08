@@ -4,6 +4,7 @@ import { returnKeys } from "./useReturnQueries";
 import { productKeys } from "@/features/inventory/hooks/useProductQueries";
 import { transactionKeys } from "@/features/transactions/hooks/useTransactionQueries";
 import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
+import { cashCloseKeys } from "@/features/cash-closes/hooks/useCashCloseQueries";
 import type { ProcessReturnPayload } from "@/types/index";
 import { activeBusinessMutationOptions } from "@/features/business/utils/active-business-mutation";
 
@@ -19,6 +20,7 @@ export function useCreateReturn() {
       queryClient.invalidateQueries({ queryKey: transactionKeys.business(businessId) });
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
       queryClient.invalidateQueries({ queryKey: returnKeys.business(businessId) });
+      queryClient.invalidateQueries({ queryKey: cashCloseKeys.summaries(businessId) });
     },
   });
 }

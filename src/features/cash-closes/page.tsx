@@ -41,7 +41,7 @@ export function CashClosesPage() {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const todayMetrics = cashCloseSummary ?? EMPTY_CASH_CLOSE_SUMMARY;
+  const summaryMetrics = cashCloseSummary ?? EMPTY_CASH_CLOSE_SUMMARY;
 
   const handleConfirmClose = async () => {
     if (!user) return;
@@ -88,7 +88,7 @@ export function CashClosesPage() {
 
     return (
       <MetricsSummary
-        metrics={todayMetrics}
+        metrics={summaryMetrics}
         label={summaryLabel}
         isFiltered={isFiltered}
         onOpenConfirm={() => setConfirmOpen(true)}
@@ -136,7 +136,7 @@ export function CashClosesPage() {
         isPending={closeMutation.isPending}
         onConfirm={handleConfirmClose}
         today={today}
-        metrics={todayMetrics}
+        metrics={summaryMetrics}
       />
     </main>
   );

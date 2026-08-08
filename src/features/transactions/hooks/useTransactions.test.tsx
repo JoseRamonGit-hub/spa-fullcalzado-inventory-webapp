@@ -6,6 +6,7 @@ import { useCreateSale } from "./useTransactionMutations";
 import { transactionsService } from "@/services/transactionsService";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
+import { cashCloseKeys } from "@/features/cash-closes/hooks/useCashCloseQueries";
 import type { TransactionWithRelations } from "@/types";
 
 const BUSINESS_ID = "business-1";
@@ -102,6 +103,7 @@ describe("useTransactions Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: transactionKeys.business(BUSINESS_ID) });
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["products", BUSINESS_ID] });
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: movementKeys.business(BUSINESS_ID) });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: cashCloseKeys.summaries(BUSINESS_ID) });
     });
   });
 });
