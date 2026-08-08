@@ -3,12 +3,13 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useTheme } from "next-themes";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Settings, ReceiptText, IterationCcw, Moon, Sun, LogOut, Users } from "lucide-react";
+import { ArrowLeftRight, Settings, ReceiptText, IterationCcw, Moon, Sun, LogOut, Users } from "lucide-react";
 import { BusinessSwitcher } from "@/features/business/components/business-switcher";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
 
 const SECONDARY_NAV = [
+  { title: "Movimientos", url: "/movements", icon: ArrowLeftRight },
   { title: "Devoluciones", url: "/returns", icon: IterationCcw },
   { title: "Cierres de Caja", url: "/cash-closes", icon: ReceiptText },
   { title: "Ajustes", url: "/settings", icon: Settings },

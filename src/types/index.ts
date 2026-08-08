@@ -1,4 +1,4 @@
-import type { Tables, TablesInsert, TablesUpdate } from "./supabase";
+import type { Database, Tables, TablesInsert, TablesUpdate } from "./supabase";
 
 // ── Row types (read from DB) ────────────────────────────────
 export type User = Tables<"users">;
@@ -13,6 +13,17 @@ export type AppSettings = Tables<"app_settings">;
 export type Return = Tables<"returns">;
 export type ReturnItem = Tables<"return_items">;
 export type Sale = Tables<"sales">;
+
+type DashboardDailyMetricsRow = Database["public"]["Functions"]["get_dashboard_daily_metrics"]["Returns"][number];
+
+export type DashboardDailyMetrics = Omit<
+  DashboardDailyMetricsRow,
+  "exchange_rate" | "exchange_rate_source" | "exchange_rate_updated_at"
+> & {
+  exchange_rate: number | null;
+  exchange_rate_source: DashboardDailyMetricsRow["exchange_rate_source"] | null;
+  exchange_rate_updated_at: string | null;
+};
 
 // ── Insert types (write to DB — omits auto-generated fields) ─
 export type ProductInsert = TablesInsert<"products">;

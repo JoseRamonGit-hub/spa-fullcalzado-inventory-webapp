@@ -8,7 +8,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
     if (useAuthStore.getState().user) {
-      throw redirect({ to: "/inventory" });
+      throw redirect({ to: "/dashboard" });
     } else {
       throw redirect({ to: "/login" });
     }

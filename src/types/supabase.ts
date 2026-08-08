@@ -728,6 +728,20 @@ export type Database = {
           total_ves: number;
         }[];
       };
+      get_dashboard_daily_metrics: {
+        Args: { p_business_id: string };
+        Returns: {
+          billed_operations: number;
+          dashboard_date: string;
+          exchange_rate: number;
+          exchange_rate_source: Database["public"]["Enums"]["exchange_modes"];
+          exchange_rate_updated_at: string;
+          low_stock_products: number;
+          products_in_stock: number;
+          stock_units: number;
+          total_billed_usd: number;
+        }[];
+      };
       get_product_history: {
         Args: {
           p_business_id: string;
