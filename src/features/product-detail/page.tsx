@@ -8,7 +8,7 @@ import { BusinessModuleTitle } from "@/features/business/components/business-mod
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
 import { useProductDetail } from "@/features/inventory/hooks/useProductQueries";
-import { getTypeInfo } from "@/features/movements/columns";
+import { getMovementTypeInfo } from "@/features/movements/movement-presentation";
 import { Route } from "@/routes/_app/inventory_.$productId";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
@@ -139,8 +139,8 @@ export function ProductDetailPage() {
           <DetailItem label="Última actividad">
             {productQuery.data.lastActivity ? (
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={getTypeInfo(productQuery.data.lastActivity).variant}>
-                  {getTypeInfo(productQuery.data.lastActivity).label}
+                <Badge variant={getMovementTypeInfo(productQuery.data.lastActivity).variant}>
+                  {getMovementTypeInfo(productQuery.data.lastActivity).label}
                 </Badge>
                 <span className="text-muted-foreground text-xs font-normal tabular-nums">
                   {formatDateTime(productQuery.data.lastActivity.created_at) || "Fecha no disponible"}

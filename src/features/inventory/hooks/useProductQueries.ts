@@ -11,7 +11,7 @@ export const productKeys = {
   detail: (businessId: string | null, productId: string) => [...productKeys.details(businessId), productId] as const,
 };
 
-export const productDetailQueryOptions = (businessId: string | null, productId: string) =>
+const productDetailQueryOptions = (businessId: string | null, productId: string) =>
   queryOptions({
     queryKey: productKeys.detail(businessId, productId),
     queryFn: businessId ? () => productsService.getDetail(businessId, productId) : skipToken,

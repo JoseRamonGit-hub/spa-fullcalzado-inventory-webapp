@@ -35,6 +35,10 @@ vi.mock("@/components/ui/overflow-tooltip", () => ({
   OverflowTooltip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
 
+vi.mock("./components/edit-product-modal", () => ({
+  EditProductModal: ({ product }: { product: Product }) => <div>Editando {product.code}</div>,
+}));
+
 const product: Product = {
   id: "product-1",
   business_id: "business-1",
@@ -80,6 +84,15 @@ describe("InventoryPage product navigation", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/inventory/$productId", params: { productId: "product-1" } });
   });
 
+  it("keeps desktop administrative actions independent from row navigation", () => {
+    render(<InventoryPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Editar FC-101" }));
+
+    expect(screen.getByText("Editando FC-101")).toBeInTheDocument();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it("keeps the mobile drawer for employees and only offers product detail", () => {
     isMobile = true;
     setRole("employee");
@@ -93,5 +106,16 @@ describe("InventoryPage product navigation", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Ver detalles" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/inventory/$productId", params: { productId: "product-1" } });
+  });
+
+  it("keeps permitted management actions in the mobile admin drawer", () => {
+    isMobile = true;
+    render(<InventoryPage />);
+
+    fireEvent.click(screen.getByText("FC-101").closest("tr")!);
+
+    expect(screen.getByRole("button", { name: "Ver detalles" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Editar Producto" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Desactivar Producto" })).toBeInTheDocument();
   });
 });
