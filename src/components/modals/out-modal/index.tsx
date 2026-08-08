@@ -9,7 +9,7 @@ import { ProductSaleForm } from "./components/product-sale-form";
 import { SalesSummaryFooter } from "./components/sales-summary-footer";
 import { ConfirmSaleDialog } from "./components/confirm-sale-dialog";
 import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
-import { PendingSaleLinesPanel } from "./components/pending-sales-panel";
+import { PendingSaleLinesPanel } from "./components/pending-sale-lines-panel";
 import { SalesSummaryBlock } from "./components/sales-summary-block";
 
 type OutModalProps = {

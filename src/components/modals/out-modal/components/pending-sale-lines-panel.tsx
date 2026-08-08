@@ -15,7 +15,10 @@ export function PendingSaleLinesPanel({ pendingSaleLines, onRemovePendingSaleLin
   const hasPendingSaleLines = pendingSaleLineCount > 0;
 
   return (
-    <section className="bg-card -mx-2 flex h-56 min-h-0 flex-col overflow-hidden rounded-md border md:mx-0 md:h-72">
+    <section
+      className="bg-card -mx-2 flex h-56 min-h-0 flex-col overflow-hidden rounded-md border md:mx-0 md:h-72"
+      aria-label="Renglones de venta pendientes"
+    >
       <header className="bg-muted/35 border-b px-3 py-2">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-muted-foreground text-[10px] font-semibold uppercase">Venta en curso</h3>
