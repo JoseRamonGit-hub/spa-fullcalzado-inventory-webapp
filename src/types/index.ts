@@ -67,6 +67,10 @@ export type ProductDetail = {
   lastActivity: InventoryMovement | null;
 };
 
+export type ProductHistoryEvent = InventoryMovement & {
+  user_fullname: string;
+};
+
 // ── Return types with joined relations ──────────────────────
 export type ReturnItemWithProduct = ReturnItem & {
   products: Pick<Product, "code" | "description">;

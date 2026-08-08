@@ -3,12 +3,15 @@ import { ArrowLeft, PackageSearch, RotateCcw } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
 import { useProductDetail } from "@/features/inventory/hooks/useProductQueries";
 import { getMovementTypeInfo } from "@/features/movements/movement-presentation";
+import { productHistoryColumns } from "./columns";
+import { useProductHistory } from "./hooks/useProductHistory";
 import { Route } from "@/routes/_app/inventory_.$productId";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
@@ -62,6 +65,7 @@ export function ProductDetailPage() {
   const initialBusinessId = useRef(businessId);
   const productQuery = useProductDetail(productId);
   const exchangeRateQuery = useExchangeRate();
+  const historyQuery = useProductHistory(productId);
 
   useEffect(() => {
     if (initialBusinessId.current && businessId !== initialBusinessId.current) {
@@ -172,10 +176,39 @@ export function ProductDetailPage() {
             </dl>
           </section>
 
-          <section className="shrink-0 px-3 py-3 md:px-4" aria-labelledby="product-history-title">
-            <h2 id="product-history-title" className="text-muted-foreground text-[10px] font-semibold uppercase">
-              Historial de movimientos
-            </h2>
+          <section className="flex min-h-72 flex-1 flex-col" aria-labelledby="product-history-title">
+            <div className="flex shrink-0 items-center justify-between px-3 py-3 md:px-4">
+              <h2 id="product-history-title" className="text-muted-foreground text-[10px] font-semibold uppercase">
+                Historial de producto
+              </h2>
+              <span className="text-muted-foreground text-xs">Últimos 30 días</span>
+            </div>
+            {historyQuery.isError ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+                <div>
+                  <p className="text-sm font-medium">No pudimos cargar el historial</p>
+                  <p className="text-muted-foreground text-xs">Verifica tu conexión e inténtalo nuevamente.</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  aria-label="Reintentar historial"
+                  onClick={() => void historyQuery.refetch()}
+                >
+                  <RotateCcw aria-hidden="true" />
+                  Reintentar
+                </Button>
+              </div>
+            ) : (
+              <DataTable
+                columns={productHistoryColumns}
+                data={historyQuery.data ?? []}
+                isLoading={historyQuery.isPending}
+                getRowId={(row) => row.id}
+                emptyMessage="Sin movimientos."
+                tableClassName="min-w-[760px]"
+              />
+            )}
           </section>
         </>
       ) : (

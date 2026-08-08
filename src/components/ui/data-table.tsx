@@ -36,6 +36,7 @@ type DataTableProps<TData, TValue> = {
   expanded?: ExpandedState;
   onExpandedChange?: OnChangeFn<ExpandedState>;
   getRowClassName?: (row: Row<TData>, index: number) => string | undefined;
+  tableClassName?: string;
 };
 
 export function DataTable<TData, TValue>({
@@ -54,6 +55,7 @@ export function DataTable<TData, TValue>({
   expanded,
   onExpandedChange,
   getRowClassName,
+  tableClassName,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -132,7 +134,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="custom-scrollbar flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible">
-        <Table>
+        <Table className={tableClassName}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">

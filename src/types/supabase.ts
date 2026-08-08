@@ -728,6 +728,31 @@ export type Database = {
           total_ves: number;
         }[];
       };
+      get_product_history: {
+        Args: {
+          p_business_id: string;
+          p_end_date?: string;
+          p_product_id: string;
+          p_start_date?: string;
+        };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          date: string;
+          description_before: string;
+          id: string;
+          price_usd: number;
+          price_usd_before: number;
+          product_id: string;
+          quantity: number;
+          return_id: string;
+          stock_before: number;
+          time: string;
+          type: Database["public"]["Enums"]["movement_types"];
+          user_fullname: string;
+          user_id: string;
+        }[];
+      };
       process_return: {
         Args: {
           p_business_id: string;

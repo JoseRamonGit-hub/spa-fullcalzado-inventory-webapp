@@ -9,6 +9,8 @@ export const productKeys = {
   list: (businessId: string | null, date?: string) => [...productKeys.lists(businessId), { date }] as const,
   details: (businessId: string | null) => [...productKeys.business(businessId), "detail"] as const,
   detail: (businessId: string | null, productId: string) => [...productKeys.details(businessId), productId] as const,
+  history: (businessId: string | null, productId: string) =>
+    [...productKeys.detail(businessId, productId), "history"] as const,
 };
 
 const productDetailQueryOptions = (businessId: string | null, productId: string) =>
