@@ -2,23 +2,38 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { IterationCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { getMovementTypeInfo } from "@/features/movements/movement-presentation";
+import { MovementStockChange } from "@/features/movements/components/movement-stock-change";
+import { getMovementSignedQuantity, getMovementTypeInfo } from "@/features/movements/movement-presentation";
 import { cn } from "@/lib/utils";
 import type { ProductHistoryEvent } from "@/types";
-import { formatDate, formatTime } from "@/utils/formatters";
+import { formatCurrencyUSD, formatDate, formatTime } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<ProductHistoryEvent>();
 
-function getSignedQuantity(event: ProductHistoryEvent) {
-  if (event.type === "activation" || event.type === "deactivation") return null;
-  if (event.type === "entry" || event.type === "return") return event.quantity;
-  return event.type === "exit" ? -event.quantity : event.quantity;
-}
+function MovementDetail({ event }: { event: ProductHistoryEvent }) {
+  const typeInfo = getMovementTypeInfo(event);
+  if (event.type !== "edit") return <span className="text-muted-foreground">{typeInfo.title}</span>;
 
-function getStockAfter(event: ProductHistoryEvent) {
-  if (event.stock_before == null) return null;
-  const signedQuantity = getSignedQuantity(event);
-  return signedQuantity == null ? null : event.stock_before + signedQuantity;
+  const hasDescriptionChange = event.description_before != null;
+  const priceChange =
+    event.price_usd_before != null && event.price_usd != null
+      ? { before: event.price_usd_before, after: event.price_usd }
+      : null;
+
+  if (!hasDescriptionChange && !priceChange) {
+    return <span className="text-muted-foreground">Ajuste de existencias</span>;
+  }
+
+  return (
+    <span className="text-muted-foreground flex items-center gap-2">
+      {hasDescriptionChange ? <span>Descripción editada</span> : null}
+      {priceChange ? (
+        <span>
+          Precio: {formatCurrencyUSD(priceChange.before)} → {formatCurrencyUSD(priceChange.after)}
+        </span>
+      ) : null}
+    </span>
+  );
 }
 
 export const productHistoryColumns = [
@@ -53,12 +68,12 @@ export const productHistoryColumns = [
   columnHelper.display({
     id: "detail",
     header: "Detalle",
-    cell: ({ row }) => <span className="text-muted-foreground">{getMovementTypeInfo(row.original).title}</span>,
+    cell: ({ row }) => <MovementDetail event={row.original} />,
   }),
   columnHelper.accessor("quantity", {
     header: () => <div className="text-right">Cant.</div>,
     cell: ({ row }) => {
-      const signedQuantity = getSignedQuantity(row.original);
+      const signedQuantity = getMovementSignedQuantity(row.original);
       if (signedQuantity == null || signedQuantity === 0) {
         return <span className="text-muted-foreground block text-right">—</span>;
       }
@@ -79,18 +94,7 @@ export const productHistoryColumns = [
   columnHelper.display({
     id: "stock",
     header: () => <div className="text-right">Stock</div>,
-    cell: ({ row }) => {
-      const stockAfter = getStockAfter(row.original);
-      if (stockAfter == null) return <span className="text-muted-foreground block text-right">—</span>;
-
-      return (
-        <div className="flex items-center justify-end gap-1.5 tabular-nums">
-          <span className="text-muted-foreground">{row.original.stock_before}</span>
-          <span className="text-muted-foreground">→</span>
-          <span className="text-foreground font-medium">{stockAfter}</span>
-        </div>
-      );
-    },
+    cell: ({ row }) => <MovementStockChange movement={row.original} fallback="empty" showDelta={false} />,
   }),
   columnHelper.accessor("user_fullname", {
     header: "Usuario",

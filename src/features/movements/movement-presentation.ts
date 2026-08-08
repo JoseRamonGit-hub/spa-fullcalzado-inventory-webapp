@@ -60,3 +60,9 @@ export function getMovementTypeInfo(movement: Pick<InventoryMovement, "type" | "
     title: "Salida por venta",
   };
 }
+
+export function getMovementSignedQuantity(movement: Pick<InventoryMovement, "type" | "quantity">): number | null {
+  if (movement.type === "activation" || movement.type === "deactivation") return null;
+  if (movement.type === "entry" || movement.type === "return") return movement.quantity;
+  return movement.type === "exit" ? -movement.quantity : movement.quantity;
+}

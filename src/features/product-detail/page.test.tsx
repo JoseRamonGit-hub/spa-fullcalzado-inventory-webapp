@@ -105,13 +105,48 @@ describe("ProductDetailPage", () => {
   });
 
   it("keeps the complete paginated movement table available on mobile", () => {
+    history = [
+      historyEvent,
+      {
+        ...historyEvent,
+        id: "movement-2",
+        type: "edit",
+        quantity: 0,
+        return_id: null,
+        description_before: "Descripción anterior",
+        price_usd_before: 20,
+        price_usd: 25,
+      },
+    ];
     render(<ProductDetailPage />);
 
+    expect(
+      screen.getByRole("region", { name: "Tabla de historial con desplazamiento horizontal" }),
+    ).toBeInTheDocument();
     for (const heading of ["Tipo", "Fecha", "Hora", "Detalle", "Cant.", "Stock", "Usuario"]) {
       expect(screen.getByRole("columnheader", { name: heading })).toBeInTheDocument();
     }
     expect(screen.getByTitle("Entrada por devolución")).toBeInTheDocument();
-    expect(screen.getByText("María Pérez")).toBeInTheDocument();
+    expect(screen.getAllByText("María Pérez")).toHaveLength(2);
+    expect(screen.getByText("Descripción editada")).toBeInTheDocument();
+    expect(screen.getByText("Precio: $20.00 → $25.00")).toBeInTheDocument();
+  });
+
+  it("paginates the history in the client without changing the product summary", () => {
+    history = Array.from({ length: 21 }, (_, index) => ({
+      ...historyEvent,
+      id: `movement-${index + 1}`,
+      user_fullname: `Usuario ${index + 1}`,
+    }));
+    render(<ProductDetailPage />);
+
+    expect(screen.getByText("FC-101")).toBeInTheDocument();
+    expect(screen.queryByText("Usuario 21")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
+
+    expect(screen.getByText("FC-101")).toBeInTheDocument();
+    expect(screen.getByText("Usuario 21")).toBeInTheDocument();
   });
 
   it("shows the legitimate empty history state", () => {

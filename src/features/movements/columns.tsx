@@ -3,11 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatDate, formatTime, formatCurrencyUSD } from "@/utils/formatters";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import { cn } from "@/lib/utils";
 import { IterationCcw, Pencil } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { getMovementTypeInfo } from "./movement-presentation";
+import { MovementStockChange } from "./components/movement-stock-change";
 
 const columnHelper = createColumnHelper<InventoryMovementWithRelations>();
 
@@ -75,68 +75,7 @@ export const columns = [
   }),
   columnHelper.accessor("quantity", {
     header: () => <div className="text-right">Cant.</div>,
-    cell: ({ getValue, row }) => {
-      const { type, stock_before } = row.original;
-      const quantity = getValue();
-
-      if (type === "activation" || type === "deactivation") {
-        return <span className="text-muted-foreground block text-right">—</span>;
-      }
-
-      // Edit type: quantity is the signed diff (can be negative, zero, or positive)
-      if (type === "edit" && stock_before != null) {
-        if (quantity === 0) {
-          return <span className="text-muted-foreground block text-right tabular-nums">{stock_before}</span>;
-        }
-        const stockAfter = stock_before + quantity;
-        const isIncrease = quantity > 0;
-        const sign = isIncrease ? "+" : "";
-
-        return (
-          <div className="flex items-center justify-end gap-1.5 tabular-nums">
-            <span className="text-muted-foreground">{stock_before}</span>
-            <span className="text-muted-foreground">→</span>
-            <span className="text-foreground font-medium">{stockAfter}</span>
-            <span className={cn("text-[10px]", isIncrease ? "text-emerald-500" : "text-red-500")}>
-              ({sign}
-              {quantity})
-            </span>
-          </div>
-        );
-      }
-
-      // Entry/return/exit with stock_before available → show "before → after (+delta)"
-      if (stock_before != null) {
-        const isInflow = type === "entry" || type === "return";
-        const stockAfter = isInflow ? stock_before + quantity : stock_before - quantity;
-        const sign = isInflow ? "+" : "−";
-
-        return (
-          <div className="flex items-center justify-end gap-1.5 tabular-nums">
-            <span className="text-muted-foreground">{stock_before}</span>
-            <span className="text-muted-foreground">→</span>
-            <span className="text-foreground font-medium">{stockAfter}</span>
-            <span className={cn("text-[10px]", isInflow ? "text-emerald-500" : "text-red-500")}>
-              ({sign}
-              {quantity})
-            </span>
-          </div>
-        );
-      }
-
-      // Fallback for historical data without stock_before
-      const isInflow = type === "entry" || type === "return";
-      const sign = isInflow ? "+" : "−";
-
-      return (
-        <span className="flex items-center justify-end gap-1">
-          <span className={cn("text-[10px] font-semibold", isInflow ? "text-emerald-500" : "text-red-500")}>
-            {sign}
-          </span>
-          <span className="font-medium tabular-nums">{quantity}</span>
-        </span>
-      );
-    },
+    cell: ({ row }) => <MovementStockChange movement={row.original} />,
   }),
   columnHelper.display({
     id: "price",

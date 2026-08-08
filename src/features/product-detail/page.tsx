@@ -207,6 +207,7 @@ export function ProductDetailPage() {
                 getRowId={(row) => row.id}
                 emptyMessage="Sin movimientos."
                 tableClassName="min-w-[760px]"
+                scrollAreaLabel="Tabla de historial con desplazamiento horizontal"
               />
             )}
           </section>
