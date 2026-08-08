@@ -110,7 +110,7 @@ describe("useProducts", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: movementKeys.business(BUSINESS_ID) });
     });
 
-    it("toggle product active invalidates product lists", async () => {
+    it("toggle product active invalidates product lists and movements", async () => {
       mockToggleActive.mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useToggleProductActive(), {
@@ -129,6 +129,7 @@ describe("useProducts", () => {
 
       expect(mockToggleActive).toHaveBeenCalledWith(BUSINESS_ID, "prod-1", false);
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists(BUSINESS_ID) });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: movementKeys.business(BUSINESS_ID) });
     });
   });
 });

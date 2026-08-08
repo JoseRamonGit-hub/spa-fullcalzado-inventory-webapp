@@ -10,7 +10,7 @@ import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 
 const columnHelper = createColumnHelper<InventoryMovementWithRelations>();
 
-function getTypeInfo(movement: InventoryMovementWithRelations) {
+export function getTypeInfo(movement: InventoryMovementWithRelations) {
   const { type, return_id } = movement;
   const isExchangeExit = type === "exit" && return_id;
 
@@ -36,6 +36,22 @@ function getTypeInfo(movement: InventoryMovementWithRelations) {
       variant: "edit" as const,
       label: "Ajuste",
       title: "Ajuste por edición",
+    };
+  }
+
+  if (type === "activation") {
+    return {
+      variant: "success" as const,
+      label: "Activación",
+      title: "Producto activado",
+    };
+  }
+
+  if (type === "deactivation") {
+    return {
+      variant: "secondary" as const,
+      label: "Desactivación",
+      title: "Producto desactivado",
     };
   }
 
@@ -122,6 +138,10 @@ export const columns = [
     cell: ({ getValue, row }) => {
       const { type, stock_before } = row.original;
       const quantity = getValue();
+
+      if (type === "activation" || type === "deactivation") {
+        return <span className="text-muted-foreground block text-right">—</span>;
+      }
 
       // Edit type: quantity is the signed diff (can be negative, zero, or positive)
       if (type === "edit" && stock_before != null) {

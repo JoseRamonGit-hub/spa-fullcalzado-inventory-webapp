@@ -727,7 +727,7 @@ export type Database = {
     };
     Enums: {
       exchange_modes: "manual" | "bcv";
-      movement_types: "entry" | "exit" | "return" | "edit";
+      movement_types: "entry" | "exit" | "return" | "edit" | "activation" | "deactivation";
       return_types: "exchange" | "refund";
       roles: "admin" | "employee";
     };
@@ -850,7 +850,7 @@ export const Constants = {
   public: {
     Enums: {
       exchange_modes: ["manual", "bcv"],
-      movement_types: ["entry", "exit", "return", "edit"],
+      movement_types: ["entry", "exit", "return", "edit", "activation", "deactivation"],
       return_types: ["exchange", "refund"],
       roles: ["admin", "employee"],
     },

@@ -42,6 +42,7 @@ export function useToggleProductActive() {
     ),
     onSuccess: (_, __, { businessId }) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
+      queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
     },
   });
 }
