@@ -1,6 +1,7 @@
 import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 import { productsService } from "@/services/productsService";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
+import type { ProductHistoryRange } from "@/types";
 
 export const productKeys = {
   all: ["products"] as const,
@@ -9,8 +10,8 @@ export const productKeys = {
   list: (businessId: string | null, date?: string) => [...productKeys.lists(businessId), { date }] as const,
   details: (businessId: string | null) => [...productKeys.business(businessId), "detail"] as const,
   detail: (businessId: string | null, productId: string) => [...productKeys.details(businessId), productId] as const,
-  history: (businessId: string | null, productId: string) =>
-    [...productKeys.detail(businessId, productId), "history"] as const,
+  history: (businessId: string | null, productId: string, range: ProductHistoryRange | null) =>
+    [...productKeys.detail(businessId, productId), "history", range] as const,
 };
 
 const productDetailQueryOptions = (businessId: string | null, productId: string) =>

@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { ArrowLeft, PackageSearch, RotateCcw } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
@@ -11,10 +12,12 @@ import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRate
 import { useProductDetail } from "@/features/inventory/hooks/useProductQueries";
 import { getMovementTypeInfo } from "@/features/movements/movement-presentation";
 import { productHistoryColumns } from "./columns";
+import { ProductHistoryPeriodFilter } from "./components/product-history-period-filter";
 import { useProductHistory } from "./hooks/useProductHistory";
+import { getProductHistoryRange, type ProductHistoryPeriod } from "./product-history-filter";
 import { Route } from "@/routes/_app/inventory_.$productId";
 import { cn } from "@/lib/utils";
-import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
+import { formatCalendarDateForBackend, formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
 function getDetailItemClassName(index: number) {
   return cn(
@@ -63,9 +66,18 @@ export function ProductDetailPage() {
   const navigate = useNavigate({ from: "/inventory/$productId" });
   const businessId = useBusinessStore((state) => state.activeBusinessId);
   const initialBusinessId = useRef(businessId);
+  const [historyPeriod, setHistoryPeriod] = useState<ProductHistoryPeriod>("last-30-days");
+  const [customHistoryRange, setCustomHistoryRange] = useState<DateRange>();
   const productQuery = useProductDetail(productId);
   const exchangeRateQuery = useExchangeRate();
-  const historyQuery = useProductHistory(productId);
+  const customRange = customHistoryRange?.from
+    ? {
+        startDate: formatCalendarDateForBackend(customHistoryRange.from),
+        endDate: customHistoryRange.to ? formatCalendarDateForBackend(customHistoryRange.to) : undefined,
+      }
+    : undefined;
+  const historyRange = getProductHistoryRange(historyPeriod, customRange);
+  const historyQuery = useProductHistory(productId, historyRange);
 
   useEffect(() => {
     if (initialBusinessId.current && businessId !== initialBusinessId.current) {
@@ -177,13 +189,22 @@ export function ProductDetailPage() {
           </section>
 
           <section className="flex min-h-72 flex-1 flex-col" aria-labelledby="product-history-title">
-            <div className="flex shrink-0 items-center justify-between px-3 py-3 md:px-4">
+            <div className="flex shrink-0 items-center justify-between gap-3 px-3 py-3 md:px-4">
               <h2 id="product-history-title" className="text-muted-foreground text-[10px] font-semibold uppercase">
                 Historial de producto
               </h2>
-              <span className="text-muted-foreground text-xs">Últimos 30 días</span>
+              <ProductHistoryPeriodFilter
+                period={historyPeriod}
+                customRange={customHistoryRange}
+                onPeriodChange={setHistoryPeriod}
+                onCustomRangeChange={setCustomHistoryRange}
+              />
             </div>
-            {historyQuery.isError ? (
+            {!historyRange ? (
+              <div className="text-muted-foreground flex flex-1 items-center justify-center p-6 text-center text-sm">
+                Selecciona una fecha de inicio y otra de fin que no sean futuras.
+              </div>
+            ) : historyQuery.isError ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
                 <div>
                   <p className="text-sm font-medium">No pudimos cargar el historial</p>
@@ -201,6 +222,7 @@ export function ProductDetailPage() {
               </div>
             ) : (
               <DataTable
+                key={`${historyPeriod}-${historyRange.startDate ?? ""}-${historyRange.endDate ?? ""}-${historyRange.showAll}`}
                 columns={productHistoryColumns}
                 data={historyQuery.data ?? []}
                 isLoading={historyQuery.isPending}

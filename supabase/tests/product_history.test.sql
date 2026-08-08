@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(7);
+select plan(9);
 select set_config('app.suppress_log_entry', 'true', true);
 
 insert into public.products (id, business_id, code, description, stock, price_usd)
@@ -45,6 +45,29 @@ select is(
   (select count(*)::integer from public.get_product_history('10000000-0000-0000-0000-000000000001', '34000000-0000-0000-0000-000000000001')),
   7,
   'The default range includes exactly the latest 30 Caracas calendar days'
+);
+
+select is(
+  (select count(*)::integer from public.get_product_history(
+    '10000000-0000-0000-0000-000000000001',
+    '34000000-0000-0000-0000-000000000001',
+    (now() at time zone 'America/Caracas')::date - 30,
+    (now() at time zone 'America/Caracas')::date - 30
+  )),
+  1,
+  'A custom date range includes both calendar limits'
+);
+
+select is(
+  (select count(*)::integer from public.get_product_history(
+    '10000000-0000-0000-0000-000000000001',
+    '34000000-0000-0000-0000-000000000001',
+    null,
+    null,
+    true
+  )),
+  8,
+  'The all-history option includes events older than the default range'
 );
 
 select results_eq(

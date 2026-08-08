@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { ProductDetailPage } from "./page";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { InventoryMovement, Product, ProductHistoryEvent } from "@/types";
@@ -7,6 +7,7 @@ import type { InventoryMovement, Product, ProductHistoryEvent } from "@/types";
 const navigate = vi.fn();
 const refetch = vi.fn();
 const refetchHistory = vi.fn();
+const useProductHistoryMock = vi.fn();
 let detail: { product: Product; lastActivity: InventoryMovement | null } | null;
 let exchangeRate: { rate: number } | null;
 let queryState: "success" | "error";
@@ -39,12 +40,15 @@ vi.mock("@/features/exchange-rates/hooks/useExchangeRateQueries", () => ({
 }));
 
 vi.mock("@/features/product-detail/hooks/useProductHistory", () => ({
-  useProductHistory: () => ({
-    data: history,
-    isPending: historyState === "pending",
-    isError: historyState === "error",
-    refetch: refetchHistory,
-  }),
+  useProductHistory: (...args: unknown[]) => {
+    useProductHistoryMock(...args);
+    return {
+      data: history,
+      isPending: historyState === "pending",
+      isError: historyState === "error",
+      refetch: refetchHistory,
+    };
+  },
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => true }));
@@ -90,6 +94,7 @@ describe("ProductDetailPage", () => {
     historyState = "success";
     history = [historyEvent];
     refetchHistory.mockClear();
+    useProductHistoryMock.mockClear();
     useBusinessStore.setState({ activeBusinessId: "business-1" });
   });
 
@@ -147,6 +152,30 @@ describe("ProductDetailPage", () => {
 
     expect(screen.getByText("FC-101")).toBeInTheDocument();
     expect(screen.getByText("Usuario 21")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Período del historial" }), { target: { value: "all" } });
+
+    expect(screen.getByText("FC-101")).toBeInTheDocument();
+    expect(screen.queryByText("Usuario 21")).not.toBeInTheDocument();
+  });
+
+  it("offers the four accessible history periods and requests the selected all-history range", () => {
+    render(<ProductDetailPage />);
+
+    const period = screen.getByRole("combobox", { name: "Período del historial" });
+    expect(
+      within(period)
+        .getAllByRole("option")
+        .map((option) => option.textContent),
+    ).toEqual(["30 días", "90 días", "Todo", "Personalizado"]);
+
+    fireEvent.change(period, { target: { value: "all" } });
+
+    expect(useProductHistoryMock).toHaveBeenLastCalledWith("product-1", {
+      startDate: undefined,
+      endDate: undefined,
+      showAll: true,
+    });
   });
 
   it("shows the legitimate empty history state", () => {

@@ -71,6 +71,12 @@ export type ProductHistoryEvent = InventoryMovement & {
   user_fullname: string;
 };
 
+export type ProductHistoryRange = {
+  startDate?: string;
+  endDate?: string;
+  showAll: boolean;
+};
+
 // ── Return types with joined relations ──────────────────────
 export type ReturnItemWithProduct = ReturnItem & {
   products: Pick<Product, "code" | "description">;

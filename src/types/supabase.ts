@@ -733,6 +733,7 @@ export type Database = {
           p_business_id: string;
           p_end_date?: string;
           p_product_id: string;
+          p_show_all?: boolean;
           p_start_date?: string;
         };
         Returns: {
