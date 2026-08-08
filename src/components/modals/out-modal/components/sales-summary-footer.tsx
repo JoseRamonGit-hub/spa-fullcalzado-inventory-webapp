@@ -1,26 +1,26 @@
 import { ShoppingCart } from "lucide-react";
-import type { PendingSale } from "../types";
+import type { PendingSaleLine } from "../types";
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type SalesSummaryFooterProps = {
-  pendingSales: PendingSale[];
+  pendingSaleLines: PendingSaleLine[];
   exchangeRate: ModalExchangeRate;
   isSubmissionPending: boolean;
   onOpenConfirmDialog: () => void;
 };
 
 export function SalesSummaryFooter({
-  pendingSales,
+  pendingSaleLines,
   exchangeRate,
   isSubmissionPending,
   onOpenConfirmDialog,
 }: SalesSummaryFooterProps) {
-  const pendingSalesCount = pendingSales.length;
-  const hasPendingSales = pendingSalesCount > 0;
-  const canSubmit = hasPendingSales && !isSubmissionPending && exchangeRate.isReady;
-  const pendingProductLabel = `${pendingSalesCount} producto${pendingSalesCount === 1 ? "" : "s"} listo${
-    pendingSalesCount === 1 ? "" : "s"
+  const pendingSaleLineCount = pendingSaleLines.length;
+  const hasPendingSaleLines = pendingSaleLineCount > 0;
+  const canSubmit = hasPendingSaleLines && !isSubmissionPending && exchangeRate.isReady;
+  const pendingProductLabel = `${pendingSaleLineCount} producto${pendingSaleLineCount === 1 ? "" : "s"} listo${
+    pendingSaleLineCount === 1 ? "" : "s"
   } para confirmar`;
 
   return (
@@ -34,9 +34,7 @@ export function SalesSummaryFooter({
 
       <ModalFooterActionRow
         message={
-          <span className="tabular-nums">
-            {hasPendingSales ? pendingProductLabel : "Sin productos pendientes"}
-          </span>
+          <span className="tabular-nums">{hasPendingSaleLines ? pendingProductLabel : "Sin productos pendientes"}</span>
         }
       >
         <ModalShortcutActionButton

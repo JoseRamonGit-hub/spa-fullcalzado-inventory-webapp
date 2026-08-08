@@ -12,7 +12,7 @@ type SalesSummaryProps = {
 export function SalesSummary({ transactions, returns }: SalesSummaryProps) {
   const summary = getSalesSummary(transactions, returns);
   const metrics = [
-    { label: "Ventas", value: String(summary.records), icon: ShoppingCart },
+    { label: "Ventas", value: String(summary.salesCount), icon: ShoppingCart },
     { label: "Total producido USD", value: formatCurrencyUSD(summary.netUsd), icon: DollarSign },
     { label: "Total producido Bs.", value: formatCurrencyVES(summary.netVes), icon: Banknote },
   ];

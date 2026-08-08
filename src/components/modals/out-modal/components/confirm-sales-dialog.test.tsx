@@ -7,7 +7,7 @@ import { businessKeys } from "@/features/business/hooks/useBusinessQueries";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { ConfirmSalesDialog } from "./confirm-sales-dialog";
-import type { PendingSale } from "../types";
+import type { PendingSaleLine } from "../types";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const USER_ID = "user-1";
@@ -32,7 +32,7 @@ const business = {
   updated_at: "2026-08-08T00:00:00Z",
 } as Business;
 
-const lines: PendingSale[] = [
+const saleLines: PendingSaleLine[] = [
   {
     tempId: "line-1",
     productId: "product-1",
@@ -94,7 +94,7 @@ describe("ConfirmSalesDialog", () => {
       <ConfirmSalesDialog
         isOpen
         onOpenChange={vi.fn()}
-        pendingSales={lines}
+        pendingSaleLines={saleLines}
         exchangeRate={{
           value: 90,
           isReady: true,

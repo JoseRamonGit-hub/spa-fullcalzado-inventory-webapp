@@ -1,41 +1,41 @@
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateSale } from "@/features/transactions/hooks/useTransactionMutations";
-import type { PendingSale } from "../types";
+import type { PendingSaleLine } from "../types";
 
-type UseSubmitSalesProps = {
-  pendingSales: PendingSale[];
+type UseSubmitSaleProps = {
+  pendingSaleLines: PendingSaleLine[];
   currentExchangeRate: number;
-  clearPendingSales: () => void;
+  clearPendingSaleLines: () => void;
   onSuccess: () => void;
 };
 
-export function useSubmitSales({
-  pendingSales,
+export function useSubmitSale({
+  pendingSaleLines,
   currentExchangeRate,
-  clearPendingSales,
+  clearPendingSaleLines,
   onSuccess,
-}: UseSubmitSalesProps) {
+}: UseSubmitSaleProps) {
   const currentUser = useAuthStore((state) => state.user);
   const createSaleMutation = useCreateSale();
 
   const isSubmissionPending = createSaleMutation.isPending;
 
-  const submitPendingSales = async () => {
-    const hasNoSales = pendingSales.length === 0;
-    if (!currentUser || hasNoSales) return;
+  const submitSale = async () => {
+    const hasNoLines = pendingSaleLines.length === 0;
+    if (!currentUser || hasNoLines) return;
 
     const salePromise = createSaleMutation.mutateAsync({
-      p_items: pendingSales.map((sale) => ({
-        product_id: sale.productId,
-        quantity: sale.quantity,
-        price_usd: sale.priceUsd,
-        price_ves: sale.priceVes,
+      p_items: pendingSaleLines.map((saleLine) => ({
+        product_id: saleLine.productId,
+        quantity: saleLine.quantity,
+        price_usd: saleLine.priceUsd,
+        price_ves: saleLine.priceVes,
       })),
       p_exchange_rate: currentExchangeRate,
     });
 
-    const lineCount = pendingSales.length;
+    const lineCount = pendingSaleLines.length;
     const lineLabel = lineCount === 1 ? "1 renglón" : `${lineCount} renglones`;
 
     toast.promise(salePromise, {
@@ -45,9 +45,9 @@ export function useSubmitSales({
     });
 
     await salePromise;
-    clearPendingSales();
+    clearPendingSaleLines();
     onSuccess();
   };
 
-  return { submitPendingSales, isSubmissionPending };
+  return { submitSale, isSubmissionPending };
 }

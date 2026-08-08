@@ -75,33 +75,23 @@ export type EditProductPayload = {
 };
 
 // ── Return RPC payload types ────────────────────────────────
+export type PricedProductLineInput = {
+  product_id: string;
+  quantity: number;
+  price_usd: number;
+  price_ves: number;
+};
+
 export type ProcessReturnPayload = {
   p_type: "exchange" | "refund";
-  p_returned_items: {
-    product_id: string;
-    quantity: number;
-    price_usd: number;
-    price_ves: number;
-  }[];
-  p_new_items?:
-    | {
-        product_id: string;
-        quantity: number;
-        price_usd: number;
-        price_ves: number;
-      }[]
-    | null;
+  p_returned_items: PricedProductLineInput[];
+  p_new_items?: PricedProductLineInput[] | null;
   p_exchange_rate: number;
   p_notes?: string;
 };
 
 export type ProcessSalePayload = {
-  p_items: {
-    product_id: string;
-    quantity: number;
-    price_usd: number;
-    price_ves: number;
-  }[];
+  p_items: PricedProductLineInput[];
   p_exchange_rate: number;
 };
 

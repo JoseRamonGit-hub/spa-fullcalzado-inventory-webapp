@@ -235,7 +235,10 @@ for select
 to authenticated
 using (private.has_business_access(business_id));
 
+drop policy if exists transactions_insert on public.transactions;
+
 revoke all on table public.sales from public, anon, authenticated;
+revoke insert on table public.transactions from authenticated;
 grant select on table public.sales to authenticated;
 grant all on table public.sales to service_role;
 

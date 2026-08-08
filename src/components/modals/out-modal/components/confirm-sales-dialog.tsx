@@ -1,6 +1,6 @@
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { TableHead } from "@/components/ui/table";
-import type { PendingSale } from "../types";
+import type { PendingSaleLine } from "../types";
 import {
   ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
@@ -12,7 +12,7 @@ import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exc
 type ConfirmSalesDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  pendingSales: PendingSale[];
+  pendingSaleLines: PendingSaleLine[];
   exchangeRate: ModalExchangeRate;
   totalAmountUsd: number;
   totalAmountVes: number;
@@ -23,14 +23,14 @@ type ConfirmSalesDialogProps = {
 export function ConfirmSalesDialog({
   isOpen,
   onOpenChange,
-  pendingSales,
+  pendingSaleLines,
   exchangeRate,
   totalAmountUsd,
   totalAmountVes,
   isSubmissionPending,
   onConfirmSubmit,
 }: ConfirmSalesDialogProps) {
-  const lineCount = pendingSales.length;
+  const lineCount = pendingSaleLines.length;
   const lineLabel = lineCount === 1 ? "1 Renglón de venta" : `${lineCount} Renglones de venta`;
   return (
     <ModalConfirmDialog
@@ -60,14 +60,14 @@ export function ConfirmSalesDialog({
             </tr>
           </thead>
           <tbody className="divide-border/60 divide-y">
-            {pendingSales.map((sale) => (
-              <tr key={sale.tempId} className="bg-card">
+            {pendingSaleLines.map((saleLine) => (
+              <tr key={saleLine.tempId} className="bg-card">
                 <td className="px-3 py-2 align-middle">
-                  <ModalProductIdentity code={sale.code} description={sale.description} />
+                  <ModalProductIdentity code={saleLine.code} description={saleLine.description} />
                 </td>
-                <td className="px-3 py-2 text-right align-middle font-semibold tabular-nums">{sale.quantity}</td>
+                <td className="px-3 py-2 text-right align-middle font-semibold tabular-nums">{saleLine.quantity}</td>
                 <td className="px-3 py-2 text-right align-middle font-semibold tabular-nums">
-                  {formatCurrencyUSD(sale.totalUsd)}
+                  {formatCurrencyUSD(saleLine.totalUsd)}
                 </td>
               </tr>
             ))}

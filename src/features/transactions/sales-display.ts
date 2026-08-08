@@ -10,18 +10,18 @@ export function getSalesSummary(transactions: readonly SaleSummarySource[], retu
   const countedSaleIds = new Set<string>();
   const sales = transactions.reduce(
     (summary, transaction) => {
-      const isNewSale = transaction.sale_id !== null && !countedSaleIds.has(transaction.sale_id);
+      const isFirstLineOfGroupedSale = transaction.sale_id !== null && !countedSaleIds.has(transaction.sale_id);
       const isLegacySale = transaction.sale_id === null && transaction.return_id === null;
       if (transaction.sale_id !== null) countedSaleIds.add(transaction.sale_id);
 
       return {
-        records: summary.records + (isLegacySale || isNewSale ? 1 : 0),
+        salesCount: summary.salesCount + (isLegacySale || isFirstLineOfGroupedSale ? 1 : 0),
         units: summary.units + transaction.quantity,
         grossUsd: summary.grossUsd + transaction.price_usd * transaction.quantity,
         grossVes: summary.grossVes + transaction.price_ves * transaction.quantity,
       };
     },
-    { records: 0, units: 0, grossUsd: 0, grossVes: 0 },
+    { salesCount: 0, units: 0, grossUsd: 0, grossVes: 0 },
   );
 
   const returnCredits = returns.reduce(

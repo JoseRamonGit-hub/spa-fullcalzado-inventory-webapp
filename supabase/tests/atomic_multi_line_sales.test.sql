@@ -5,7 +5,7 @@
 
 BEGIN;
 
-SELECT plan(25);
+SELECT plan(26);
 SELECT set_config('app.suppress_log_entry', 'true', true);
 
 INSERT INTO public.products (
@@ -53,11 +53,53 @@ VALUES
     4,
     25,
     false
+  ),
+  (
+    '29000000-0000-0000-0000-000000000005',
+    '10000000-0000-0000-0000-000000000001',
+    'SALE-LEGACY-01',
+    'Producto para Renglón histórico',
+    5,
+    20,
+    true
   );
 
 SELECT set_config('app.suppress_log_entry', 'false', true);
 
+INSERT INTO public.transactions (
+  business_id,
+  product_id,
+  quantity,
+  price_usd,
+  price_ves,
+  exchange_rate,
+  user_id
+)
+VALUES (
+  '10000000-0000-0000-0000-000000000001',
+  '29000000-0000-0000-0000-000000000005',
+  1,
+  20,
+  1800,
+  90,
+  'a0000000-0000-0000-0000-000000000002'
+);
+
 SET LOCAL ROLE authenticated;
+
+SELECT throws_ok(
+  $$
+    SELECT public.create_sale(
+      '10000000-0000-0000-0000-000000000001',
+      '[{"product_id":"29000000-0000-0000-0000-000000000001","quantity":1,"price_usd":20,"price_ves":1800}]'::jsonb,
+      90
+    )
+  $$,
+  'P0001',
+  'Usuario no autenticado',
+  'authenticated sin identidad no puede registrar una Venta'
+);
+
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000002', true);
 
 SELECT lives_ok(
@@ -318,30 +360,6 @@ SELECT is(
   'La liquidación del Producto inactivo reduce su stock'
 );
 
-SELECT lives_ok(
-  $$
-    INSERT INTO public.transactions (
-      business_id,
-      product_id,
-      quantity,
-      price_usd,
-      price_ves,
-      exchange_rate,
-      user_id
-    )
-    VALUES (
-      '10000000-0000-0000-0000-000000000001',
-      '29000000-0000-0000-0000-000000000001',
-      1,
-      20,
-      1800,
-      90,
-      'a0000000-0000-0000-0000-000000000002'
-    )
-  $$,
-  'El fixture histórico conserva un Renglón sin Venta asociada'
-);
-
 SELECT is(
   (
     SELECT
@@ -351,7 +369,8 @@ SELECT is(
     WHERE product_id IN (
       '29000000-0000-0000-0000-000000000001',
       '29000000-0000-0000-0000-000000000002',
-      '29000000-0000-0000-0000-000000000004'
+      '29000000-0000-0000-0000-000000000004',
+      '29000000-0000-0000-0000-000000000005'
     )
   )::integer,
   3,
@@ -381,6 +400,11 @@ SELECT ok(
 SELECT ok(
   NOT has_table_privilege('authenticated', 'public.sales', 'INSERT'),
   'authenticated no puede crear cabeceras de Venta fuera de la RPC'
+);
+
+SELECT ok(
+  NOT has_table_privilege('authenticated', 'public.transactions', 'INSERT'),
+  'authenticated no puede crear Renglones fuera de la RPC'
 );
 
 SELECT * FROM finish();

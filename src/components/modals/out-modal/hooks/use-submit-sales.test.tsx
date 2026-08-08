@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { useSubmitSales } from "./use-submit-sales";
+import { useSubmitSale } from "./use-submit-sales";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import type { PendingSale } from "../types";
+import type { PendingSaleLine } from "../types";
 import type { ReactNode } from "react";
 import type { User } from "@/types";
 
@@ -28,7 +28,7 @@ const mockUser = {
 } as User;
 const BUSINESS_ID = "business-1";
 
-function makeSale(overrides: Partial<PendingSale> = {}): PendingSale {
+function makeSaleLine(overrides: Partial<PendingSaleLine> = {}): PendingSaleLine {
   return {
     tempId: "sale-1",
     productId: "prod-1",
@@ -53,8 +53,8 @@ function createWrapper() {
   };
 }
 
-describe("useSubmitSales", () => {
-  const clearPendingSales = vi.fn();
+describe("useSubmitSale", () => {
+  const clearPendingSaleLines = vi.fn();
   const onSuccess = vi.fn();
   const currentExchangeRate = 40;
 
@@ -64,37 +64,38 @@ describe("useSubmitSales", () => {
     useBusinessStore.setState({ activeBusinessId: BUSINESS_ID });
   });
 
-  function renderSubmitSales(pendingSales: PendingSale[]) {
-    return renderHook(() => useSubmitSales({ pendingSales, currentExchangeRate, clearPendingSales, onSuccess }), {
-      wrapper: createWrapper(),
-    });
+  function renderSubmitSale(pendingSaleLines: PendingSaleLine[]) {
+    return renderHook(
+      () => useSubmitSale({ pendingSaleLines, currentExchangeRate, clearPendingSaleLines, onSuccess }),
+      { wrapper: createWrapper() },
+    );
   }
 
-  it("no hace nada si no hay ventas pendientes", async () => {
-    const { result } = renderSubmitSales([]);
+  it("no hace nada si no hay renglones pendientes", async () => {
+    const { result } = renderSubmitSale([]);
 
-    await act(() => result.current.submitPendingSales());
+    await act(() => result.current.submitSale());
 
     expect(mockCreateSale).not.toHaveBeenCalled();
-    expect(clearPendingSales).not.toHaveBeenCalled();
+    expect(clearPendingSaleLines).not.toHaveBeenCalled();
   });
 
   it("no hace nada si no hay usuario autenticado", async () => {
     useAuthStore.setState({ user: null });
-    const { result } = renderSubmitSales([makeSale()]);
+    const { result } = renderSubmitSale([makeSaleLine()]);
 
-    await act(() => result.current.submitPendingSales());
+    await act(() => result.current.submitSale());
 
     expect(mockCreateSale).not.toHaveBeenCalled();
-    expect(clearPendingSales).not.toHaveBeenCalled();
+    expect(clearPendingSaleLines).not.toHaveBeenCalled();
   });
 
-  it("envía las ventas con el payload correcto", async () => {
+  it("envía el renglón con el payload correcto", async () => {
     mockCreateSale.mockResolvedValue(undefined);
-    const sale = makeSale();
-    const { result } = renderSubmitSales([sale]);
+    const saleLine = makeSaleLine();
+    const { result } = renderSubmitSale([saleLine]);
 
-    await act(() => result.current.submitPendingSales());
+    await act(() => result.current.submitSale());
 
     expect(mockCreateSale).toHaveBeenCalledWith(BUSINESS_ID, {
       p_items: [
@@ -107,18 +108,18 @@ describe("useSubmitSales", () => {
       ],
       p_exchange_rate: 40,
     });
-    expect(clearPendingSales).toHaveBeenCalled();
+    expect(clearPendingSaleLines).toHaveBeenCalled();
     expect(onSuccess).toHaveBeenCalled();
   });
 
   it("envía una sola Venta con múltiples Renglones", async () => {
     mockCreateSale.mockResolvedValue(undefined);
-    const { result } = renderSubmitSales([
-      makeSale({ tempId: "s1", productId: "prod-1" }),
-      makeSale({ tempId: "s2", productId: "prod-2" }),
+    const { result } = renderSubmitSale([
+      makeSaleLine({ tempId: "s1", productId: "prod-1" }),
+      makeSaleLine({ tempId: "s2", productId: "prod-2" }),
     ]);
 
-    await act(() => result.current.submitPendingSales());
+    await act(() => result.current.submitSale());
 
     expect(mockCreateSale).toHaveBeenCalledTimes(1);
     expect(mockCreateSale).toHaveBeenCalledWith(

@@ -12,7 +12,7 @@ describe("getSalesSummary", () => {
     );
 
     expect(summary).toEqual({
-      records: 2,
+      salesCount: 2,
       units: 3,
       grossUsd: 100,
       grossVes: 9_000,
@@ -46,7 +46,7 @@ describe("getSalesSummary", () => {
       [],
     );
 
-    expect(summary.records).toBe(2);
+    expect(summary.salesCount).toBe(2);
     expect(summary.units).toBe(5);
     expect(summary.grossUsd).toBe(135);
   });

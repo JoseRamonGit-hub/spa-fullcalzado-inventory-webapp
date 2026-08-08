@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { usePendingSales } from "./use-pending-sales";
-import type { PendingSale } from "../types";
+import { usePendingSaleLines } from "./use-pending-sales";
+import type { PendingSaleLine } from "../types";
 
-function makeSale(overrides: Partial<PendingSale> = {}): PendingSale {
+function makeSaleLine(overrides: Partial<PendingSaleLine> = {}): PendingSaleLine {
   return {
     tempId: "sale-1",
     productId: "prod-1",
@@ -19,63 +19,63 @@ function makeSale(overrides: Partial<PendingSale> = {}): PendingSale {
   };
 }
 
-describe("usePendingSales", () => {
-  it("empieza sin ventas pendientes y totales en cero", () => {
-    const { result } = renderHook(() => usePendingSales());
+describe("usePendingSaleLines", () => {
+  it("empieza sin renglones pendientes y totales en cero", () => {
+    const { result } = renderHook(() => usePendingSaleLines());
 
-    expect(result.current.pendingSales).toEqual([]);
+    expect(result.current.pendingSaleLines).toEqual([]);
     expect(result.current.totalAmountUsd).toBe(0);
     expect(result.current.totalAmountVes).toBe(0);
   });
 
-  it("agrega una venta pendiente", () => {
-    const { result } = renderHook(() => usePendingSales());
-    const sale = makeSale();
+  it("agrega un renglón pendiente", () => {
+    const { result } = renderHook(() => usePendingSaleLines());
+    const saleLine = makeSaleLine();
 
-    act(() => result.current.addPendingSale(sale));
+    act(() => result.current.addPendingSaleLine(saleLine));
 
-    expect(result.current.pendingSales).toHaveLength(1);
-    expect(result.current.pendingSales[0]).toEqual(sale);
+    expect(result.current.pendingSaleLines).toHaveLength(1);
+    expect(result.current.pendingSaleLines[0]).toEqual(saleLine);
   });
 
-  it("calcula los totales correctamente al agregar ventas", () => {
-    const { result } = renderHook(() => usePendingSales());
+  it("calcula los totales correctamente al agregar renglones", () => {
+    const { result } = renderHook(() => usePendingSaleLines());
 
     act(() => {
-      result.current.addPendingSale(makeSale({ tempId: "s1", totalUsd: 100, totalVes: 4000 }));
-      result.current.addPendingSale(makeSale({ tempId: "s2", totalUsd: 50, totalVes: 2000 }));
+      result.current.addPendingSaleLine(makeSaleLine({ tempId: "s1", totalUsd: 100, totalVes: 4000 }));
+      result.current.addPendingSaleLine(makeSaleLine({ tempId: "s2", totalUsd: 50, totalVes: 2000 }));
     });
 
     expect(result.current.totalAmountUsd).toBe(150);
     expect(result.current.totalAmountVes).toBe(6000);
   });
 
-  it("elimina una venta por tempId y recalcula totales", () => {
-    const { result } = renderHook(() => usePendingSales());
+  it("elimina un renglón por tempId y recalcula totales", () => {
+    const { result } = renderHook(() => usePendingSaleLines());
 
     act(() => {
-      result.current.addPendingSale(makeSale({ tempId: "s1", totalUsd: 100, totalVes: 4000 }));
-      result.current.addPendingSale(makeSale({ tempId: "s2", totalUsd: 50, totalVes: 2000 }));
+      result.current.addPendingSaleLine(makeSaleLine({ tempId: "s1", totalUsd: 100, totalVes: 4000 }));
+      result.current.addPendingSaleLine(makeSaleLine({ tempId: "s2", totalUsd: 50, totalVes: 2000 }));
     });
 
-    act(() => result.current.removePendingSale("s1"));
+    act(() => result.current.removePendingSaleLine("s1"));
 
-    expect(result.current.pendingSales).toHaveLength(1);
+    expect(result.current.pendingSaleLines).toHaveLength(1);
     expect(result.current.totalAmountUsd).toBe(50);
     expect(result.current.totalAmountVes).toBe(2000);
   });
 
-  it("limpia todas las ventas pendientes", () => {
-    const { result } = renderHook(() => usePendingSales());
+  it("limpia todos los renglones pendientes", () => {
+    const { result } = renderHook(() => usePendingSaleLines());
 
     act(() => {
-      result.current.addPendingSale(makeSale({ tempId: "s1" }));
-      result.current.addPendingSale(makeSale({ tempId: "s2" }));
+      result.current.addPendingSaleLine(makeSaleLine({ tempId: "s1" }));
+      result.current.addPendingSaleLine(makeSaleLine({ tempId: "s2" }));
     });
 
-    act(() => result.current.clearPendingSales());
+    act(() => result.current.clearPendingSaleLines());
 
-    expect(result.current.pendingSales).toEqual([]);
+    expect(result.current.pendingSaleLines).toEqual([]);
     expect(result.current.totalAmountUsd).toBe(0);
     expect(result.current.totalAmountVes).toBe(0);
   });

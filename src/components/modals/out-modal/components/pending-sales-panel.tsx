@@ -3,16 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import type { PendingSale } from "../types";
+import type { PendingSaleLine } from "../types";
 
-type PendingSalesPanelProps = {
-  pendingSales: PendingSale[];
-  onRemovePendingSale: (tempId: string) => void;
+type PendingSaleLinesPanelProps = {
+  pendingSaleLines: PendingSaleLine[];
+  onRemovePendingSaleLine: (tempId: string) => void;
 };
 
-export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: PendingSalesPanelProps) {
-  const pendingSalesCount = pendingSales.length;
-  const hasPendingSales = pendingSalesCount > 0;
+export function PendingSaleLinesPanel({ pendingSaleLines, onRemovePendingSaleLine }: PendingSaleLinesPanelProps) {
+  const pendingSaleLineCount = pendingSaleLines.length;
+  const hasPendingSaleLines = pendingSaleLineCount > 0;
 
   return (
     <section className="bg-card -mx-2 flex h-56 min-h-0 flex-col overflow-hidden rounded-md border md:mx-0 md:h-72">
@@ -20,12 +20,14 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-muted-foreground text-[10px] font-semibold uppercase">Venta en curso</h3>
           <span className="text-muted-foreground text-xs tabular-nums">
-            {hasPendingSales ? `${pendingSalesCount} producto${pendingSalesCount === 1 ? "" : "s"}` : "Sin productos"}
+            {hasPendingSaleLines
+              ? `${pendingSaleLineCount} producto${pendingSaleLineCount === 1 ? "" : "s"}`
+              : "Sin productos"}
           </span>
         </div>
       </header>
 
-      {hasPendingSales ? (
+      {hasPendingSaleLines ? (
         <div className="custom-scrollbar min-h-0 flex-1 overflow-auto">
           <Table className="min-w-[42rem] text-xs">
             <TableHeader className="bg-muted/20 sticky top-0 z-10">
@@ -42,32 +44,32 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pendingSales.map((sale) => (
-                <TableRow key={sale.tempId} className="hover:bg-muted/25">
+              {pendingSaleLines.map((saleLine) => (
+                <TableRow key={saleLine.tempId} className="hover:bg-muted/25">
                   <TableCell className="max-w-48 px-2 py-1.5 md:hidden">
                     <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
-                      <span className="product-code shrink-0 uppercase">{sale.code}</span>
-                      <OverflowTooltip className="flex-1 font-medium">{sale.description}</OverflowTooltip>
+                      <span className="product-code shrink-0 uppercase">{saleLine.code}</span>
+                      <OverflowTooltip className="flex-1 font-medium">{saleLine.description}</OverflowTooltip>
                     </span>
                   </TableCell>
                   <TableCell className="hidden px-2 py-1.5 md:table-cell">
-                    <span className="product-code uppercase">{sale.code}</span>
+                    <span className="product-code uppercase">{saleLine.code}</span>
                   </TableCell>
                   <TableCell className="hidden max-w-64 px-2 py-1.5 md:table-cell">
-                    <OverflowTooltip className="font-medium">{sale.description}</OverflowTooltip>
+                    <OverflowTooltip className="font-medium">{saleLine.description}</OverflowTooltip>
                   </TableCell>
-                  <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{sale.quantity}</TableCell>
+                  <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{saleLine.quantity}</TableCell>
                   <TableCell className="text-muted-foreground hidden px-2 py-1.5 text-right tabular-nums md:table-cell">
-                    {formatCurrencyUSD(sale.priceUsd)}
+                    {formatCurrencyUSD(saleLine.priceUsd)}
                   </TableCell>
                   <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums">
-                    {formatCurrencyUSD(sale.totalUsd)}
+                    {formatCurrencyUSD(saleLine.totalUsd)}
                   </TableCell>
                   <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums">
-                    {formatCurrencyVES(sale.totalVes)}
+                    {formatCurrencyVES(saleLine.totalVes)}
                   </TableCell>
                   <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums md:hidden">
-                    {formatCurrencyUSD(sale.priceUsd)}
+                    {formatCurrencyUSD(saleLine.priceUsd)}
                   </TableCell>
                   <TableCell className="px-1 py-1 text-right">
                     <Button
@@ -75,8 +77,8 @@ export function PendingSalesPanel({ pendingSales, onRemovePendingSale }: Pending
                       variant="ghost"
                       size="icon-xs"
                       className="text-muted-foreground hover:text-destructive"
-                      onClick={() => onRemovePendingSale(sale.tempId)}
-                      aria-label={`Eliminar ${sale.code}`}
+                      onClick={() => onRemovePendingSaleLine(saleLine.tempId)}
+                      aria-label={`Eliminar ${saleLine.code}`}
                     >
                       <Trash2 aria-hidden="true" />
                     </Button>
