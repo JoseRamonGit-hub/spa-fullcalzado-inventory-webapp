@@ -1,0 +1,3 @@
+# Ventas con identidad sin reconstruir el histórico
+
+Las nuevas Ventas tendrán identidad propia en una cabecera `sales` por negocio y agruparán uno o más Renglones de venta mediante una relación `sale_id`. Los registros anteriores permanecerán intactos, conservarán esa relación vacía y cada uno se tratará como una Venta heredada individual al calcular cantidades y promedios, porque no existe una clave que permita reconstruir sus operaciones originales; se rechaza agruparlos por fecha u hora para evitar inventar relaciones históricas. Ventas contará Ventas completas, mientras Dashboard y Cierres de Caja contarán Operaciones facturadas; los cierres históricos no se recalcularán y los cierres nuevos conservarán por separado el conteo exacto de operaciones.
