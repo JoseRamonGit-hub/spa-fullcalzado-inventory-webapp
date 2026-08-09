@@ -1,5 +1,11 @@
 import { supabase } from "@/lib/supabase";
-import type { DashboardDailyMetrics, DashboardSalesPeriod, DashboardSalesPeriodRequest } from "@/types";
+import type {
+  DashboardDailyMetrics,
+  DashboardSalesPeriod,
+  DashboardSalesPeriodRequest,
+  DashboardTopProduct,
+  DashboardTopProductsRankMode,
+} from "@/types";
 
 export const dashboardService = {
   getDailyMetrics: async (businessId: string, signal?: AbortSignal): Promise<DashboardDailyMetrics> => {
@@ -50,5 +56,32 @@ export const dashboardService = {
         totalUsd: bucket.bucket_total_usd,
       })),
     };
+  },
+  getTopProducts: async (
+    businessId: string,
+    request: DashboardSalesPeriodRequest,
+    rankBy: DashboardTopProductsRankMode,
+    signal?: AbortSignal,
+  ): Promise<DashboardTopProduct[]> => {
+    let query = supabase.rpc("get_dashboard_top_products", {
+      p_business_id: businessId,
+      p_period: request.preset,
+      p_rank_by: rankBy,
+      p_start_date: request.preset === "custom" ? request.startDate : undefined,
+      p_end_date: request.preset === "custom" ? request.endDate : undefined,
+    });
+    if (signal) query = query.abortSignal(signal);
+
+    const { data, error } = await query;
+
+    if (error) throw new Error(error.message);
+    return data.map((product) => ({
+      rank: product.rank,
+      productId: product.product_id,
+      code: product.code,
+      description: product.description,
+      units: product.units,
+      grossUsd: product.gross_usd,
+    }));
   },
 };

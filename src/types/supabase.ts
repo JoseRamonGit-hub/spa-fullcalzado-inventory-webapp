@@ -768,6 +768,23 @@ export type Database = {
           previous_total_usd: number;
         }[];
       };
+      get_dashboard_top_products: {
+        Args: {
+          p_business_id: string;
+          p_end_date?: string;
+          p_period?: string;
+          p_rank_by?: string;
+          p_start_date?: string;
+        };
+        Returns: {
+          code: string;
+          description: string;
+          gross_usd: number;
+          product_id: string;
+          rank: number;
+          units: number;
+        }[];
+      };
       get_product_history: {
         Args: {
           p_business_id: string;

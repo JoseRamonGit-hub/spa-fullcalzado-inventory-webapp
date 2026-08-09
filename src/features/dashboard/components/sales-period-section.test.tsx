@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useDashboardSalesPeriod } from "../hooks/useDashboardMetrics";
+import { useDashboardSalesPeriod, useDashboardTopProducts } from "../hooks/useDashboardMetrics";
 import type { DashboardSalesPeriodSelection } from "../sales-period";
 import { SalesPeriodSection } from "./sales-period-section";
 
-vi.mock("../hooks/useDashboardMetrics", () => ({ useDashboardSalesPeriod: vi.fn() }));
+const navigate = vi.fn();
+
+vi.mock("@tanstack/react-router", () => ({ useNavigate: () => navigate }));
+vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
+vi.mock("@/components/ui/overflow-tooltip", () => ({
+  OverflowTooltip: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+}));
+vi.mock("../hooks/useDashboardMetrics", () => ({
+  useDashboardSalesPeriod: vi.fn(),
+  useDashboardTopProducts: vi.fn(),
+}));
 vi.mock("@/components/ui/calendar", () => ({
   Calendar: ({ onSelect, disabled }: { onSelect: (range: unknown) => void; disabled?: { after?: Date } }) => (
     <button
@@ -49,7 +59,15 @@ function StatefulSalesPeriodSection() {
 }
 
 describe("Ventas por período", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useDashboardTopProducts).mockReturnValue({
+      data: [],
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+  });
 
   it("no consulta ni conserva resultados mientras Personalizado esté incompleto", () => {
     vi.mocked(useDashboardSalesPeriod).mockReturnValue({ isFetching: false } as never);
@@ -131,5 +149,91 @@ describe("Ventas por período", () => {
     rerender(<SalesPeriodSection selection={{ preset: "week" }} onSelectionChange={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
     expect(refetch).toHaveBeenCalledOnce();
+  });
+
+  it("comparte el período con el Top, cambia el ranking y abre el detalle", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: emptyCustomPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+    vi.mocked(useDashboardTopProducts).mockReturnValue({
+      data: [
+        {
+          rank: 1,
+          productId: "product-1",
+          code: "TOP-01",
+          description: "Zapato de prueba",
+          units: 3,
+          grossUsd: 75,
+        },
+      ],
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+    const request = { preset: "custom", startDate: "2024-03-20", endDate: "2024-03-27" } as const;
+
+    render(
+      <SalesPeriodSection
+        selection={{ preset: "custom", customStartDate: request.startDate, customEndDate: request.endDate }}
+        onSelectionChange={vi.fn()}
+      />,
+    );
+
+    expect(useDashboardTopProducts).toHaveBeenLastCalledWith(request, "units");
+    fireEvent.click(screen.getByRole("radio", { name: "USD bruto" }));
+    expect(useDashboardTopProducts).toHaveBeenLastCalledWith(request, "gross_usd");
+
+    fireEvent.click(screen.getByRole("row", { name: "Ver detalles de TOP-01" }));
+    expect(navigate).toHaveBeenCalledWith({
+      to: "/inventory/$productId",
+      params: { productId: "product-1" },
+    });
+  });
+
+  it("presenta un vacío legítimo cuando no hay Productos en el Top", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: emptyCustomPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+
+    render(
+      <SalesPeriodSection
+        selection={{ preset: "custom", customStartDate: "2024-03-20", customEndDate: "2024-03-27" }}
+        onSelectionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("No hay Productos con salidas en este período.")).toBeInTheDocument();
+  });
+
+  it("espera ambas respuestas antes de revelar un período nuevo", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: { ...emptyCustomPeriod, preset: "week" },
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+    const { rerender } = render(<SalesPeriodSection selection={{ preset: "week" }} onSelectionChange={vi.fn()} />);
+
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: { ...emptyCustomPeriod, preset: "month" },
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+    vi.mocked(useDashboardTopProducts).mockReturnValue({
+      isPending: true,
+      isError: false,
+      isFetching: true,
+    } as never);
+    rerender(<SalesPeriodSection selection={{ preset: "month" }} onSelectionChange={vi.fn()} />);
+
+    expect(screen.getByLabelText("Cargando facturación por período")).toBeInTheDocument();
+    expect(screen.queryByText("Top de Productos")).not.toBeInTheDocument();
   });
 });

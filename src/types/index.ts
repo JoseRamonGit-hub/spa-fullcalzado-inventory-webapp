@@ -54,6 +54,17 @@ export type DashboardSalesPeriod = {
   buckets: DashboardSalesPeriodBucket[];
 };
 
+export type DashboardTopProductsRankMode = "units" | "gross_usd";
+
+export type DashboardTopProduct = {
+  rank: number;
+  productId: string;
+  code: string;
+  description: string;
+  units: number;
+  grossUsd: number;
+};
+
 // ── Insert types (write to DB — omits auto-generated fields) ─
 export type ProductInsert = TablesInsert<"products">;
 export type TransactionInsert = TablesInsert<"transactions">;

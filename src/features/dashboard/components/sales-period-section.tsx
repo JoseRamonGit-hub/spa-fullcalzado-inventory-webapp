@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
@@ -15,20 +16,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import type { DashboardSalesPeriodPreset, DashboardSalesPeriodRequest } from "@/types";
+import type { DashboardSalesPeriodPreset, DashboardSalesPeriodRequest, DashboardTopProductsRankMode } from "@/types";
 import {
   formatCalendarDateForBackend,
   formatCalendarDateString,
   formatCurrencyUSD,
   formatDateForBackend,
 } from "@/utils/formatters";
-import { useDashboardSalesPeriod } from "../hooks/useDashboardMetrics";
+import { useDashboardSalesPeriod, useDashboardTopProducts } from "../hooks/useDashboardMetrics";
 import {
   analyzeCustomSalesRange,
   getBillingComparison,
   SALES_PERIOD_OPTIONS,
   type DashboardSalesPeriodSelection,
 } from "../sales-period";
+import { TopProductsTable } from "./top-products-table";
 
 const chartConfig = {
   totalUsd: {
@@ -50,6 +52,8 @@ type SalesPeriodSectionProps = {
 };
 
 export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriodSectionProps) {
+  const navigate = useNavigate({ from: "/dashboard" });
+  const [topRankBy, setTopRankBy] = useState<DashboardTopProductsRankMode>("units");
   const today = formatDateForBackend(new Date());
   const customAnalysis =
     selection.preset === "custom"
@@ -62,6 +66,7 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
         : null
       : { preset: selection.preset };
   const salesQuery = useDashboardSalesPeriod(request);
+  const topProductsQuery = useDashboardTopProducts(request, topRankBy);
 
   return (
     <Card className="gap-0 py-0">
@@ -101,7 +106,7 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
       </CardHeader>
       <Separator />
 
-      <CardContent className="p-4" aria-live="polite" aria-busy={salesQuery.isFetching}>
+      <CardContent className="p-4" aria-live="polite" aria-busy={salesQuery.isFetching || topProductsQuery.isFetching}>
         <div className="flex flex-col gap-3">
           {customAnalysis?.isValid && customAnalysis.warning ? (
             <Alert>
@@ -116,7 +121,7 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
                 <EmptyTitle>{customAnalysis?.error ?? "Selecciona un rango personalizado"}</EmptyTitle>
               </EmptyHeader>
             </Empty>
-          ) : salesQuery.isPending ? (
+          ) : salesQuery.isPending || topProductsQuery.isPending ? (
             <SalesPeriodSkeleton />
           ) : salesQuery.isError ? (
             <Alert variant="destructive">
@@ -131,11 +136,72 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
               </AlertDescription>
             </Alert>
           ) : (
-            <SalesPeriodContent data={salesQuery.data} />
+            <div className="flex flex-col gap-4">
+              <SalesPeriodContent data={salesQuery.data} />
+              <Separator />
+              <TopProductsSection
+                rankBy={topRankBy}
+                onRankByChange={setTopRankBy}
+                query={topProductsQuery}
+                onProductClick={(productId) => navigate({ to: "/inventory/$productId", params: { productId } })}
+              />
+            </div>
           )}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+type TopProductsSectionProps = {
+  rankBy: DashboardTopProductsRankMode;
+  onRankByChange: (rankBy: DashboardTopProductsRankMode) => void;
+  query: ReturnType<typeof useDashboardTopProducts>;
+  onProductClick: (productId: string) => void;
+};
+
+function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: TopProductsSectionProps) {
+  return (
+    <section className="flex min-h-0 flex-col gap-3" aria-labelledby="top-products-title">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h3 id="top-products-title" className="text-sm font-semibold">
+            Top de Productos
+          </h3>
+          <p className="text-muted-foreground text-xs">Salidas brutas del período seleccionado</p>
+        </div>
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          value={rankBy}
+          onValueChange={(value) => value && onRankByChange(value as DashboardTopProductsRankMode)}
+          aria-label="Ordenar Top de Productos"
+        >
+          <ToggleGroupItem value="units">Unidades</ToggleGroupItem>
+          <ToggleGroupItem value="gross_usd">USD bruto</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {query.isError ? (
+        <Alert variant="destructive">
+          <TriangleAlert aria-hidden="true" />
+          <AlertTitle>No se pudo cargar el Top de Productos</AlertTitle>
+          <AlertDescription>
+            <Button variant="outline" size="sm" onClick={() => query.refetch()}>
+              <RefreshCw data-icon="inline-start" />
+              Reintentar
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <TopProductsTable
+          products={query.data ?? []}
+          isLoading={query.isPending}
+          onProductClick={(product) => onProductClick(product.productId)}
+        />
+      )}
+    </section>
   );
 }
 
