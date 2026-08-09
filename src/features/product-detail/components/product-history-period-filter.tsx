@@ -1,11 +1,12 @@
 import * as React from "react";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { formatCalendarDate, formatDateForBackend } from "@/utils/formatters";
 import type { ProductHistoryPeriod } from "../product-history-filter";
 
@@ -44,6 +45,18 @@ export function ProductHistoryPeriodFilter({
   const [customRangeOpen, setCustomRangeOpen] = React.useState(false);
   const caracasToday = getCaracasToday();
 
+  const clearCustomRange = () => {
+    onCustomRangeChange(undefined);
+    onPeriodChange("last-30-days");
+    setCustomRangeOpen(false);
+  };
+
+  const handleClearCustomRange = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearCustomRange();
+  };
+
   return (
     <div className="flex items-center gap-2">
       <label className="sr-only" htmlFor="product-history-period">
@@ -66,9 +79,35 @@ export function ProductHistoryPeriodFilter({
       {period === "custom" ? (
         <Popover open={customRangeOpen} onOpenChange={setCustomRangeOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" aria-label="Seleccionar rango personalizado">
-              <CalendarDays data-icon="inline-start" aria-hidden="true" />
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "bg-card border-border hover:bg-card/80 h-8 min-w-0 gap-1.5 px-2.5 text-xs font-normal transition-colors",
+                customRange?.from ? "border-primary/40 text-foreground" : "text-muted-foreground",
+              )}
+              aria-label="Seleccionar rango personalizado"
+            >
+              <CalendarDays
+                data-icon="inline-start"
+                aria-hidden="true"
+                className={cn(customRange?.from ? "text-primary" : "text-muted-foreground")}
+              />
               <span className="max-w-48 truncate">{formatRangeLabel(customRange)}</span>
+              {customRange?.from ? (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Limpiar rango personalizado"
+                  onClick={handleClearCustomRange}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") handleClearCustomRange(event);
+                  }}
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent ml-0.5 cursor-pointer rounded-sm p-0.5 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </span>
+              ) : null}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
