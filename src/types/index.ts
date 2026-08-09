@@ -65,6 +65,20 @@ export type DashboardTopProduct = {
   grossUsd: number;
 };
 
+export type ProductStockAlertType = "low_stock" | "stagnant";
+
+export type DashboardProductStockAlert = {
+  type: ProductStockAlertType;
+  rank: number;
+  productId: string;
+  code: string;
+  description: string;
+  stock: number;
+  active: boolean;
+  stagnantSince: string | null;
+  stagnantDays: number | null;
+};
+
 // ── Insert types (write to DB — omits auto-generated fields) ─
 export type ProductInsert = TablesInsert<"products">;
 export type TransactionInsert = TablesInsert<"transactions">;

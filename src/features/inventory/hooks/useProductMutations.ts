@@ -4,6 +4,7 @@ import { productKeys } from "./useProductQueries";
 import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
 import type { ProductCreateInput, EditProductPayload } from "@/types/index";
 import { activeBusinessMutationOptions } from "@/features/business/utils/active-business-mutation";
+import { dashboardKeys } from "@/features/dashboard/hooks/useDashboardMetrics";
 
 export function useCreateManyProducts() {
   const queryClient = useQueryClient();
@@ -15,6 +16,7 @@ export function useCreateManyProducts() {
     onSuccess: (_, __, { businessId }) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.business(businessId) });
     },
   });
 }
@@ -30,6 +32,7 @@ export function useUpdateProduct() {
       queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
       queryClient.invalidateQueries({ queryKey: productKeys.detail(businessId, payload.p_product_id) });
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.business(businessId) });
     },
   });
 }
@@ -45,6 +48,7 @@ export function useToggleProductActive() {
       queryClient.invalidateQueries({ queryKey: productKeys.lists(businessId) });
       queryClient.invalidateQueries({ queryKey: productKeys.detail(businessId, id) });
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.business(businessId) });
     },
   });
 }

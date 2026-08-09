@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./components/dashboard-metric-card";
 import { SalesPeriodSection } from "./components/sales-period-section";
+import { ProductStockAlertsSection } from "./components/product-stock-alerts-section";
 import { useDashboardMetrics } from "./hooks/useDashboardMetrics";
 import { DEFAULT_SALES_PERIOD, type DashboardSalesPeriodSelection } from "./sales-period";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
@@ -97,6 +98,7 @@ export function DashboardPage() {
           )}
 
           <SalesPeriodSection selection={salesPeriod} onSelectionChange={setSalesPeriod} />
+          <ProductStockAlertsSection />
         </div>
       </div>
     </section>

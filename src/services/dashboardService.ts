@@ -5,6 +5,8 @@ import type {
   DashboardSalesPeriodRequest,
   DashboardTopProduct,
   DashboardTopProductsRankMode,
+  DashboardProductStockAlert,
+  ProductStockAlertType,
 } from "@/types";
 
 export const dashboardService = {
@@ -82,6 +84,33 @@ export const dashboardService = {
       description: product.description,
       units: product.units,
       grossUsd: product.gross_usd,
+    }));
+  },
+  getProductStockAlerts: async (
+    businessId: string,
+    type: ProductStockAlertType,
+    signal?: AbortSignal,
+  ): Promise<DashboardProductStockAlert[]> => {
+    let query = supabase.rpc("get_product_stock_alerts", {
+      p_business_id: businessId,
+      p_alert_type: type,
+      p_limit: 5,
+    });
+    if (signal) query = query.abortSignal(signal);
+
+    const { data, error } = await query;
+
+    if (error) throw new Error(error.message);
+    return data.map((product) => ({
+      type: product.alert_type as ProductStockAlertType,
+      rank: product.alert_rank,
+      productId: product.product_id,
+      code: product.code,
+      description: product.description,
+      stock: product.stock,
+      active: product.active,
+      stagnantSince: product.stagnant_since,
+      stagnantDays: product.stagnant_days,
     }));
   },
 };

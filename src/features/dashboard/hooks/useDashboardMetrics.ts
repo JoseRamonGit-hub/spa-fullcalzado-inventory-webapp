@@ -1,7 +1,7 @@
 import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { dashboardService } from "@/services/dashboardService";
-import type { DashboardSalesPeriodRequest, DashboardTopProductsRankMode } from "@/types";
+import type { DashboardSalesPeriodRequest, DashboardTopProductsRankMode, ProductStockAlertType } from "@/types";
 
 export const dashboardKeys = {
   all: ["dashboard"] as const,
@@ -14,6 +14,8 @@ export const dashboardKeys = {
     request: DashboardSalesPeriodRequest | null,
     rankBy: DashboardTopProductsRankMode,
   ) => [...dashboardKeys.business(businessId), "top-products", request, rankBy] as const,
+  productStockAlerts: (businessId: string | null, type: ProductStockAlertType) =>
+    [...dashboardKeys.business(businessId), "product-stock-alerts", type] as const,
 };
 
 const dashboardMetricsQueryOptions = (businessId: string | null) =>
@@ -52,6 +54,16 @@ export function useDashboardTopProducts(
       businessId && request
         ? ({ signal }) => dashboardService.getTopProducts(businessId, request, rankBy, signal)
         : skipToken,
+    staleTime: 30_000,
+  });
+}
+
+export function useDashboardProductStockAlerts(type: ProductStockAlertType) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: dashboardKeys.productStockAlerts(businessId, type),
+    queryFn: businessId ? ({ signal }) => dashboardService.getProductStockAlerts(businessId, type, signal) : skipToken,
     staleTime: 30_000,
   });
 }

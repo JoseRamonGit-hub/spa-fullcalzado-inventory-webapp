@@ -1,8 +1,37 @@
 import { supabase } from "@/lib/supabase";
-import type { Product, ProductCreateInput, EditProductPayload, ProductDetail } from "@/types/index";
+import type {
+  Product,
+  ProductCreateInput,
+  EditProductPayload,
+  ProductDetail,
+  ProductStockAlertType,
+} from "@/types/index";
+
+const ALL_MATCHING_PRODUCTS_LIMIT = 2_147_483_647;
 
 export const productsService = {
-  getAll: async (businessId: string, date?: string): Promise<Product[]> => {
+  getAll: async (businessId: string, date?: string, stockStatus?: ProductStockAlertType): Promise<Product[]> => {
+    if (stockStatus) {
+      const { data, error } = await supabase.rpc("get_product_stock_alerts", {
+        p_business_id: businessId,
+        p_alert_type: stockStatus,
+        p_limit: ALL_MATCHING_PRODUCTS_LIMIT,
+      });
+
+      if (error) throw new Error(error.message);
+      return data.map((product) => ({
+        id: product.product_id,
+        business_id: product.business_id,
+        code: product.code,
+        description: product.description,
+        stock: product.stock,
+        price_usd: product.price_usd,
+        active: product.active,
+        created_at: product.created_at,
+        updated_at: product.updated_at,
+      }));
+    }
+
     let query = supabase
       .from("products")
       .select("*")

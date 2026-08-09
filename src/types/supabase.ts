@@ -811,6 +811,24 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_product_stock_alerts: {
+        Args: { p_alert_type?: string; p_business_id: string; p_limit?: number };
+        Returns: {
+          active: boolean;
+          alert_rank: number;
+          alert_type: string;
+          business_id: string;
+          code: string;
+          created_at: string;
+          description: string;
+          price_usd: number;
+          product_id: string;
+          stagnant_days: number;
+          stagnant_since: string;
+          stock: number;
+          updated_at: string;
+        }[];
+      };
       process_return: {
         Args: {
           p_business_id: string;
