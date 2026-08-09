@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useCashCloses } from "./useCashCloseQueries";
+import { useCashCloses, useCashCloseSummary } from "./useCashCloseQueries";
 import { cashClosesService } from "@/services/cashClosesService";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { CashCloseWithRelations } from "@/types";
@@ -11,6 +11,7 @@ const BUSINESS_ID = "business-1";
 vi.mock("@/services/cashClosesService", () => ({
   cashClosesService: {
     getAll: vi.fn(),
+    getSummary: vi.fn(),
   },
 }));
 
@@ -21,6 +22,7 @@ const fakeCashClose = {
   closed_at: "2026-03-16T10:00:00Z",
   closed_by: "user-1",
   exchange_rate: 35,
+  total_billed_operations: 10,
   total_transactions: 10,
   total_units_sold: 15,
   total_usd: 150,
@@ -71,5 +73,27 @@ describe("useCashCloses Hook", () => {
 
     expect(cashClosesService.getAll).toHaveBeenCalledWith(BUSINESS_ID, testDate);
     expect(result.current.data).toEqual([]);
+  });
+
+  it("obtiene el resumen compartido para el Negocio y período activos", async () => {
+    const summary = {
+      billedOperations: 2,
+      units: 5,
+      totalUsd: 100,
+      totalVes: 9000,
+      returnsCount: 1,
+      returnsCreditUsd: 20,
+      returnsCreditVes: 1800,
+      netUsd: 80,
+      netVes: 7200,
+    };
+    vi.mocked(cashClosesService.getSummary).mockResolvedValueOnce(summary);
+
+    const { result } = renderHook(() => useCashCloseSummary("2026-03-16"), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(cashClosesService.getSummary).toHaveBeenCalledWith(BUSINESS_ID, "2026-03-16");
+    expect(result.current.data).toEqual(summary);
   });
 });

@@ -19,7 +19,9 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppReturnsRouteImport } from './routes/_app/returns'
 import { Route as AppMovementsRouteImport } from './routes/_app/movements'
 import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCashClosesRouteImport } from './routes/_app/cash-closes'
+import { Route as AppInventoryProductIdRouteImport } from './routes/_app/inventory_.$productId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -69,15 +71,26 @@ const AppInventoryRoute = AppInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCashClosesRoute = AppCashClosesRouteImport.update({
   id: '/cash-closes',
   path: '/cash-closes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
+  id: '/inventory_/$productId',
+  path: '/inventory/$productId',
   getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cash-closes': typeof AppCashClosesRoute
+  '/dashboard': typeof AppDashboardRoute
   '/inventory': typeof AppInventoryRoute
   '/movements': typeof AppMovementsRoute
   '/returns': typeof AppReturnsRoute
@@ -85,10 +98,12 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AppTransactionsRoute
   '/users': typeof AppUsersRoute
   '/login': typeof AuthLoginRoute
+  '/inventory/$productId': typeof AppInventoryProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cash-closes': typeof AppCashClosesRoute
+  '/dashboard': typeof AppDashboardRoute
   '/inventory': typeof AppInventoryRoute
   '/movements': typeof AppMovementsRoute
   '/returns': typeof AppReturnsRoute
@@ -96,6 +111,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof AppTransactionsRoute
   '/users': typeof AppUsersRoute
   '/login': typeof AuthLoginRoute
+  '/inventory/$productId': typeof AppInventoryProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -103,6 +119,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/_app/cash-closes': typeof AppCashClosesRoute
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/inventory': typeof AppInventoryRoute
   '/_app/movements': typeof AppMovementsRoute
   '/_app/returns': typeof AppReturnsRoute
@@ -110,12 +127,14 @@ export interface FileRoutesById {
   '/_app/transactions': typeof AppTransactionsRoute
   '/_app/users': typeof AppUsersRoute
   '/_auth/login': typeof AuthLoginRoute
+  '/_app/inventory_/$productId': typeof AppInventoryProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/cash-closes'
+    | '/dashboard'
     | '/inventory'
     | '/movements'
     | '/returns'
@@ -123,10 +142,12 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/users'
     | '/login'
+    | '/inventory/$productId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/cash-closes'
+    | '/dashboard'
     | '/inventory'
     | '/movements'
     | '/returns'
@@ -134,12 +155,14 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/users'
     | '/login'
+    | '/inventory/$productId'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/_auth'
     | '/_app/cash-closes'
+    | '/_app/dashboard'
     | '/_app/inventory'
     | '/_app/movements'
     | '/_app/returns'
@@ -147,6 +170,7 @@ export interface FileRouteTypes {
     | '/_app/transactions'
     | '/_app/users'
     | '/_auth/login'
+    | '/_app/inventory_/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -227,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/cash-closes': {
       id: '/_app/cash-closes'
       path: '/cash-closes'
@@ -234,27 +265,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCashClosesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inventory_/$productId': {
+      id: '/_app/inventory_/$productId'
+      path: '/inventory/$productId'
+      fullPath: '/inventory/$productId'
+      preLoaderRoute: typeof AppInventoryProductIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppCashClosesRoute: typeof AppCashClosesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppInventoryRoute: typeof AppInventoryRoute
   AppMovementsRoute: typeof AppMovementsRoute
   AppReturnsRoute: typeof AppReturnsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppUsersRoute: typeof AppUsersRoute
+  AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCashClosesRoute: AppCashClosesRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppInventoryRoute: AppInventoryRoute,
   AppMovementsRoute: AppMovementsRoute,
   AppReturnsRoute: AppReturnsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppUsersRoute: AppUsersRoute,
+  AppInventoryProductIdRoute: AppInventoryProductIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

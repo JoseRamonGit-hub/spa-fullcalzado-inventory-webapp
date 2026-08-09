@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import type { TransactionWithRelations, TransactionCreateInput } from "@/types/index";
+import type { ProcessSalePayload, TransactionWithRelations } from "@/types/index";
+import type { Json } from "@/types/supabase";
 import { formatDateForBackend } from "@/utils/formatters";
 
 const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as const;
@@ -41,13 +42,13 @@ export const transactionsService = {
     return data;
   },
 
-  createMany: async (businessId: string, payload: TransactionCreateInput[]): Promise<TransactionWithRelations[]> => {
-    const { data, error } = await supabase
-      .from("transactions")
-      .insert(payload.map((transaction) => ({ ...transaction, business_id: businessId })))
-      .select(TRANSACTION_SELECT);
+  createSale: async (businessId: string, payload: ProcessSalePayload): Promise<void> => {
+    const { error } = await supabase.rpc("create_sale", {
+      p_business_id: businessId,
+      p_items: payload.p_items as Json,
+      p_exchange_rate: payload.p_exchange_rate,
+    });
 
     if (error) throw new Error(error.message);
-    return data;
   },
 };

@@ -13,6 +13,7 @@ import {
 import {
   ReceiptText,
   ArrowLeftRight,
+  LayoutDashboard,
   IterationCcw,
   LogOut,
   Package,
@@ -27,6 +28,11 @@ import { BusinessSwitcher } from "@/features/business/components/business-switch
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 
 const NAV_ITEMS = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: LayoutDashboard,
+  },
   {
     title: "Inventario",
     url: "/inventory",

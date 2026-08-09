@@ -21,7 +21,7 @@ export function useLogin() {
       useBusinessStore.getState().clear();
       useAuthStore.getState().setAuth(user);
       void queryClient.prefetchQuery(accessibleBusinessesQueryOptions(user.id));
-      await router.navigate({ to: "/inventory" });
+      await router.navigate({ to: "/dashboard" });
     },
     onError: (error) => {
       toast.error(error.message);

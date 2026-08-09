@@ -68,6 +68,7 @@ export function DataTablePagination<TData>({
             className="hidden h-7 w-7 p-0 sm:inline-flex"
             onClick={() => table.firstPage()}
             disabled={!canPreviousPage}
+            aria-label="Primera página"
           >
             <ChevronsLeft className="h-3.5 w-3.5" />
           </Button>
@@ -77,6 +78,7 @@ export function DataTablePagination<TData>({
             className="h-7 w-7 p-0"
             onClick={() => table.previousPage()}
             disabled={!canPreviousPage}
+            aria-label="Página anterior"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
           </Button>
@@ -86,6 +88,7 @@ export function DataTablePagination<TData>({
             className="h-7 w-7 p-0"
             onClick={() => table.nextPage()}
             disabled={!canNextPage}
+            aria-label="Página siguiente"
           >
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
@@ -95,6 +98,7 @@ export function DataTablePagination<TData>({
             className="hidden h-7 w-7 p-0 sm:inline-flex"
             onClick={() => table.lastPage()}
             disabled={!canNextPage}
+            aria-label="Última página"
           >
             <ChevronsRight className="h-3.5 w-3.5" />
           </Button>

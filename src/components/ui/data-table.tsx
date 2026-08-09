@@ -25,6 +25,7 @@ type DataTableProps<TData, TValue> = {
   data: TData[];
   emptyMessage?: string;
   onRowClick?: (row: TData) => void;
+  getRowAriaLabel?: (row: TData) => string;
   meta?: Record<string, unknown>;
   isLoading?: boolean;
   getRowId?: (originalRow: TData, index: number) => string;
@@ -35,6 +36,8 @@ type DataTableProps<TData, TValue> = {
   expanded?: ExpandedState;
   onExpandedChange?: OnChangeFn<ExpandedState>;
   getRowClassName?: (row: Row<TData>, index: number) => string | undefined;
+  tableClassName?: string;
+  scrollAreaLabel?: string;
 };
 
 export function DataTable<TData, TValue>({
@@ -42,6 +45,7 @@ export function DataTable<TData, TValue>({
   data,
   emptyMessage = "No hay resultados.",
   onRowClick,
+  getRowAriaLabel,
   meta,
   isLoading,
   getRowId,
@@ -52,6 +56,8 @@ export function DataTable<TData, TValue>({
   expanded,
   onExpandedChange,
   getRowClassName,
+  tableClassName,
+  scrollAreaLabel,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -129,8 +135,13 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="custom-scrollbar flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible">
-        <Table>
+      <div
+        className="custom-scrollbar flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible"
+        role={scrollAreaLabel ? "region" : undefined}
+        aria-label={scrollAreaLabel}
+        tabIndex={scrollAreaLabel ? 0 : undefined}
+      >
+        <Table className={tableClassName}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
@@ -154,10 +165,18 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    tabIndex={onRowClick ? 0 : undefined}
+                    aria-label={onRowClick ? getRowAriaLabel?.(row.original) : undefined}
                     className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""} ${getRowClassName?.(row, index) ?? ""}`}
                     onClick={() => {
                       if (renderSubRow) row.toggleExpanded();
                       onRowClick?.(row.original);
+                    }}
+                    onKeyDown={(event) => {
+                      if (!onRowClick || event.currentTarget !== event.target) return;
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      event.preventDefault();
+                      onRowClick(row.original);
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

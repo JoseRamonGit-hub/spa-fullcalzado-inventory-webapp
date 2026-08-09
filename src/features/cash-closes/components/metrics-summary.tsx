@@ -3,18 +3,9 @@ import { Button } from "@/components/ui/button";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
+import type { CashCloseSummary } from "@/types";
 
-export type CashCloseMetrics = {
-  count: number;
-  units: number;
-  totalUsd: number;
-  totalVes: number;
-  returnsCount: number;
-  returnsCreditUsd: number;
-  returnsCreditVes: number;
-  netUsd: number;
-  netVes: number;
-};
+export type CashCloseMetrics = CashCloseSummary;
 
 function MetricLabel({ children }: { children: string }) {
   return <OverflowTooltip className="text-[10px] font-semibold uppercase">{children}</OverflowTooltip>;
@@ -40,8 +31,8 @@ type MetricsSummaryProps = {
 export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPending, hasUser }: MetricsSummaryProps) {
   const hasReturns = metrics.returnsCount > 0;
 
-  const salesItems = [
-    { label: "Ventas", value: String(metrics.count), icon: Hash },
+  const summaryItems = [
+    { label: "Operaciones facturadas", value: String(metrics.billedOperations), icon: Hash },
     { label: "Unidades", value: String(metrics.units), icon: ShoppingCart },
     { label: "Total Facturado USD", value: formatCurrencyUSD(metrics.totalUsd), icon: DollarSign },
     { label: "Total Facturado Bs", value: formatCurrencyVES(metrics.totalVes), icon: Banknote },
@@ -59,9 +50,9 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
         <h3 className="text-muted-foreground text-[10px] font-semibold uppercase">{label}</h3>
       </header>
 
-      {/* Sales row */}
+      {/* Billing summary row */}
       <ul className="grid grid-cols-2 gap-y-4 md:grid-cols-4">
-        {salesItems.map((item, i) => (
+        {summaryItems.map((item, i) => (
           <li
             key={item.label}
             className={cn(
@@ -70,7 +61,7 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
               "md:border-l",
               i === 0 ? "pl-0 md:border-l-0" : "",
               i === 2 ? "border-l-0 pl-0 md:border-l md:pl-4" : "",
-              i === salesItems.length - 1 ? "pr-0" : "",
+              i === summaryItems.length - 1 ? "pr-0" : "",
             )}
           >
             <div className="text-muted-foreground flex items-center gap-1.5">

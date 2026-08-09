@@ -31,8 +31,8 @@ React 19 + TypeScript SPA for shoe store inventory management. Spanish-language 
 
 ### Route layout groups
 
-- `_auth` — unauthenticated routes (login). Redirects to `/inventory` if already authenticated.
-- `_app` — authenticated routes (inventory, transactions, movements, cash-closes, settings). Redirects to `/login` if not authenticated. Contains the sidebar, topbar, modals, and keyboard shortcuts.
+- `_auth` — unauthenticated routes (login). Redirects to `/dashboard` if already authenticated.
+- `_app` — authenticated routes (dashboard, inventory, transactions, movements, cash-closes, settings). Redirects to `/login` if not authenticated. Contains the sidebar, topbar, modals, and keyboard shortcuts.
 
 Auth guard in `_app` is a synchronous Zustand check — the root route's `beforeLoad` handles the async Supabase session validation.
 

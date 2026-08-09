@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftRight, Menu, Package, Plus, ShoppingCart, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Menu, Package, Plus, ShoppingCart, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { MobileQuickActionsDrawer } from "@/components/layout/mobile-quick-actions-drawer";
@@ -7,9 +7,9 @@ import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { MobileMenuSheet } from "./mobile-menu-sheet";
 
 const MOBILE_NAV_ITEMS = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Inventario", url: "/inventory", icon: Package },
   { title: "Ventas", url: "/transactions", icon: ShoppingCart },
-  { title: "Movimientos", url: "/movements", icon: ArrowLeftRight },
 ] as const;
 
 function MobileNavItem({

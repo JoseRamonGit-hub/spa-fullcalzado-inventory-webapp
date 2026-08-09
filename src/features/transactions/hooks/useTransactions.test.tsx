@@ -2,10 +2,11 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useTransactions, useTodayTransactions, transactionKeys } from "./useTransactionQueries";
-import { useCreateManyTransactions } from "./useTransactionMutations";
+import { useCreateSale } from "./useTransactionMutations";
 import { transactionsService } from "@/services/transactionsService";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
+import { cashCloseKeys } from "@/features/cash-closes/hooks/useCashCloseQueries";
 import type { TransactionWithRelations } from "@/types";
 
 const BUSINESS_ID = "business-1";
@@ -14,7 +15,7 @@ vi.mock("@/services/transactionsService", () => ({
   transactionsService: {
     getAll: vi.fn(),
     getToday: vi.fn(),
-    createMany: vi.fn(),
+    createSale: vi.fn(),
   },
 }));
 
@@ -84,23 +85,25 @@ describe("useTransactions Hook", () => {
   });
 
   describe("Mutations", () => {
-    it("useCreateManyTransactions debe invalidar caché correctamente en inserts bultos", async () => {
-      vi.mocked(transactionsService.createMany).mockResolvedValueOnce([]);
+    it("useCreateSale invalida los datos del Negocio de la Venta", async () => {
+      vi.mocked(transactionsService.createSale).mockResolvedValueOnce(undefined);
       const invalidateSpy = vi.spyOn(testQueryClient, "invalidateQueries");
 
-      const { result } = renderHook(() => useCreateManyTransactions(), { wrapper });
+      const { result } = renderHook(() => useCreateSale(), { wrapper });
 
-      const payload = [
-        { product_id: "prod-1", quantity: 2, user_id: "user-1", price_usd: 10, price_ves: 350, exchange_rate: 35 },
-      ];
+      const payload = {
+        p_items: [{ product_id: "prod-1", quantity: 2, price_usd: 10, price_ves: 350 }],
+        p_exchange_rate: 35,
+      };
       result.current.mutate(payload);
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(transactionsService.createMany).toHaveBeenCalledWith(BUSINESS_ID, payload);
+      expect(transactionsService.createSale).toHaveBeenCalledWith(BUSINESS_ID, payload);
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: transactionKeys.business(BUSINESS_ID) });
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["products", BUSINESS_ID] });
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: movementKeys.business(BUSINESS_ID) });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: cashCloseKeys.summaries(BUSINESS_ID) });
     });
   });
 });

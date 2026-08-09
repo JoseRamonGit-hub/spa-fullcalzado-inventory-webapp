@@ -7,7 +7,7 @@
 --   - exchange rate history + app settings
 --   - products in multiple states (active, inactive, zero stock)
 --   - inventory entry movements (manual restock + new product auto-entry)
---   - sale transactions and generated exit movements
+--   - single-line and multi-line sales with generated exit movements
 --   - returns: exchange with positive diff, refund, exchange with negative diff
 --   - product edits: price-only and stock/price/description edit
 --   - historical cash closes for previous days
@@ -92,6 +92,7 @@ WHERE id IN (
   'd0000000-0000-0000-0000-000000000016',
   'd1000000-0000-0000-0000-000000000001'
 )
+OR business_id = '10000000-0000-0000-0000-000000000002'
 OR return_id IN (
   SELECT id
   FROM public.returns
@@ -101,6 +102,9 @@ OR return_id IN (
     'Cambio administrado con saldo a favor'
   )
 );
+
+DELETE FROM public.sales
+WHERE business_id = '10000000-0000-0000-0000-000000000002';
 
 DELETE FROM public.return_items
 WHERE return_id IN (
@@ -658,6 +662,7 @@ INSERT INTO public.cash_closes (
   business_id,
   date,
   total_transactions,
+  total_billed_operations,
   total_units_sold,
   total_usd,
   total_ves,
@@ -678,6 +683,7 @@ SELECT
     WHERE t.business_id = '10000000-0000-0000-0000-000000000001'
       AND t.date = seed.close_date
   ), 0),
+  NULL::integer,
   COALESCE((
     SELECT sum(quantity)
     FROM public.transactions t
@@ -744,6 +750,7 @@ FROM (
 ) AS seed(id, close_date, closed_at)
 ON CONFLICT (business_id, date) DO UPDATE SET
   total_transactions = EXCLUDED.total_transactions,
+  total_billed_operations = NULL,
   total_units_sold = EXCLUDED.total_units_sold,
   total_usd = EXCLUDED.total_usd,
   total_ves = EXCLUDED.total_ves,
@@ -819,30 +826,25 @@ INSERT INTO public.exchange_rates (
   ((CURRENT_DATE)::timestamp + time '08:15:00') AT TIME ZONE 'America/Caracas'
 );
 
-INSERT INTO public.transactions (
-  id,
-  business_id,
-  product_id,
-  quantity,
-  price_usd,
-  price_ves,
-  exchange_rate,
-  user_id,
-  date,
-  time,
-  created_at
-) VALUES (
-  'd1000000-0000-0000-0000-000000000001',
-  '10000000-0000-0000-0000-000000000002',
-  'b1000000-0000-0000-0000-000000000001',
-  1,
-  47.00,
-  4147.75,
-  88.25,
-  'a0000000-0000-0000-0000-000000000004',
-  CURRENT_DATE,
-  '11:20:00',
-  ((CURRENT_DATE)::timestamp + time '11:20:00') AT TIME ZONE 'America/Caracas'
+-- Una Venta confirmada con dos Renglones: el cierre debe conservar
+-- total_transactions = 2 y total_billed_operations = 1.
+SELECT public.create_sale(
+  p_business_id := '10000000-0000-0000-0000-000000000002'::uuid,
+  p_items := jsonb_build_array(
+    jsonb_build_object(
+      'product_id', 'b1000000-0000-0000-0000-000000000001',
+      'quantity', 1,
+      'price_usd', 47.00,
+      'price_ves', 4147.75
+    ),
+    jsonb_build_object(
+      'product_id', 'b1000000-0000-0000-0000-000000000002',
+      'quantity', 1,
+      'price_usd', 42.00,
+      'price_ves', 3706.50
+    )
+  ),
+  p_exchange_rate := 88.25
 );
 
 SELECT public.generate_daily_cash_close(

@@ -1,31 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       app_settings: {
@@ -99,6 +74,7 @@ export type Database = {
           date: string;
           exchange_rate: number;
           id: string;
+          total_billed_operations: number | null;
           total_returns: number;
           total_returns_usd: number;
           total_returns_ves: number;
@@ -114,6 +90,7 @@ export type Database = {
           date?: string;
           exchange_rate: number;
           id?: string;
+          total_billed_operations?: number | null;
           total_returns?: number;
           total_returns_usd?: number;
           total_returns_ves?: number;
@@ -129,6 +106,7 @@ export type Database = {
           date?: string;
           exchange_rate?: number;
           id?: string;
+          total_billed_operations?: number | null;
           total_returns?: number;
           total_returns_usd?: number;
           total_returns_ves?: number;
@@ -254,18 +232,18 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "inventory_movements_product_id_fkey";
-            columns: ["product_id"];
+            foreignKeyName: "inventory_movements_business_product_fkey";
+            columns: ["business_id", "product_id"];
             isOneToOne: false;
             referencedRelation: "products";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
-            foreignKeyName: "inventory_movements_return_id_fkey";
-            columns: ["return_id"];
+            foreignKeyName: "inventory_movements_business_return_fkey";
+            columns: ["business_id", "return_id"];
             isOneToOne: false;
             referencedRelation: "returns";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
             foreignKeyName: "inventory_movements_user_id_fkey";
@@ -357,18 +335,18 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "return_items_product_id_fkey";
-            columns: ["product_id"];
+            foreignKeyName: "return_items_business_product_fkey";
+            columns: ["business_id", "product_id"];
             isOneToOne: false;
             referencedRelation: "products";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
-            foreignKeyName: "return_items_return_id_fkey";
-            columns: ["return_id"];
+            foreignKeyName: "return_items_business_return_fkey";
+            columns: ["business_id", "return_id"];
             isOneToOne: false;
             referencedRelation: "returns";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
         ];
       };
@@ -435,6 +413,48 @@ export type Database = {
           },
         ];
       };
+      sales: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          date: string;
+          id: string;
+          time: string;
+          user_id: string;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          time?: string;
+          user_id: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          time?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sales_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sales_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       transactions: {
         Row: {
           business_id: string;
@@ -447,6 +467,7 @@ export type Database = {
           product_id: string;
           quantity: number;
           return_id: string | null;
+          sale_id: string | null;
           time: string;
           total_usd: number | null;
           total_ves: number | null;
@@ -463,6 +484,7 @@ export type Database = {
           product_id: string;
           quantity: number;
           return_id?: string | null;
+          sale_id?: string | null;
           time?: string;
           total_usd?: number | null;
           total_ves?: number | null;
@@ -479,6 +501,7 @@ export type Database = {
           product_id?: string;
           quantity?: number;
           return_id?: string | null;
+          sale_id?: string | null;
           time?: string;
           total_usd?: number | null;
           total_ves?: number | null;
@@ -493,18 +516,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "transactions_product_id_fkey";
-            columns: ["product_id"];
+            foreignKeyName: "transactions_business_product_fkey";
+            columns: ["business_id", "product_id"];
             isOneToOne: false;
             referencedRelation: "products";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
           },
           {
-            foreignKeyName: "transactions_return_id_fkey";
-            columns: ["return_id"];
+            foreignKeyName: "transactions_business_return_fkey";
+            columns: ["business_id", "return_id"];
             isOneToOne: false;
             referencedRelation: "returns";
-            referencedColumns: ["id"];
+            referencedColumns: ["business_id", "id"];
+          },
+          {
+            foreignKeyName: "transactions_business_sale_fkey";
+            columns: ["business_id", "sale_id"];
+            isOneToOne: false;
+            referencedRelation: "sales";
+            referencedColumns: ["business_id", "id"];
           },
           {
             foreignKeyName: "transactions_user_id_fkey";
@@ -600,7 +630,22 @@ export type Database = {
           p_default_business_id: string;
           p_user_id: string;
         };
-        Returns: Database["public"]["Tables"]["users"]["Row"];
+        Returns: {
+          created_at: string | null;
+          default_business_id: string;
+          email: string;
+          fullname: string;
+          id: string;
+          is_active: boolean;
+          role: Database["public"]["Enums"]["roles"];
+          updated_at: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "users";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       admin_update_user: {
         Args: {
@@ -611,7 +656,26 @@ export type Database = {
           p_role: Database["public"]["Enums"]["roles"];
           p_user_id: string;
         };
-        Returns: Database["public"]["Tables"]["users"]["Row"];
+        Returns: {
+          created_at: string | null;
+          default_business_id: string;
+          email: string;
+          fullname: string;
+          id: string;
+          is_active: boolean;
+          role: Database["public"]["Enums"]["roles"];
+          updated_at: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "users";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_sale: {
+        Args: { p_business_id: string; p_exchange_rate: number; p_items: Json };
+        Returns: string;
       };
       edit_product: {
         Args: {
@@ -633,6 +697,7 @@ export type Database = {
           date: string;
           exchange_rate: number;
           id: string;
+          total_billed_operations: number | null;
           total_returns: number;
           total_returns_usd: number;
           total_returns_ves: number;
@@ -648,6 +713,127 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_cash_close_summary: {
+        Args: { p_business_id: string; p_date?: string };
+        Returns: {
+          billed_operations: number;
+          net_usd: number;
+          net_ves: number;
+          total_returns: number;
+          total_returns_usd: number;
+          total_returns_ves: number;
+          total_transactions: number;
+          total_units_sold: number;
+          total_usd: number;
+          total_ves: number;
+        }[];
+      };
+      get_dashboard_daily_metrics: {
+        Args: { p_business_id: string };
+        Returns: {
+          billed_operations: number;
+          dashboard_date: string;
+          exchange_rate: number;
+          exchange_rate_source: Database["public"]["Enums"]["exchange_modes"];
+          exchange_rate_updated_at: string;
+          low_stock_products: number;
+          products_in_stock: number;
+          stock_units: number;
+          total_billed_usd: number;
+        }[];
+      };
+      get_dashboard_sales_period: {
+        Args: {
+          p_business_id: string;
+          p_end_date?: string;
+          p_period?: string;
+          p_start_date?: string;
+        };
+        Returns: {
+          average_ticket_usd: number;
+          bucket_end: string;
+          bucket_index: number;
+          bucket_label: string;
+          bucket_start: string;
+          bucket_total_usd: number;
+          comparison_end: string;
+          comparison_start: string;
+          current_end: string;
+          current_operations: number;
+          current_start: string;
+          current_total_usd: number;
+          is_available: boolean;
+          period: string;
+          previous_operations: number;
+          previous_total_usd: number;
+        }[];
+      };
+      get_dashboard_top_products: {
+        Args: {
+          p_business_id: string;
+          p_end_date?: string;
+          p_period?: string;
+          p_rank_by?: string;
+          p_start_date?: string;
+        };
+        Returns: {
+          code: string;
+          description: string;
+          gross_usd: number;
+          product_id: string;
+          rank: number;
+          units: number;
+        }[];
+      };
+      get_product_history: {
+        Args: {
+          p_business_id: string;
+          p_end_date?: string;
+          p_product_id: string;
+          p_show_all?: boolean;
+          p_start_date?: string;
+        };
+        Returns: {
+          business_id: string;
+          created_at: string;
+          date: string;
+          description_before: string;
+          id: string;
+          price_usd: number;
+          price_usd_before: number;
+          product_id: string;
+          quantity: number;
+          return_id: string;
+          stock_before: number;
+          time: string;
+          type: Database["public"]["Enums"]["movement_types"];
+          user_fullname: string;
+          user_id: string;
+        }[];
+      };
+      get_product_stock_alerts: {
+        Args: {
+          p_alert_type?: string;
+          p_business_id: string;
+          p_created_date?: string;
+          p_limit?: number;
+        };
+        Returns: {
+          active: boolean;
+          alert_rank: number;
+          alert_type: string;
+          business_id: string;
+          code: string;
+          created_at: string;
+          description: string;
+          price_usd: number;
+          product_id: string;
+          stagnant_days: number;
+          stagnant_since: string;
+          stock: number;
+          updated_at: string;
+        }[];
+      };
       process_return: {
         Args: {
           p_business_id: string;
@@ -660,17 +846,13 @@ export type Database = {
         Returns: Json;
       };
       set_product_active: {
-        Args: {
-          p_active: boolean;
-          p_business_id: string;
-          p_product_id: string;
-        };
+        Args: { p_active: boolean; p_business_id: string; p_product_id: string };
         Returns: undefined;
       };
     };
     Enums: {
       exchange_modes: "manual" | "bcv";
-      movement_types: "entry" | "exit" | "return" | "edit";
+      movement_types: "entry" | "exit" | "return" | "edit" | "activation" | "deactivation";
       return_types: "exchange" | "refund";
       roles: "admin" | "employee";
     };
@@ -790,13 +972,10 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       exchange_modes: ["manual", "bcv"],
-      movement_types: ["entry", "exit", "return", "edit"],
+      movement_types: ["entry", "exit", "return", "edit", "activation", "deactivation"],
       return_types: ["exchange", "refund"],
       roles: ["admin", "employee"],
     },

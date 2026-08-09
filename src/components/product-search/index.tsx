@@ -100,11 +100,13 @@ function SelectedProductChip({
 function SearchDropdown({
   products,
   showPrice,
+  allowInactive,
   onMouseDown,
   onSelect,
 }: {
   products: Product[];
   showPrice: boolean;
+  allowInactive: boolean;
   onMouseDown: () => void;
   onSelect: (productId: string) => void;
 }) {
@@ -118,7 +120,7 @@ function SearchDropdown({
               value={product.id}
               onMouseDown={onMouseDown}
               onSelect={onSelect}
-              className={cn("flex items-center gap-2 px-2.5 py-2", !product.active && "opacity-50")}
+              className={cn("flex items-center gap-2 px-2.5 py-2", !product.active && !allowInactive && "opacity-50")}
             >
               <span className="product-code bg-primary/10 border-primary/20 inline-flex h-6 shrink-0 items-center rounded-sm border px-2 text-xs uppercase">
                 {product.code}
@@ -298,6 +300,7 @@ export function ProductSearch({
             <SearchDropdown
               products={filteredProducts}
               showPrice={showPrice}
+              allowInactive={allowInactive}
               onMouseDown={() => {
                 skipBlurRef.current = true;
               }}

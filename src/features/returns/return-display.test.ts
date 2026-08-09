@@ -42,6 +42,7 @@ function makeReturn(overrides: Partial<ReturnWithRelations> = {}): ReturnWithRel
         user_id: "user-1",
         product_id: "product-2",
         return_id: "return-1",
+        sale_id: null,
         quantity: 1,
         price_usd: 30,
         price_ves: 2_700,
