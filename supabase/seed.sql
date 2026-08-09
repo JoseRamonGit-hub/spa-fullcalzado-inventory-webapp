@@ -44,6 +44,14 @@ ALTER TABLE public.exchange_rates
 
 -- ─── 0. Cleanup previous seeded rows ─────────────────────────────────────────
 
+CREATE TEMP TABLE seed_actor_ids (id uuid PRIMARY KEY) ON COMMIT DROP;
+
+INSERT INTO seed_actor_ids (id) VALUES
+  ('a0000000-0000-0000-0000-000000000001'),
+  ('a0000000-0000-0000-0000-000000000002'),
+  ('a0000000-0000-0000-0000-000000000003'),
+  ('a0000000-0000-0000-0000-000000000004');
+
 DELETE FROM public.inventory_movements
 WHERE product_id IN (
   'b0000000-0000-0000-0000-000000000001',
@@ -91,16 +99,10 @@ WHERE id IN (
   'd0000000-0000-0000-0000-000000000014',
   'd0000000-0000-0000-0000-000000000015',
   'd0000000-0000-0000-0000-000000000016',
-  'd0000000-0000-0000-0000-000000000017',
   'd1000000-0000-0000-0000-000000000001'
 )
 OR business_id = '10000000-0000-0000-0000-000000000002'
-OR user_id IN (
-  'a0000000-0000-0000-0000-000000000001',
-  'a0000000-0000-0000-0000-000000000002',
-  'a0000000-0000-0000-0000-000000000003',
-  'a0000000-0000-0000-0000-000000000004'
-)
+OR user_id IN (SELECT id FROM seed_actor_ids)
 OR return_id IN (
   SELECT id
   FROM public.returns
@@ -113,23 +115,13 @@ OR return_id IN (
 
 DELETE FROM public.sales
 WHERE business_id = '10000000-0000-0000-0000-000000000002'
-OR user_id IN (
-  'a0000000-0000-0000-0000-000000000001',
-  'a0000000-0000-0000-0000-000000000002',
-  'a0000000-0000-0000-0000-000000000003',
-  'a0000000-0000-0000-0000-000000000004'
-);
+OR user_id IN (SELECT id FROM seed_actor_ids);
 
 DELETE FROM public.return_items
 WHERE return_id IN (
   SELECT id
   FROM public.returns
-  WHERE user_id IN (
-    'a0000000-0000-0000-0000-000000000001',
-    'a0000000-0000-0000-0000-000000000002',
-    'a0000000-0000-0000-0000-000000000003',
-    'a0000000-0000-0000-0000-000000000004'
-  )
+  WHERE user_id IN (SELECT id FROM seed_actor_ids)
   OR notes IN (
     'Cambio talla cliente runner',
     'Reintegro por defecto de fabrica',
@@ -138,12 +130,7 @@ WHERE return_id IN (
 );
 
 DELETE FROM public.returns
-WHERE user_id IN (
-  'a0000000-0000-0000-0000-000000000001',
-  'a0000000-0000-0000-0000-000000000002',
-  'a0000000-0000-0000-0000-000000000003',
-  'a0000000-0000-0000-0000-000000000004'
-)
+WHERE user_id IN (SELECT id FROM seed_actor_ids)
 OR notes IN (
   'Cambio talla cliente runner',
   'Reintegro por defecto de fabrica',
@@ -157,12 +144,7 @@ WHERE id IN (
   'e0000000-0000-0000-0000-000000000003'
 )
 OR business_id = '10000000-0000-0000-0000-000000000002'
-OR closed_by IN (
-  'a0000000-0000-0000-0000-000000000001',
-  'a0000000-0000-0000-0000-000000000002',
-  'a0000000-0000-0000-0000-000000000003',
-  'a0000000-0000-0000-0000-000000000004'
-);
+OR closed_by IN (SELECT id FROM seed_actor_ids);
 
 DELETE FROM public.exchange_rates
 WHERE id IN (
@@ -173,12 +155,7 @@ WHERE id IN (
   'f1000000-0000-0000-0000-000000000001'
 )
 OR business_id = '10000000-0000-0000-0000-000000000002'
-OR updated_by IN (
-  'a0000000-0000-0000-0000-000000000001',
-  'a0000000-0000-0000-0000-000000000002',
-  'a0000000-0000-0000-0000-000000000003',
-  'a0000000-0000-0000-0000-000000000004'
-);
+OR updated_by IN (SELECT id FROM seed_actor_ids);
 
 DELETE FROM public.app_settings
 WHERE business_id IN (
@@ -597,8 +574,47 @@ INSERT INTO public.transactions (
   ('d0000000-0000-0000-0000-000000000013', 'b0000000-0000-0000-0000-000000000003', 1, 56.00, 4914.00, 87.75, 'a0000000-0000-0000-0000-000000000002', CURRENT_DATE - 1, '16:35:00', ((CURRENT_DATE - 1)::timestamp + time '16:35:00') AT TIME ZONE 'America/Caracas'),
   ('d0000000-0000-0000-0000-000000000014', 'b0000000-0000-0000-0000-000000000005', 2, 49.00, 4299.75, 87.75, 'a0000000-0000-0000-0000-000000000003', CURRENT_DATE, '09:10:00', ((CURRENT_DATE)::timestamp + time '09:10:00') AT TIME ZONE 'America/Caracas'),
   ('d0000000-0000-0000-0000-000000000015', 'b0000000-0000-0000-0000-000000000011', 1, 31.00, 2720.25, 87.75, 'a0000000-0000-0000-0000-000000000002', CURRENT_DATE, '10:40:00', ((CURRENT_DATE)::timestamp + time '10:40:00') AT TIME ZONE 'America/Caracas'),
-  ('d0000000-0000-0000-0000-000000000016', 'b0000000-0000-0000-0000-000000000002', 1, 39.00, 3422.25, 87.75, 'a0000000-0000-0000-0000-000000000004', CURRENT_DATE, '14:25:00', ((CURRENT_DATE)::timestamp + time '14:25:00') AT TIME ZONE 'America/Caracas'),
-  ('d0000000-0000-0000-0000-000000000017', 'b0000000-0000-0000-0000-000000000014', 1, 61.00, 5352.75, 87.75, 'a0000000-0000-0000-0000-000000000001', CURRENT_DATE, '15:35:00', ((CURRENT_DATE)::timestamp + time '15:35:00') AT TIME ZONE 'America/Caracas');
+  ('d0000000-0000-0000-0000-000000000016', 'b0000000-0000-0000-0000-000000000002', 1, 39.00, 3422.25, 87.75, 'a0000000-0000-0000-0000-000000000004', CURRENT_DATE, '14:25:00', ((CURRENT_DATE)::timestamp + time '14:25:00') AT TIME ZONE 'America/Caracas');
+
+-- Create the historical OT-42 sale through the same grouped-sale function as
+-- the application. The product is deactivated only after the sale succeeds.
+DO $$
+DECLARE
+  inactive_product_sale_id uuid;
+BEGIN
+  inactive_product_sale_id := public.create_sale(
+    p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+    p_items := jsonb_build_array(
+      jsonb_build_object(
+        'product_id', 'b0000000-0000-0000-0000-000000000014',
+        'quantity', 1,
+        'price_usd', 61.00,
+        'price_ves', 5352.75
+      )
+    ),
+    p_exchange_rate := 87.75
+  );
+
+  UPDATE public.sales
+  SET time = '15:35:00',
+      created_at = (CURRENT_DATE::timestamp + time '15:35:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND id = inactive_product_sale_id;
+
+  UPDATE public.transactions
+  SET time = '15:35:00',
+      created_at = (CURRENT_DATE::timestamp + time '15:35:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND sale_id = inactive_product_sale_id;
+
+  UPDATE public.inventory_movements
+  SET time = '15:35:00',
+      created_at = (CURRENT_DATE::timestamp + time '15:35:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND product_id = 'b0000000-0000-0000-0000-000000000014'::uuid
+    AND type = 'exit';
+END
+$$;
 
 -- ─── 6. Product edits ───────────────────────────────────────────────────────
 
@@ -652,7 +668,7 @@ UPDATE public.products
 SET updated_at = ((CURRENT_DATE)::timestamp + time '08:45:00') AT TIME ZONE 'America/Caracas'
 WHERE id = 'b0000000-0000-0000-0000-000000000012';
 
--- Preserve a real sale line while leaving its product inactive, so historical
+-- Preserve the real sale line while leaving its product inactive, so historical
 -- sales can be checked without depending on the current inventory filter.
 SELECT public.set_product_active(
   p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
@@ -938,26 +954,54 @@ INSERT INTO public.exchange_rates (
   ((CURRENT_DATE)::timestamp + time '08:15:00') AT TIME ZONE 'America/Caracas'
 );
 
--- Una Venta confirmada con dos Renglones: el cierre debe conservar
--- total_transactions = 2 y total_billed_operations = 1.
-SELECT public.create_sale(
-  p_business_id := '10000000-0000-0000-0000-000000000002'::uuid,
-  p_items := jsonb_build_array(
-    jsonb_build_object(
-      'product_id', 'b1000000-0000-0000-0000-000000000001',
-      'quantity', 1,
-      'price_usd', 47.00,
-      'price_ves', 4147.75
+-- Una Venta confirmada con dos Renglones queda en el día anterior. Así
+-- Estilos conserva actividad histórica, mientras Dashboard ejercita hoy su
+-- estado vacío y Full conserva actividad actual.
+DO $$
+DECLARE
+  estilos_sale_id uuid;
+BEGIN
+  estilos_sale_id := public.create_sale(
+    p_business_id := '10000000-0000-0000-0000-000000000002'::uuid,
+    p_items := jsonb_build_array(
+      jsonb_build_object(
+        'product_id', 'b1000000-0000-0000-0000-000000000001',
+        'quantity', 1,
+        'price_usd', 47.00,
+        'price_ves', 4147.75
+      ),
+      jsonb_build_object(
+        'product_id', 'b1000000-0000-0000-0000-000000000002',
+        'quantity', 1,
+        'price_usd', 42.00,
+        'price_ves', 3706.50
+      )
     ),
-    jsonb_build_object(
-      'product_id', 'b1000000-0000-0000-0000-000000000002',
-      'quantity', 1,
-      'price_usd', 42.00,
-      'price_ves', 3706.50
-    )
-  ),
-  p_exchange_rate := 88.25
-);
+    p_exchange_rate := 88.25
+  );
+
+  UPDATE public.sales
+  SET date = CURRENT_DATE - 1,
+      time = '16:00:00',
+      created_at = ((CURRENT_DATE - 1)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000002'::uuid
+    AND id = estilos_sale_id;
+
+  UPDATE public.transactions
+  SET date = CURRENT_DATE - 1,
+      time = '16:00:00',
+      created_at = ((CURRENT_DATE - 1)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000002'::uuid
+    AND sale_id = estilos_sale_id;
+
+  UPDATE public.inventory_movements
+  SET date = CURRENT_DATE - 1,
+      time = '16:00:00',
+      created_at = ((CURRENT_DATE - 1)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000002'::uuid
+    AND type = 'exit';
+END
+$$;
 
 SELECT public.generate_daily_cash_close(
   p_business_id := '10000000-0000-0000-0000-000000000002'::uuid

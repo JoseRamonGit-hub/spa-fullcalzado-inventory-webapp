@@ -10,8 +10,8 @@ Navegador: Chromium (Playwright), 1280×900 y 390×844
 
 - María (`admin`) puede cambiar entre Full Calzado C.A. y Zapatería Estilos.
 - Carlos (`employee`) sólo tiene acceso a Full Calzado C.A.
-- Zapatería Estilos contiene una Venta de dos Renglones; el cierre registra una operación facturada.
-- Full Calzado contiene dos cambios, una devolución y una venta histórica de OT-42, que queda inactivo después de venderse.
+- Zapatería Estilos contiene una Venta de dos Renglones del día anterior y cero actividad hoy, para ejercitar el estado vacío sin perder historial.
+- Full Calzado contiene dos cambios, una devolución y una venta agrupada de OT-42, que queda inactivo después de venderse.
 - SK-36 contiene 21 ediciones de precio auditadas y 25 eventos totales, suficientes para dos páginas de 20 filas.
 - Hay productos con y sin actividad, activos, inactivo, sin stock y con stock bajo.
 
@@ -41,6 +41,18 @@ Credencial local de todos los usuarios del seed: `password123`.
 La venta móvil usada para comprobar invalidación modificó la base local. Después se reaplicó el seed final para verificar que la preparación es repetible incluso cuando existen operaciones creadas durante un recorrido anterior.
 
 ## Comprobaciones automatizadas
+
+Resultados finales locales:
+
+| Comprobación | Resultado |
+| --- | --- |
+| `npm run lint` | Pasa |
+| `npm run build` | Pasa |
+| Frontend, 39 archivos ejecutados en tres lotes | 165 pruebas pasan |
+| `npm run test:db` | 168 pruebas pasan |
+| Seed completo dentro de transacción con `ROLLBACK` | Pasa |
+
+Vitest se dividió en lotes porque el proceso único fue terminado por los límites del entorno antes de imprimir su resumen. Los lotes cubrieron todos los archivos encontrados bajo `src/**/*.test.{ts,tsx}`.
 
 Ejecutar desde la raíz:
 

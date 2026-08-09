@@ -1,10 +1,10 @@
 import type { ReturnWithRelations, TransactionWithRelations } from "@/types";
 
-type SaleSummarySource = Pick<
+export type SaleSummarySource = Pick<
   TransactionWithRelations,
   "sale_id" | "return_id" | "quantity" | "price_usd" | "price_ves"
 >;
-type ReturnSummarySource = Pick<ReturnWithRelations, "credit_usd" | "credit_ves">;
+export type ReturnSummarySource = Pick<ReturnWithRelations, "credit_usd" | "credit_ves">;
 
 export function getSalesSummary(transactions: readonly SaleSummarySource[], returns: readonly ReturnSummarySource[]) {
   const countedSaleIds = new Set<string>();
