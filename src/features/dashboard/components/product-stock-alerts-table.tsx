@@ -45,12 +45,12 @@ const stagnantColumns = [
 const tableConfig = {
   low_stock: {
     columns: baseColumns,
-    emptyMessage: "No hay Productos con Stock bajo.",
-    scrollAreaLabel: "Productos con Stock bajo",
+    emptyMessage: "No hay productos con stock bajo.",
+    scrollAreaLabel: "Productos con stock bajo",
   },
   stagnant: {
     columns: stagnantColumns,
-    emptyMessage: "No hay Productos estancados.",
+    emptyMessage: "No hay productos estancados.",
     scrollAreaLabel: "Productos estancados",
   },
 } satisfies Record<

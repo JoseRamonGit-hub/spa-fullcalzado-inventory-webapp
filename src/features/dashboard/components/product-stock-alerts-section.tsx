@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ArchiveX, ChevronRight, RefreshCw, TriangleAlert } from "lucide-react";
+import { ChevronRight, PackageX, RefreshCw, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,9 +7,12 @@ import type { ProductStockAlertType } from "@/types";
 import { useDashboardProductStockAlerts } from "../hooks/useDashboardMetrics";
 import { ProductStockAlertsTable } from "./product-stock-alerts-table";
 
+const INVENTORY_ATTENTION_ICON_CLASS =
+  "bg-warning/15 text-warning-foreground flex size-9 shrink-0 items-center justify-center rounded-lg";
+
 const ALERT_COPY = {
   low_stock: {
-    title: "Productos con Stock bajo",
+    title: "Productos con stock bajo",
     description: "Productos activos con 3 unidades o menos",
     emptyLabel: "Stock bajo",
     icon: TriangleAlert,
@@ -18,7 +21,7 @@ const ALERT_COPY = {
     title: "Productos estancados",
     description: "Sin salidas comerciales durante 30 días completos",
     emptyLabel: "Estancado",
-    icon: ArchiveX,
+    icon: PackageX,
   },
 } as const;
 
@@ -36,28 +39,31 @@ function ProductStockAlertCard({ type }: { type: ProductStockAlertType }) {
   const query = useDashboardProductStockAlerts(type);
   const copy = ALERT_COPY[type];
   const Icon = copy.icon;
+  const hasResults = (query.data?.length ?? 0) > 0;
 
   return (
     <Card className="min-h-0 gap-0 py-0">
-      <CardHeader className="flex grid-cols-[1fr_auto] items-start gap-3 px-4 py-4">
+      <CardHeader className="flex items-start justify-between gap-3 px-4 py-4">
         <div className="flex min-w-0 items-start gap-3">
-          <div className="bg-warning/15 text-warning-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
-            <Icon className="size-4" aria-hidden="true" />
+          <div className={INVENTORY_ATTENTION_ICON_CLASS}>
+            <Icon className="size-4" strokeWidth={2} aria-hidden="true" />
           </div>
           <div className="flex min-w-0 flex-col gap-1">
             <CardTitle>{copy.title}</CardTitle>
             <CardDescription className="text-xs">{copy.description}</CardDescription>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate({ to: "/inventory", search: { status: type } })}
-          aria-label={`Ver ${copy.emptyLabel} en Inventario`}
-        >
-          Ver todos
-          <ChevronRight data-icon="inline-end" aria-hidden="true" />
-        </Button>
+        {hasResults ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate({ to: "/inventory", search: { status: type } })}
+            aria-label={`Ver ${copy.emptyLabel} en Inventario`}
+          >
+            Ver todos
+            <ChevronRight data-icon="inline-end" aria-hidden="true" />
+          </Button>
+        ) : null}
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 p-0">
         {query.isError ? (

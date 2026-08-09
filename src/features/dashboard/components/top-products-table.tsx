@@ -49,11 +49,11 @@ export function TopProductsTable({ products, isLoading, onProductClick }: TopPro
       data={products}
       isLoading={isLoading}
       hidePagination
-      emptyMessage="No hay Productos con salidas en este período."
+      emptyMessage="No hay productos vendidos en este período."
       onRowClick={onProductClick}
       getRowAriaLabel={(product) => `Ver detalles de ${product.code}`}
       getRowId={(product) => product.productId}
-      scrollAreaLabel="Top de Productos"
+      scrollAreaLabel="Top productos"
     />
   );
 }

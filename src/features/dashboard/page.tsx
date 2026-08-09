@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Boxes, CircleDollarSign, RefreshCw, TriangleAlert, WalletCards } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Boxes, CircleDollarSign, ReceiptText, RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./components/dashboard-metric-card";
@@ -7,12 +7,31 @@ import { SalesPeriodSection } from "./components/sales-period-section";
 import { ProductStockAlertsSection } from "./components/product-stock-alerts-section";
 import { useDashboardMetrics } from "./hooks/useDashboardMetrics";
 import { DEFAULT_SALES_PERIOD, type DashboardSalesPeriodSelection } from "./sales-period";
-import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
+import { formatCurrencyUSD, formatDate, formatTime } from "@/utils/formatters";
 
-const RATE_SOURCE_LABELS = {
-  manual: "Manual",
-  bcv: "BCV",
-} as const;
+function DashboardCurrentDateTime() {
+  const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setCurrentDateTime(new Date()), 60_000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  return (
+    <time
+      dateTime={currentDateTime.toISOString()}
+      className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase"
+      aria-label="Fecha y hora actual en Caracas"
+    >
+      {formatDate(currentDateTime)} · {formatTime(currentDateTime)}
+    </time>
+  );
+}
+
+function formatUnitsSold(unitsSold: number) {
+  return `${unitsSold} ${unitsSold === 1 ? "unidad vendida" : "unidades vendidas"}`;
+}
 
 export function DashboardPage() {
   const metricsQuery = useDashboardMetrics();
@@ -24,9 +43,7 @@ export function DashboardPage() {
     <section className="flex min-h-0 flex-1 flex-col">
       <header className="topbar-height bg-background flex shrink-0 items-center justify-between gap-2 border-b px-3 md:px-4">
         <BusinessModuleTitle title="Dashboard" />
-        <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-          Hoy · hora de Caracas
-        </span>
+        <DashboardCurrentDateTime />
       </header>
 
       <div className="flex-1 overflow-y-auto p-3 md:p-4">
@@ -61,31 +78,27 @@ export function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <DashboardMetricCard
-                title="Total facturado"
-                value={formatCurrencyUSD(metricsQuery.data.total_billed_usd)}
-                description={`${metricsQuery.data.billed_operations} operaciones facturadas`}
+                title="Total producido"
+                value={formatCurrencyUSD(metricsQuery.data.total_produced_usd)}
+                description={
+                  metricsQuery.data.total_produced_usd === metricsQuery.data.total_billed_usd
+                    ? `${metricsQuery.data.billed_operations} operaciones facturadas`
+                    : `Facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)} · −${formatCurrencyUSD(metricsQuery.data.returns_credit_usd)} devoluciones`
+                }
                 icon={CircleDollarSign}
                 emphasis="primary"
+              />
+              <DashboardMetricCard
+                title="Operaciones facturadas"
+                value={String(metricsQuery.data.billed_operations)}
+                description={formatUnitsSold(metricsQuery.data.units_sold)}
+                icon={ReceiptText}
               />
               <DashboardMetricCard
                 title="Stock disponible"
                 value={`${metricsQuery.data.stock_units} unidades`}
                 description={`${metricsQuery.data.products_in_stock} productos con stock`}
                 icon={Boxes}
-              />
-              <DashboardMetricCard
-                title="Tasa activa"
-                value={
-                  metricsQuery.data.exchange_rate === null
-                    ? "Sin tasa vigente"
-                    : formatCurrencyVES(metricsQuery.data.exchange_rate)
-                }
-                description={
-                  metricsQuery.data.exchange_rate_source && metricsQuery.data.exchange_rate_updated_at
-                    ? `Fuente ${RATE_SOURCE_LABELS[metricsQuery.data.exchange_rate_source]} · ${formatDateTime(metricsQuery.data.exchange_rate_updated_at)}`
-                    : "Configúrala en Ajustes para operar"
-                }
-                icon={WalletCards}
               />
               <DashboardMetricCard
                 title="Stock bajo"

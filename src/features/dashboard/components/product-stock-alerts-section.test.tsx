@@ -43,7 +43,7 @@ describe("Alertas de inventario del Dashboard", () => {
   it("muestra ambas listas y abre el Producto seleccionado", () => {
     render(<ProductStockAlertsSection />);
 
-    expect(screen.getByText("Productos con Stock bajo")).toBeInTheDocument();
+    expect(screen.getByText("Productos con stock bajo")).toBeInTheDocument();
     expect(screen.getByText("Productos estancados")).toBeInTheDocument();
     expect(screen.getByText("40 días")).toBeInTheDocument();
 
@@ -62,5 +62,37 @@ describe("Alertas de inventario del Dashboard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Ver Estancado en Inventario" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/inventory", search: { status: "stagnant" } });
+  });
+
+  it("oculta Ver todos cuando una lista no tiene resultados", () => {
+    vi.mocked(useDashboardProductStockAlerts).mockImplementation(
+      (type) =>
+        ({
+          data:
+            type === "low_stock"
+              ? [
+                  {
+                    type,
+                    rank: 1,
+                    productId: "low-stock-product",
+                    code: "LOW-01",
+                    description: "Producto de prueba",
+                    stock: 2,
+                    active: true,
+                    stagnantSince: null,
+                    stagnantDays: null,
+                  },
+                ]
+              : [],
+          isPending: false,
+          isError: false,
+        }) as never,
+    );
+
+    render(<ProductStockAlertsSection />);
+
+    expect(screen.getByText("No hay productos estancados.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ver Estancado en Inventario" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver Stock bajo en Inventario" })).toBeInTheDocument();
   });
 });

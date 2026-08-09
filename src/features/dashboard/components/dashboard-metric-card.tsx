@@ -13,9 +13,7 @@ type DashboardMetricCardProps = {
 
 export function DashboardMetricCard({ title, value, description, icon: Icon, emphasis }: DashboardMetricCardProps) {
   return (
-    <Card
-      className={cn("gap-4 py-4", emphasis === "primary" && "bg-primary/5", emphasis === "warning" && "bg-warning/5")}
-    >
+    <Card className={cn("gap-4 py-4", emphasis === "warning" && "bg-warning/5")}>
       <CardHeader className="grid grid-cols-[1fr_auto] gap-3 px-4">
         <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{title}</CardTitle>
         <div
