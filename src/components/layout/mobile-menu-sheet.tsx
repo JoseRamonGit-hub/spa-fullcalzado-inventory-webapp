@@ -1,4 +1,4 @@
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useTheme } from "next-themes";
@@ -33,6 +33,9 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
       <DrawerContent className="flex h-full w-[85vw] flex-col rounded-none border-l after:hidden sm:max-w-sm">
         <DrawerHeader className="border-b p-4 text-left">
           <DrawerTitle className="sr-only">Menú Principal</DrawerTitle>
+          <DrawerDescription className="sr-only">
+            Cambia de negocio y accede a la navegación, el tema y la sesión.
+          </DrawerDescription>
           <div className="flex items-center gap-3">
             <div className="bg-muted text-foreground ring-border/70 flex size-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ring-1">
               {user?.fullname?.charAt(0) || "U"}

@@ -1,6 +1,6 @@
 import { IterationCcw, PackagePlus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useModalStore } from "@/components/modals/store/useModalStore";
 
 type MobileQuickActionsDrawerProps = {
@@ -23,6 +23,9 @@ export function MobileQuickActionsDrawer({ open, onOpenChange }: MobileQuickActi
       <DrawerContent>
         <DrawerHeader className="border-b">
           <DrawerTitle className="text-sm font-bold tracking-wide uppercase">Nueva operación</DrawerTitle>
+          <DrawerDescription className="sr-only">
+            Selecciona si deseas cargar inventario, registrar una venta o registrar una devolución.
+          </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-3 p-4 pb-10">
           <Button
