@@ -16,6 +16,7 @@ export const productsService = {
         p_business_id: businessId,
         p_alert_type: stockStatus,
         p_limit: ALL_MATCHING_PRODUCTS_LIMIT,
+        p_created_date: date,
       });
 
       if (error) throw new Error(error.message);

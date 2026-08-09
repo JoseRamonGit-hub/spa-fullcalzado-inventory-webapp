@@ -42,6 +42,26 @@ const stagnantColumns = [
   }),
 ] as ColumnDef<DashboardProductStockAlert>[];
 
+const tableConfig = {
+  low_stock: {
+    columns: baseColumns,
+    emptyMessage: "No hay Productos con Stock bajo.",
+    scrollAreaLabel: "Productos con Stock bajo",
+  },
+  stagnant: {
+    columns: stagnantColumns,
+    emptyMessage: "No hay Productos estancados.",
+    scrollAreaLabel: "Productos estancados",
+  },
+} satisfies Record<
+  ProductStockAlertType,
+  {
+    columns: ColumnDef<DashboardProductStockAlert>[];
+    emptyMessage: string;
+    scrollAreaLabel: string;
+  }
+>;
+
 type ProductStockAlertsTableProps = {
   type: ProductStockAlertType;
   products: DashboardProductStockAlert[];
@@ -50,17 +70,19 @@ type ProductStockAlertsTableProps = {
 };
 
 export function ProductStockAlertsTable({ type, products, isLoading, onProductClick }: ProductStockAlertsTableProps) {
+  const config = tableConfig[type];
+
   return (
     <DataTable
-      columns={type === "stagnant" ? stagnantColumns : baseColumns}
+      columns={config.columns}
       data={products}
       isLoading={isLoading}
       hidePagination
-      emptyMessage={type === "stagnant" ? "No hay Productos estancados." : "No hay Productos con Stock bajo."}
+      emptyMessage={config.emptyMessage}
       onRowClick={onProductClick}
       getRowAriaLabel={(product) => `Ver detalles de ${product.code}`}
       getRowId={(product) => product.productId}
-      scrollAreaLabel={type === "stagnant" ? "Productos estancados" : "Productos con Stock bajo"}
+      scrollAreaLabel={config.scrollAreaLabel}
     />
   );
 }

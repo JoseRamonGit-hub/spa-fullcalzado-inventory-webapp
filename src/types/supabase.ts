@@ -812,7 +812,12 @@ export type Database = {
         }[];
       };
       get_product_stock_alerts: {
-        Args: { p_alert_type?: string; p_business_id: string; p_limit?: number };
+        Args: {
+          p_alert_type?: string;
+          p_business_id: string;
+          p_created_date?: string;
+          p_limit?: number;
+        };
         Returns: {
           active: boolean;
           alert_rank: number;

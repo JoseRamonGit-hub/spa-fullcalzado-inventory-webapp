@@ -77,7 +77,7 @@ describe("useProducts", () => {
       });
 
       expect(result.current.data).toEqual([fakeProduct]);
-      expect(mockGetAll).toHaveBeenCalledWith(BUSINESS_ID, undefined);
+      expect(mockGetAll).toHaveBeenCalledWith(BUSINESS_ID, undefined, undefined);
     });
 
     it("scopes product detail data and cache to the active business", async () => {

@@ -2,7 +2,7 @@
 
 begin;
 
-select plan(4);
+select plan(6);
 select set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
 select set_config('app.suppress_log_entry', 'true', true);
 
@@ -21,7 +21,24 @@ values
   ('40000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000001', 'ST-C', 'Salida en el límite', 5, 10, true),
   ('40000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000001', 'ST-D', 'Salida antigua', 5, 10, true),
   ('40000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000001', 'ST-ZERO', 'Nunca tuvo stock', 0, 10, true),
-  ('40000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000002', 'OTHER', 'Otro Negocio', 0, 10, true);
+  ('40000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000002', 'OTHER', 'Otro Negocio', 0, 10, true),
+  ('40000000-0000-0000-0000-000000000017', '10000000-0000-0000-0000-000000000001', 'ST-NEW', 'Adquirió existencias después', 0, 10, true);
+
+update public.products
+set created_at = '2024-01-02 12:00:00+00'
+where id = '40000000-0000-0000-0000-000000000001';
+
+insert into public.returns (
+  id, business_id, type, credit_usd, credit_ves, difference_usd, difference_ves,
+  exchange_rate, user_id, date, time
+)
+values (
+  '40000000-0000-0000-0000-000000000090',
+  '10000000-0000-0000-0000-000000000001',
+  'exchange', 10, 900, 0, 0, 90,
+  'a0000000-0000-0000-0000-000000000001',
+  '2024-02-01', '10:00'
+);
 
 insert into public.inventory_movements (
   id, business_id, type, product_id, quantity, user_id, date, time, stock_before, price_usd
@@ -35,6 +52,17 @@ values
   ('40000000-0000-0000-0000-000000000106', '10000000-0000-0000-0000-000000000001', 'exit', '40000000-0000-0000-0000-000000000013', 1, 'a0000000-0000-0000-0000-000000000001', '2024-02-01', '10:00', 6, 10),
   ('40000000-0000-0000-0000-000000000107', '10000000-0000-0000-0000-000000000001', 'edit', '40000000-0000-0000-0000-000000000014', 5, 'a0000000-0000-0000-0000-000000000001', '2024-01-01', '10:00', 0, 10),
   ('40000000-0000-0000-0000-000000000108', '10000000-0000-0000-0000-000000000001', 'exit', '40000000-0000-0000-0000-000000000014', 1, 'a0000000-0000-0000-0000-000000000001', '2024-01-31', '10:00', 6, 10);
+
+update public.inventory_movements
+set return_id = '40000000-0000-0000-0000-000000000090'
+where id = '40000000-0000-0000-0000-000000000106';
+
+insert into public.inventory_movements (
+  id, business_id, type, product_id, quantity, user_id, date, time, stock_before, price_usd
+)
+values
+  ('40000000-0000-0000-0000-000000000109', '10000000-0000-0000-0000-000000000001', 'entry', '40000000-0000-0000-0000-000000000014', 1, 'a0000000-0000-0000-0000-000000000001', '2024-02-25', '10:00', 5, 10),
+  ('40000000-0000-0000-0000-000000000110', '10000000-0000-0000-0000-000000000001', 'entry', '40000000-0000-0000-0000-000000000017', 1, 'a0000000-0000-0000-0000-000000000001', '2024-01-31', '10:00', 0, 10);
 
 select results_eq(
   $$
@@ -78,9 +106,33 @@ select results_eq(
     values
       ('ST-B'::text, false, 60),
       ('ST-A', true, 30),
-      ('ST-D', true, 30)
+      ('ST-D', true, 30),
+      ('ST-NEW', true, 30)
   $$,
-  'Estancamiento incluye inactivos, ignora devoluciones y ajustes, y respeta el límite de 30 días'
+  'Estancamiento cubre Venta, Cambio, entradas, devoluciones, ajustes, primera existencia y 30 días'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from private.get_product_stock_alerts(
+      '10000000-0000-0000-0000-000000000001', 'low_stock', null, '2024-03-02'
+    )
+    where business_id <> '10000000-0000-0000-0000-000000000001'
+  ),
+  0,
+  'Las alertas nunca mezclan Productos de otro Negocio'
+);
+
+select results_eq(
+  $$
+    select code
+    from public.get_product_stock_alerts(
+      '10000000-0000-0000-0000-000000000001', 'low_stock', 2147483647, '2024-01-02'
+    )
+  $$,
+  $$ values ('LOW-0'::text) $$,
+  'El contrato público combina estado de inventario y fecha de creación'
 );
 
 select set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000004', true);
