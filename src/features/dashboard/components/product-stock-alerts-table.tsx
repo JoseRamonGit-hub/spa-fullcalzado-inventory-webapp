@@ -26,7 +26,19 @@ const baseColumns = [
   }),
   columnHelper.accessor("stock", {
     header: () => <div className="text-right">Stock</div>,
-    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{getValue()}</span>,
+    cell: ({ getValue }) => {
+      const stock = getValue();
+
+      return (
+        <span
+          className={`block text-right font-medium tabular-nums ${
+            stock === 0 ? "text-destructive" : stock <= 3 ? "text-warning" : "text-foreground"
+          }`}
+        >
+          {stock}
+        </span>
+      );
+    },
     enableSorting: false,
   }),
 ] as ColumnDef<DashboardProductStockAlert>[];
