@@ -62,6 +62,13 @@ describe("Alertas de inventario del Dashboard", () => {
     });
   });
 
+  it("aplica la colorimetría de Inventario al stock de ambas tablas", () => {
+    render(<ProductStockAlertsSection />);
+
+    expect(screen.getByText("2")).toHaveClass("text-warning");
+    expect(screen.getByText("5")).toHaveClass("text-foreground");
+  });
+
   it("abre Inventario con el estado equivalente validado", () => {
     render(<ProductStockAlertsSection />);
 
