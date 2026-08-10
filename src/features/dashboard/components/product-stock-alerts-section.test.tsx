@@ -47,14 +47,8 @@ describe("Alertas de inventario del Dashboard", () => {
     const stagnantCard = screen.getByText("Productos estancados").closest('[data-slot="card"]');
     expect(lowStockCard).not.toBeNull();
     expect(stagnantCard).not.toBeNull();
-    expect(lowStockCard?.querySelector(".lucide-triangle-alert")?.parentElement).toHaveClass(
-      "bg-warning/10",
-      "text-warning",
-    );
-    expect(stagnantCard?.querySelector(".lucide-package-x")?.parentElement).toHaveClass(
-      "bg-warning/10",
-      "text-warning",
-    );
+    expect(lowStockCard?.querySelector(".lucide-triangle-alert")).toBeNull();
+    expect(stagnantCard?.querySelector(".lucide-package-x")).toBeNull();
     expect(screen.getByText("40 días")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("row", { name: "Ver detalles de OLD-01" }));
@@ -67,10 +61,24 @@ describe("Alertas de inventario del Dashboard", () => {
   it("abre Inventario con el estado equivalente validado", () => {
     render(<ProductStockAlertsSection />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Ver Stock bajo en Inventario" }));
+    const lowStockAction = screen.getByRole("button", { name: "Ver todas las alertas" });
+    const stagnantAction = screen.getByRole("button", { name: "Ver todos los estancados" });
+
+    expect(lowStockAction.closest('[data-slot="card-footer"]')).not.toBeNull();
+    expect(stagnantAction.closest('[data-slot="card-footer"]')).not.toBeNull();
+    expect(lowStockAction.closest('[data-slot="card-footer"]')?.previousElementSibling).toHaveAttribute(
+      "data-slot",
+      "separator",
+    );
+    expect(stagnantAction.closest('[data-slot="card-footer"]')?.previousElementSibling).toHaveAttribute(
+      "data-slot",
+      "separator",
+    );
+
+    fireEvent.click(lowStockAction);
     expect(navigate).toHaveBeenCalledWith({ to: "/inventory", search: { status: "low_stock" } });
 
-    fireEvent.click(screen.getByRole("button", { name: "Ver Estancado en Inventario" }));
+    fireEvent.click(stagnantAction);
     expect(navigate).toHaveBeenCalledWith({ to: "/inventory", search: { status: "stagnant" } });
   });
 
@@ -102,7 +110,7 @@ describe("Alertas de inventario del Dashboard", () => {
     render(<ProductStockAlertsSection />);
 
     expect(screen.getByText("No hay productos estancados.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Ver Estancado en Inventario" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ver Stock bajo en Inventario" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ver todos los estancados" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver todas las alertas" })).toBeInTheDocument();
   });
 });
