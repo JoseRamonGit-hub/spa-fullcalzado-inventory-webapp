@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCalendarDateForBackend, formatCurrencyVES } from "./formatters";
+import { formatCalendarDateForBackend, formatCurrencyVES, formatInteger } from "./formatters";
 
 describe("formatCurrencyVES", () => {
   it("incluye la moneda por defecto", () => {
@@ -14,5 +14,11 @@ describe("formatCurrencyVES", () => {
 describe("formatCalendarDateForBackend", () => {
   it("preserva el día elegido en el calendario sin convertirlo a Caracas", () => {
     expect(formatCalendarDateForBackend(new Date(2026, 7, 8))).toBe("2026-08-08");
+  });
+});
+
+describe("formatInteger", () => {
+  it("usa el separador de miles venezolano", () => {
+    expect(formatInteger(1350)).toBe("1.350");
   });
 });

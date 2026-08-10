@@ -1,9 +1,11 @@
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Search } from "lucide-react";
 import { DatePickerFilter } from "@/components/ui/date-picker-filter";
+import { filterControlTextClassName, filterStateClassName } from "@/components/ui/filter-control";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import type { ProductStockAlertType } from "@/types";
+import { cn } from "@/lib/utils";
 
 type TopbarProps = {
   search: string;
@@ -43,6 +45,7 @@ export function Topbar({ search, onSearchChange, date, onDateChange, stockStatus
           }
           aria-label="Estado de inventario"
           wrapperClassName="w-full max-w-36"
+          className={cn(filterControlTextClassName, filterStateClassName(Boolean(stockStatus)))}
         >
           <NativeSelectOption value="">Todos</NativeSelectOption>
           <NativeSelectOption value="low_stock">Stock bajo</NativeSelectOption>

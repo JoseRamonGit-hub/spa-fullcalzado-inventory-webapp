@@ -43,8 +43,18 @@ describe("Alertas de inventario del Dashboard", () => {
   it("muestra ambas listas y abre el Producto seleccionado", () => {
     render(<ProductStockAlertsSection />);
 
-    expect(screen.getByText("Productos con stock bajo")).toBeInTheDocument();
-    expect(screen.getByText("Productos estancados")).toBeInTheDocument();
+    const lowStockCard = screen.getByText("Productos con stock bajo").closest('[data-slot="card"]');
+    const stagnantCard = screen.getByText("Productos estancados").closest('[data-slot="card"]');
+    expect(lowStockCard).not.toBeNull();
+    expect(stagnantCard).not.toBeNull();
+    expect(lowStockCard?.querySelector(".lucide-triangle-alert")?.parentElement).toHaveClass(
+      "bg-warning/10",
+      "text-warning",
+    );
+    expect(stagnantCard?.querySelector(".lucide-package-x")?.parentElement).toHaveClass(
+      "bg-warning/10",
+      "text-warning",
+    );
     expect(screen.getByText("40 días")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("row", { name: "Ver detalles de OLD-01" }));

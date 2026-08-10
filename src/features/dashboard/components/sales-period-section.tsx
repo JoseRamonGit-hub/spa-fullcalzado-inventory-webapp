@@ -10,6 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import {
+  filterIconClassName,
+  filterStateClassName,
+  filterToggleItemClassName,
+  filterTriggerClassName,
+} from "@/components/ui/filter-control";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -71,10 +77,10 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
     <section className="flex min-h-0 flex-col" aria-labelledby="sales-period-title">
       <header className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-1">
-          <h2 id="sales-period-title" className="text-base font-semibold">
+          <h2 id="sales-period-title" className="font-heading text-base font-semibold">
             Ventas por período
           </h2>
-          <p className="text-muted-foreground text-sm">Facturación bruta del negocio activo</p>
+          <p className="text-muted-foreground text-xs">Facturación bruta del negocio activo</p>
         </div>
 
         <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:items-end">
@@ -90,7 +96,11 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
             className="grid w-full grid-cols-2 md:flex md:w-auto"
           >
             {SALES_PERIOD_OPTIONS.map((option) => (
-              <ToggleGroupItem key={option.value} value={option.value} className="min-w-0 md:flex-none">
+              <ToggleGroupItem
+                key={option.value}
+                value={option.value}
+                className={cn("min-w-0 md:flex-none", filterToggleItemClassName)}
+              >
                 {option.label}
               </ToggleGroupItem>
             ))}
@@ -114,7 +124,9 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
           {selection.preset === "custom" && !customAnalysis?.isValid ? (
             <Empty className="border py-6 md:py-6">
               <EmptyHeader>
-                <EmptyTitle>{customAnalysis?.error ?? "Selecciona un rango personalizado"}</EmptyTitle>
+                <EmptyTitle className="text-sm font-medium tracking-normal">
+                  {customAnalysis?.error ?? "Selecciona un rango personalizado"}
+                </EmptyTitle>
               </EmptyHeader>
             </Empty>
           ) : salesQuery.isPending || topProductsQuery.isPending ? (
@@ -161,7 +173,7 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
     <section className="flex min-h-0 flex-col gap-3" aria-labelledby="top-products-title">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
-          <h3 id="top-products-title" className="text-sm font-semibold">
+          <h3 id="top-products-title" className="font-heading text-sm font-semibold">
             Top productos
           </h3>
           <p className="text-muted-foreground text-xs">Ventas del período seleccionado</p>
@@ -174,8 +186,12 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
           onValueChange={(value) => value && onRankByChange(value as DashboardTopProductsRankMode)}
           aria-label="Ordenar Top productos"
         >
-          <ToggleGroupItem value="units">Unidades</ToggleGroupItem>
-          <ToggleGroupItem value="gross_usd">USD bruto</ToggleGroupItem>
+          <ToggleGroupItem value="units" className={filterToggleItemClassName}>
+            Unidades
+          </ToggleGroupItem>
+          <ToggleGroupItem value="gross_usd" className={filterToggleItemClassName}>
+            USD bruto
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -226,8 +242,20 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
       }}
     >
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full justify-start md:w-auto">
-          <CalendarDays data-icon="inline-start" aria-hidden="true" />
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            "w-full justify-start md:w-auto",
+            filterTriggerClassName,
+            filterStateClassName(Boolean(selection.customStartDate && selection.customEndDate)),
+          )}
+        >
+          <CalendarDays
+            data-icon="inline-start"
+            aria-hidden="true"
+            className={filterIconClassName(Boolean(selection.customStartDate && selection.customEndDate))}
+          />
           {formatCustomRangeLabel(selection.customStartDate, selection.customEndDate)}
         </Button>
       </PopoverTrigger>
@@ -238,6 +266,10 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
           selected={draftRange}
           onSelect={setDraftRange}
           defaultMonth={draftRange?.from ?? todayDate}
+          numberOfMonths={2}
+          captionLayout="dropdown"
+          startMonth={new Date(1900, 0, 1)}
+          endMonth={todayDate}
           disabled={{ after: todayDate }}
           locale={es}
           autoFocus
@@ -299,8 +331,8 @@ function SalesPeriodContent({ data }: SalesPeriodContentProps) {
       <Separator />
 
       <div className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-[11px] font-medium">{PERIOD_DESCRIPTION[data.preset]}</p>
-        <p className="text-muted-foreground text-[10px]">
+        <p className="text-muted-foreground text-xs font-medium">{PERIOD_DESCRIPTION[data.preset]}</p>
+        <p className="text-muted-foreground text-[11px]">
           {formatPeriodRange(data.currentStart, data.currentEnd)} · período anterior{" "}
           {formatPeriodRange(data.comparisonStart, data.comparisonEnd)}
         </p>
@@ -310,7 +342,7 @@ function SalesPeriodContent({ data }: SalesPeriodContentProps) {
         <div className="flex flex-col gap-3">
           <Empty className="border py-6 md:py-6">
             <EmptyHeader>
-              <EmptyTitle>Sin actividad en este período</EmptyTitle>
+              <EmptyTitle className="text-sm font-medium tracking-normal">Sin actividad en este período</EmptyTitle>
             </EmptyHeader>
           </Empty>
           {data.preset !== "today" && <SalesBucketValues data={data} showLabels />}
@@ -382,13 +414,13 @@ function SalesBucketValues({ data, showLabels = false }: SalesPeriodContentProps
           aria-label={`${bucket.label}: ${bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible"}`}
         >
           {showLabels || data.preset === "custom" ? (
-            <span className="text-muted-foreground text-[9px] font-semibold tracking-wide uppercase">
+            <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
               {bucket.label}
             </span>
           ) : null}
           <span
             className={cn(
-              "max-w-full truncate font-mono text-[9px] tabular-nums",
+              "max-w-full truncate font-mono text-[10px] tabular-nums",
               !bucket.isAvailable && "text-muted-foreground italic",
             )}
             title={bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible"}

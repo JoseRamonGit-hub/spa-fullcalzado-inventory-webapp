@@ -17,11 +17,23 @@ vi.mock("../hooks/useDashboardMetrics", () => ({
   useDashboardTopProducts: vi.fn(),
 }));
 vi.mock("@/components/ui/calendar", () => ({
-  Calendar: ({ onSelect, disabled }: { onSelect: (range: unknown) => void; disabled?: { after?: Date } }) => (
+  Calendar: ({
+    onSelect,
+    disabled,
+    numberOfMonths,
+    captionLayout,
+  }: {
+    onSelect: (range: unknown) => void;
+    disabled?: { after?: Date };
+    numberOfMonths?: number;
+    captionLayout?: string;
+  }) => (
     <button
       type="button"
       data-testid="calendario-personalizado"
       data-future-disabled={disabled?.after instanceof Date}
+      data-number-of-months={numberOfMonths}
+      data-caption-layout={captionLayout}
       onClick={() => onSelect({ from: new Date(2024, 2, 20), to: new Date(2024, 2, 27) })}
     >
       Elegir rango de prueba
@@ -89,6 +101,8 @@ describe("Ventas por período", () => {
     const applyButton = screen.getByRole("button", { name: "Aplicar rango" });
     expect(applyButton).toBeDisabled();
     expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-future-disabled", "true");
+    expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-number-of-months", "2");
+    expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-caption-layout", "dropdown");
 
     fireEvent.click(screen.getByRole("button", { name: "Elegir rango de prueba" }));
     expect(applyButton).toBeEnabled();

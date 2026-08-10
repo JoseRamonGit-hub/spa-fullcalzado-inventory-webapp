@@ -7,6 +7,7 @@ import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { filterIconClassName, filterStateClassName, filterTriggerClassName } from "@/components/ui/filter-control";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { formatDateForBackend } from "@/utils/formatters";
@@ -65,13 +66,9 @@ export function DatePickerFilter({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn(
-            "bg-card border-border hover:bg-card/80 h-8 min-w-0 gap-1.5 px-2.5 text-xs font-normal transition-colors",
-            value ? "border-primary/40 text-foreground" : "text-muted-foreground",
-            className,
-          )}
+          className={cn(filterTriggerClassName, filterStateClassName(Boolean(value)), className)}
         >
-          <CalendarDays className={cn("h-3.5 w-3.5 shrink-0", value ? "text-primary" : "text-muted-foreground")} />
+          <CalendarDays className={filterIconClassName(Boolean(value))} />
           <span className="truncate">{displayLabel}</span>
           {value && (
             <span

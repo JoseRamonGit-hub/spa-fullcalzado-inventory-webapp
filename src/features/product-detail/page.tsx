@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { ArrowLeft, PackageSearch, RotateCcw } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -64,6 +64,7 @@ function DetailItem({ index, label, children }: DetailItemProps) {
 export function ProductDetailPage() {
   const { productId } = Route.useParams();
   const navigate = useNavigate({ from: "/inventory/$productId" });
+  const router = useRouter();
   const businessId = useBusinessStore((state) => state.activeBusinessId);
   const initialBusinessId = useRef(businessId);
   const [historyPeriod, setHistoryPeriod] = useState<ProductHistoryPeriod>("last-30-days");
@@ -91,14 +92,21 @@ export function ProductDetailPage() {
     }
   }, [navigate, productQuery.data, productQuery.isError, productQuery.isPending]);
 
-  const goBack = () => navigate({ to: "/inventory" });
+  const goBack = () => {
+    if (router.history.canGoBack()) {
+      router.history.back();
+      return;
+    }
+
+    navigate({ to: "/inventory" });
+  };
   const isPending = productQuery.isPending || exchangeRateQuery.isPending;
   const isError = productQuery.isError || exchangeRateQuery.isError;
 
   return (
     <section className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-auto">
       <header className="topbar-height bg-background sticky top-0 z-10 flex shrink-0 items-center gap-2 border-b px-3 md:px-4">
-        <Button variant="ghost" size="icon-xs" aria-label="Volver al inventario" onClick={goBack}>
+        <Button variant="ghost" size="icon-xs" aria-label="Volver a la pantalla anterior" onClick={goBack}>
           <ArrowLeft aria-hidden="true" />
         </Button>
         <BusinessModuleTitle title="Detalle de producto" />

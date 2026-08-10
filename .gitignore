@@ -37,3 +37,8 @@ backups/
 .env*
 
 prototypes/
+
+
+backup_data.sql
+backup_roles.sql
+backup_schema.sql

@@ -79,6 +79,7 @@ export function ProductStockAlertsTable({ type, products, isLoading, onProductCl
       isLoading={isLoading}
       hidePagination
       emptyMessage={config.emptyMessage}
+      emptyStateClassName="h-24"
       onRowClick={onProductClick}
       getRowAriaLabel={(product) => `Ver detalles de ${product.code}`}
       getRowId={(product) => product.productId}

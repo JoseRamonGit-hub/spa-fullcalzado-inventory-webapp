@@ -5,6 +5,8 @@ import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { InventoryMovement, Product, ProductHistoryEvent } from "@/types";
 
 const navigate = vi.fn();
+const goBack = vi.fn();
+const canGoBack = vi.fn();
 const refetch = vi.fn();
 const refetchHistory = vi.fn();
 const useProductHistoryMock = vi.fn();
@@ -16,6 +18,7 @@ let history: ProductHistoryEvent[];
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
+  useRouter: () => ({ history: { back: goBack, canGoBack } }),
 }));
 
 vi.mock("@/routes/_app/inventory_.$productId", () => ({
@@ -87,6 +90,9 @@ const historyEvent = {
 describe("ProductDetailPage", () => {
   beforeEach(() => {
     navigate.mockClear();
+    goBack.mockClear();
+    canGoBack.mockReset();
+    canGoBack.mockReturnValue(true);
     refetch.mockClear();
     detail = { product, lastActivity: activity };
     exchangeRate = { rate: 90 };
@@ -107,6 +113,25 @@ describe("ProductDetailPage", () => {
     expect(screen.getByText("$25.00")).toBeInTheDocument();
     expect(screen.getByText("2.250,00 Bs.")).toBeInTheDocument();
     expect(screen.getByText("Desactivación")).toBeInTheDocument();
+  });
+
+  it("regresa a la pantalla anterior desde la que se abrió el detalle", () => {
+    render(<ProductDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Volver a la pantalla anterior" }));
+
+    expect(goBack).toHaveBeenCalledOnce();
+    expect(navigate).not.toHaveBeenCalledWith({ to: "/inventory" });
+  });
+
+  it("usa Inventario como respaldo cuando no existe una pantalla anterior", () => {
+    canGoBack.mockReturnValue(false);
+    render(<ProductDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Volver a la pantalla anterior" }));
+
+    expect(goBack).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith({ to: "/inventory" });
   });
 
   it("keeps the complete paginated movement table available on mobile", () => {
