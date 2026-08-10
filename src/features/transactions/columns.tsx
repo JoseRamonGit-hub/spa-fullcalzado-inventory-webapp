@@ -2,6 +2,7 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatTime, formatCurrencyUSD, formatCurrencyVES, formatDate, formatDateForBackend } from "@/utils/formatters";
 import { useNavigate } from "@tanstack/react-router";
 import { IterationCcw } from "lucide-react";
@@ -40,7 +41,7 @@ export const columns = [
   columnHelper.accessor("products.description", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Descripción" />,
-    cell: ({ getValue }) => <span className="max-w-table-row block truncate">{getValue()}</span>,
+    cell: ({ getValue }) => <OverflowTooltip className="max-w-table-row">{getValue()}</OverflowTooltip>,
   }),
   columnHelper.accessor("quantity", {
     enableSorting: true,
@@ -56,7 +57,7 @@ export const columns = [
   }),
   columnHelper.accessor("total_ves", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="VES" className="justify-end" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Bs." className="justify-end" />,
     cell: ({ getValue }) => (
       <span className="text-muted-foreground block text-right tabular-nums">{formatCurrencyVES(getValue() ?? 0)}</span>
     ),

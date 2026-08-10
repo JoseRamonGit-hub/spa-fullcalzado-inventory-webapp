@@ -5,7 +5,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import type { PendingSale } from "../types";
+import type { PendingSaleLine } from "../types";
 import {
   focusFirstNumberInput,
   MINIMUM_PRODUCT_QUANTITY,
@@ -17,10 +17,10 @@ import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exc
 
 type ProductSaleFormProps = {
   exchangeRate: ModalExchangeRate;
-  onAddPendingSale: (sale: PendingSale) => void;
+  onAddPendingSaleLine: (saleLine: PendingSaleLine) => void;
 };
 
-export function ProductSaleForm({ exchangeRate, onAddPendingSale }: ProductSaleFormProps) {
+export function ProductSaleForm({ exchangeRate, onAddPendingSaleLine }: ProductSaleFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const { getProductById } = useProductLookup();
 
@@ -37,7 +37,7 @@ export function ProductSaleForm({ exchangeRate, onAddPendingSale }: ProductSaleF
 
       const priceVes = product.price_usd * exchangeRate.value;
 
-      onAddPendingSale({
+      onAddPendingSaleLine({
         tempId: crypto.randomUUID(),
         productId: product.id,
         code: product.code,
@@ -142,9 +142,7 @@ export function ProductSaleForm({ exchangeRate, onAddPendingSale }: ProductSaleF
               return (
                 <div className="bg-popover text-popover-foreground animate-in fade-in slide-in-from-top-1 absolute top-full left-0 z-30 mt-1.5 w-44 rounded-md border px-2.5 py-2 text-[11px] shadow-md">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
-                      Subtotal
-                    </span>
+                    <span className="text-muted-foreground text-[10px] font-semibold uppercase">Subtotal</span>
                     <span className="font-semibold tabular-nums">{formatCurrencyUSD(totalUsd)}</span>
                   </div>
                   <div className="border-border/60 mt-1.5 flex items-center justify-between gap-3 border-t pt-1.5">

@@ -3,13 +3,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
 import { useModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
-import { usePendingSales } from "./hooks/use-pending-sales";
-import { useSubmitSales } from "./hooks/use-submit-sales";
+import { usePendingSaleLines } from "./hooks/use-pending-sale-lines";
+import { useSubmitSale } from "./hooks/use-submit-sale";
 import { ProductSaleForm } from "./components/product-sale-form";
 import { SalesSummaryFooter } from "./components/sales-summary-footer";
-import { ConfirmSalesDialog } from "./components/confirm-sales-dialog";
+import { ConfirmSaleDialog } from "./components/confirm-sale-dialog";
 import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
-import { PendingSalesPanel } from "./components/pending-sales-panel";
+import { PendingSaleLinesPanel } from "./components/pending-sale-lines-panel";
 import { SalesSummaryBlock } from "./components/sales-summary-block";
 
 type OutModalProps = {
@@ -23,8 +23,14 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-  const { pendingSales, addPendingSale, removePendingSale, clearPendingSales, totalAmountUsd, totalAmountVes } =
-    usePendingSales();
+  const {
+    pendingSaleLines,
+    addPendingSaleLine,
+    removePendingSaleLine,
+    clearPendingSaleLines,
+    totalAmountUsd,
+    totalAmountVes,
+  } = usePendingSaleLines();
 
   const handleSubmissionSuccess = () => {
     setIsConfirmDialogOpen(false);
@@ -32,16 +38,16 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     navigate({ to: "/transactions" });
   };
 
-  const { submitPendingSales, isSubmissionPending } = useSubmitSales({
-    pendingSales,
+  const { submitSale, isSubmissionPending } = useSubmitSale({
+    pendingSaleLines,
     currentExchangeRate: exchangeRate.value,
-    clearPendingSales,
+    clearPendingSaleLines,
     onSuccess: handleSubmissionSuccess,
   });
 
   const handleModalOpenChange = (isCurrentlyOpen: boolean) => {
     if (!isCurrentlyOpen) {
-      clearPendingSales();
+      clearPendingSaleLines();
     }
     onOpenChange(isCurrentlyOpen);
   };
@@ -50,7 +56,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     {
       key: "enter",
       shiftKey: true,
-      when: pendingSales.length > 0 && !isConfirmDialogOpen && exchangeRate.isReady,
+      when: pendingSaleLines.length > 0 && !isConfirmDialogOpen && exchangeRate.isReady,
       stopPropagation: true,
       onTrigger: () => setIsConfirmDialogOpen(true),
     },
@@ -63,14 +69,14 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
       <ResponsiveModal
         open={isOpen}
         onOpenChange={handleModalOpenChange}
-        title="Registrar Ventas"
-        description="Agrega productos al lote y confirma con Shift + Enter."
+        title="Registrar Venta"
+        description="Agrega productos a la Venta y confirma con Shift + Enter."
         dialogClassName="sm:max-w-5xl"
         avoidCloseFromOutsideClick
         avoidCloseFromEsc
         footer={
           <SalesSummaryFooter
-            pendingSales={pendingSales}
+            pendingSaleLines={pendingSaleLines}
             exchangeRate={exchangeRate}
             isSubmissionPending={isSubmissionPending}
             onOpenConfirmDialog={() => setIsConfirmDialogOpen(true)}
@@ -78,10 +84,13 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         }
       >
         <section className="flex flex-col gap-3 md:gap-4">
-          <ProductSaleForm exchangeRate={exchangeRate} onAddPendingSale={addPendingSale} />
+          <ProductSaleForm exchangeRate={exchangeRate} onAddPendingSaleLine={addPendingSaleLine} />
 
           <div className="grid min-h-0 gap-3 md:grid-cols-[minmax(0,1fr)_17rem]">
-            <PendingSalesPanel pendingSales={pendingSales} onRemovePendingSale={removePendingSale} />
+            <PendingSaleLinesPanel
+              pendingSaleLines={pendingSaleLines}
+              onRemovePendingSaleLine={removePendingSaleLine}
+            />
             <SalesSummaryBlock
               exchangeRate={exchangeRate}
               totalAmountUsd={totalAmountUsd}
@@ -91,15 +100,15 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         </section>
       </ResponsiveModal>
 
-      <ConfirmSalesDialog
+      <ConfirmSaleDialog
         isOpen={isConfirmDialogOpen}
         onOpenChange={setIsConfirmDialogOpen}
-        pendingSales={pendingSales}
+        pendingSaleLines={pendingSaleLines}
         exchangeRate={exchangeRate}
         totalAmountUsd={totalAmountUsd}
         totalAmountVes={totalAmountVes}
         isSubmissionPending={isSubmissionPending}
-        onConfirmSubmit={submitPendingSales}
+        onConfirmSubmit={submitSale}
       />
     </>
   );

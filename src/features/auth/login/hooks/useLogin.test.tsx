@@ -64,7 +64,7 @@ describe("useLogin", () => {
     });
   });
 
-  it("en login exitoso: setea el store y navega a /inventory", async () => {
+  it("en login exitoso: setea el store y navega a /dashboard", async () => {
     mockLogin.mockResolvedValueOnce({
       success: true,
       user: fakeUser,
@@ -86,7 +86,7 @@ describe("useLogin", () => {
     expect(state.user).toEqual(fakeUser);
     expect(businessesService.getAccessible).toHaveBeenCalled();
 
-    expect(mockNavigate).toHaveBeenCalledWith({ to: "/inventory" });
+    expect(mockNavigate).toHaveBeenCalledWith({ to: "/dashboard" });
   });
 
   it("en credenciales incorrectas: muestra toast de error y NO navega", async () => {

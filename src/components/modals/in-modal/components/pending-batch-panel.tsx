@@ -2,6 +2,7 @@ import { PackageOpen, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { BatchItem } from "../types";
 
@@ -63,7 +64,7 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
     <section className="bg-card -mx-2 flex h-56 min-h-0 flex-col overflow-hidden rounded-md border md:mx-0 md:h-72">
       <header className="bg-muted/35 border-b px-3 py-2">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Lote de carga</h3>
+          <h3 className="text-muted-foreground text-[10px] font-semibold uppercase">Lote de carga</h3>
           <span className="text-muted-foreground text-xs tabular-nums">
             {hasPendingBatchItems
               ? `${pendingBatchItemsCount} producto${pendingBatchItemsCount === 1 ? "" : "s"}`
@@ -77,24 +78,12 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
           <Table className="min-w-[36rem] text-xs md:min-w-[40rem]">
             <TableHeader className="bg-muted/20 sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-muted-foreground h-7 w-20 px-2 text-[10px] font-semibold tracking-wider uppercase">
-                  Acción
-                </TableHead>
-                <TableHead className="text-muted-foreground h-7 w-44 px-2 text-[10px] font-semibold tracking-wider uppercase md:hidden">
-                  Producto
-                </TableHead>
-                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
-                  Código
-                </TableHead>
-                <TableHead className="text-muted-foreground hidden h-7 px-2 text-[10px] font-semibold tracking-wider uppercase md:table-cell">
-                  Descripción
-                </TableHead>
-                <TableHead className="text-muted-foreground h-7 w-28 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
-                  Cantidad
-                </TableHead>
-                <TableHead className="text-muted-foreground h-7 px-2 text-right text-[10px] font-semibold tracking-wider uppercase">
-                  Precio
-                </TableHead>
+                <TableHead className="w-20 px-2">Acción</TableHead>
+                <TableHead className="w-44 px-2 md:hidden">Producto</TableHead>
+                <TableHead className="hidden px-2 md:table-cell">Código</TableHead>
+                <TableHead className="hidden px-2 md:table-cell">Descripción</TableHead>
+                <TableHead className="w-28 px-2 text-right">Cantidad</TableHead>
+                <TableHead className="px-2 text-right">Precio</TableHead>
                 <TableHead className="h-7 w-8 px-1" />
               </TableRow>
             </TableHeader>
@@ -107,14 +96,14 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
                   <TableCell className="max-w-44 px-2 py-1.5 md:hidden">
                     <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
                       <span className="product-code shrink-0 uppercase">{item.code}</span>
-                      <span className="truncate font-medium">{item.description}</span>
+                      <OverflowTooltip className="flex-1 font-medium">{item.description}</OverflowTooltip>
                     </span>
                   </TableCell>
                   <TableCell className="hidden px-2 py-1.5 md:table-cell">
                     <span className="product-code uppercase">{item.code}</span>
                   </TableCell>
                   <TableCell className="hidden max-w-72 px-2 py-1.5 md:table-cell">
-                    <span className="block truncate font-medium">{item.description}</span>
+                    <OverflowTooltip className="font-medium">{item.description}</OverflowTooltip>
                   </TableCell>
                   <TableCell className="px-2 py-1.5 text-right">
                     <BatchQuantity item={item} />

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { useProducts, productKeys } from "./useProductQueries";
+import { useProductDetail, useProducts, productKeys } from "./useProductQueries";
 import { useUpdateProduct, useToggleProductActive } from "./useProductMutations";
 import { productsService } from "@/services/productsService";
 import type { Product, EditProductPayload } from "@/types";
@@ -15,6 +15,7 @@ const BUSINESS_ID = "business-1";
 vi.mock("@/services/productsService", () => ({
   productsService: {
     getAll: vi.fn(),
+    getDetail: vi.fn(),
     editProduct: vi.fn(),
     createMany: vi.fn(),
     toggleActive: vi.fn(),
@@ -22,6 +23,7 @@ vi.mock("@/services/productsService", () => ({
 }));
 
 const mockGetAll = vi.mocked(productsService.getAll);
+const mockGetDetail = vi.mocked(productsService.getDetail);
 const mockEditProduct = vi.mocked(productsService.editProduct);
 const mockToggleActive = vi.mocked(productsService.toggleActive);
 
@@ -75,7 +77,23 @@ describe("useProducts", () => {
       });
 
       expect(result.current.data).toEqual([fakeProduct]);
-      expect(mockGetAll).toHaveBeenCalledWith(BUSINESS_ID, undefined);
+      expect(mockGetAll).toHaveBeenCalledWith(BUSINESS_ID, undefined, undefined);
+    });
+
+    it("scopes product detail data and cache to the active business", async () => {
+      mockGetDetail.mockResolvedValueOnce({ product: fakeProduct, lastActivity: null });
+
+      const { result } = renderHook(() => useProductDetail(fakeProduct.id), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(mockGetDetail).toHaveBeenCalledWith(BUSINESS_ID, fakeProduct.id);
+      expect(testQueryClient.getQueryData(productKeys.detail(BUSINESS_ID, fakeProduct.id))).toEqual({
+        product: fakeProduct,
+        lastActivity: null,
+      });
     });
   });
 
@@ -110,7 +128,7 @@ describe("useProducts", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: movementKeys.business(BUSINESS_ID) });
     });
 
-    it("toggle product active invalidates product lists", async () => {
+    it("toggle product active invalidates product lists and movements", async () => {
       mockToggleActive.mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useToggleProductActive(), {
@@ -129,6 +147,7 @@ describe("useProducts", () => {
 
       expect(mockToggleActive).toHaveBeenCalledWith(BUSINESS_ID, "prod-1", false);
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: productKeys.lists(BUSINESS_ID) });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: movementKeys.business(BUSINESS_ID) });
     });
   });
 });

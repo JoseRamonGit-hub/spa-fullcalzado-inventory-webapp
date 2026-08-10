@@ -1,6 +1,7 @@
 import { Check, ChevronRight, ChevronsUpDown, SportShoe } from "lucide-react";
 import { CommandItem } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { getBusinessInitials } from "@/features/business/utils/business-display";
 import {
   getBusinessAccentStyle,
@@ -55,9 +56,13 @@ export function BusinessTriggerContent({
         <SportShoe className="size-4" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left leading-none">
-        <span className={cn("truncate text-sm font-semibold", isSidebar && "text-sidebar-foreground")}>
-          {businessName}
-        </span>
+        {isSidebar ? (
+          <OverflowTooltip focusable={false} className="text-sidebar-foreground text-sm font-semibold">
+            {businessName}
+          </OverflowTooltip>
+        ) : (
+          <span className="text-sm leading-snug font-semibold break-words">{businessName}</span>
+        )}
         <span
           className={cn("truncate text-[11px]", isSidebar ? "text-sidebar-foreground/50" : "text-muted-foreground")}
         >
@@ -107,7 +112,7 @@ export function BusinessOption({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="text-foreground truncate text-sm font-semibold">{business.name}</span>
+        <span className="text-foreground text-sm leading-snug font-semibold break-words">{business.name}</span>
         <span className="text-muted-foreground truncate text-xs">
           {isActive ? "Negocio actual" : "Cambiar a este negocio"}
         </span>

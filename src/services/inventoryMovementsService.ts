@@ -1,10 +1,32 @@
 import { supabase } from "@/lib/supabase";
-import type { InventoryMovementWithRelations, InventoryMovementCreateInput } from "@/types/index";
+import type {
+  InventoryMovementWithRelations,
+  InventoryMovementCreateInput,
+  ProductHistoryEvent,
+  ProductHistoryRange,
+} from "@/types/index";
 import { formatDateForBackend } from "@/utils/formatters";
 
 const MOVEMENT_SELECT = "*, products(code, description), users(fullname)" as const;
 
 export const inventoryMovementsService = {
+  getProductHistory: async (
+    businessId: string,
+    productId: string,
+    range: ProductHistoryRange,
+  ): Promise<ProductHistoryEvent[]> => {
+    const { data, error } = await supabase.rpc("get_product_history", {
+      p_business_id: businessId,
+      p_product_id: productId,
+      p_start_date: range.startDate,
+      p_end_date: range.endDate,
+      p_show_all: range.showAll,
+    });
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
   getAll: async (businessId: string, date?: string): Promise<InventoryMovementWithRelations[]> => {
     let query = supabase
       .from("inventory_movements")

@@ -8,7 +8,15 @@ import { getBusinessDotStyle, getBusinessIconStyle, getBusinessTheme } from "@/f
 
 const MINIMUM_VISIBLE_TIME = 1000;
 const MAXIMUM_VISIBLE_TIME = 3000;
-const TENANT_QUERY_ROOTS = new Set(["products", "movements", "transactions", "returns", "cash-closes", "exchangeRate"]);
+const TENANT_QUERY_ROOTS = new Set([
+  "dashboard",
+  "products",
+  "movements",
+  "transactions",
+  "returns",
+  "cash-closes",
+  "exchangeRate",
+]);
 
 export function BusinessTransitionOverlay() {
   const targetBusinessId = useBusinessTransitionStore((state) => state.targetBusinessId);

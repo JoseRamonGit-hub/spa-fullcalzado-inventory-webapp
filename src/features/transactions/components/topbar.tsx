@@ -10,7 +10,7 @@ export function Topbar({ date, onDateChange }: TopbarProps) {
   return (
     <header className="topbar-height bg-background flex items-center justify-between gap-2 border-b px-3 md:px-4">
       <BusinessModuleTitle title="Ventas" />
-      <DatePickerFilter value={date} onChange={onDateChange} placeholder="Filtrar por día" />
+      <DatePickerFilter value={date} onChange={onDateChange} placeholder="Últimos 30 días" />
     </header>
   );
 }

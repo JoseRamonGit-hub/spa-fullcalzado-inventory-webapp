@@ -4,6 +4,7 @@ import { z } from "zod";
 
 const searchSchema = z.object({
   date: z.string().optional(),
+  status: z.enum(["low_stock", "stagnant"]).optional(),
 });
 
 export const Route = createFileRoute("/_app/inventory")({

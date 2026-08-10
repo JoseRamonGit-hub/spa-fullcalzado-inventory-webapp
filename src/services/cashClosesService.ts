@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { CashClose, CashCloseWithRelations } from "@/types/index";
+import type { CashClose, CashCloseSummary, CashCloseWithRelations } from "@/types/index";
 
 const CASH_CLOSE_SELECT = "*, users(fullname)" as const;
 
@@ -17,6 +17,30 @@ export const cashClosesService = {
 
     if (error) throw new Error(error.message);
     return data;
+  },
+
+  getSummary: async (businessId: string, date?: string): Promise<CashCloseSummary> => {
+    const { data, error } = await supabase.rpc("get_cash_close_summary", {
+      p_business_id: businessId,
+      p_date: date,
+    });
+
+    if (error) throw new Error(error.message);
+
+    const summary = data?.[0];
+    if (!summary) throw new Error("No se pudo obtener el resumen del Cierre de Caja");
+
+    return {
+      billedOperations: summary.billed_operations,
+      units: summary.total_units_sold,
+      totalUsd: summary.total_usd,
+      totalVes: summary.total_ves,
+      returnsCount: summary.total_returns,
+      returnsCreditUsd: summary.total_returns_usd,
+      returnsCreditVes: summary.total_returns_ves,
+      netUsd: summary.net_usd,
+      netVes: summary.net_ves,
+    };
   },
 
   generateDailyCashClose: async (businessId: string): Promise<CashClose> => {

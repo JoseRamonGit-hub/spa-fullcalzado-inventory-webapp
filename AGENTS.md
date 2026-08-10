@@ -31,8 +31,8 @@ React 19 + TypeScript SPA for shoe store inventory management. Spanish-language 
 
 ### Route layout groups
 
-- `_auth` — unauthenticated routes (login). Redirects to `/inventory` if already authenticated.
-- `_app` — authenticated routes (inventory, transactions, movements, cash-closes, settings). Redirects to `/login` if not authenticated. Contains the sidebar, topbar, modals, and keyboard shortcuts.
+- `_auth` — unauthenticated routes (login). Redirects to `/dashboard` if already authenticated.
+- `_app` — authenticated routes (dashboard, inventory, transactions, movements, cash-closes, settings). Redirects to `/login` if not authenticated. Contains the sidebar, topbar, modals, and keyboard shortcuts.
 
 Auth guard in `_app` is a synchronous Zustand check — the root route's `beforeLoad` handles the async Supabase session validation.
 
@@ -74,3 +74,17 @@ Supabase PostgreSQL. Migrations in `supabase/migrations/`. SQL tests in `supabas
 - React Query cache invalidation happens in mutation `onSuccess` callbacks within hooks
 - Test files live next to source files (`*.test.ts` / `*.test.tsx`)
 - Evitar en lo posible useCallback y useMemo, esta app ya usa el react compiler
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in this repository’s GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage uses the canonical `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix` labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Domain documentation uses a single-context layout. See `docs/agents/domain.md`.

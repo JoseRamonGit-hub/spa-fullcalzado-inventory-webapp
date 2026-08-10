@@ -1,4 +1,4 @@
-export type PendingSale = {
+export type PendingSaleLine = {
   tempId: string;
   productId: string;
   code: string;

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
+import { TableHead } from "@/components/ui/table";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
 import {
   ConfirmDialogTableSection,
@@ -260,20 +262,20 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
           <table className="w-full min-w-120">
             <thead>
               <tr className="bg-muted/35 text-muted-foreground border-b">
-                <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Campo</th>
-                <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Actual</th>
-                <th className="px-3 py-1.5 text-left font-semibold tracking-wider uppercase">Nuevo</th>
+                <TableHead className="py-1.5">Campo</TableHead>
+                <TableHead className="py-1.5">Actual</TableHead>
+                <TableHead className="py-1.5">Nuevo</TableHead>
               </tr>
             </thead>
             <tbody className="divide-border/60 divide-y">
               {changedFields.map((change) => (
                 <tr key={change.label} className="bg-card">
                   <td className="px-3 py-2 font-medium">{change.label}</td>
-                  <td className="text-muted-foreground max-w-48 truncate px-3 py-2" title={change.from}>
-                    {change.from}
+                  <td className="max-w-48 px-3 py-2">
+                    <OverflowTooltip className="text-muted-foreground">{change.from}</OverflowTooltip>
                   </td>
-                  <td className="max-w-48 truncate px-3 py-2 font-semibold" title={change.to}>
-                    {change.to}
+                  <td className="max-w-48 px-3 py-2">
+                    <OverflowTooltip className="font-semibold">{change.to}</OverflowTooltip>
                   </td>
                 </tr>
               ))}

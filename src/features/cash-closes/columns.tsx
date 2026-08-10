@@ -11,9 +11,12 @@ export const columns = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
     cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue())}</span>,
   }),
-  columnHelper.accessor("total_transactions", {
+  columnHelper.accessor((cashClose) => cashClose.total_billed_operations ?? cashClose.total_transactions, {
+    id: "billed_operations",
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Ventas" className="justify-end" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Operaciones facturadas" className="justify-end" />
+    ),
     cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
   }),
   columnHelper.accessor("total_units_sold", {

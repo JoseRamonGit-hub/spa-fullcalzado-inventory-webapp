@@ -3,6 +3,7 @@ import { ChevronRight, Pencil, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import type { Business, ManagedUser } from "@/types";
 import { getUserRoleLabel } from "./utils/user-labels";
 
@@ -38,8 +39,10 @@ function BusinessSummaryCell({ user, businesses }: { user: ManagedUser; business
   const hiddenBusinessCount = summary.length - visibleBusinesses.length;
 
   return (
-    <div className="flex max-w-64 items-center gap-1.5">
-      <span className={isUnassigned ? "text-destructive" : "truncate"}>{visibleBusinesses.join(", ")}</span>
+    <div className="flex max-w-80 items-center gap-1.5">
+      <OverflowTooltip focusable={false} className={isUnassigned ? "text-destructive" : undefined}>
+        {visibleBusinesses.join(", ")}
+      </OverflowTooltip>
       {hiddenBusinessCount > 0 ? (
         <Badge variant="outline" className="h-5 shrink-0 px-1.5 text-[10px] font-medium tabular-nums">
           +{hiddenBusinessCount}
@@ -65,9 +68,9 @@ function MobileUserDetails({ user, businesses }: { user: ManagedUser; businesses
       </div>
       <div className="text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs">
         <Store className="size-3.5 shrink-0" />
-        <span className="truncate">{businessSummary.join(", ")}</span>
+        <span className="break-words">{businessSummary.join(", ")}</span>
       </div>
-      <span className="text-muted-foreground truncate text-[11px]">Inicio: {defaultBusiness}</span>
+      <span className="text-muted-foreground text-[11px] break-words">Inicio: {defaultBusiness}</span>
     </div>
   );
 }
@@ -83,8 +86,14 @@ export const columns = [
         <div className="flex min-w-0 items-start justify-between gap-3 py-1.5 md:py-0">
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 flex-col">
-              <span className="truncate text-sm font-semibold">{row.original.fullname}</span>
-              <span className="text-muted-foreground truncate text-[11px]">{row.original.email}</span>
+              <span className="text-sm font-semibold break-words md:hidden">{row.original.fullname}</span>
+              <OverflowTooltip focusable={false} className="hidden text-sm font-semibold md:block">
+                {row.original.fullname}
+              </OverflowTooltip>
+              <span className="text-muted-foreground text-[11px] break-all md:hidden">{row.original.email}</span>
+              <OverflowTooltip focusable={false} className="text-muted-foreground hidden text-[11px] md:block">
+                {row.original.email}
+              </OverflowTooltip>
             </div>
             <MobileUserDetails user={row.original} businesses={meta.businesses} />
           </div>
@@ -132,9 +141,11 @@ export const columns = [
     cell: ({ row, table }) => {
       const meta = table.options.meta as UsersTableMeta;
       return (
-        <span className="text-muted-foreground inline-flex max-w-52 items-center gap-1.5">
+        <span className="text-muted-foreground inline-flex max-w-64 items-center gap-1.5">
           <Store className="size-3.5 shrink-0" />
-          <span className="truncate">{getBusinessName(meta.businesses, row.original.default_business_id)}</span>
+          <OverflowTooltip focusable={false}>
+            {getBusinessName(meta.businesses, row.original.default_business_id)}
+          </OverflowTooltip>
         </span>
       );
     },

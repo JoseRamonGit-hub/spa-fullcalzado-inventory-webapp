@@ -15,14 +15,14 @@ import { Route } from "@/routes/_app/inventory";
 import { useNavigate } from "@tanstack/react-router";
 
 export function InventoryPage() {
-  const { date } = Route.useSearch();
+  const { date, status } = Route.useSearch();
   const navigate = useNavigate({ from: "/inventory" });
 
   const setDate = (value: string | undefined) => {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const { data: products, isLoading, isError } = useProducts(date);
+  const { data: products, isLoading, isError } = useProducts(date, status);
   const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
   const isMobile = useIsMobile();
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
@@ -36,12 +36,20 @@ export function InventoryPage() {
 
   const handleRowClick = useCallback(
     (product: Product) => {
-      if (isMobile && isAdmin) {
+      if (isMobile) {
         setMobileActionProduct(product);
+        return;
       }
+
+      navigate({ to: "/inventory/$productId", params: { productId: product.id } });
     },
-    [isMobile, isAdmin],
+    [isMobile, navigate],
   );
+
+  const openProductDetail = (product: Product) => {
+    setMobileActionProduct(null);
+    navigate({ to: "/inventory/$productId", params: { productId: product.id } });
+  };
 
   const tableMeta = useMemo(
     () => ({
@@ -59,7 +67,14 @@ export function InventoryPage() {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <Topbar search={searchInput} onSearchChange={setSearchInput} date={date} onDateChange={setDate} />
+      <Topbar
+        search={searchInput}
+        onSearchChange={setSearchInput}
+        date={date}
+        onDateChange={setDate}
+        stockStatus={status}
+        onStockStatusChange={(value) => navigate({ search: (prev) => ({ ...prev, status: value }) })}
+      />
 
       {isLoading ? (
         <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
@@ -71,8 +86,15 @@ export function InventoryPage() {
         <DataTable
           columns={columns}
           data={filteredProducts}
-          emptyMessage="No hay productos registrados."
+          emptyMessage={
+            status === "low_stock"
+              ? "No hay Productos con Stock bajo."
+              : status === "stagnant"
+                ? "No hay Productos estancados."
+                : "No hay productos registrados."
+          }
           onRowClick={handleRowClick}
+          getRowAriaLabel={(product) => `Ver detalles de ${product.code}`}
           meta={tableMeta}
           getRowId={(row) => row.id}
         />
@@ -96,7 +118,9 @@ export function InventoryPage() {
 
       <MobileActionDrawer
         product={mobileActionProduct}
+        isAdmin={isAdmin}
         onClose={() => setMobileActionProduct(null)}
+        onViewDetail={openProductDetail}
         onEdit={(p) => {
           setMobileActionProduct(null);
           setEditProduct(p);

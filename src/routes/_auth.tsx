@@ -10,7 +10,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 export const Route = createFileRoute("/_auth")({
   beforeLoad: () => {
     if (useAuthStore.getState().user) {
-      throw redirect({ to: "/inventory" });
+      throw redirect({ to: "/dashboard" });
     }
   },
   component: Outlet,

@@ -33,7 +33,8 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           <div className="min-w-0">
             <p className="text-foreground text-sm font-semibold">Cierre del {today}</p>
             <p className="text-muted-foreground text-xs">
-              {metrics.count} venta{metrics.count !== 1 ? "s" : ""}
+              {metrics.billedOperations} operación{metrics.billedOperations !== 1 ? "es" : ""} facturada
+              {metrics.billedOperations !== 1 ? "s" : ""}
               {hasReturns && ` · ${metrics.returnsCount} devolución${metrics.returnsCount !== 1 ? "es" : ""}`}
             </p>
           </div>
@@ -41,7 +42,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
 
         <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
               <DollarSign className="h-3 w-3" aria-hidden="true" /> Total Facturado USD
             </span>
             <span className="text-foreground text-sm font-bold tabular-nums">
@@ -49,7 +50,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
             </span>
           </div>
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
               <Banknote className="h-3 w-3" aria-hidden="true" /> Total Facturado Bs.
             </span>
             <span className="text-foreground text-sm font-bold tabular-nums">
@@ -57,13 +58,13 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
             </span>
           </div>
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
-              <Hash className="h-3 w-3" aria-hidden="true" /> Ventas
+            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
+              <Hash className="h-3 w-3" aria-hidden="true" /> Operaciones facturadas
             </span>
-            <span className="text-foreground text-sm font-bold tabular-nums">{metrics.count}</span>
+            <span className="text-foreground text-sm font-bold tabular-nums">{metrics.billedOperations}</span>
           </div>
           <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
               <ShoppingCart className="h-3 w-3" aria-hidden="true" /> Unidades
             </span>
             <span className="text-foreground text-sm font-bold tabular-nums">{metrics.units}</span>
@@ -79,7 +80,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
                 </span>
               </div>
               <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
                   <DollarSign className="h-3 w-3" aria-hidden="true" /> Crédito USD
                 </span>
                 <span className="text-sm font-bold text-orange-500 tabular-nums">
@@ -87,7 +88,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
                 </span>
               </div>
               <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
                   <Banknote className="h-3 w-3" aria-hidden="true" /> Crédito Bs.
                 </span>
                 <span className="text-sm font-bold text-orange-500 tabular-nums">
@@ -98,13 +99,13 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
 
             <div className="bg-primary/8 border-primary/20 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
               <div className="flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
                   <DollarSign className="h-3 w-3" aria-hidden="true" /> Total Producido USD
                 </span>
                 <span className="text-primary text-sm font-bold tabular-nums">{formatCurrencyUSD(metrics.netUsd)}</span>
               </div>
               <div className="flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
                   <Banknote className="h-3 w-3" aria-hidden="true" /> Total Producido BS.
                 </span>
                 <span className="text-primary text-sm font-bold tabular-nums">{formatCurrencyVES(metrics.netVes)}</span>

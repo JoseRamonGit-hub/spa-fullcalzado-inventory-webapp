@@ -3,6 +3,7 @@ import { inventoryMovementsService } from "@/services/inventoryMovementsService"
 import { movementKeys } from "./useMovementQueries";
 import { productKeys } from "@/features/inventory/hooks/useProductQueries";
 import { activeBusinessMutationOptions } from "@/features/business/utils/active-business-mutation";
+import { dashboardKeys } from "@/features/dashboard/hooks/useDashboardMetrics";
 
 export function useCreateManyMovements() {
   const queryClient = useQueryClient();
@@ -15,6 +16,7 @@ export function useCreateManyMovements() {
     onSuccess: (_, __, { businessId }) => {
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
       queryClient.invalidateQueries({ queryKey: productKeys.business(businessId) });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.business(businessId) });
     },
   });
 }

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { TableHead } from "@/components/ui/table";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { BatchItem } from "../types";
 import {
@@ -59,18 +60,18 @@ export function ConfirmBatchDialog({
         <table className="w-full min-w-100">
           <thead>
             <tr className="bg-muted/45 text-muted-foreground border-b text-left">
-              <th scope="col" className="px-3 py-1.5 font-semibold tracking-wider uppercase">
+              <TableHead scope="col" className="py-1.5">
                 Acción
-              </th>
-              <th scope="col" className="px-3 py-1.5 font-semibold tracking-wider uppercase">
+              </TableHead>
+              <TableHead scope="col" className="py-1.5">
                 Producto
-              </th>
-              <th scope="col" className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">
+              </TableHead>
+              <TableHead scope="col" className="py-1.5 text-right">
                 Cant.
-              </th>
-              <th scope="col" className="px-3 py-1.5 text-right font-semibold tracking-wider uppercase">
+              </TableHead>
+              <TableHead scope="col" className="py-1.5 text-right">
                 Precio
-              </th>
+              </TableHead>
             </tr>
           </thead>
           <tbody className="divide-border/60 divide-y">

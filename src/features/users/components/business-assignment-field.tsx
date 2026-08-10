@@ -111,8 +111,8 @@ export function BusinessAssignmentField({
                   </span>
 
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="truncate text-sm font-medium">{business.name}</span>
-                    <span className="text-muted-foreground truncate text-[11px]">{business.slug}</span>
+                    <span className="text-sm leading-snug font-medium break-words">{business.name}</span>
+                    <span className="text-muted-foreground text-[11px] break-all">{business.slug}</span>
                   </span>
 
                   {isSelected ? <CheckCircle2 className="text-primary size-4 shrink-0" /> : null}

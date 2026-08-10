@@ -19,7 +19,7 @@ export function Topbar({ date, hasDirectedView, onDateChange }: TopbarProps) {
           </span>
         )}
       </BusinessModuleTitle>
-      <DatePickerFilter value={date} onChange={onDateChange} placeholder="Filtrar por día" />
+      <DatePickerFilter value={date} onChange={onDateChange} placeholder="Últimos 30 días" />
     </header>
   );
 }

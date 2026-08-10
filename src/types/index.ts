@@ -1,4 +1,4 @@
-import type { Tables, TablesInsert, TablesUpdate } from "./supabase";
+import type { Database, Tables, TablesInsert, TablesUpdate } from "./supabase";
 
 // ── Row types (read from DB) ────────────────────────────────
 export type User = Tables<"users">;
@@ -12,6 +12,72 @@ export type ExchangeRate = Tables<"exchange_rates">;
 export type AppSettings = Tables<"app_settings">;
 export type Return = Tables<"returns">;
 export type ReturnItem = Tables<"return_items">;
+export type Sale = Tables<"sales">;
+
+type DashboardDailyMetricsRow = Database["public"]["Functions"]["get_dashboard_daily_metrics"]["Returns"][number];
+
+export type DashboardDailyMetrics = Omit<
+  DashboardDailyMetricsRow,
+  "exchange_rate" | "exchange_rate_source" | "exchange_rate_updated_at"
+> & {
+  exchange_rate: number | null;
+  exchange_rate_source: DashboardDailyMetricsRow["exchange_rate_source"] | null;
+  exchange_rate_updated_at: string | null;
+};
+
+export type DashboardSalesPeriodPreset = "today" | "week" | "month" | "custom";
+
+export type DashboardSalesPeriodRequest =
+  | { preset: Exclude<DashboardSalesPeriodPreset, "custom"> }
+  | { preset: "custom"; startDate: string; endDate: string };
+
+export type DashboardSalesPeriodBucket = {
+  index: number;
+  label: string;
+  startDate: string;
+  endDate: string;
+  isAvailable: boolean;
+  totalUsd: number;
+};
+
+export type DashboardSalesPeriod = {
+  preset: DashboardSalesPeriodPreset;
+  currentStart: string;
+  currentEnd: string;
+  comparisonStart: string;
+  comparisonEnd: string;
+  totalUsd: number;
+  previousTotalUsd: number;
+  operations: number;
+  previousOperations: number;
+  averageTicketUsd: number;
+  buckets: DashboardSalesPeriodBucket[];
+};
+
+export type DashboardTopProductsRankMode = "units" | "gross_usd";
+
+export type DashboardTopProduct = {
+  rank: number;
+  productId: string;
+  code: string;
+  description: string;
+  units: number;
+  grossUsd: number;
+};
+
+export type ProductStockAlertType = "low_stock" | "stagnant";
+
+export type DashboardProductStockAlert = {
+  type: ProductStockAlertType;
+  rank: number;
+  productId: string;
+  code: string;
+  description: string;
+  stock: number;
+  active: boolean;
+  stagnantSince: string | null;
+  stagnantDays: number | null;
+};
 
 // ── Insert types (write to DB — omits auto-generated fields) ─
 export type ProductInsert = TablesInsert<"products">;
@@ -21,6 +87,7 @@ export type CashCloseInsert = TablesInsert<"cash_closes">;
 export type ExchangeRateInsert = TablesInsert<"exchange_rates">;
 export type ReturnInsert = TablesInsert<"returns">;
 export type ReturnItemInsert = TablesInsert<"return_items">;
+export type SaleInsert = TablesInsert<"sales">;
 
 export type ProductCreateInput = Omit<ProductInsert, "business_id">;
 export type TransactionCreateInput = Omit<TransactionInsert, "business_id">;
@@ -38,6 +105,18 @@ export type CashCloseWithRelations = CashClose & {
   users: Pick<User, "fullname">;
 };
 
+export type CashCloseSummary = {
+  billedOperations: number;
+  units: number;
+  totalUsd: number;
+  totalVes: number;
+  returnsCount: number;
+  returnsCreditUsd: number;
+  returnsCreditVes: number;
+  netUsd: number;
+  netVes: number;
+};
+
 export type TransactionWithRelations = Transaction & {
   products: Pick<Product, "code" | "description">;
   users: Pick<User, "fullname">;
@@ -46,6 +125,21 @@ export type TransactionWithRelations = Transaction & {
 export type InventoryMovementWithRelations = InventoryMovement & {
   products: Pick<Product, "code" | "description">;
   users: Pick<User, "fullname">;
+};
+
+export type ProductDetail = {
+  product: Product;
+  lastActivity: InventoryMovement | null;
+};
+
+export type ProductHistoryEvent = InventoryMovement & {
+  user_fullname: string;
+};
+
+export type ProductHistoryRange = {
+  startDate?: string;
+  endDate?: string;
+  showAll: boolean;
 };
 
 // ── Return types with joined relations ──────────────────────
@@ -73,24 +167,24 @@ export type EditProductPayload = {
 };
 
 // ── Return RPC payload types ────────────────────────────────
+export type PricedProductLineInput = {
+  product_id: string;
+  quantity: number;
+  price_usd: number;
+  price_ves: number;
+};
+
 export type ProcessReturnPayload = {
   p_type: "exchange" | "refund";
-  p_returned_items: {
-    product_id: string;
-    quantity: number;
-    price_usd: number;
-    price_ves: number;
-  }[];
-  p_new_items?:
-    | {
-        product_id: string;
-        quantity: number;
-        price_usd: number;
-        price_ves: number;
-      }[]
-    | null;
+  p_returned_items: PricedProductLineInput[];
+  p_new_items?: PricedProductLineInput[] | null;
   p_exchange_rate: number;
   p_notes?: string;
+};
+
+export type ProcessSalePayload = {
+  p_items: PricedProductLineInput[];
+  p_exchange_rate: number;
 };
 
 export type UserRole = User["role"];
