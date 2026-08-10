@@ -1,0 +1,834 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-10T07:14:14.457Z",
+  "title": "Design System: Full Calzado — El Taller de Caja",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Bronce Ámbar",
+        "canonical": "oklch(0.5 0.145 52)",
+        "tonalRamp": [
+          "oklch(0.15 0.145 52)",
+          "oklch(0.27 0.145 52)",
+          "oklch(0.39 0.145 52)",
+          "oklch(0.51 0.145 52)",
+          "oklch(0.63 0.145 52)",
+          "oklch(0.75 0.145 52)",
+          "oklch(0.87 0.145 52)",
+          "oklch(0.95 0.145 52)"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Bronce Ámbar Elevado",
+        "canonical": "oklch(0.68 0.16 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.16 55)",
+          "oklch(0.27 0.16 55)",
+          "oklch(0.39 0.16 55)",
+          "oklch(0.51 0.16 55)",
+          "oklch(0.63 0.16 55)",
+          "oklch(0.75 0.16 55)",
+          "oklch(0.87 0.16 55)",
+          "oklch(0.95 0.16 55)"
+        ]
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "Marfil sobre Bronce",
+        "canonical": "oklch(0.99 0.002 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.002 75)",
+          "oklch(0.27 0.002 75)",
+          "oklch(0.39 0.002 75)",
+          "oklch(0.51 0.002 75)",
+          "oklch(0.63 0.002 75)",
+          "oklch(0.75 0.002 75)",
+          "oklch(0.87 0.002 75)",
+          "oklch(0.95 0.002 75)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Lienzo Cálido",
+        "canonical": "oklch(0.965 0.007 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 75)",
+          "oklch(0.27 0.007 75)",
+          "oklch(0.39 0.007 75)",
+          "oklch(0.51 0.007 75)",
+          "oklch(0.63 0.007 75)",
+          "oklch(0.75 0.007 75)",
+          "oklch(0.87 0.007 75)",
+          "oklch(0.95 0.007 75)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Tinta Cálida",
+        "canonical": "oklch(0.15 0.02 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.02 55)",
+          "oklch(0.27 0.02 55)",
+          "oklch(0.39 0.02 55)",
+          "oklch(0.51 0.02 55)",
+          "oklch(0.63 0.02 55)",
+          "oklch(0.75 0.02 55)",
+          "oklch(0.87 0.02 55)",
+          "oklch(0.95 0.02 55)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Marfil de Mostrador",
+        "canonical": "oklch(0.995 0.003 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.003 75)",
+          "oklch(0.27 0.003 75)",
+          "oklch(0.39 0.003 75)",
+          "oklch(0.51 0.003 75)",
+          "oklch(0.63 0.003 75)",
+          "oklch(0.75 0.003 75)",
+          "oklch(0.87 0.003 75)",
+          "oklch(0.95 0.003 75)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Arena Secundaria",
+        "canonical": "oklch(0.945 0.01 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.01 75)",
+          "oklch(0.27 0.01 75)",
+          "oklch(0.39 0.01 75)",
+          "oklch(0.51 0.01 75)",
+          "oklch(0.63 0.01 75)",
+          "oklch(0.75 0.01 75)",
+          "oklch(0.87 0.01 75)",
+          "oklch(0.95 0.01 75)"
+        ]
+      },
+      "secondary-foreground": {
+        "role": "neutral",
+        "displayName": "Tinta Secundaria",
+        "canonical": "oklch(0.26 0.02 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.02 55)",
+          "oklch(0.27 0.02 55)",
+          "oklch(0.39 0.02 55)",
+          "oklch(0.51 0.02 55)",
+          "oklch(0.63 0.02 55)",
+          "oklch(0.75 0.02 55)",
+          "oklch(0.87 0.02 55)",
+          "oklch(0.95 0.02 55)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Arena Apagada",
+        "canonical": "oklch(0.945 0.01 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.01 75)",
+          "oklch(0.27 0.01 75)",
+          "oklch(0.39 0.01 75)",
+          "oklch(0.51 0.01 75)",
+          "oklch(0.63 0.01 75)",
+          "oklch(0.75 0.01 75)",
+          "oklch(0.87 0.01 75)",
+          "oklch(0.95 0.01 75)"
+        ]
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Tinta Atenuada",
+        "canonical": "oklch(0.46 0.02 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.02 55)",
+          "oklch(0.27 0.02 55)",
+          "oklch(0.39 0.02 55)",
+          "oklch(0.51 0.02 55)",
+          "oklch(0.63 0.02 55)",
+          "oklch(0.75 0.02 55)",
+          "oklch(0.87 0.02 55)",
+          "oklch(0.95 0.02 55)"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Acento Arena",
+        "canonical": "oklch(0.94 0.012 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.012 75)",
+          "oklch(0.27 0.012 75)",
+          "oklch(0.39 0.012 75)",
+          "oklch(0.51 0.012 75)",
+          "oklch(0.63 0.012 75)",
+          "oklch(0.75 0.012 75)",
+          "oklch(0.87 0.012 75)",
+          "oklch(0.95 0.012 75)"
+        ]
+      },
+      "accent-foreground": {
+        "role": "neutral",
+        "displayName": "Tinta sobre Acento",
+        "canonical": "oklch(0.26 0.02 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.02 55)",
+          "oklch(0.27 0.02 55)",
+          "oklch(0.39 0.02 55)",
+          "oklch(0.51 0.02 55)",
+          "oklch(0.63 0.02 55)",
+          "oklch(0.75 0.02 55)",
+          "oklch(0.87 0.02 55)",
+          "oklch(0.95 0.02 55)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Cuero Pálido",
+        "canonical": "oklch(0.88 0.01 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.01 75)",
+          "oklch(0.27 0.01 75)",
+          "oklch(0.39 0.01 75)",
+          "oklch(0.51 0.01 75)",
+          "oklch(0.63 0.01 75)",
+          "oklch(0.75 0.01 75)",
+          "oklch(0.87 0.01 75)",
+          "oklch(0.95 0.01 75)"
+        ]
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "Borde de Campo",
+        "canonical": "oklch(0.85 0.012 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.012 75)",
+          "oklch(0.27 0.012 75)",
+          "oklch(0.39 0.012 75)",
+          "oklch(0.51 0.012 75)",
+          "oklch(0.63 0.012 75)",
+          "oklch(0.75 0.012 75)",
+          "oklch(0.87 0.012 75)",
+          "oklch(0.95 0.012 75)"
+        ]
+      },
+      "ring": {
+        "role": "primary",
+        "displayName": "Anillo Bronce",
+        "canonical": "oklch(0.5 0.145 52)",
+        "tonalRamp": [
+          "oklch(0.15 0.145 52)",
+          "oklch(0.27 0.145 52)",
+          "oklch(0.39 0.145 52)",
+          "oklch(0.51 0.145 52)",
+          "oklch(0.63 0.145 52)",
+          "oklch(0.75 0.145 52)",
+          "oklch(0.87 0.145 52)",
+          "oklch(0.95 0.145 52)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Carbón Cacao",
+        "canonical": "oklch(0.17 0.015 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.015 55)",
+          "oklch(0.27 0.015 55)",
+          "oklch(0.39 0.015 55)",
+          "oklch(0.51 0.015 55)",
+          "oklch(0.63 0.015 55)",
+          "oklch(0.75 0.015 55)",
+          "oklch(0.87 0.015 55)",
+          "oklch(0.95 0.015 55)"
+        ]
+      },
+      "sidebar-foreground": {
+        "role": "neutral",
+        "displayName": "Marfil de Navegación",
+        "canonical": "oklch(0.92 0.008 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 75)",
+          "oklch(0.27 0.008 75)",
+          "oklch(0.39 0.008 75)",
+          "oklch(0.51 0.008 75)",
+          "oklch(0.63 0.008 75)",
+          "oklch(0.75 0.008 75)",
+          "oklch(0.87 0.008 75)",
+          "oklch(0.95 0.008 75)"
+        ]
+      },
+      "sidebar-primary": {
+        "role": "primary",
+        "displayName": "Bronce de Navegación",
+        "canonical": "oklch(0.65 0.16 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.16 55)",
+          "oklch(0.27 0.16 55)",
+          "oklch(0.39 0.16 55)",
+          "oklch(0.51 0.16 55)",
+          "oklch(0.63 0.16 55)",
+          "oklch(0.75 0.16 55)",
+          "oklch(0.87 0.16 55)",
+          "oklch(0.95 0.16 55)"
+        ]
+      },
+      "sidebar-accent": {
+        "role": "neutral",
+        "displayName": "Cacao Activo",
+        "canonical": "oklch(0.24 0.02 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.02 55)",
+          "oklch(0.27 0.02 55)",
+          "oklch(0.39 0.02 55)",
+          "oklch(0.51 0.02 55)",
+          "oklch(0.63 0.02 55)",
+          "oklch(0.75 0.02 55)",
+          "oklch(0.87 0.02 55)",
+          "oklch(0.95 0.02 55)"
+        ]
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Rojo Corrección",
+        "canonical": "oklch(0.55 0.22 25)",
+        "tonalRamp": [
+          "oklch(0.15 0.22 25)",
+          "oklch(0.27 0.22 25)",
+          "oklch(0.39 0.22 25)",
+          "oklch(0.51 0.22 25)",
+          "oklch(0.63 0.22 25)",
+          "oklch(0.75 0.22 25)",
+          "oklch(0.87 0.22 25)",
+          "oklch(0.95 0.22 25)"
+        ]
+      },
+      "success": {
+        "role": "secondary",
+        "displayName": "Verde Balance",
+        "canonical": "oklch(0.5 0.14 155)",
+        "tonalRamp": [
+          "oklch(0.15 0.14 155)",
+          "oklch(0.27 0.14 155)",
+          "oklch(0.39 0.14 155)",
+          "oklch(0.51 0.14 155)",
+          "oklch(0.63 0.14 155)",
+          "oklch(0.75 0.14 155)",
+          "oklch(0.87 0.14 155)",
+          "oklch(0.95 0.14 155)"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Oro Alerta",
+        "canonical": "oklch(0.7 0.16 80)",
+        "tonalRamp": [
+          "oklch(0.15 0.16 80)",
+          "oklch(0.27 0.16 80)",
+          "oklch(0.39 0.16 80)",
+          "oklch(0.51 0.16 80)",
+          "oklch(0.63 0.16 80)",
+          "oklch(0.75 0.16 80)",
+          "oklch(0.87 0.16 80)",
+          "oklch(0.95 0.16 80)"
+        ]
+      },
+      "exchange": {
+        "role": "tertiary",
+        "displayName": "Azul Cotización",
+        "canonical": "oklch(0.52 0.14 240)",
+        "tonalRamp": [
+          "oklch(0.15 0.14 240)",
+          "oklch(0.27 0.14 240)",
+          "oklch(0.39 0.14 240)",
+          "oklch(0.51 0.14 240)",
+          "oklch(0.63 0.14 240)",
+          "oklch(0.75 0.14 240)",
+          "oklch(0.87 0.14 240)",
+          "oklch(0.95 0.14 240)"
+        ]
+      },
+      "refund": {
+        "role": "tertiary",
+        "displayName": "Magenta Devolución",
+        "canonical": "oklch(0.5 0.18 310)",
+        "tonalRamp": [
+          "oklch(0.15 0.18 310)",
+          "oklch(0.27 0.18 310)",
+          "oklch(0.39 0.18 310)",
+          "oklch(0.51 0.18 310)",
+          "oklch(0.63 0.18 310)",
+          "oklch(0.75 0.18 310)",
+          "oklch(0.87 0.18 310)",
+          "oklch(0.95 0.18 310)"
+        ]
+      },
+      "edit": {
+        "role": "tertiary",
+        "displayName": "Sepia Edición",
+        "canonical": "oklch(0.5 0.08 65)",
+        "tonalRamp": [
+          "oklch(0.15 0.08 65)",
+          "oklch(0.27 0.08 65)",
+          "oklch(0.39 0.08 65)",
+          "oklch(0.51 0.08 65)",
+          "oklch(0.63 0.08 65)",
+          "oklch(0.75 0.08 65)",
+          "oklch(0.87 0.08 65)",
+          "oklch(0.95 0.08 65)"
+        ]
+      },
+      "chart-teal": {
+        "role": "secondary",
+        "displayName": "Teal de Gráfico",
+        "canonical": "oklch(0.55 0.12 185)",
+        "tonalRamp": [
+          "oklch(0.15 0.12 185)",
+          "oklch(0.27 0.12 185)",
+          "oklch(0.39 0.12 185)",
+          "oklch(0.51 0.12 185)",
+          "oklch(0.63 0.12 185)",
+          "oklch(0.75 0.12 185)",
+          "oklch(0.87 0.12 185)",
+          "oklch(0.95 0.12 185)"
+        ]
+      },
+      "chart-magenta": {
+        "role": "tertiary",
+        "displayName": "Magenta de Gráfico",
+        "canonical": "oklch(0.6 0.15 330)",
+        "tonalRamp": [
+          "oklch(0.15 0.15 330)",
+          "oklch(0.27 0.15 330)",
+          "oklch(0.39 0.15 330)",
+          "oklch(0.51 0.15 330)",
+          "oklch(0.63 0.15 330)",
+          "oklch(0.75 0.15 330)",
+          "oklch(0.87 0.15 330)",
+          "oklch(0.95 0.15 330)"
+        ]
+      },
+      "chart-gold": {
+        "role": "tertiary",
+        "displayName": "Oro de Gráfico",
+        "canonical": "oklch(0.7 0.16 80)",
+        "tonalRamp": [
+          "oklch(0.15 0.16 80)",
+          "oklch(0.27 0.16 80)",
+          "oklch(0.39 0.16 80)",
+          "oklch(0.51 0.16 80)",
+          "oklch(0.63 0.16 80)",
+          "oklch(0.75 0.16 80)",
+          "oklch(0.87 0.16 80)",
+          "oklch(0.95 0.16 80)"
+        ]
+      },
+      "chart-red": {
+        "role": "tertiary",
+        "displayName": "Rojo de Gráfico",
+        "canonical": "oklch(0.58 0.2 25)",
+        "tonalRamp": [
+          "oklch(0.15 0.2 25)",
+          "oklch(0.27 0.2 25)",
+          "oklch(0.39 0.2 25)",
+          "oklch(0.51 0.2 25)",
+          "oklch(0.63 0.2 25)",
+          "oklch(0.75 0.2 25)",
+          "oklch(0.87 0.2 25)",
+          "oklch(0.95 0.2 25)"
+        ]
+      },
+      "table-stripe": {
+        "role": "neutral",
+        "displayName": "Franja de Tabla",
+        "canonical": "oklch(0.95 0.008 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 75)",
+          "oklch(0.27 0.008 75)",
+          "oklch(0.39 0.008 75)",
+          "oklch(0.51 0.008 75)",
+          "oklch(0.63 0.008 75)",
+          "oklch(0.75 0.008 75)",
+          "oklch(0.87 0.008 75)",
+          "oklch(0.95 0.008 75)"
+        ]
+      },
+      "table-hover": {
+        "role": "neutral",
+        "displayName": "Rastro de Tabla",
+        "canonical": "oklch(0.935 0.018 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 55)",
+          "oklch(0.27 0.018 55)",
+          "oklch(0.39 0.018 55)",
+          "oklch(0.51 0.018 55)",
+          "oklch(0.63 0.018 55)",
+          "oklch(0.75 0.018 55)",
+          "oklch(0.87 0.018 55)",
+          "oklch(0.95 0.018 55)"
+        ]
+      },
+      "background-dark": {
+        "role": "neutral",
+        "displayName": "Lienzo Nocturno",
+        "canonical": "oklch(0.13 0.015 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.015 55)",
+          "oklch(0.27 0.015 55)",
+          "oklch(0.39 0.015 55)",
+          "oklch(0.51 0.015 55)",
+          "oklch(0.63 0.015 55)",
+          "oklch(0.75 0.015 55)",
+          "oklch(0.87 0.015 55)",
+          "oklch(0.95 0.015 55)"
+        ]
+      },
+      "card-dark": {
+        "role": "neutral",
+        "displayName": "Superficie Nocturna",
+        "canonical": "oklch(0.17 0.015 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.015 55)",
+          "oklch(0.27 0.015 55)",
+          "oklch(0.39 0.015 55)",
+          "oklch(0.51 0.015 55)",
+          "oklch(0.63 0.015 55)",
+          "oklch(0.75 0.015 55)",
+          "oklch(0.87 0.015 55)",
+          "oklch(0.95 0.015 55)"
+        ]
+      },
+      "foreground-dark": {
+        "role": "neutral",
+        "displayName": "Tinta Nocturna",
+        "canonical": "oklch(0.93 0.006 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.006 75)",
+          "oklch(0.27 0.006 75)",
+          "oklch(0.39 0.006 75)",
+          "oklch(0.51 0.006 75)",
+          "oklch(0.63 0.006 75)",
+          "oklch(0.75 0.006 75)",
+          "oklch(0.87 0.006 75)",
+          "oklch(0.95 0.006 75)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Arena Nocturna",
+        "canonical": "oklch(0.22 0.015 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.015 55)",
+          "oklch(0.27 0.015 55)",
+          "oklch(0.39 0.015 55)",
+          "oklch(0.51 0.015 55)",
+          "oklch(0.63 0.015 55)",
+          "oklch(0.75 0.015 55)",
+          "oklch(0.87 0.015 55)",
+          "oklch(0.95 0.015 55)"
+        ]
+      },
+      "dark-muted-foreground": {
+        "role": "neutral",
+        "displayName": "Tinta Nocturna Atenuada",
+        "canonical": "oklch(0.66 0.015 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.015 75)",
+          "oklch(0.27 0.015 75)",
+          "oklch(0.39 0.015 75)",
+          "oklch(0.51 0.015 75)",
+          "oklch(0.63 0.015 75)",
+          "oklch(0.75 0.015 75)",
+          "oklch(0.87 0.015 75)",
+          "oklch(0.95 0.015 75)"
+        ]
+      },
+      "estilos-teal": {
+        "role": "secondary",
+        "displayName": "Verde Estilos",
+        "canonical": "oklch(0.46 0.12 185)",
+        "tonalRamp": [
+          "oklch(0.15 0.12 185)",
+          "oklch(0.27 0.12 185)",
+          "oklch(0.39 0.12 185)",
+          "oklch(0.51 0.12 185)",
+          "oklch(0.63 0.12 185)",
+          "oklch(0.75 0.12 185)",
+          "oklch(0.87 0.12 185)",
+          "oklch(0.95 0.12 185)"
+        ]
+      },
+      "estilos-green": {
+        "role": "secondary",
+        "displayName": "Verde Estilos Luminoso",
+        "canonical": "oklch(0.66 0.14 165)",
+        "tonalRamp": [
+          "oklch(0.15 0.14 165)",
+          "oklch(0.27 0.14 165)",
+          "oklch(0.39 0.14 165)",
+          "oklch(0.51 0.14 165)",
+          "oklch(0.63 0.14 165)",
+          "oklch(0.75 0.14 165)",
+          "oklch(0.87 0.14 165)",
+          "oklch(0.95 0.14 165)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Marca del acceso y mensajes excepcionales."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Cifras principales, tasas y métricas prioritarias."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de módulos, secciones y tarjetas."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Contenido, acciones y formularios operativos."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Metadatos y controles compactos."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Agrupaciones y rótulos compactos en mayúsculas."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Códigos, tasas, importes y valores tabulares."
+      }
+    },
+    "shadows": [
+      {
+        "name": "control-minimum",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Borde óptico para inputs, selects y botones delineados."
+      },
+      {
+        "name": "surface-stable",
+        "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "purpose": "Tarjetas y panel principal inset."
+      },
+      {
+        "name": "temporary-layer",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "Popovers, menús y modales."
+      },
+      {
+        "name": "mobile-primary-action",
+        "value": "0 6px 20px oklch(0.5 0.145 52 / 40%), 0 0 0 4px oklch(0.5 0.145 52 / 14%), inset 0 1px 0 oklch(1 0 0 / 15%)",
+        "purpose": "Resplandor exclusivo del botón Nuevo en móvil."
+      },
+      {
+        "name": "business-context",
+        "value": "0 10px 24px oklch(0.52 0.14 55 / 24%)",
+        "purpose": "Icono del negocio activo y transición de contexto."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Hover, color, foco y presión de controles."
+      },
+      {
+        "name": "overlay",
+        "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Entrada y salida de diálogos y popovers."
+      },
+      {
+        "name": "sidebar",
+        "value": "200ms linear",
+        "purpose": "Colapso y expansión predecibles de la navegación."
+      },
+      {
+        "name": "sheet-in",
+        "value": "500ms ease-in-out",
+        "purpose": "Entrada de hojas laterales o móviles."
+      },
+      {
+        "name": "sheet-out",
+        "value": "300ms ease-in-out",
+        "purpose": "Salida de hojas laterales o móviles."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción principal compacta con el token semántico primary.",
+      "html": "<button class=\"ds-btn-primary\">Guardar cambios</button>",
+      "css": ".ds-btn-primary { height: 36px; padding: 8px 16px; border: 0; border-radius: 6px; background: var(--primary); color: var(--primary-foreground); font: 500 14px/1.25 var(--font-sans, ui-sans-serif, system-ui, sans-serif); transition: background-color 150ms, box-shadow 150ms, transform 150ms; cursor: pointer; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary) 90%, black); } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: 0; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Acción secundaria delimitada por el borde semántico.",
+      "html": "<button class=\"ds-btn-outline\">Filtrar por día</button>",
+      "css": ".ds-btn-outline { height: 36px; padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--background); color: var(--foreground); font: 500 14px/1.25 var(--font-sans, ui-sans-serif, system-ui, sans-serif); box-shadow: 0 1px 2px rgb(0 0 0 / 5%); transition: background-color 150ms, color 150ms, box-shadow 150ms; cursor: pointer; } .ds-btn-outline:hover { background: var(--accent); color: var(--accent-foreground); } .ds-btn-outline:focus-visible { outline: 0; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Acción frecuente de bajo peso para topbars y grupos compactos.",
+      "html": "<button class=\"ds-btn-ghost\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 6h18M3 12h18M3 18h18\"/></svg>Acción</button>",
+      "css": ".ds-btn-ghost { height: 32px; padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 6px; background: transparent; color: var(--foreground); font: 500 12px/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif); transition: background-color 150ms, color 150ms; cursor: pointer; } .ds-btn-ghost svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; } .ds-btn-ghost:hover { background: color-mix(in oklch, var(--primary) 8%, transparent); color: var(--primary); } .ds-btn-ghost:focus-visible { outline: 0; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Campo compacto de 36px basado en card, input y ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Buscar código o descripción…\" />",
+      "css": ".ds-input { width: 320px; height: 36px; padding: 4px 12px; border: 1px solid var(--input); border-radius: 6px; background: var(--card); color: var(--foreground); font: 400 14px/1.5 var(--font-sans, ui-sans-serif, system-ui, sans-serif); box-shadow: 0 1px 2px rgb(0 0 0 / 5%); transition: border-color 150ms, box-shadow 150ms; } .ds-input::placeholder { color: var(--muted-foreground); } .ds-input:hover { border-color: var(--border); } .ds-input:focus { outline: 0; border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-status",
+      "description": "Estado semántico de baja superficie y texto firme.",
+      "html": "<span class=\"ds-badge-success\">Activo</span>",
+      "css": ".ds-badge-success { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px; border-radius: 6px; background: color-mix(in oklch, var(--success) 12%, transparent); color: var(--success); font: 600 11px/1.25 var(--font-sans, ui-sans-serif, system-ui, sans-serif); white-space: nowrap; transition: background-color 150ms, box-shadow 150ms; } .ds-badge-success:hover { background: color-mix(in oklch, var(--success) 18%, transparent); } .ds-badge-success:focus-visible { outline: 0; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Metric Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Tarjeta compacta que combina una etiqueta, una cifra y contexto.",
+      "html": "<article class=\"ds-metric-card\"><span class=\"ds-metric-label\">STOCK DISPONIBLE</span><strong class=\"ds-metric-value\">136 unidades</strong><span class=\"ds-metric-note\">13 productos con stock</span></article>",
+      "css": ".ds-metric-card { min-height: 156px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid color-mix(in oklch, var(--border) 60%, transparent); border-radius: 12px; background: var(--card); color: var(--card-foreground); box-shadow: 0 1px 3px rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%); transition: border-color 150ms, box-shadow 150ms; } .ds-metric-card:hover { border-color: var(--border); box-shadow: 0 4px 10px rgb(0 0 0 / 9%); } .ds-metric-label { color: var(--muted-foreground); font: 600 10px/1 var(--font-heading, ui-sans-serif, system-ui, sans-serif); letter-spacing: .06em; } .ds-metric-value { margin-top: auto; font: 700 24px/1 var(--font-heading, ui-sans-serif, system-ui, sans-serif); letter-spacing: -.025em; } .ds-metric-note { color: var(--muted-foreground); font: 400 12px/1.4 var(--font-sans, ui-sans-serif, system-ui, sans-serif); }"
+    },
+    {
+      "name": "Sidebar Navigation Item",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Navegación activa dentro del marco Carbón Cacao.",
+      "html": "<a class=\"ds-nav-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"4\" y=\"4\" width=\"6\" height=\"6\"/><rect x=\"14\" y=\"4\" width=\"6\" height=\"6\"/><rect x=\"4\" y=\"14\" width=\"6\" height=\"6\"/><rect x=\"14\" y=\"14\" width=\"6\" height=\"6\"/></svg>Inventario</a>",
+      "css": ".ds-nav-active { min-height: 32px; display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; background: var(--sidebar-accent); color: var(--sidebar-primary); text-decoration: none; font: 500 14px/1.25 var(--font-sans, ui-sans-serif, system-ui, sans-serif); transition: background-color 150ms, color 150ms; } .ds-nav-active svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; } .ds-nav-active:hover { background: color-mix(in oklch, var(--sidebar-accent) 85%, var(--sidebar-primary)); color: var(--sidebar-foreground); } .ds-nav-active:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--sidebar-ring); }"
+    },
+    {
+      "name": "Mobile Primary Action",
+      "kind": "button",
+      "refersTo": "mobile-primary-action",
+      "description": "Único control flotante con resplandor multicapa.",
+      "html": "<button class=\"ds-mobile-action\" aria-label=\"Nueva operación\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg></button>",
+      "css": ".ds-mobile-action { width: 56px; height: 56px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 9999px; background: var(--primary); color: var(--primary-foreground); box-shadow: 0 6px 20px oklch(0.5 0.145 52 / 40%), 0 0 0 4px oklch(0.5 0.145 52 / 14%), inset 0 1px 0 oklch(1 0 0 / 15%); transition: transform 150ms, box-shadow 150ms; cursor: pointer; } .ds-mobile-action svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; } .ds-mobile-action:hover { transform: translateY(-1px); } .ds-mobile-action:active { transform: scale(0.95); } .ds-mobile-action:focus-visible { outline: 0; box-shadow: 0 0 0 4px color-mix(in oklch, var(--ring) 30%, transparent), 0 6px 20px oklch(0.5 0.145 52 / 40%); }"
+    },
+    {
+      "name": "Data Table Row",
+      "kind": "custom",
+      "description": "Fila operativa densa con código, cifras tabulares y estado.",
+      "html": "<table class=\"ds-table\"><tbody><tr class=\"ds-table-row\"><td class=\"ds-code\">VN-41</td><td>Vans Old Skool T41</td><td class=\"ds-number\">3</td><td class=\"ds-number\">$31.00</td><td><span class=\"ds-table-badge\">Activo</span></td></tr></tbody></table>",
+      "css": ".ds-table { width: 100%; border-collapse: collapse; color: var(--foreground); font: 400 13px/1.25 var(--font-sans, ui-sans-serif, system-ui, sans-serif); } .ds-table-row { height: 30px; border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent); background: var(--background); transition: background-color 150ms; } .ds-table-row:hover { background: var(--table-hover); } .ds-table-row td { padding: 0 16px; white-space: nowrap; } .ds-code { color: var(--primary); font: 600 13px/1 var(--font-mono, ui-monospace, monospace); letter-spacing: .03em; } .ds-number { font-variant-numeric: tabular-nums; font-weight: 600; } .ds-table-badge { padding: 2px 10px; border-radius: 6px; background: color-mix(in oklch, var(--success) 12%, transparent); color: var(--success); font-size: 11px; font-weight: 600; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Taller de Caja",
+    "overview": "El sistema se comporta como un puesto de trabajo bien dispuesto: cada herramienta está cerca, cada dato tiene un lugar y la calidez material del comercio evita que la precisión se sienta clínica. Su carácter es sobrio, cálido y preciso. El bronce, el lienzo crema y el marco cacao evocan cuero, oficio y mostrador sin convertir la aplicación en una pieza decorativa.\n\nLa densidad es deliberadamente compacta porque empleados y administradores operan durante una jornada real. El espacio sirve para separar funciones, no para inflar la interfaz. La jerarquía nace de contraste tonal, bordes finos, tipografía medida y estados claros; la expresión de marca se concentra en acciones, datos clave y el marco de navegación.",
+    "keyCharacteristics": [
+      "Densidad compacta y ritmo de 4 px, con agrupaciones frecuentes de 8, 12 y 16 px.",
+      "Lienzo cálido claro dentro de un marco de navegación carbón cacao.",
+      "Bronce ámbar reservado para acción, selección y datos de alta importancia.",
+      "Titulares geométricos, cuerpo neutral y cifras monoespaciadas.",
+      "Bordes y capas tonales primero; sombras solo cuando una superficie realmente se eleva.",
+      "Interacciones directas y estados semánticos inequívocos."
+    ],
+    "rules": [
+      {
+        "name": "La Regla del Bronce Escaso",
+        "body": "El bronce señala acciones, selección o información prioritaria; no debe cubrir grandes superficies ni competir simultáneamente en muchos puntos de una pantalla.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Marco Oscuro",
+        "body": "El carbón cacao pertenece a la navegación persistente y al encuadre de la aplicación. No se repite como fondo arbitrario de tarjetas internas.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla Semántica",
+        "body": "Verde, oro, rojo, azul, magenta y sepia conservan su significado operativo; nunca se intercambian por variedad estética.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Dato Monoespaciado",
+        "body": "Usa la familia mono solo cuando la alineación o identificación precisa del valor mejora la lectura: códigos, moneda, tasas y atajos de teclado.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla de Jerarquía Corta",
+        "body": "Una vista operativa trabaja principalmente con Title, Body y Body Small. Display y Headline quedan reservados para marca o métricas, no para ampliar títulos rutinarios.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla Compacta por Defecto",
+        "body": "No introduzcas espacio vacío para aparentar lujo. Añade separación solo cuando aclare una agrupación, una jerarquía o un cambio de tarea.",
+        "section": "layout"
+      },
+      {
+        "name": "La Regla de Operación Cercana",
+        "body": "La acción primaria, el filtro y el resultado que afecta deben convivir en el mismo contexto visual sin obligar a recorrer la pantalla.",
+        "section": "layout"
+      },
+      {
+        "name": "La Regla de Estratificación Contenida",
+        "body": "Primero separa con tono y borde; usa sombra solo si el elemento está por encima del plano, es temporal o necesita una señal táctil extraordinaria.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla de Un Solo Flotante",
+        "body": "El resplandor multicapa pertenece únicamente a la acción primaria móvil. No se replica en tarjetas, métricas ni botones ordinarios.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla del Radio Funcional",
+        "body": "El radio aumenta con el tamaño y la independencia de la superficie. No conviertas cada bloque compacto en una cápsula ni mezcles radios sin relación con su escala.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** conserva la densidad compacta con una escala de 4 px y usa 8, 12 y 16 px como agrupaciones principales.",
+      "**Do** mantiene el Carbón Cacao en navegación persistente y el Lienzo Cálido en el plano de trabajo.",
+      "**Do** reserva Bronce Ámbar para acción, foco, selección y datos de alta prioridad.",
+      "**Do** usa colores semánticos de forma estable y acompaña el color con texto, icono o etiqueta cuando el significado sea crítico.",
+      "**Do** conserva objetivos táctiles importantes de 36–44 px y el FAB móvil de 56 px aunque la presentación sea densa.",
+      "**Do** usa el tema oscuro como traducción tonal completa, no como inversión automática."
+    ],
+    "donts": [
+      "**Don't** añadas espacio generoso sin una función clara; la aplicación es compacta por defecto.",
+      "**Don't** conviertas el producto en un SaaS azul y frío ni en una vitrina de ecommerce juguetona.",
+      "**Don't** cubras grandes superficies con Bronce Ámbar ni hagas competir varias acciones primarias.",
+      "**Don't** uses sombras fuertes en superficies estáticas cuando un borde o cambio tonal sea suficiente.",
+      "**Don't** introduzcas nuevas familias tipográficas o colores de acento sin actualizar primero esta autoridad.",
+      "**Don't** uses color contextual del negocio como sustituto de éxito, advertencia, devolución o error."
+    ]
+  }
+}

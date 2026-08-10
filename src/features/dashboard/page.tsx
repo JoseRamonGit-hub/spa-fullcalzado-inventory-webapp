@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Boxes, CircleDollarSign, ReceiptText, RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
@@ -34,6 +35,7 @@ function formatUnitsSold(unitsSold: number) {
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate({ from: "/dashboard" });
   const metricsQuery = useDashboardMetrics();
   const [salesPeriod, setSalesPeriod] = useState<DashboardSalesPeriodSelection>({
     preset: DEFAULT_SALES_PERIOD,
@@ -51,7 +53,10 @@ export function DashboardPage() {
           <h2 className="font-heading text-base font-semibold">Indicadores de hoy</h2>
 
           {metricsQuery.isPending ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Cargando indicadores">
+            <div
+              className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-4"
+              aria-label="Cargando indicadores"
+            >
               {Array.from({ length: 4 }).map((_, index) => (
                 <DashboardMetricCardSkeleton key={index} />
               ))}
@@ -71,15 +76,11 @@ export function DashboardPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-4">
               <DashboardMetricCard
                 title="Total producido"
                 value={formatCurrencyUSD(metricsQuery.data.total_produced_usd)}
-                description={
-                  metricsQuery.data.total_produced_usd === metricsQuery.data.total_billed_usd
-                    ? `${metricsQuery.data.billed_operations} operaciones facturadas`
-                    : `Facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)} · −${formatCurrencyUSD(metricsQuery.data.returns_credit_usd)} devoluciones`
-                }
+                description={`Total facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)} · ${metricsQuery.data.returns_credit_usd > 0 ? `−${formatCurrencyUSD(metricsQuery.data.returns_credit_usd)} en devoluciones` : "Sin devoluciones"}`}
                 icon={CircleDollarSign}
                 emphasis="primary"
               />
@@ -101,12 +102,14 @@ export function DashboardPage() {
                 description="Productos activos con 3 unidades o menos"
                 icon={TriangleAlert}
                 emphasis={metricsQuery.data.low_stock_products > 0 ? "warning" : undefined}
+                actionLabel={metricsQuery.data.low_stock_products > 0 ? "Revisar stock bajo" : undefined}
+                onAction={() => navigate({ to: "/inventory", search: { status: "low_stock" } })}
               />
             </div>
           )}
 
-          <SalesPeriodSection selection={salesPeriod} onSelectionChange={setSalesPeriod} />
           <ProductStockAlertsSection />
+          <SalesPeriodSection selection={salesPeriod} onSelectionChange={setSalesPeriod} />
         </div>
       </div>
     </section>

@@ -197,6 +197,11 @@
 
 /* ─── Component utilities ───────────────────────────────────── */
 @layer components {
+  /* The sales series draws upward from its shared baseline so period changes remain spatially legible. */
+  .dashboard-chart-bar {
+    animation: dashboard-chart-bar-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   .max-w-table-row {
     @apply max-w-[280px] md:max-w-sm;
   }
@@ -254,6 +259,23 @@
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: oklch(0.5 0.01 55 / 35%);
+  }
+}
+
+@keyframes dashboard-chart-bar-enter {
+  from {
+    clip-path: inset(100% 0 0);
+    opacity: 0.55;
+  }
+  to {
+    clip-path: inset(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-chart-bar {
+    animation: none;
   }
 }
 

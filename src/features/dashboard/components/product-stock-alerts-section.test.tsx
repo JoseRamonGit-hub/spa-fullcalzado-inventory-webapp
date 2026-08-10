@@ -43,6 +43,8 @@ describe("Alertas de inventario del Dashboard", () => {
   it("muestra ambas listas y abre el Producto seleccionado", () => {
     render(<ProductStockAlertsSection />);
 
+    expect(screen.getByRole("heading", { name: "Atención hoy" })).toBeInTheDocument();
+    expect(screen.getByText("Prioridades de inventario que requieren revisión")).toBeInTheDocument();
     const lowStockCard = screen.getByText("Productos con stock bajo").closest('[data-slot="card"]');
     const stagnantCard = screen.getByText("Productos estancados").closest('[data-slot="card"]');
     expect(lowStockCard).not.toBeNull();
@@ -51,7 +53,9 @@ describe("Alertas de inventario del Dashboard", () => {
     expect(stagnantCard?.querySelector(".lucide-package-x")).toBeNull();
     expect(screen.getByText("40 días")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("row", { name: "Ver detalles de OLD-01" }));
+    const stagnantRow = screen.getByRole("row", { name: "Ver detalles de OLD-01" });
+    expect(stagnantRow).toHaveClass("focus-visible:ring-2");
+    fireEvent.click(stagnantRow);
     expect(navigate).toHaveBeenCalledWith({
       to: "/inventory/$productId",
       params: { productId: "stagnant-product" },
@@ -112,5 +116,33 @@ describe("Alertas de inventario del Dashboard", () => {
     expect(screen.getByText("No hay productos estancados.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ver todos los estancados" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ver todas las alertas" })).toBeInTheDocument();
+  });
+
+  it("no inventa cero días cuando falta la antigüedad de un producto estancado", () => {
+    vi.mocked(useDashboardProductStockAlerts).mockImplementation(
+      (type) =>
+        ({
+          data: [
+            {
+              type,
+              rank: 1,
+              productId: `${type}-product`,
+              code: type === "low_stock" ? "LOW-01" : "OLD-01",
+              description: "Producto de prueba",
+              stock: 2,
+              active: true,
+              stagnantSince: null,
+              stagnantDays: null,
+            },
+          ],
+          isPending: false,
+          isError: false,
+        }) as never,
+    );
+
+    render(<ProductStockAlertsSection />);
+
+    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.queryByText("0 días")).not.toBeInTheDocument();
   });
 });
