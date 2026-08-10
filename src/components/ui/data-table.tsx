@@ -137,9 +137,9 @@ export function DataTable<TData, TValue>({
   const showPagination = !hidePagination && !isLoading && data.length > 0;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div
-        className="custom-scrollbar flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible"
+        className="custom-scrollbar min-w-0 flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible"
         role={scrollAreaLabel ? "region" : undefined}
         aria-label={scrollAreaLabel}
         tabIndex={scrollAreaLabel ? 0 : undefined}
