@@ -2,7 +2,7 @@
 
 begin;
 
-select plan(6);
+select plan(8);
 select set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
 select set_config('app.suppress_log_entry', 'true', true);
 
@@ -135,6 +135,25 @@ select results_eq(
   'El contrato público combina estado de inventario y fecha de creación'
 );
 
+select results_eq(
+  $$
+    select stagnant_since, stagnant_days
+    from public.get_product_stagnation(
+      '10000000-0000-0000-0000-000000000001',
+      '40000000-0000-0000-0000-000000000014'
+    )
+  $$,
+  $$
+    select stagnant_since, stagnant_days
+    from private.get_product_stagnation(
+      '10000000-0000-0000-0000-000000000001',
+      '40000000-0000-0000-0000-000000000014',
+      null
+    )
+  $$,
+  'El detalle y las alertas comparten el cálculo de días sin salida'
+);
+
 select set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000004', true);
 
 select throws_ok(
@@ -147,6 +166,19 @@ select throws_ok(
   'P0001',
   'Negocio inexistente, inactivo o no autorizado',
   'El contrato público no expone alertas de otro Negocio'
+);
+
+select throws_ok(
+  $$
+    select *
+    from public.get_product_stagnation(
+      '10000000-0000-0000-0000-000000000001',
+      '40000000-0000-0000-0000-000000000014'
+    )
+  $$,
+  'P0001',
+  'Negocio inexistente, inactivo o no autorizado',
+  'El detalle no expone estancamiento de otro Negocio'
 );
 
 select * from finish();

@@ -21,6 +21,7 @@ const fakeMovement = {
   business_id: BUSINESS_ID,
   product_id: "prod-1",
   type: "entry",
+  adjustment_reason: null,
   quantity: 5,
   price_usd: 10,
   price_usd_before: null,

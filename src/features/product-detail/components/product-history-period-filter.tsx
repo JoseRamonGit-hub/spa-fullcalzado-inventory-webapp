@@ -24,10 +24,10 @@ type ProductHistoryPeriodFilterProps = {
 };
 
 const periodLabels: Record<ProductHistoryPeriod, string> = {
-  "last-30-days": "30 días",
-  "last-90-days": "90 días",
-  all: "Todo",
-  custom: "Personalizado",
+  "last-30-days": "Últimos 30 días",
+  "last-90-days": "Últimos 90 días",
+  all: "Todo el historial",
+  custom: "Rango personalizado",
 };
 
 function getCaracasToday() {
@@ -57,14 +57,8 @@ export function ProductHistoryPeriodFilter({
     setCustomRangeOpen(false);
   };
 
-  const handleClearCustomRange = (event: React.SyntheticEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    clearCustomRange();
-  };
-
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex max-w-full flex-wrap items-center justify-end gap-2">
       <label className="sr-only" htmlFor="product-history-period">
         Período del historial
       </label>
@@ -84,53 +78,54 @@ export function ProductHistoryPeriodFilter({
       </NativeSelect>
 
       {period === "custom" ? (
-        <Popover open={customRangeOpen} onOpenChange={setCustomRangeOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(filterTriggerClassName, filterStateClassName(Boolean(customRange?.from)))}
-              aria-label="Seleccionar rango personalizado"
-            >
-              <CalendarDays
-                data-icon="inline-start"
-                aria-hidden="true"
-                className={filterIconClassName(Boolean(customRange?.from))}
+        <div className="flex min-w-0 items-center gap-1">
+          <Popover open={customRangeOpen} onOpenChange={setCustomRangeOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(filterTriggerClassName, "max-w-full", filterStateClassName(Boolean(customRange?.from)))}
+                aria-label="Seleccionar rango personalizado"
+              >
+                <CalendarDays
+                  data-icon="inline-start"
+                  aria-hidden="true"
+                  className={filterIconClassName(Boolean(customRange?.from))}
+                />
+                <span className="max-w-48 truncate">{formatRangeLabel(customRange)}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <PopoverTitle className="sr-only">Seleccionar rango personalizado</PopoverTitle>
+              <Calendar
+                mode="range"
+                selected={customRange}
+                onSelect={onCustomRangeChange}
+                defaultMonth={customRange?.from ?? caracasToday}
+                numberOfMonths={2}
+                captionLayout="dropdown"
+                startMonth={new Date(1900, 0, 1)}
+                endMonth={caracasToday}
+                disabled={{ after: caracasToday, before: new Date(1900, 0, 1) }}
+                locale={es}
+                autoFocus
               />
-              <span className="max-w-48 truncate">{formatRangeLabel(customRange)}</span>
-              {customRange?.from ? (
-                <span
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Limpiar rango personalizado"
-                  onClick={handleClearCustomRange}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") handleClearCustomRange(event);
-                  }}
-                  className="text-muted-foreground hover:text-foreground hover:bg-accent ml-0.5 cursor-pointer rounded-sm p-0.5 transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </span>
-              ) : null}
+            </PopoverContent>
+          </Popover>
+          {customRange?.from ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground size-9 sm:size-8"
+              aria-label="Limpiar rango y volver a los últimos 30 días"
+              title="Limpiar rango personalizado"
+              onClick={clearCustomRange}
+            >
+              <X aria-hidden="true" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <PopoverTitle className="sr-only">Seleccionar rango personalizado</PopoverTitle>
-            <Calendar
-              mode="range"
-              selected={customRange}
-              onSelect={onCustomRangeChange}
-              defaultMonth={customRange?.from ?? caracasToday}
-              numberOfMonths={2}
-              captionLayout="dropdown"
-              startMonth={new Date(1900, 0, 1)}
-              endMonth={caracasToday}
-              disabled={{ after: caracasToday, before: new Date(1900, 0, 1) }}
-              locale={es}
-              autoFocus
-            />
-          </PopoverContent>
-        </Popover>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

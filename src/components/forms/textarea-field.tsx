@@ -1,10 +1,10 @@
+import { Textarea } from "@/components/ui/textarea";
 import { useFieldContext } from "@/hooks/form";
-import { Input } from "../ui/input";
 import { FieldWrapper, type FormFieldProps } from "./field-wrapper";
 
-type TextFieldProps = FormFieldProps & React.ComponentProps<"input">;
+type TextareaFieldProps = FormFieldProps & React.ComponentProps<"textarea">;
 
-export function TextField({ label, description, action, descriptionBelow, compact, ...props }: TextFieldProps) {
+export function TextareaField({ label, description, action, descriptionBelow, compact, ...props }: TextareaFieldProps) {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -16,13 +16,13 @@ export function TextField({ label, description, action, descriptionBelow, compac
       descriptionBelow={descriptionBelow}
       compact={compact}
     >
-      <Input
+      <Textarea
         {...props}
         id={field.name}
         name={field.name}
         value={field.state.value}
         onBlur={field.handleBlur}
-        onChange={(e) => field.handleChange(e.target.value)}
+        onChange={(event) => field.handleChange(event.target.value)}
         aria-invalid={isInvalid}
       />
     </FieldWrapper>

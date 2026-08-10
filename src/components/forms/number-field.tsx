@@ -3,24 +3,35 @@ import { useFieldContext } from "@/hooks/form";
 import { Input } from "../ui/input";
 import { FieldWrapper, type FormFieldProps } from "./field-wrapper";
 
-type NumberFieldProps = FormFieldProps & React.ComponentProps<"input">;
+type NumberFieldProps = FormFieldProps &
+  React.ComponentProps<"input"> & {
+    showZero?: boolean;
+  };
 
-function formatDisplayValue(value: number) {
-  return value ? String(value) : "";
+function formatDisplayValue(value: number, showZero: boolean) {
+  return value || showZero ? String(value) : "";
 }
 
-export function NumberField({ label, description, compact, ...props }: NumberFieldProps) {
+export function NumberField({
+  label,
+  description,
+  action,
+  descriptionBelow,
+  compact,
+  showZero = false,
+  ...props
+}: NumberFieldProps) {
   const field = useFieldContext<number>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const [display, setDisplay] = useState(() => ({
     formValue: field.state.value,
-    text: formatDisplayValue(field.state.value),
+    text: formatDisplayValue(field.state.value, showZero),
   }));
 
   if (display.formValue !== field.state.value) {
     setDisplay({
       formValue: field.state.value,
-      text: formatDisplayValue(field.state.value),
+      text: formatDisplayValue(field.state.value, showZero),
     });
   }
 
@@ -33,7 +44,13 @@ export function NumberField({ label, description, compact, ...props }: NumberFie
   };
 
   return (
-    <FieldWrapper label={label} description={description} compact={compact}>
+    <FieldWrapper
+      label={label}
+      description={description}
+      action={action}
+      descriptionBelow={descriptionBelow}
+      compact={compact}
+    >
       <Input
         {...props}
         id={field.name}
