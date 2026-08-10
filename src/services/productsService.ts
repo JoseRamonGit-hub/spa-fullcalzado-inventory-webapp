@@ -2,9 +2,10 @@ import { supabase } from "@/lib/supabase";
 import type {
   Product,
   ProductCreateInput,
-  EditProductPayload,
+  AdjustProductStockPayload,
   ProductDetail,
   ProductStockAlertType,
+  UpdateProductCatalogPayload,
 } from "@/types/index";
 
 const ALL_MATCHING_PRODUCTS_LIMIT = 2_147_483_647;
@@ -60,18 +61,27 @@ export const productsService = {
     if (productError) throw new Error(productError.message);
     if (!product) return null;
 
-    const { data: lastActivity, error: activityError } = await supabase
-      .from("inventory_movements")
-      .select("*")
-      .eq("business_id", businessId)
-      .eq("product_id", productId)
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const [activityResult, stagnationResult] = await Promise.all([
+      supabase
+        .from("inventory_movements")
+        .select("*")
+        .eq("business_id", businessId)
+        .eq("product_id", productId)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase.rpc("get_product_stagnation", { p_business_id: businessId, p_product_id: productId }).maybeSingle(),
+    ]);
 
-    if (activityError) throw new Error(activityError.message);
-    return { product, lastActivity };
+    if (activityResult.error) throw new Error(activityResult.error.message);
+    if (stagnationResult.error) throw new Error(stagnationResult.error.message);
+    return {
+      product,
+      lastActivity: activityResult.data,
+      stagnantSince: stagnationResult.data?.stagnant_since ?? null,
+      stagnantDays: stagnationResult.data?.stagnant_days ?? null,
+    };
   },
 
   createMany: async (businessId: string, payload: ProductCreateInput[]): Promise<Product[]> => {
@@ -84,8 +94,16 @@ export const productsService = {
     return data;
   },
 
-  editProduct: async (businessId: string, payload: EditProductPayload): Promise<void> => {
+  updateCatalog: async (businessId: string, payload: UpdateProductCatalogPayload): Promise<void> => {
     const { error } = await supabase.rpc("edit_product", {
+      p_business_id: businessId,
+      ...payload,
+    });
+    if (error) throw new Error(error.message);
+  },
+
+  adjustStock: async (businessId: string, payload: AdjustProductStockPayload): Promise<void> => {
+    const { error } = await supabase.rpc("adjust_product_stock", {
       p_business_id: businessId,
       ...payload,
     });

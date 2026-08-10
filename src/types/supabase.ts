@@ -176,6 +176,7 @@ export type Database = {
       };
       inventory_movements: {
         Row: {
+          adjustment_reason: string | null;
           business_id: string;
           created_at: string | null;
           date: string;
@@ -192,6 +193,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          adjustment_reason?: string | null;
           business_id: string;
           created_at?: string | null;
           date?: string;
@@ -208,6 +210,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          adjustment_reason?: string | null;
           business_id?: string;
           created_at?: string | null;
           date?: string;
@@ -624,6 +627,16 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      adjust_product_stock: {
+        Args: {
+          p_business_id: string;
+          p_expected_stock: number;
+          p_new_stock: number;
+          p_product_id: string;
+          p_reason: string;
+        };
+        Returns: Json;
+      };
       admin_set_user_business_access: {
         Args: {
           p_business_ids: string[];
@@ -797,6 +810,7 @@ export type Database = {
           p_start_date?: string;
         };
         Returns: {
+          adjustment_reason: string;
           business_id: string;
           created_at: string;
           date: string;
@@ -812,6 +826,13 @@ export type Database = {
           type: Database["public"]["Enums"]["movement_types"];
           user_fullname: string;
           user_id: string;
+        }[];
+      };
+      get_product_stagnation: {
+        Args: { p_business_id: string; p_product_id: string };
+        Returns: {
+          stagnant_days: number;
+          stagnant_since: string;
         }[];
       };
       get_product_stock_alerts: {

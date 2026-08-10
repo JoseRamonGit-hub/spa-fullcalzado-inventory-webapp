@@ -646,8 +646,20 @@ SELECT public.edit_product(
   p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id  := 'b0000000-0000-0000-0000-000000000012'::uuid,
   p_description := 'Asics Gel-Contend T35 Edicion 2',
-  p_price_usd   := 38.00,
-  p_stock       := 10
+  p_price_usd   := 38.00
+);
+
+SELECT public.adjust_product_stock(
+  p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+  p_product_id := 'b0000000-0000-0000-0000-000000000012'::uuid,
+  p_expected_stock := (
+    SELECT stock
+    FROM public.products
+    WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+      AND id = 'b0000000-0000-0000-0000-000000000012'::uuid
+  ),
+  p_new_stock := 10,
+  p_reason := 'Conteo físico de apertura'
 );
 
 WITH target AS (
@@ -656,7 +668,7 @@ WITH target AS (
   WHERE product_id = 'b0000000-0000-0000-0000-000000000012'
     AND type = 'edit'
   ORDER BY created_at DESC
-  LIMIT 1
+  LIMIT 2
 )
 UPDATE public.inventory_movements
 SET date = CURRENT_DATE,

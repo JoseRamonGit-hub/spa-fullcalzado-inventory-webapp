@@ -5,6 +5,7 @@ import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { getColumns } from "./columns";
 import { EditProductModal } from "./components/edit-product-modal";
+import { AdjustProductStockModal } from "./components/adjust-product-stock-modal";
 import { ToggleStatusModal } from "./components/toggle-status-modal";
 import { MobileActionDrawer } from "./components/mobile-action-drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,6 +32,7 @@ export function InventoryPage() {
 
   // Action modals state
   const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [adjustStockProduct, setAdjustStockProduct] = useState<Product | null>(null);
   const [toggleStatusProduct, setToggleStatusProduct] = useState<Product | null>(null);
   const [mobileActionProduct, setMobileActionProduct] = useState<Product | null>(null);
 
@@ -54,6 +56,7 @@ export function InventoryPage() {
   const tableMeta = useMemo(
     () => ({
       onEdit: (product: Product) => setEditProduct(product),
+      onAdjustStock: (product: Product) => setAdjustStockProduct(product),
       onToggleStatus: (product: Product) => setToggleStatusProduct(product),
       isAdmin,
     }),
@@ -116,6 +119,14 @@ export function InventoryPage() {
         />
       )}
 
+      {adjustStockProduct && (
+        <AdjustProductStockModal
+          open={!!adjustStockProduct}
+          onOpenChange={(open) => !open && setAdjustStockProduct(null)}
+          product={adjustStockProduct}
+        />
+      )}
+
       <MobileActionDrawer
         product={mobileActionProduct}
         isAdmin={isAdmin}
@@ -124,6 +135,10 @@ export function InventoryPage() {
         onEdit={(p) => {
           setMobileActionProduct(null);
           setEditProduct(p);
+        }}
+        onAdjustStock={(p) => {
+          setMobileActionProduct(null);
+          setAdjustStockProduct(p);
         }}
         onToggleStatus={(p) => {
           setMobileActionProduct(null);

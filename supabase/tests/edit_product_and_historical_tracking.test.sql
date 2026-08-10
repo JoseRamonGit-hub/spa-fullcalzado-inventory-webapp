@@ -2,14 +2,14 @@
 -- TEST SUITE: edit_product_and_historical_tracking
 --
 -- Validates:
---   TEST 1 — edit_product() RPC creates exactly one 'edit' movement
+--   TEST 1 — adjust_product_stock() creates exactly one audited movement
 --            (no duplicate 'entry' from suppressed trigger)
---   TEST 2 — edit_product() correctly records stock_before, price_usd,
---            price_usd_before, and description_before
+--   TEST 2 — edit_product() updates catalog data without changing stock
 --   TEST 3 — edit_product() allows quantity=0 when only price/desc change
 --   TEST 4 — quantity CHECK still enforced for non-edit types (quantity > 0)
 --   TEST 5 — Entry movements now populate stock_before and price_usd
 --   TEST 6 — New product creation populates stock_before=0 and price_usd
+--   TEST 7 — legacy stock edits, stale stock, and invalid reasons are rejected
 --
 -- FRAMEWORK: pgTAP 1.3 (https://pgtap.org)
 -- EJECUTAR:  npx supabase test db
@@ -17,7 +17,7 @@
 
 BEGIN;
 
-SELECT plan(16);
+SELECT plan(22);
 
 -- ============================================================================
 -- SETUP
@@ -115,7 +115,7 @@ END;
 $$;
 
 -- ============================================================================
--- TEST 1: edit_product creates exactly ONE 'edit' movement (no duplicates)
+-- TEST 1: adjust_product_stock creates exactly ONE audited movement
 -- ============================================================================
 
 -- 1a. Count movements before edit
@@ -123,14 +123,16 @@ SELECT is(
   (SELECT count(*)::int FROM public.inventory_movements
    WHERE product_id = 'aaaa0000-0000-0000-0000-000000000001'),
   0,
-  'TEST 1a: No movements before edit_product call'
+  'TEST 1a: No movements before adjust_product_stock call'
 );
 
--- 1b. Call edit_product (change stock from 10 to 15)
-SELECT public.edit_product(
+-- 1b. Adjust stock from 10 to 15 with the expected current value.
+SELECT public.adjust_product_stock(
   p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id := 'aaaa0000-0000-0000-0000-000000000001'::uuid,
-  p_stock      := 15
+  p_expected_stock := 10,
+  p_new_stock := 15,
+  p_reason := 'Conteo físico de cierre'
 );
 
 -- 1c. Exactly 1 movement created (not 2 — trigger suppressed)
@@ -158,21 +160,41 @@ SELECT is(
   'TEST 1d: Product stock updated to 15'
 );
 
+SELECT is(
+  (SELECT adjustment_reason FROM public.inventory_movements
+   WHERE product_id = 'aaaa0000-0000-0000-0000-000000000001'
+   LIMIT 1),
+  'Conteo físico de cierre',
+  'TEST 1e: Adjustment reason is stored in the audit movement'
+);
+
+SELECT is(
+  (SELECT adjustment_reason
+   FROM public.get_product_history(
+     '10000000-0000-0000-0000-000000000001'::uuid,
+     'aaaa0000-0000-0000-0000-000000000001'::uuid,
+     p_show_all := true
+   )
+   WHERE adjustment_reason IS NOT NULL
+   LIMIT 1),
+  'Conteo físico de cierre',
+  'TEST 1f: Product history exposes the adjustment reason'
+);
+
 -- ============================================================================
--- TEST 2: edit_product records all before/after data correctly
+-- TEST 2: edit_product records catalog changes without changing stock
 -- ============================================================================
 
--- 2a. Call edit_product changing description, price, and stock
+-- 2a. Change description and price only.
 SELECT public.edit_product(
   p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
   p_product_id  := 'aaaa0000-0000-0000-0000-000000000001'::uuid,
   p_description := 'Zapato editado',
-  p_price_usd   := 30.00,
-  p_stock       := 20
+  p_price_usd   := 30.00
 );
 
 -- Target the second edit movement deterministically via description_before IS NOT NULL
--- (first edit only changed stock, second edit changed description+price+stock)
+-- (first edit only changed stock, second edit changed description+price)
 
 -- 2b. Verify stock_before
 SELECT is(
@@ -184,14 +206,14 @@ SELECT is(
   'TEST 2a: stock_before is 15 (stock before this edit)'
 );
 
--- 2c. Verify quantity (signed diff: 20 - 15 = 5)
+-- 2c. Verify catalog edits never change stock.
 SELECT is(
   (SELECT quantity FROM public.inventory_movements
    WHERE product_id = 'aaaa0000-0000-0000-0000-000000000001'
      AND description_before IS NOT NULL
    LIMIT 1),
-  5,
-  'TEST 2b: quantity is 5 (signed diff: 20 - 15)'
+  0,
+  'TEST 2b: quantity is 0 for a catalog-only edit'
 );
 
 -- 2d. Verify price_usd (new price)
@@ -341,6 +363,60 @@ SELECT is(
    LIMIT 1),
   22.50,
   'TEST 6b: New product entry has price_usd=22.50'
+);
+
+-- ============================================================================
+-- TEST 7: unsafe or ambiguous adjustments are rejected
+-- ============================================================================
+
+SELECT throws_ok(
+  $$
+    SELECT public.edit_product(
+      p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+      p_product_id := 'aaaa0000-0000-0000-0000-000000000001'::uuid,
+      p_stock := 20
+    )
+  $$,
+  '22023',
+  'Las existencias deben modificarse mediante un ajuste de inventario',
+  'TEST 7a: Legacy catalog RPC cannot change stock'
+);
+
+SELECT throws_ok(
+  $$
+    SELECT public.adjust_product_stock(
+      p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+      p_product_id := 'aaaa0000-0000-0000-0000-000000000001'::uuid,
+      p_expected_stock := 10,
+      p_new_stock := 20,
+      p_reason := 'Conteo físico'
+    )
+  $$,
+  '40001',
+  'Las existencias cambiaron de 10 a 15 mientras revisabas el ajuste. Actualiza el producto e inténtalo nuevamente.',
+  'TEST 7b: Stale expected stock cannot overwrite a concurrent change'
+);
+
+SELECT throws_ok(
+  $$
+    SELECT public.adjust_product_stock(
+      p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+      p_product_id := 'aaaa0000-0000-0000-0000-000000000001'::uuid,
+      p_expected_stock := 15,
+      p_new_stock := 20,
+      p_reason := 'x'
+    )
+  $$,
+  '22023',
+  'Indica un motivo de al menos 3 caracteres',
+  'TEST 7c: Adjustment reason must be meaningful'
+);
+
+SELECT is(
+  (SELECT stock FROM public.products
+   WHERE id = 'aaaa0000-0000-0000-0000-000000000001'),
+  15,
+  'TEST 7d: Rejected adjustments leave stock unchanged'
 );
 
 -- ============================================================================

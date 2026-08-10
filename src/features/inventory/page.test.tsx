@@ -39,6 +39,10 @@ vi.mock("./components/edit-product-modal", () => ({
   EditProductModal: ({ product }: { product: Product }) => <div>Editando {product.code}</div>,
 }));
 
+vi.mock("./components/adjust-product-stock-modal", () => ({
+  AdjustProductStockModal: ({ product }: { product: Product }) => <div>Ajustando existencias de {product.code}</div>,
+}));
+
 const product: Product = {
   id: "product-1",
   business_id: "business-1",
@@ -87,9 +91,13 @@ describe("InventoryPage product navigation", () => {
   it("keeps desktop administrative actions independent from row navigation", () => {
     render(<InventoryPage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Editar FC-101" }));
+    fireEvent.click(screen.getByRole("button", { name: "Editar datos del producto FC-101" }));
 
     expect(screen.getByText("Editando FC-101")).toBeInTheDocument();
+    expect(navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Ajustar existencias de FC-101" }));
+    expect(screen.getByText("Ajustando existencias de FC-101")).toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
   });
 
@@ -100,11 +108,12 @@ describe("InventoryPage product navigation", () => {
 
     fireEvent.click(screen.getByText("FC-101").closest("tr")!);
 
-    expect(screen.getByRole("button", { name: "Ver detalles" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver detalle del producto" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Editar Producto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ajustar existencias/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Desactivar Producto/i })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Ver detalles" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ver detalle del producto" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/inventory/$productId", params: { productId: "product-1" } });
   });
 
@@ -114,8 +123,9 @@ describe("InventoryPage product navigation", () => {
 
     fireEvent.click(screen.getByText("FC-101").closest("tr")!);
 
-    expect(screen.getByRole("button", { name: "Ver detalles" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Editar Producto" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Desactivar Producto" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver detalle del producto" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Editar datos del producto" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ajustar existencias" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Desactivar producto" })).toBeInTheDocument();
   });
 });

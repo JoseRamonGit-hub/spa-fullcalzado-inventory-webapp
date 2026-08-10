@@ -23,9 +23,11 @@ export function ToggleStatusModal({ open, onOpenChange, product }: ToggleStatusM
     );
 
     toast.promise(promise, {
-      loading: isDeactivating ? "Desactivando producto..." : "Reactivando producto...",
-      success: isDeactivating ? "Producto desactivado correctamente" : "Producto reactivado correctamente",
-      error: isDeactivating ? "Error al desactivar el producto" : "Error al reactivar el producto",
+      loading: isDeactivating ? "Desactivando producto…" : "Reactivando producto…",
+      success: isDeactivating ? "Producto desactivado" : "Producto reactivado",
+      error: isDeactivating
+        ? "No pudimos desactivar el producto. Inténtalo nuevamente."
+        : "No pudimos reactivar el producto. Inténtalo nuevamente.",
     });
   };
 
@@ -36,8 +38,8 @@ export function ToggleStatusModal({ open, onOpenChange, product }: ToggleStatusM
       title={actionLabel}
       description={
         isDeactivating
-          ? "Dejará de estar disponible para nuevas cargas, pero podrá venderse mientras tenga stock."
-          : "Volverá a estar disponible para operaciones de inventario."
+          ? "Ya no admitirá entradas de inventario. Podrá venderse hasta agotar sus existencias y seguirá aceptando devoluciones."
+          : "Volverá a admitir entradas de inventario. Sus ventas y devoluciones seguirán disponibles."
       }
       confirmLabel={actionLabel}
       isPending={toggleActive.isPending}

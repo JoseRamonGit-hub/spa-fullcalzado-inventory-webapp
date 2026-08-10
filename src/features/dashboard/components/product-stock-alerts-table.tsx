@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import type { DashboardProductStockAlert, ProductStockAlertType } from "@/types";
+import { formatProductStagnantDays } from "@/features/inventory/product-stagnation";
 
 const columnHelper = createColumnHelper<DashboardProductStockAlert>();
 
@@ -51,9 +52,7 @@ const stagnantColumns = [
       const stagnantDays = getValue();
 
       return (
-        <span className="block text-right font-medium tabular-nums">
-          {stagnantDays === null ? "—" : `${stagnantDays} días`}
-        </span>
+        <span className="block text-right font-medium tabular-nums">{formatProductStagnantDays(stagnantDays)}</span>
       );
     },
     enableSorting: false,

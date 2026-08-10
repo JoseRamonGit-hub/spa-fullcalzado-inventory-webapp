@@ -42,4 +42,26 @@ describe("ProductHistoryPeriodFilter", () => {
     expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-number-of-months", "2");
     expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-caption-layout", "dropdown");
   });
+
+  it("mantiene la limpieza del rango como un botón independiente y accesible", () => {
+    const onPeriodChange = vi.fn();
+    const onCustomRangeChange = vi.fn();
+    render(
+      <ProductHistoryPeriodFilter
+        period="custom"
+        customRange={{ from: new Date(2026, 6, 1), to: new Date(2026, 6, 31) }}
+        onPeriodChange={onPeriodChange}
+        onCustomRangeChange={onCustomRangeChange}
+      />,
+    );
+
+    const dateTrigger = screen.getByRole("button", { name: "Seleccionar rango personalizado" });
+    const clearButton = screen.getByRole("button", { name: "Limpiar rango y volver a los últimos 30 días" });
+
+    expect(dateTrigger).not.toContainElement(clearButton);
+    fireEvent.click(clearButton);
+
+    expect(onCustomRangeChange).toHaveBeenCalledWith(undefined);
+    expect(onPeriodChange).toHaveBeenCalledWith("last-30-days");
+  });
 });

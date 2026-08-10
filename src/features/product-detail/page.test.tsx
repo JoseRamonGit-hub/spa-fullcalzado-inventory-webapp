@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { ProductDetailPage } from "./page";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import type { InventoryMovement, Product, ProductHistoryEvent } from "@/types";
+import type { InventoryMovement, Product, ProductDetail, ProductHistoryEvent } from "@/types";
 
 const navigate = vi.fn();
 const goBack = vi.fn();
@@ -10,11 +10,12 @@ const canGoBack = vi.fn();
 const refetch = vi.fn();
 const refetchHistory = vi.fn();
 const useProductHistoryMock = vi.fn();
-let detail: { product: Product; lastActivity: InventoryMovement | null } | null;
+let detail: ProductDetail | null;
 let exchangeRate: { rate: number } | null;
 let queryState: "success" | "error";
 let historyState: "success" | "pending" | "error";
 let history: ProductHistoryEvent[];
+let userRole: "admin" | "employee";
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
@@ -29,6 +30,10 @@ vi.mock("@/features/business/components/business-module-title", () => ({
   BusinessModuleTitle: ({ title }: { title: string }) => <h1>{title}</h1>,
 }));
 
+vi.mock("@/components/ui/overflow-tooltip", () => ({
+  OverflowTooltip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+}));
+
 vi.mock("@/features/inventory/hooks/useProductQueries", () => ({
   useProductDetail: () => ({
     data: detail,
@@ -40,6 +45,25 @@ vi.mock("@/features/inventory/hooks/useProductQueries", () => ({
 
 vi.mock("@/features/exchange-rates/hooks/useExchangeRateQueries", () => ({
   useExchangeRate: () => ({ data: exchangeRate, isPending: false, isError: false, refetch: vi.fn() }),
+}));
+
+vi.mock("@/features/auth/store/useAuthStore", () => ({
+  useAuthStore: (selector: (state: { user: { role: "admin" | "employee" } }) => unknown) =>
+    selector({ user: { role: userRole } }),
+}));
+
+vi.mock("@/features/inventory/components/edit-product-modal", () => ({
+  EditProductModal: ({ open }: { open: boolean }) => (open ? <div role="dialog" aria-label="Editar producto" /> : null),
+}));
+
+vi.mock("@/features/inventory/components/adjust-product-stock-modal", () => ({
+  AdjustProductStockModal: ({ open }: { open: boolean }) =>
+    open ? <div role="dialog" aria-label="Ajustar existencias" /> : null,
+}));
+
+vi.mock("@/features/inventory/components/toggle-status-modal", () => ({
+  ToggleStatusModal: ({ open, product }: { open: boolean; product: Product }) =>
+    open ? <div role="dialog" aria-label={product.active ? "Desactivar producto" : "Reactivar producto"} /> : null,
 }));
 
 vi.mock("@/features/product-detail/hooks/useProductHistory", () => ({
@@ -94,11 +118,12 @@ describe("ProductDetailPage", () => {
     canGoBack.mockReset();
     canGoBack.mockReturnValue(true);
     refetch.mockClear();
-    detail = { product, lastActivity: activity };
+    detail = { product, lastActivity: activity, stagnantSince: "2026-06-29", stagnantDays: 40 };
     exchangeRate = { rate: 90 };
     queryState = "success";
     historyState = "success";
     history = [historyEvent];
+    userRole = "admin";
     refetchHistory.mockClear();
     useProductHistoryMock.mockClear();
     useBusinessStore.setState({ activeBusinessId: "business-1" });
@@ -108,11 +133,48 @@ describe("ProductDetailPage", () => {
     render(<ProductDetailPage />);
 
     expect(screen.getByRole("heading", { name: "Historial de producto" })).toBeInTheDocument();
-    expect(screen.getByText("FC-101")).toBeInTheDocument();
-    expect(screen.getByText("Deportivo clásico")).toBeInTheDocument();
-    expect(screen.getByText("$25.00")).toBeInTheDocument();
-    expect(screen.getByText("2.250,00 Bs.")).toBeInTheDocument();
-    expect(screen.getByText("Desactivación")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Deportivo clásico" })).toBeInTheDocument();
+    const inventorySummary = screen.getByLabelText("Inventario");
+    const priceSummary = screen.getByLabelText("Precios");
+    const lifecycleSummary = screen.getByLabelText("Estado y actividad");
+
+    expect(within(inventorySummary).getByText("FC-101")).toBeInTheDocument();
+    expect(within(inventorySummary).getByText("8")).toBeInTheDocument();
+    expect(within(inventorySummary).getByText("40 días")).toBeInTheDocument();
+    expect(screen.queryByText("Descripción")).not.toBeInTheDocument();
+    expect(within(priceSummary).getByText("$25.00")).toBeInTheDocument();
+    expect(within(priceSummary).getByText("2.250,00 Bs.")).toBeInTheDocument();
+    expect(within(lifecycleSummary).getByText("Desactivación")).toBeInTheDocument();
+  });
+
+  it("offers the inventory maintenance actions to administrators", () => {
+    render(<ProductDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Editar datos del producto FC-101" }));
+    expect(screen.getByRole("dialog", { name: "Editar producto" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Ajustar existencias de FC-101" }));
+    expect(screen.getByRole("dialog", { name: "Ajustar existencias" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Desactivar producto FC-101" }));
+    expect(screen.getByRole("dialog", { name: "Desactivar producto" })).toBeInTheDocument();
+  });
+
+  it("keeps product maintenance actions hidden from employees", () => {
+    userRole = "employee";
+    render(<ProductDetailPage />);
+
+    expect(screen.queryByRole("button", { name: "Editar datos del producto FC-101" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ajustar existencias de FC-101" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Desactivar producto FC-101" })).not.toBeInTheDocument();
+  });
+
+  it("offers reactivation when the product is inactive", () => {
+    detail = { ...detail!, product: { ...product, active: false } };
+    render(<ProductDetailPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reactivar producto FC-101" }));
+    expect(screen.getByRole("dialog", { name: "Reactivar producto" })).toBeInTheDocument();
   });
 
   it("regresa a la pantalla anterior desde la que se abrió el detalle", () => {
@@ -153,13 +215,38 @@ describe("ProductDetailPage", () => {
     expect(
       screen.getByRole("region", { name: "Tabla de historial con desplazamiento horizontal" }),
     ).toBeInTheDocument();
-    for (const heading of ["Tipo", "Fecha", "Hora", "Detalle", "Cant.", "Stock", "Usuario"]) {
+    for (const heading of ["Movimiento", "Fecha y hora", "Cant.", "Stock"]) {
       expect(screen.getByRole("columnheader", { name: heading })).toBeInTheDocument();
     }
+    expect(screen.queryByRole("columnheader", { name: "Usuario" })).not.toBeInTheDocument();
     expect(screen.getByTitle("Entrada por devolución")).toBeInTheDocument();
     expect(screen.getAllByText("María Pérez")).toHaveLength(2);
-    expect(screen.getByText("Descripción editada")).toBeInTheDocument();
-    expect(screen.getByText("Precio: $20.00 → $25.00")).toBeInTheDocument();
+    expect(screen.getByText("Descripción")).toBeInTheDocument();
+    expect(screen.getByText("$20.00 → $25.00")).toBeInTheDocument();
+    expect(screen.queryByText("Pág. 1/1")).not.toBeInTheDocument();
+
+    const dateHeader = screen.getByRole("columnheader", { name: "Fecha y hora" });
+    expect(dateHeader).toHaveAttribute("aria-sort", "none");
+    fireEvent.click(within(dateHeader).getByRole("button"));
+    expect(dateHeader).toHaveAttribute("aria-sort", "ascending");
+  });
+
+  it("shows the reason recorded for a manual stock adjustment", () => {
+    history = [
+      {
+        ...historyEvent,
+        id: "movement-adjustment",
+        type: "edit",
+        quantity: -2,
+        stock_before: 10,
+        adjustment_reason: "Corrección por conteo físico",
+      },
+    ];
+
+    render(<ProductDetailPage />);
+
+    expect(screen.getByText("Existencias")).toBeInTheDocument();
+    expect(screen.getByText("Corrección por conteo físico")).toBeInTheDocument();
   });
 
   it("paginates the history in the client without changing the product summary", () => {
@@ -192,7 +279,7 @@ describe("ProductDetailPage", () => {
       within(period)
         .getAllByRole("option")
         .map((option) => option.textContent),
-    ).toEqual(["30 días", "90 días", "Todo", "Personalizado"]);
+    ).toEqual(["Últimos 30 días", "Últimos 90 días", "Todo el historial", "Rango personalizado"]);
 
     fireEvent.change(period, { target: { value: "all" } });
 
@@ -207,7 +294,7 @@ describe("ProductDetailPage", () => {
     history = [];
     render(<ProductDetailPage />);
 
-    expect(screen.getByText("Sin movimientos.")).toBeInTheDocument();
+    expect(screen.getByText("No hay movimientos en el período seleccionado.")).toBeInTheDocument();
   });
 
   it("offers a retry when product history fails", () => {
@@ -219,19 +306,20 @@ describe("ProductDetailPage", () => {
   });
 
   it("uses explicit empty values when the rate and activity do not exist", () => {
-    detail = { product, lastActivity: null };
+    detail = { product, lastActivity: null, stagnantSince: null, stagnantDays: null };
     exchangeRate = null;
     render(<ProductDetailPage />);
 
-    expect(screen.getByText("Sin tasa")).toBeInTheDocument();
+    expect(screen.getByText("Tasa no disponible")).toBeInTheDocument();
     expect(screen.getByText("Sin actividad registrada")).toBeInTheDocument();
+    expect(screen.getByText("—")).toBeInTheDocument();
   });
 
   it("offers retry when the product query fails", () => {
     queryState = "error";
     render(<ProductDetailPage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar carga" }));
     expect(refetch).toHaveBeenCalledOnce();
   });
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,15 +11,15 @@ import {
   ModalProductIdentity,
 } from "@/components/modals/shared/modal-ui";
 import { useAppForm } from "@/hooks/form";
-import { useUpdateProduct } from "@/features/inventory/hooks/useProductMutations";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useUpdateProductCatalog } from "@/features/inventory/hooks/useProductMutations";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { Product } from "@/types";
 
 const REQUIRED = "Requerido";
-const INVALID = "Inválido";
 const MIN_PRICE = 0;
-const MIN_STOCK = 0;
+const MAX_PRICE = 9_999_999_999.99;
+const MAX_CODE_LENGTH = 20;
+const MAX_DESCRIPTION_LENGTH = 120;
 
 type EditProductModalProps = {
   open: boolean;
@@ -31,7 +31,6 @@ type PendingChanges = {
   code: string;
   description: string;
   priceUsd: number;
-  stock: number;
 };
 
 type ChangedField = {
@@ -58,25 +57,34 @@ function getChangedFields(product: Product, values: PendingChanges): ChangedFiel
       to: formatCurrencyUSD(values.priceUsd),
     });
   }
-  if (values.stock !== product.stock) {
-    changes.push({ label: "Stock", from: String(product.stock), to: String(values.stock) });
-  }
-
   return changes;
 }
 
+function validateRequiredText(value: string, maxLength: number) {
+  const normalizedValue = value.trim();
+  if (!normalizedValue) return REQUIRED;
+  if (normalizedValue.length > maxLength) return `Máximo ${maxLength} caracteres`;
+  return undefined;
+}
+
+function validatePrice(value: number) {
+  if (!Number.isFinite(value)) return "Indica un precio válido";
+  if (value < MIN_PRICE) return "El precio no puede ser negativo";
+  if (value > MAX_PRICE) return "El precio supera el máximo permitido";
+  return undefined;
+}
+
 export function EditProductModal({ open, onOpenChange, product }: EditProductModalProps) {
-  const updateProduct = useUpdateProduct();
-  const currentUser = useAuthStore((state) => state.user);
+  const updateProduct = useUpdateProductCatalog();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValues, setPendingValues] = useState<PendingChanges | null>(null);
+  const submissionGuard = useRef(false);
 
   const form = useAppForm({
     defaultValues: {
       code: product.code,
       description: product.description,
       priceUsd: product.price_usd,
-      stock: product.stock,
     },
     onSubmit: async ({ value }) => {
       if (getChangedFields(product, value).length === 0) {
@@ -90,33 +98,38 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
   });
 
   const handleConfirmSubmit = () => {
-    if (!pendingValues || !currentUser) return;
+    if (!pendingValues || submissionGuard.current) return;
+    submissionGuard.current = true;
 
-    const promise = updateProduct.mutateAsync(
-      {
-        p_product_id: product.id,
-        p_code: pendingValues.code.trim(),
-        p_description: pendingValues.description.trim(),
-        p_price_usd: pendingValues.priceUsd,
-        p_stock: pendingValues.stock,
-      },
-      {
-        onSuccess: () => {
-          setConfirmOpen(false);
-          setPendingValues(null);
-          onOpenChange(false);
+    const promise = updateProduct
+      .mutateAsync(
+        {
+          p_product_id: product.id,
+          p_code: pendingValues.code.trim(),
+          p_description: pendingValues.description.trim(),
+          p_price_usd: pendingValues.priceUsd,
         },
-      },
-    );
+        {
+          onSuccess: () => {
+            setConfirmOpen(false);
+            setPendingValues(null);
+            onOpenChange(false);
+          },
+        },
+      )
+      .finally(() => {
+        submissionGuard.current = false;
+      });
 
     toast.promise(promise, {
-      loading: "Actualizando producto...",
-      success: "Producto actualizado correctamente",
-      error: "Error al actualizar el producto",
+      loading: "Actualizando datos del producto…",
+      success: "Datos del producto actualizados",
+      error: (error: Error) => error.message || "No pudimos actualizar los datos del producto.",
     });
   };
 
   const handleModalOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && updateProduct.isPending) return;
     if (!nextOpen) {
       form.reset();
       setPendingValues(null);
@@ -139,12 +152,19 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
       <ResponsiveModal
         open={open}
         onOpenChange={handleModalOpenChange}
-        title="Editar producto"
-        description="Modifica la información del producto seleccionado."
+        title="Editar datos del producto"
+        description="Actualiza el código, la descripción y el precio. Las existencias se ajustan por separado."
+        avoidCloseFromOutsideClick={updateProduct.isPending}
+        avoidCloseFromEsc={updateProduct.isPending}
         dialogClassName="sm:max-w-xl"
         footer={
           <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => handleModalOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={updateProduct.isPending}
+              onClick={() => handleModalOpenChange(false)}
+            >
               Cancelar
             </Button>
             <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
@@ -171,37 +191,53 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             <form.AppField
               name="code"
               validators={{
-                onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+                onBlur: ({ value }) => validateRequiredText(value, MAX_CODE_LENGTH),
+                onSubmit: ({ value }) => validateRequiredText(value, MAX_CODE_LENGTH),
                 onChange: ({ value, fieldApi }) =>
-                  fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
+                  fieldApi.state.meta.isTouched ? validateRequiredText(value, MAX_CODE_LENGTH) : undefined,
               }}
             >
               {(field) => (
-                <field.TextField label="Código" compact required className="h-9 text-sm uppercase" autoComplete="off" />
+                <field.TextField
+                  label="Código"
+                  compact
+                  required
+                  maxLength={MAX_CODE_LENGTH}
+                  className="h-9 text-sm uppercase"
+                  autoComplete="off"
+                />
               )}
             </form.AppField>
 
             <form.AppField
               name="description"
               validators={{
-                onBlur: ({ value }) => (!value.trim() ? REQUIRED : undefined),
+                onBlur: ({ value }) => validateRequiredText(value, MAX_DESCRIPTION_LENGTH),
+                onSubmit: ({ value }) => validateRequiredText(value, MAX_DESCRIPTION_LENGTH),
                 onChange: ({ value, fieldApi }) =>
-                  fieldApi.state.meta.isTouched && !value.trim() ? REQUIRED : undefined,
+                  fieldApi.state.meta.isTouched ? validateRequiredText(value, MAX_DESCRIPTION_LENGTH) : undefined,
               }}
             >
               {(field) => (
-                <field.TextField label="Descripción" compact required className="h-9 text-sm" autoComplete="off" />
+                <field.TextField
+                  label="Descripción"
+                  compact
+                  required
+                  maxLength={MAX_DESCRIPTION_LENGTH}
+                  className="h-9 text-sm"
+                  autoComplete="off"
+                />
               )}
             </form.AppField>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="max-w-48">
             <form.AppField
               name="priceUsd"
               validators={{
-                onBlur: ({ value }) => (value < MIN_PRICE ? INVALID : undefined),
-                onChange: ({ value, fieldApi }) =>
-                  fieldApi.state.meta.isTouched && value < MIN_PRICE ? INVALID : undefined,
+                onBlur: ({ value }) => validatePrice(value),
+                onSubmit: ({ value }) => validatePrice(value),
+                onChange: ({ value, fieldApi }) => (fieldApi.state.meta.isTouched ? validatePrice(value) : undefined),
               }}
             >
               {(field) => (
@@ -210,26 +246,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
                   compact
                   step="0.01"
                   min={String(MIN_PRICE)}
-                  required
-                  className="h-9 text-sm tabular-nums"
-                />
-              )}
-            </form.AppField>
-
-            <form.AppField
-              name="stock"
-              validators={{
-                onBlur: ({ value }) => (value < MIN_STOCK ? INVALID : undefined),
-                onChange: ({ value, fieldApi }) =>
-                  fieldApi.state.meta.isTouched && value < MIN_STOCK ? INVALID : undefined,
-              }}
-            >
-              {(field) => (
-                <field.NumberField
-                  label="Stock"
-                  compact
-                  step="1"
-                  min={String(MIN_STOCK)}
+                  max={String(MAX_PRICE)}
                   required
                   className="h-9 text-sm tabular-nums"
                 />
@@ -242,7 +259,7 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
       <ModalConfirmDialog
         isOpen={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Confirmar edición"
+        title="Confirmar cambios de datos"
         description={
           <>
             Se actualizará{hasMultipleChanges ? "n" : ""}{" "}

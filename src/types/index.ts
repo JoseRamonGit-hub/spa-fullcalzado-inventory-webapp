@@ -130,6 +130,8 @@ export type InventoryMovementWithRelations = InventoryMovement & {
 export type ProductDetail = {
   product: Product;
   lastActivity: InventoryMovement | null;
+  stagnantSince: string | null;
+  stagnantDays: number | null;
 };
 
 export type ProductHistoryEvent = InventoryMovement & {
@@ -157,13 +159,19 @@ export type ReturnWithRelations = Return & {
   transactions: ReturnTransactionWithProduct[];
 };
 
-// ── Edit product RPC payload type ─────────────────────────────
-export type EditProductPayload = {
+// ── Product maintenance RPC payload types ────────────────────
+export type UpdateProductCatalogPayload = {
   p_product_id: string;
   p_code: string;
   p_description: string;
   p_price_usd: number;
-  p_stock: number;
+};
+
+export type AdjustProductStockPayload = {
+  p_product_id: string;
+  p_expected_stock: number;
+  p_new_stock: number;
+  p_reason: string;
 };
 
 // ── Return RPC payload types ────────────────────────────────

@@ -1,17 +1,16 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
-import { Pencil, Trash2, RotateCcw } from "lucide-react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import { cn } from "@/lib/utils";
+import { ProductMaintenanceActions } from "@/features/inventory/components/product-maintenance-actions";
 
 const columnHelper = createColumnHelper<Product>();
 
 export type InventoryTableMeta = {
   onEdit: (product: Product) => void;
+  onAdjustStock: (product: Product) => void;
   onToggleStatus: (product: Product) => void;
   isAdmin: boolean;
 };
@@ -104,33 +103,13 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
         if (!meta.isAdmin) return null;
 
         return (
-          <div className="flex items-center justify-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="text-muted-foreground hover:text-primary"
-              aria-label={`Editar ${product.code}`}
-              title="Editar producto"
-              onClick={(e) => {
-                e.stopPropagation();
-                meta.onEdit(product);
-              }}
-            >
-              <Pencil aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className={cn("text-muted-foreground", product.active ? "hover:text-destructive" : "hover:text-success")}
-              aria-label={`${product.active ? "Desactivar" : "Reactivar"} ${product.code}`}
-              title={product.active ? "Desactivar producto" : "Reactivar producto"}
-              onClick={(e) => {
-                e.stopPropagation();
-                meta.onToggleStatus(product);
-              }}
-            >
-              {product.active ? <Trash2 aria-hidden="true" /> : <RotateCcw aria-hidden="true" />}
-            </Button>
+          <div className="flex justify-center">
+            <ProductMaintenanceActions
+              product={product}
+              onEdit={meta.onEdit}
+              onAdjustStock={meta.onAdjustStock}
+              onToggleStatus={meta.onToggleStatus}
+            />
           </div>
         );
       },

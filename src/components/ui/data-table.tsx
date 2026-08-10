@@ -134,23 +134,35 @@ export function DataTable<TData, TValue>({
     getRowId,
   });
 
-  const showPagination = !hidePagination && !isLoading && data.length > 0;
+  const showPagination = !hidePagination && !isLoading && data.length > pageSize;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div
-        className="custom-scrollbar flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible"
+        className="custom-scrollbar min-w-0 flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible"
         role={scrollAreaLabel ? "region" : undefined}
         aria-label={scrollAreaLabel}
         tabIndex={scrollAreaLabel ? 0 : undefined}
       >
         <Table className={tableClassName}>
-          <TableHeader>
+          <TableHeader className="bg-muted/95 sticky top-0 z-[1]">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="px-4">
+                    <TableHead
+                      key={header.id}
+                      className="px-4"
+                      aria-sort={
+                        header.column.getCanSort()
+                          ? header.column.getIsSorted() === "asc"
+                            ? "ascending"
+                            : header.column.getIsSorted() === "desc"
+                              ? "descending"
+                              : "none"
+                          : undefined
+                      }
+                    >
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   );
