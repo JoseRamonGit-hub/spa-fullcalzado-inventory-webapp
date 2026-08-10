@@ -28,6 +28,10 @@ const currencyVesFormatter = new Intl.NumberFormat(LOCALE_VE, {
   maximumFractionDigits: 2,
 });
 
+const integerFormatter = new Intl.NumberFormat(LOCALE_VE, {
+  maximumFractionDigits: 0,
+});
+
 // ============================================================================
 // Date & Time Formatters Options
 // ============================================================================
@@ -94,6 +98,11 @@ export function formatCurrencyUSD(value: number): string {
 export function formatCurrencyVES(value: number, options?: { includeCurrency?: boolean }): string {
   const formattedValue = typeof value !== "number" || isNaN(value) ? "0,00" : currencyVesFormatter.format(value);
   return options?.includeCurrency === false ? formattedValue : `${formattedValue} Bs.`;
+}
+
+export function formatInteger(value: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "0";
+  return integerFormatter.format(value);
 }
 
 export function formatDate(dateInput?: DateInput): string {

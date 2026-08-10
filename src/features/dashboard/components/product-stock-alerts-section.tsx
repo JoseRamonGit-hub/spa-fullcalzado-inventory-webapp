@@ -8,7 +8,7 @@ import { useDashboardProductStockAlerts } from "../hooks/useDashboardMetrics";
 import { ProductStockAlertsTable } from "./product-stock-alerts-table";
 
 const INVENTORY_ATTENTION_ICON_CLASS =
-  "bg-warning/15 text-warning-foreground flex size-9 shrink-0 items-center justify-center rounded-lg";
+  "bg-warning/10 text-warning flex size-9 shrink-0 items-center justify-center rounded-lg";
 
 const ALERT_COPY = {
   low_stock: {
@@ -43,13 +43,13 @@ function ProductStockAlertCard({ type }: { type: ProductStockAlertType }) {
 
   return (
     <Card className="min-h-0 gap-0 py-0">
-      <CardHeader className="flex items-start justify-between gap-3 px-4 py-4">
+      <CardHeader className="flex items-start justify-between gap-3 px-4 py-3">
         <div className="flex min-w-0 items-start gap-3">
           <div className={INVENTORY_ATTENTION_ICON_CLASS}>
             <Icon className="size-4" strokeWidth={2} aria-hidden="true" />
           </div>
           <div className="flex min-w-0 flex-col gap-1">
-            <CardTitle>{copy.title}</CardTitle>
+            <CardTitle className="font-heading text-sm">{copy.title}</CardTitle>
             <CardDescription className="text-xs">{copy.description}</CardDescription>
           </div>
         </div>
@@ -57,6 +57,7 @@ function ProductStockAlertCard({ type }: { type: ProductStockAlertType }) {
           <Button
             variant="outline"
             size="sm"
+            className="text-xs font-normal"
             onClick={() => navigate({ to: "/inventory", search: { status: type } })}
             aria-label={`Ver ${copy.emptyLabel} en Inventario`}
           >

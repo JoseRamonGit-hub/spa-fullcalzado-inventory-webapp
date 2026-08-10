@@ -7,7 +7,7 @@ import { SalesPeriodSection } from "./components/sales-period-section";
 import { ProductStockAlertsSection } from "./components/product-stock-alerts-section";
 import { useDashboardMetrics } from "./hooks/useDashboardMetrics";
 import { DEFAULT_SALES_PERIOD, type DashboardSalesPeriodSelection } from "./sales-period";
-import { formatCurrencyUSD, formatDate, formatTime } from "@/utils/formatters";
+import { formatCurrencyUSD, formatDate, formatInteger, formatTime } from "@/utils/formatters";
 
 function DashboardCurrentDateTime() {
   const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
@@ -48,12 +48,7 @@ export function DashboardPage() {
 
       <div className="flex-1 overflow-y-auto p-3 md:p-4">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-              Pulso del negocio
-            </p>
-            <h2 className="font-heading text-lg font-semibold">Indicadores de hoy</h2>
-          </div>
+          <h2 className="font-heading text-base font-semibold">Indicadores de hoy</h2>
 
           {metricsQuery.isPending ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Cargando indicadores">
@@ -96,7 +91,7 @@ export function DashboardPage() {
               />
               <DashboardMetricCard
                 title="Stock disponible"
-                value={`${metricsQuery.data.stock_units} unidades`}
+                value={`${formatInteger(metricsQuery.data.stock_units)} unidades`}
                 description={`${metricsQuery.data.products_in_stock} productos con stock`}
                 icon={Boxes}
               />

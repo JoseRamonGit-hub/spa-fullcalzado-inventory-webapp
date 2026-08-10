@@ -50,6 +50,7 @@ export function TopProductsTable({ products, isLoading, onProductClick }: TopPro
       isLoading={isLoading}
       hidePagination
       emptyMessage="No hay productos vendidos en este período."
+      emptyStateClassName="h-32"
       onRowClick={onProductClick}
       getRowAriaLabel={(product) => `Ver detalles de ${product.code}`}
       getRowId={(product) => product.productId}

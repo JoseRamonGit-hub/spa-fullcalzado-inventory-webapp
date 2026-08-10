@@ -4,6 +4,12 @@ import type { DateRange } from "react-day-picker";
 import { CalendarDays, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  filterControlTextClassName,
+  filterIconClassName,
+  filterStateClassName,
+  filterTriggerClassName,
+} from "@/components/ui/filter-control";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -67,6 +73,7 @@ export function ProductHistoryPeriodFilter({
         size="sm"
         value={period}
         aria-label="Período del historial"
+        className={cn(filterControlTextClassName, filterStateClassName(period !== "last-30-days"))}
         onChange={(event) => onPeriodChange(event.target.value as ProductHistoryPeriod)}
       >
         {Object.entries(periodLabels).map(([value, label]) => (
@@ -82,16 +89,13 @@ export function ProductHistoryPeriodFilter({
             <Button
               variant="outline"
               size="sm"
-              className={cn(
-                "bg-card border-border hover:bg-card/80 h-8 min-w-0 gap-1.5 px-2.5 text-xs font-normal transition-colors",
-                customRange?.from ? "border-primary/40 text-foreground" : "text-muted-foreground",
-              )}
+              className={cn(filterTriggerClassName, filterStateClassName(Boolean(customRange?.from)))}
               aria-label="Seleccionar rango personalizado"
             >
               <CalendarDays
                 data-icon="inline-start"
                 aria-hidden="true"
-                className={cn(customRange?.from ? "text-primary" : "text-muted-foreground")}
+                className={filterIconClassName(Boolean(customRange?.from))}
               />
               <span className="max-w-48 truncate">{formatRangeLabel(customRange)}</span>
               {customRange?.from ? (
@@ -117,6 +121,10 @@ export function ProductHistoryPeriodFilter({
               selected={customRange}
               onSelect={onCustomRangeChange}
               defaultMonth={customRange?.from ?? caracasToday}
+              numberOfMonths={2}
+              captionLayout="dropdown"
+              startMonth={new Date(1900, 0, 1)}
+              endMonth={caracasToday}
               disabled={{ after: caracasToday, before: new Date(1900, 0, 1) }}
               locale={es}
               autoFocus

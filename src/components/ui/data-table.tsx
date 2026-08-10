@@ -19,6 +19,7 @@ import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { PackageOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
@@ -38,6 +39,7 @@ type DataTableProps<TData, TValue> = {
   getRowClassName?: (row: Row<TData>, index: number) => string | undefined;
   tableClassName?: string;
   scrollAreaLabel?: string;
+  emptyStateClassName?: string;
 };
 
 export function DataTable<TData, TValue>({
@@ -58,6 +60,7 @@ export function DataTable<TData, TValue>({
   getRowClassName,
   tableClassName,
   scrollAreaLabel,
+  emptyStateClassName,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -205,7 +208,10 @@ export function DataTable<TData, TValue>({
                 })
             ) : (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={table.getVisibleFlatColumns().length} className="h-56 text-center">
+                <TableCell
+                  colSpan={table.getVisibleFlatColumns().length}
+                  className={cn("h-56 text-center", emptyStateClassName)}
+                >
                   <div className="text-muted-foreground flex flex-col items-center gap-2">
                     <PackageOpen className="h-8 w-8 opacity-40" />
                     <span className="text-sm">{emptyMessage}</span>
