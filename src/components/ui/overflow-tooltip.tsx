@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-type OverflowTooltipProps = Omit<ComponentProps<"span">, "children"> & {
+type OverflowTooltipProps = Omit<ComponentProps<"span">, "children" | "content"> & {
   children: ReactNode;
   content?: ReactNode;
   contentClassName?: string;

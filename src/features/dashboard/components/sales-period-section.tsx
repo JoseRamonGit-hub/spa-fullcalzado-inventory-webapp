@@ -3,12 +3,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { CalendarDays, CalendarRange, RefreshCw, TriangleAlert } from "lucide-react";
+import { CalendarDays, RefreshCw, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
@@ -41,7 +40,7 @@ const chartConfig = {
 
 const PERIOD_DESCRIPTION: Record<DashboardSalesPeriodPreset, string> = {
   today: "Comparado con ayer",
-  week: "Comparado con los mismos días de la semana anterior",
+  week: "Comparado con el mismo tramo de la semana anterior",
   month: "Comparado con los mismos días disponibles del mes anterior",
   custom: "Comparado con el bloque contiguo anterior de igual duración",
 };
@@ -69,16 +68,13 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
   const topProductsQuery = useDashboardTopProducts(request, topRankBy);
 
   return (
-    <Card className="gap-0 py-0">
-      <CardHeader className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-start gap-3">
-          <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-            <CalendarRange className="size-4" aria-hidden="true" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <CardTitle>Ventas por período</CardTitle>
-            <CardDescription>Facturación bruta del Negocio activo</CardDescription>
-          </div>
+    <section className="flex min-h-0 flex-col" aria-labelledby="sales-period-title">
+      <header className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 id="sales-period-title" className="text-base font-semibold">
+            Ventas por período
+          </h2>
+          <p className="text-muted-foreground text-sm">Facturación bruta del negocio activo</p>
         </div>
 
         <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:items-end">
@@ -103,10 +99,10 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
             <CustomRangePicker selection={selection} today={today} onSelectionChange={onSelectionChange} />
           ) : null}
         </div>
-      </CardHeader>
+      </header>
       <Separator />
 
-      <CardContent className="p-4" aria-live="polite" aria-busy={salesQuery.isFetching || topProductsQuery.isFetching}>
+      <div className="py-4" aria-live="polite" aria-busy={salesQuery.isFetching || topProductsQuery.isFetching}>
         <div className="flex flex-col gap-3">
           {customAnalysis?.isValid && customAnalysis.warning ? (
             <Alert>
@@ -148,8 +144,8 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -166,9 +162,9 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
           <h3 id="top-products-title" className="text-sm font-semibold">
-            Top de Productos
+            Top productos
           </h3>
-          <p className="text-muted-foreground text-xs">Salidas brutas del período seleccionado</p>
+          <p className="text-muted-foreground text-xs">Ventas del período seleccionado</p>
         </div>
         <ToggleGroup
           type="single"
@@ -176,7 +172,7 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
           size="sm"
           value={rankBy}
           onValueChange={(value) => value && onRankByChange(value as DashboardTopProductsRankMode)}
-          aria-label="Ordenar Top de Productos"
+          aria-label="Ordenar Top productos"
         >
           <ToggleGroupItem value="units">Unidades</ToggleGroupItem>
           <ToggleGroupItem value="gross_usd">USD bruto</ToggleGroupItem>
@@ -186,7 +182,7 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
       {query.isError ? (
         <Alert variant="destructive">
           <TriangleAlert aria-hidden="true" />
-          <AlertTitle>No se pudo cargar el Top de Productos</AlertTitle>
+          <AlertTitle>No se pudo cargar el ranking de productos</AlertTitle>
           <AlertDescription>
             <Button variant="outline" size="sm" onClick={() => query.refetch()}>
               <RefreshCw data-icon="inline-start" />
@@ -274,7 +270,7 @@ function SalesPeriodContent({ data }: SalesPeriodContentProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-        <SalesMetric label="Total facturado" value={formatCurrencyUSD(data.totalUsd)}>
+        <SalesMetric label="Facturado en el período" value={formatCurrencyUSD(data.totalUsd)}>
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant={
@@ -296,11 +292,13 @@ function SalesPeriodContent({ data }: SalesPeriodContentProps) {
           <p className="text-muted-foreground text-[11px]">{data.previousOperations} en el período anterior</p>
         </SalesMetric>
         <SalesMetric label="Ticket promedio" value={formatCurrencyUSD(data.averageTicketUsd)}>
-          <p className="text-muted-foreground text-[11px]">Por Operación facturada</p>
+          <p className="text-muted-foreground text-[11px]">Por operación facturada</p>
         </SalesMetric>
       </div>
 
-      <div className="flex flex-col gap-1 border-t pt-4">
+      <Separator />
+
+      <div className="flex flex-col gap-1">
         <p className="text-muted-foreground text-[11px] font-medium">{PERIOD_DESCRIPTION[data.preset]}</p>
         <p className="text-muted-foreground text-[10px]">
           {formatPeriodRange(data.currentStart, data.currentEnd)} · período anterior{" "}

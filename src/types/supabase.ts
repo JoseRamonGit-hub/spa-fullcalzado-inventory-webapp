@@ -738,8 +738,11 @@ export type Database = {
           exchange_rate_updated_at: string;
           low_stock_products: number;
           products_in_stock: number;
+          returns_credit_usd: number;
           stock_units: number;
           total_billed_usd: number;
+          total_produced_usd: number;
+          units_sold: number;
         }[];
       };
       get_dashboard_sales_period: {

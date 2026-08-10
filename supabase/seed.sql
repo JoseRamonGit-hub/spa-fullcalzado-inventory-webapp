@@ -10,6 +10,7 @@
 --   - single-line and multi-line sales with generated exit movements
 --   - returns: exchange with positive diff, refund, exchange with negative diff
 --   - product edits: price-only and stock/price/description edit
+--   - paginated product history with 21 audited price edits
 --   - historical cash closes for previous days
 --
 -- Login credentials for all seeded users: password123
@@ -42,6 +43,14 @@ ALTER TABLE public.exchange_rates
   ALTER COLUMN business_id SET DEFAULT '10000000-0000-0000-0000-000000000001'::uuid;
 
 -- ─── 0. Cleanup previous seeded rows ─────────────────────────────────────────
+
+CREATE TEMP TABLE seed_actor_ids (id uuid PRIMARY KEY) ON COMMIT DROP;
+
+INSERT INTO seed_actor_ids (id) VALUES
+  ('a0000000-0000-0000-0000-000000000001'),
+  ('a0000000-0000-0000-0000-000000000002'),
+  ('a0000000-0000-0000-0000-000000000003'),
+  ('a0000000-0000-0000-0000-000000000004');
 
 DELETE FROM public.inventory_movements
 WHERE product_id IN (
@@ -93,6 +102,7 @@ WHERE id IN (
   'd1000000-0000-0000-0000-000000000001'
 )
 OR business_id = '10000000-0000-0000-0000-000000000002'
+OR user_id IN (SELECT id FROM seed_actor_ids)
 OR return_id IN (
   SELECT id
   FROM public.returns
@@ -104,13 +114,15 @@ OR return_id IN (
 );
 
 DELETE FROM public.sales
-WHERE business_id = '10000000-0000-0000-0000-000000000002';
+WHERE business_id = '10000000-0000-0000-0000-000000000002'
+OR user_id IN (SELECT id FROM seed_actor_ids);
 
 DELETE FROM public.return_items
 WHERE return_id IN (
   SELECT id
   FROM public.returns
-  WHERE notes IN (
+  WHERE user_id IN (SELECT id FROM seed_actor_ids)
+  OR notes IN (
     'Cambio talla cliente runner',
     'Reintegro por defecto de fabrica',
     'Cambio administrado con saldo a favor'
@@ -118,7 +130,8 @@ WHERE return_id IN (
 );
 
 DELETE FROM public.returns
-WHERE notes IN (
+WHERE user_id IN (SELECT id FROM seed_actor_ids)
+OR notes IN (
   'Cambio talla cliente runner',
   'Reintegro por defecto de fabrica',
   'Cambio administrado con saldo a favor'
@@ -130,7 +143,8 @@ WHERE id IN (
   'e0000000-0000-0000-0000-000000000002',
   'e0000000-0000-0000-0000-000000000003'
 )
-OR business_id = '10000000-0000-0000-0000-000000000002';
+OR business_id = '10000000-0000-0000-0000-000000000002'
+OR closed_by IN (SELECT id FROM seed_actor_ids);
 
 DELETE FROM public.exchange_rates
 WHERE id IN (
@@ -140,7 +154,8 @@ WHERE id IN (
   'f0000000-0000-0000-0000-000000000004',
   'f1000000-0000-0000-0000-000000000001'
 )
-OR business_id = '10000000-0000-0000-0000-000000000002';
+OR business_id = '10000000-0000-0000-0000-000000000002'
+OR updated_by IN (SELECT id FROM seed_actor_ids);
 
 DELETE FROM public.app_settings
 WHERE business_id IN (
@@ -407,7 +422,7 @@ INSERT INTO public.products (
   ('b0000000-0000-0000-0000-000000000006', 'PM-37', 'Puma Carina L T37', 0, 37.00, true, now() - interval '15 days', now() - interval '15 days'),
   ('b0000000-0000-0000-0000-000000000007', 'NB-43', 'New Balance 574 Core T43', 0, 53.00, true, now() - interval '14 days', now() - interval '14 days'),
   ('b0000000-0000-0000-0000-000000000008', 'RB-39', 'Reebok Classic Leather T39', 0, 41.00, true, now() - interval '13 days', now() - interval '13 days'),
-  ('b0000000-0000-0000-0000-000000000009', 'SK-36', 'Skechers D-Lites T36', 0, 33.00, true, now() - interval '12 days', now() - interval '12 days'),
+  ('b0000000-0000-0000-0000-000000000009', 'SK-36', 'Skechers D-Lites T36', 0, 32.79, true, now() - interval '12 days', now() - interval '12 days'),
   ('b0000000-0000-0000-0000-000000000010', 'CV-38', 'Converse Chuck Taylor T38', 0, 29.00, true, now() - interval '11 days', now() - interval '11 days'),
   ('b0000000-0000-0000-0000-000000000011', 'VN-41', 'Vans Old Skool T41', 0, 31.00, true, now() - interval '10 days', now() - interval '10 days'),
   ('b0000000-0000-0000-0000-000000000012', 'AS-35', 'Asics Gel-Contend T35', 0, 36.00, true, now() - interval '9 days', now() - interval '9 days'),
@@ -444,6 +459,51 @@ INSERT INTO public.inventory_movements (
   ('11111111-0000-0000-0000-000000000009', 'entry', 'b0000000-0000-0000-0000-000000000009', 15, 'a0000000-0000-0000-0000-000000000001', CURRENT_DATE - 14, '10:20:00', ((CURRENT_DATE - 14)::timestamp + time '10:20:00') AT TIME ZONE 'America/Caracas', 0, 33.00),
   ('11111111-0000-0000-0000-000000000010', 'entry', 'b0000000-0000-0000-0000-000000000010', 6, 'a0000000-0000-0000-0000-000000000001', CURRENT_DATE - 14, '10:30:00', ((CURRENT_DATE - 14)::timestamp + time '10:30:00') AT TIME ZONE 'America/Caracas', 0, 29.00),
   ('11111111-0000-0000-0000-000000000011', 'entry', 'b0000000-0000-0000-0000-000000000012', 9, 'a0000000-0000-0000-0000-000000000001', CURRENT_DATE - 13, '11:00:00', ((CURRENT_DATE - 13)::timestamp + time '11:00:00') AT TIME ZONE 'America/Caracas', 0, 36.00);
+
+-- Keep one deterministic product above the 20-row client page size. These
+-- events are created through the production function so the fixture exercises
+-- the same immutable audit fields as a real price edit. The final price is the
+-- $33.00 used by the sales below.
+DO $$
+DECLARE
+  step_index integer;
+  movement_id uuid;
+BEGIN
+  FOR step_index IN 1..21 LOOP
+    PERFORM public.edit_product(
+      p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+      p_product_id  := 'b0000000-0000-0000-0000-000000000009'::uuid,
+      p_price_usd   := 32.79 + (step_index::numeric / 100)
+    );
+
+    SELECT id
+    INTO movement_id
+    FROM public.inventory_movements
+    WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+      AND product_id = 'b0000000-0000-0000-0000-000000000009'::uuid
+      AND type = 'edit'
+    ORDER BY created_at DESC, id DESC
+    LIMIT 1;
+
+    UPDATE public.inventory_movements
+    SET date = CURRENT_DATE - 12,
+        time = time '11:00:00' + make_interval(mins => step_index),
+        created_at = (
+          (CURRENT_DATE - 12)::timestamp
+          + time '11:00:00'
+          + make_interval(mins => step_index)
+        ) AT TIME ZONE 'America/Caracas'
+    WHERE id = movement_id;
+  END LOOP;
+
+  UPDATE public.products
+  SET updated_at = (
+    (CURRENT_DATE - 12)::timestamp + time '11:21:00'
+  ) AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND id = 'b0000000-0000-0000-0000-000000000009'::uuid;
+END
+$$;
 
 -- ─── 3. Exchange rates and settings ─────────────────────────────────────────
 
@@ -516,6 +576,46 @@ INSERT INTO public.transactions (
   ('d0000000-0000-0000-0000-000000000015', 'b0000000-0000-0000-0000-000000000011', 1, 31.00, 2720.25, 87.75, 'a0000000-0000-0000-0000-000000000002', CURRENT_DATE, '10:40:00', ((CURRENT_DATE)::timestamp + time '10:40:00') AT TIME ZONE 'America/Caracas'),
   ('d0000000-0000-0000-0000-000000000016', 'b0000000-0000-0000-0000-000000000002', 1, 39.00, 3422.25, 87.75, 'a0000000-0000-0000-0000-000000000004', CURRENT_DATE, '14:25:00', ((CURRENT_DATE)::timestamp + time '14:25:00') AT TIME ZONE 'America/Caracas');
 
+-- Create the historical OT-42 sale through the same grouped-sale function as
+-- the application. The product is deactivated only after the sale succeeds.
+DO $$
+DECLARE
+  inactive_product_sale_id uuid;
+BEGIN
+  inactive_product_sale_id := public.create_sale(
+    p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+    p_items := jsonb_build_array(
+      jsonb_build_object(
+        'product_id', 'b0000000-0000-0000-0000-000000000014',
+        'quantity', 1,
+        'price_usd', 61.00,
+        'price_ves', 5352.75
+      )
+    ),
+    p_exchange_rate := 87.75
+  );
+
+  UPDATE public.sales
+  SET time = '15:35:00',
+      created_at = (CURRENT_DATE::timestamp + time '15:35:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND id = inactive_product_sale_id;
+
+  UPDATE public.transactions
+  SET time = '15:35:00',
+      created_at = (CURRENT_DATE::timestamp + time '15:35:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND sale_id = inactive_product_sale_id;
+
+  UPDATE public.inventory_movements
+  SET time = '15:35:00',
+      created_at = (CURRENT_DATE::timestamp + time '15:35:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND product_id = 'b0000000-0000-0000-0000-000000000014'::uuid
+    AND type = 'exit';
+END
+$$;
+
 -- ─── 6. Product edits ───────────────────────────────────────────────────────
 
 SELECT public.edit_product(
@@ -567,6 +667,34 @@ WHERE id IN (SELECT id FROM target);
 UPDATE public.products
 SET updated_at = ((CURRENT_DATE)::timestamp + time '08:45:00') AT TIME ZONE 'America/Caracas'
 WHERE id = 'b0000000-0000-0000-0000-000000000012';
+
+-- Preserve the real sale line while leaving its product inactive, so historical
+-- sales can be checked without depending on the current inventory filter.
+SELECT public.set_product_active(
+  p_business_id := '10000000-0000-0000-0000-000000000001'::uuid,
+  p_product_id := 'b0000000-0000-0000-0000-000000000014'::uuid,
+  p_active := false
+);
+
+WITH target AS (
+  SELECT id
+  FROM public.inventory_movements
+  WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+    AND product_id = 'b0000000-0000-0000-0000-000000000014'::uuid
+    AND type = 'deactivation'
+  ORDER BY created_at DESC, id DESC
+  LIMIT 1
+)
+UPDATE public.inventory_movements
+SET date = CURRENT_DATE,
+    time = '16:00:00',
+    created_at = ((CURRENT_DATE)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+WHERE id IN (SELECT id FROM target);
+
+UPDATE public.products
+SET updated_at = ((CURRENT_DATE)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+WHERE business_id = '10000000-0000-0000-0000-000000000001'::uuid
+  AND id = 'b0000000-0000-0000-0000-000000000014'::uuid;
 
 -- ─── 7. Returns and exchanges ───────────────────────────────────────────────
 
@@ -826,26 +954,54 @@ INSERT INTO public.exchange_rates (
   ((CURRENT_DATE)::timestamp + time '08:15:00') AT TIME ZONE 'America/Caracas'
 );
 
--- Una Venta confirmada con dos Renglones: el cierre debe conservar
--- total_transactions = 2 y total_billed_operations = 1.
-SELECT public.create_sale(
-  p_business_id := '10000000-0000-0000-0000-000000000002'::uuid,
-  p_items := jsonb_build_array(
-    jsonb_build_object(
-      'product_id', 'b1000000-0000-0000-0000-000000000001',
-      'quantity', 1,
-      'price_usd', 47.00,
-      'price_ves', 4147.75
+-- Una Venta confirmada con dos Renglones queda en el día anterior. Así
+-- Estilos conserva actividad histórica, mientras Dashboard ejercita hoy su
+-- estado vacío y Full conserva actividad actual.
+DO $$
+DECLARE
+  estilos_sale_id uuid;
+BEGIN
+  estilos_sale_id := public.create_sale(
+    p_business_id := '10000000-0000-0000-0000-000000000002'::uuid,
+    p_items := jsonb_build_array(
+      jsonb_build_object(
+        'product_id', 'b1000000-0000-0000-0000-000000000001',
+        'quantity', 1,
+        'price_usd', 47.00,
+        'price_ves', 4147.75
+      ),
+      jsonb_build_object(
+        'product_id', 'b1000000-0000-0000-0000-000000000002',
+        'quantity', 1,
+        'price_usd', 42.00,
+        'price_ves', 3706.50
+      )
     ),
-    jsonb_build_object(
-      'product_id', 'b1000000-0000-0000-0000-000000000002',
-      'quantity', 1,
-      'price_usd', 42.00,
-      'price_ves', 3706.50
-    )
-  ),
-  p_exchange_rate := 88.25
-);
+    p_exchange_rate := 88.25
+  );
+
+  UPDATE public.sales
+  SET date = CURRENT_DATE - 1,
+      time = '16:00:00',
+      created_at = ((CURRENT_DATE - 1)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000002'::uuid
+    AND id = estilos_sale_id;
+
+  UPDATE public.transactions
+  SET date = CURRENT_DATE - 1,
+      time = '16:00:00',
+      created_at = ((CURRENT_DATE - 1)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000002'::uuid
+    AND sale_id = estilos_sale_id;
+
+  UPDATE public.inventory_movements
+  SET date = CURRENT_DATE - 1,
+      time = '16:00:00',
+      created_at = ((CURRENT_DATE - 1)::timestamp + time '16:00:00') AT TIME ZONE 'America/Caracas'
+  WHERE business_id = '10000000-0000-0000-0000-000000000002'::uuid
+    AND type = 'exit';
+END
+$$;
 
 SELECT public.generate_daily_cash_close(
   p_business_id := '10000000-0000-0000-0000-000000000002'::uuid

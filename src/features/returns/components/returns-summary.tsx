@@ -12,11 +12,11 @@ type ReturnsSummaryProps = {
 export function ReturnsSummary({ date, returns }: ReturnsSummaryProps) {
   const summary = getReturnsSummary(returns);
   const label = date ? `Resumen del ${formatDate(`${date}T12:00:00`)}` : "Resumen de los últimos 30 días";
-  const metrics = [
+  const metrics: ReadonlyArray<{ label: string; value: string; tone?: "refund" | "exchange" }> = [
     { label: "Operaciones", value: String(summary.operations) },
     { label: "Entradas", value: `${summary.entries} ${summary.entries === 1 ? "unidad" : "unidades"}`, tone: "refund" },
     { label: "Salidas", value: `${summary.exits} ${summary.exits === 1 ? "unidad" : "unidades"}`, tone: "exchange" },
-  ] as const;
+  ];
 
   return (
     <section className="shrink-0 border-b px-3 py-2.5 md:px-4" aria-label={label}>

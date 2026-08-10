@@ -208,7 +208,36 @@ describe("Ventas por período", () => {
       />,
     );
 
-    expect(screen.getByText("No hay Productos con salidas en este período.")).toBeInTheDocument();
+    expect(screen.getByText("No hay productos vendidos en este período.")).toBeInTheDocument();
+  });
+
+  it("presenta el análisis como una sección plana con contexto de período", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: {
+        ...emptyCustomPeriod,
+        preset: "week",
+        currentStart: "2024-03-25",
+        currentEnd: "2024-03-27",
+        comparisonStart: "2024-03-18",
+        comparisonEnd: "2024-03-20",
+      },
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+
+    render(<SalesPeriodSection selection={{ preset: "week" }} onSelectionChange={vi.fn()} />);
+
+    const title = screen.getByRole("heading", { name: "Ventas por período" });
+    expect(title.closest('[data-slot="card"]')).toBeNull();
+    expect(screen.getByText("Facturado en el período")).toBeInTheDocument();
+    expect(screen.getByText("Por operación facturada")).toBeInTheDocument();
+    expect(screen.getByText("Comparado con el mismo tramo de la semana anterior")).toBeInTheDocument();
+    expect(
+      screen.getByText("25 mar. 2024–27 mar. 2024 · período anterior 18 mar. 2024–20 mar. 2024"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Top productos" })).toBeInTheDocument();
+    expect(screen.getByText("Ventas del período seleccionado")).toBeInTheDocument();
   });
 
   it("espera ambas respuestas antes de revelar un período nuevo", () => {
@@ -234,6 +263,6 @@ describe("Ventas por período", () => {
     rerender(<SalesPeriodSection selection={{ preset: "month" }} onSelectionChange={vi.fn()} />);
 
     expect(screen.getByLabelText("Cargando facturación por período")).toBeInTheDocument();
-    expect(screen.queryByText("Top de Productos")).not.toBeInTheDocument();
+    expect(screen.queryByText("Top productos")).not.toBeInTheDocument();
   });
 });

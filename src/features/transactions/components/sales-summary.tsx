@@ -1,12 +1,11 @@
 import { Banknote, DollarSign, ShoppingCart } from "lucide-react";
-import type { ReturnWithRelations, TransactionWithRelations } from "@/types";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import { getSalesSummary } from "../sales-display";
+import { getSalesSummary, type ReturnSummarySource, type SaleSummarySource } from "../sales-display";
 
 type SalesSummaryProps = {
-  transactions: readonly TransactionWithRelations[];
-  returns: readonly ReturnWithRelations[];
+  transactions: readonly SaleSummarySource[];
+  returns: readonly ReturnSummarySource[];
 };
 
 export function SalesSummary({ transactions, returns }: SalesSummaryProps) {
