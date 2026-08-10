@@ -2,13 +2,11 @@ import { useState, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { CalendarDays, RefreshCw, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import {
   filterIconClassName,
@@ -20,6 +18,7 @@ import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/compone
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { DashboardSalesPeriodPreset, DashboardSalesPeriodRequest, DashboardTopProductsRankMode } from "@/types";
 import {
@@ -36,13 +35,6 @@ import {
   type DashboardSalesPeriodSelection,
 } from "../sales-period";
 import { TopProductsTable } from "./top-products-table";
-
-const chartConfig = {
-  totalUsd: {
-    label: "Total facturado",
-    color: "var(--chart-1)",
-  },
-} satisfies ChartConfig;
 
 const PERIOD_DESCRIPTION: Record<DashboardSalesPeriodPreset, string> = {
   today: "Comparado con ayer",
@@ -99,7 +91,7 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
               <ToggleGroupItem
                 key={option.value}
                 value={option.value}
-                className={cn("min-w-0 md:flex-none", filterToggleItemClassName)}
+                className={cn("h-9 min-w-0 md:h-8 md:flex-none", filterToggleItemClassName)}
               >
                 {option.label}
               </ToggleGroupItem>
@@ -186,10 +178,10 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
           onValueChange={(value) => value && onRankByChange(value as DashboardTopProductsRankMode)}
           aria-label="Ordenar Top productos"
         >
-          <ToggleGroupItem value="units" className={filterToggleItemClassName}>
+          <ToggleGroupItem value="units" className={cn("h-9 md:h-8", filterToggleItemClassName)}>
             Unidades
           </ToggleGroupItem>
-          <ToggleGroupItem value="gross_usd" className={filterToggleItemClassName}>
+          <ToggleGroupItem value="gross_usd" className={cn("h-9 md:h-8", filterToggleItemClassName)}>
             USD bruto
           </ToggleGroupItem>
         </ToggleGroup>
@@ -218,6 +210,7 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
 }
 
 function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodSectionProps & { today: string }) {
+  const isMobile = useIsMobile();
   const selectedRange = toCalendarRange(selection.customStartDate, selection.customEndDate);
   const [open, setOpen] = useState(false);
   const [draftRange, setDraftRange] = useState<DateRange | undefined>(selectedRange);
@@ -246,7 +239,7 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
           variant="outline"
           size="sm"
           className={cn(
-            "w-full justify-start md:w-auto",
+            "h-9 w-full justify-start md:h-8 md:w-auto",
             filterTriggerClassName,
             filterStateClassName(Boolean(selection.customStartDate && selection.customEndDate)),
           )}
@@ -266,7 +259,7 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
           selected={draftRange}
           onSelect={setDraftRange}
           defaultMonth={draftRange?.from ?? todayDate}
-          numberOfMonths={2}
+          numberOfMonths={isMobile ? 1 : 2}
           captionLayout="dropdown"
           startMonth={new Date(1900, 0, 1)}
           endMonth={todayDate}
@@ -278,7 +271,7 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
           <p className={cn("text-muted-foreground text-xs", !draftAnalysis.isValid && "text-destructive")}>
             {draftAnalysis.isValid ? `${draftAnalysis.durationDays} días inclusivos` : draftAnalysis.error}
           </p>
-          <Button size="sm" disabled={!draftAnalysis.isValid} onClick={applyRange}>
+          <Button size="sm" className="h-9 md:h-8" disabled={!draftAnalysis.isValid} onClick={applyRange}>
             Aplicar rango
           </Button>
         </div>
@@ -293,38 +286,35 @@ type SalesPeriodContentProps = {
 
 function SalesPeriodContent({ data }: SalesPeriodContentProps) {
   const comparison = getBillingComparison(data.totalUsd, data.previousTotalUsd);
-  const chartData = data.buckets.map((bucket) => ({
-    label: bucket.label,
-    totalUsd: bucket.isAvailable ? bucket.totalUsd : null,
-  }));
   const isEmpty = data.totalUsd === 0;
+  const hasNoActivityInEitherPeriod = isEmpty && data.previousTotalUsd === 0;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <SalesMetric label="Facturado en el período" value={formatCurrencyUSD(data.totalUsd)}>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant={
-                comparison.direction === "positive"
-                  ? "success"
-                  : comparison.direction === "negative"
-                    ? "destructive"
-                    : "secondary"
-              }
-            >
-              {comparison.label}
-            </Badge>
-            <span className="text-muted-foreground text-[11px]">
-              anterior: {formatCurrencyUSD(data.previousTotalUsd)}
-            </span>
+            {!hasNoActivityInEitherPeriod ? (
+              <Badge
+                variant={
+                  comparison.direction === "positive"
+                    ? "success"
+                    : comparison.direction === "negative"
+                      ? "destructive"
+                      : "secondary"
+                }
+              >
+                {comparison.label}
+              </Badge>
+            ) : null}
+            <span className="text-muted-foreground text-xs">anterior: {formatCurrencyUSD(data.previousTotalUsd)}</span>
           </div>
         </SalesMetric>
         <SalesMetric label="Operaciones facturadas" value={String(data.operations)}>
-          <p className="text-muted-foreground text-[11px]">{data.previousOperations} en el período anterior</p>
+          <p className="text-muted-foreground text-xs">{data.previousOperations} en el período anterior</p>
         </SalesMetric>
         <SalesMetric label="Ticket promedio" value={formatCurrencyUSD(data.averageTicketUsd)}>
-          <p className="text-muted-foreground text-[11px]">Por operación facturada</p>
+          <p className="text-muted-foreground text-xs">Por operación facturada</p>
         </SalesMetric>
       </div>
 
@@ -332,103 +322,109 @@ function SalesPeriodContent({ data }: SalesPeriodContentProps) {
 
       <div className="flex flex-col gap-1">
         <p className="text-muted-foreground text-xs font-medium">{PERIOD_DESCRIPTION[data.preset]}</p>
-        <p className="text-muted-foreground text-[11px]">
+        <p className="text-muted-foreground text-xs">
           {formatPeriodRange(data.currentStart, data.currentEnd)} · período anterior{" "}
           {formatPeriodRange(data.comparisonStart, data.comparisonEnd)}
         </p>
       </div>
 
       {isEmpty ? (
-        <div className="flex flex-col gap-3">
-          <Empty className="border py-6 md:py-6">
-            <EmptyHeader>
-              <EmptyTitle className="text-sm font-medium tracking-normal">Sin actividad en este período</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-          {data.preset !== "today" && <SalesBucketValues data={data} showLabels />}
-        </div>
+        <Empty className="border py-6 md:py-6">
+          <EmptyHeader>
+            <EmptyTitle className="text-sm font-medium tracking-normal">Sin actividad en este período</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
       ) : data.preset !== "today" ? (
-        <div className="flex flex-col gap-3">
-          <div className="w-full overflow-x-auto">
-            <ChartContainer
-              config={chartConfig}
-              className="h-52 w-full"
-              style={data.preset === "custom" ? { minWidth: Math.max(480, data.buckets.length * 72) } : undefined}
-              role="img"
-              aria-label="Facturación por intervalo"
-            >
-              <BarChart accessibilityLayer data={chartData} margin={{ left: 4, right: 4, top: 12 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-                <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      hideIndicator
-                      formatter={(value) => (
-                        <div className="flex min-w-36 items-center justify-between gap-3">
-                          <span className="text-muted-foreground">Total facturado</span>
-                          <span className="font-mono font-medium tabular-nums">{formatCurrencyUSD(Number(value))}</span>
-                        </div>
-                      )}
-                    />
-                  }
-                />
-                <Bar dataKey="totalUsd" fill="var(--color-totalUsd)" radius={[4, 4, 0, 0]} maxBarSize={52} />
-              </BarChart>
-            </ChartContainer>
-          </div>
-
-          <SalesBucketValues data={data} />
-        </div>
+        <SalesIntervalChart data={data} />
       ) : null}
     </div>
   );
 }
 
-function SalesBucketValues({ data, showLabels = false }: SalesPeriodContentProps & { showLabels?: boolean }) {
+function SalesIntervalChart({ data }: SalesPeriodContentProps) {
+  const maxTotalUsd = Math.max(
+    0,
+    ...data.buckets.filter((bucket) => bucket.isAvailable).map((bucket) => bucket.totalUsd),
+  );
+  const isCustom = data.preset === "custom";
+  const seriesKey = `${data.preset}-${data.currentStart}-${data.currentEnd}`;
+
   return (
     <div
-      className={cn(
-        "grid gap-1 overflow-x-auto",
-        data.preset === "week"
-          ? "grid-cols-7"
-          : data.preset === "month"
-            ? data.buckets.length === 4
-              ? "grid-cols-4"
-              : "grid-cols-5"
-            : undefined,
-      )}
-      style={
-        data.preset === "custom"
-          ? { gridTemplateColumns: `repeat(${data.buckets.length}, minmax(72px, 1fr))` }
-          : undefined
-      }
-      aria-label="Valores de facturación por intervalo"
+      role="region"
+      aria-label="Facturación por intervalo"
+      tabIndex={0}
+      className="custom-scrollbar focus-visible:ring-ring w-full overflow-x-auto rounded-sm pb-1 focus-visible:ring-2 focus-visible:outline-none"
     >
-      {data.buckets.map((bucket) => (
-        <div
-          key={bucket.index}
-          className="focus-visible:ring-ring flex min-w-0 flex-col items-center gap-0.5 rounded-sm text-center focus-visible:ring-2 focus-visible:outline-none"
-          tabIndex={0}
-          aria-label={`${bucket.label}: ${bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible"}`}
-        >
-          {showLabels || data.preset === "custom" ? (
-            <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-              {bucket.label}
-            </span>
-          ) : null}
-          <span
-            className={cn(
-              "max-w-full truncate font-mono text-[10px] tabular-nums",
-              !bucket.isAvailable && "text-muted-foreground italic",
-            )}
-            title={bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible"}
-          >
-            {bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible"}
-          </span>
-        </div>
-      ))}
+      <ul
+        key={seriesKey}
+        data-series={seriesKey}
+        className={cn(
+          "grid min-w-full gap-1",
+          data.preset === "week"
+            ? "grid-cols-7"
+            : data.preset === "month"
+              ? data.buckets.length === 4
+                ? "grid-cols-4"
+                : "grid-cols-5"
+              : undefined,
+        )}
+        style={
+          isCustom
+            ? {
+                gridTemplateColumns: `repeat(${data.buckets.length}, minmax(72px, 1fr))`,
+                minWidth: Math.max(480, data.buckets.length * 72),
+              }
+            : data.preset === "week"
+              ? { minWidth: 420 }
+              : undefined
+        }
+      >
+        {data.buckets.map((bucket, bucketPosition) => {
+          const valueLabel = bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible";
+          const barHeight =
+            bucket.isAvailable && maxTotalUsd > 0 ? Math.max(4, (bucket.totalUsd / maxTotalUsd) * 100) : 0;
+          const barDelayMs = Math.round((bucketPosition / Math.max(1, data.buckets.length - 1)) * 180);
+
+          return (
+            <li
+              key={bucket.index}
+              className="grid min-w-0 grid-rows-[8rem_auto_auto] gap-1 rounded-sm px-1 text-center"
+              aria-label={`${bucket.label}: ${valueLabel}`}
+            >
+              <div className="border-border/60 flex min-h-0 items-end justify-center border-b px-1" aria-hidden="true">
+                {bucket.isAvailable ? (
+                  <div
+                    data-slot="sales-interval-bar"
+                    className={cn(
+                      "dashboard-chart-bar bg-primary w-full max-w-13 rounded-t-sm",
+                      bucket.totalUsd === 0 && "bg-muted-foreground/30",
+                    )}
+                    style={{ height: `${barHeight}%`, animationDelay: `${barDelayMs}ms` }}
+                  />
+                ) : (
+                  <span className="text-muted-foreground pb-1 text-xs">—</span>
+                )}
+              </div>
+              <span
+                className="text-muted-foreground max-w-full truncate text-[10px] font-semibold tracking-wide uppercase"
+                title={bucket.label}
+              >
+                {bucket.label}
+              </span>
+              <span
+                className={cn(
+                  "max-w-full truncate font-mono text-[10px] tabular-nums",
+                  !bucket.isAvailable && "text-muted-foreground italic",
+                )}
+                title={valueLabel}
+              >
+                {valueLabel}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

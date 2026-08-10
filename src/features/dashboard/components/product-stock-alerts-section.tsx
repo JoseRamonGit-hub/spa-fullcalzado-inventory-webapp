@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { RefreshCw, TriangleAlert } from "lucide-react";
+import { ArrowRight, RefreshCw, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,10 +23,18 @@ const ALERT_COPY = {
 
 export function ProductStockAlertsSection() {
   return (
-    <div className="grid min-h-0 min-w-0 grid-cols-1 gap-3 xl:grid-cols-2">
-      <ProductStockAlertCard type="low_stock" />
-      <ProductStockAlertCard type="stagnant" />
-    </div>
+    <section className="flex min-h-0 min-w-0 flex-col gap-3 py-3" aria-labelledby="attention-today-title">
+      <header className="flex flex-col gap-1">
+        <h2 id="attention-today-title" className="font-heading text-base font-semibold">
+          Atención hoy
+        </h2>
+        <p className="text-muted-foreground text-xs">Prioridades de inventario que requieren revisión</p>
+      </header>
+      <div className="grid min-h-0 min-w-0 grid-cols-1 gap-3 xl:grid-cols-2">
+        <ProductStockAlertCard type="low_stock" />
+        <ProductStockAlertCard type="stagnant" />
+      </div>
+    </section>
   );
 }
 
@@ -71,10 +79,12 @@ function ProductStockAlertCard({ type }: { type: ProductStockAlertType }) {
           <CardFooter className="px-4 py-2.5">
             <Button
               variant="link"
-              className="h-auto p-0 text-xs"
+              size="sm"
+              className="h-9 p-0 text-xs"
               onClick={() => navigate({ to: "/inventory", search: { status: type } })}
             >
               {copy.actionLabel}
+              <ArrowRight aria-hidden="true" />
             </Button>
           </CardFooter>
         </>

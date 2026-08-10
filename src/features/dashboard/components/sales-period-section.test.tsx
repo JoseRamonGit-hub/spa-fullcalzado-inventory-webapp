@@ -6,9 +6,10 @@ import type { DashboardSalesPeriodSelection } from "../sales-period";
 import { SalesPeriodSection } from "./sales-period-section";
 
 const navigate = vi.fn();
+const viewport = vi.hoisted(() => ({ isMobile: false }));
 
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => navigate }));
-vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
+vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => viewport.isMobile }));
 vi.mock("@/components/ui/overflow-tooltip", () => ({
   OverflowTooltip: ({ children }: { children: ReactNode }) => <span>{children}</span>,
 }));
@@ -64,6 +65,33 @@ const emptyCustomPeriod = {
   ],
 };
 
+const activeCustomPeriod = {
+  ...emptyCustomPeriod,
+  totalUsd: 75,
+  previousTotalUsd: 50,
+  operations: 2,
+  previousOperations: 1,
+  averageTicketUsd: 37.5,
+  buckets: [
+    {
+      index: 0,
+      label: "20/03/24–26/03/24",
+      startDate: "2024-03-20",
+      endDate: "2024-03-26",
+      isAvailable: true,
+      totalUsd: 75,
+    },
+    {
+      index: 1,
+      label: "27/03/24",
+      startDate: "2024-03-27",
+      endDate: "2024-03-27",
+      isAvailable: false,
+      totalUsd: 0,
+    },
+  ],
+};
+
 function StatefulSalesPeriodSection() {
   const [selection, setSelection] = useState<DashboardSalesPeriodSelection>({ preset: "week" });
 
@@ -73,6 +101,7 @@ function StatefulSalesPeriodSection() {
 describe("Ventas por período", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    viewport.isMobile = false;
     vi.mocked(useDashboardTopProducts).mockReturnValue({
       data: [],
       isPending: false,
@@ -115,7 +144,19 @@ describe("Ventas por período", () => {
     });
   });
 
-  it("muestra el rango vacío y deja cada valor accesible por teclado", () => {
+  it("muestra un solo mes en el selector de fechas móvil", () => {
+    viewport.isMobile = true;
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({ isPending: true, isFetching: true } as never);
+
+    render(<StatefulSalesPeriodSection />);
+
+    fireEvent.click(screen.getByRole("radio", { name: "Personalizado" }));
+    fireEvent.click(screen.getByRole("button", { name: "Seleccionar fechas" }));
+
+    expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-number-of-months", "1");
+  });
+
+  it("muestra el rango vacío sin repetir intervalos que no aportan información", () => {
     vi.mocked(useDashboardSalesPeriod).mockReturnValue({
       data: emptyCustomPeriod,
       isPending: false,
@@ -130,8 +171,74 @@ describe("Ventas por período", () => {
       />,
     );
 
-    expect(screen.getAllByText("Sin actividad en este período")).toHaveLength(2);
-    expect(screen.getByLabelText("20/03/24–26/03/24: $0.00")).toHaveAttribute("tabindex", "0");
+    expect(screen.getAllByText("Sin actividad en este período")).toHaveLength(1);
+    expect(screen.queryByRole("region", { name: "Facturación por intervalo" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("20/03/24–26/03/24: $0.00")).not.toBeInTheDocument();
+  });
+
+  it("integra tendencia, intervalo e importe en una sola visualización accesible", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: activeCustomPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+
+    render(
+      <SalesPeriodSection
+        selection={{ preset: "custom", customStartDate: "2024-03-20", customEndDate: "2024-03-27" }}
+        onSelectionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("region", { name: "Facturación por intervalo" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Facturación por intervalo" })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByLabelText("20/03/24–26/03/24: $75.00")).not.toHaveAttribute("tabindex");
+    expect(screen.getByLabelText("27/03/24: No disponible")).not.toHaveAttribute("tabindex");
+    expect(screen.getAllByText("20/03/24–26/03/24")).toHaveLength(1);
+    expect(screen.getAllByText("$75.00")).toHaveLength(2);
+    const bars = document.querySelectorAll('[data-slot="sales-interval-bar"]');
+    expect(bars).toHaveLength(1);
+    expect(bars[0]).toHaveClass("dashboard-chart-bar");
+    expect(bars[0]).toHaveStyle({ animationDelay: "0ms" });
+  });
+
+  it("reinicia una secuencia breve al cambiar la serie y limita el escalonado", () => {
+    const weekPeriod = {
+      ...activeCustomPeriod,
+      preset: "week" as const,
+      currentStart: "2024-03-25",
+      currentEnd: "2024-03-31",
+      buckets: [
+        { ...activeCustomPeriod.buckets[0], index: 0, label: "25/03/24", totalUsd: 25 },
+        { ...activeCustomPeriod.buckets[0], index: 1, label: "26/03/24", totalUsd: 50 },
+        { ...activeCustomPeriod.buckets[0], index: 2, label: "27/03/24", totalUsd: 75 },
+      ],
+    };
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: weekPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+
+    const { rerender } = render(<SalesPeriodSection selection={{ preset: "week" }} onSelectionChange={vi.fn()} />);
+
+    const initialSeries = document.querySelector('[data-series="week-2024-03-25-2024-03-31"]');
+    const initialBars = document.querySelectorAll('[data-slot="sales-interval-bar"]');
+    expect(initialBars[0]).toHaveStyle({ animationDelay: "0ms" });
+    expect(initialBars[1]).toHaveStyle({ animationDelay: "90ms" });
+    expect(initialBars[2]).toHaveStyle({ animationDelay: "180ms" });
+
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: { ...weekPeriod, currentStart: "2024-04-01", currentEnd: "2024-04-07" },
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+    rerender(<SalesPeriodSection selection={{ preset: "week" }} onSelectionChange={vi.fn()} />);
+
+    expect(document.querySelector('[data-series="week-2024-04-01-2024-04-07"]')).not.toBe(initialSeries);
   });
 
   it("mantiene visible la advertencia anual durante la carga", () => {
@@ -200,7 +307,9 @@ describe("Ventas por período", () => {
     fireEvent.click(screen.getByRole("radio", { name: "USD bruto" }));
     expect(useDashboardTopProducts).toHaveBeenLastCalledWith(request, "gross_usd");
 
-    fireEvent.click(screen.getByRole("row", { name: "Ver detalles de TOP-01" }));
+    const productRow = screen.getByRole("row", { name: "Ver detalles de TOP-01" });
+    expect(productRow).toHaveClass("focus-visible:ring-2");
+    fireEvent.click(productRow);
     expect(navigate).toHaveBeenCalledWith({
       to: "/inventory/$productId",
       params: { productId: "product-1" },
