@@ -20,6 +20,7 @@ type ModalConfirmDialogProps = {
   title: string;
   description: ReactNode;
   confirmLabel: string;
+  cancelLabel?: string;
   pendingLabel: string;
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
@@ -56,6 +57,7 @@ export function ModalConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = "Cancelar",
   pendingLabel,
   isSubmissionPending,
   onConfirmSubmit,
@@ -83,7 +85,7 @@ export function ModalConfirmDialog({
 
         <AlertDialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
           <AlertDialogCancel className="w-full sm:w-auto" disabled={isSubmissionPending}>
-            Cancelar
+            {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
             className="w-full sm:w-auto"

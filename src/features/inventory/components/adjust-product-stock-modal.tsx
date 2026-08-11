@@ -2,14 +2,16 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
-import {
-  ConfirmDialogSummarySection,
-  ModalConfirmDialog,
-  ModalProductIdentity,
-} from "@/components/modals/shared/modal-ui";
+import { ConfirmDialogSummarySection, ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
+import { COMPACT_FIELD_LABEL_CLASS_NAME } from "@/components/forms/field-wrapper";
 import { useAdjustProductStock } from "@/features/inventory/hooks/useProductMutations";
 import { useAppForm } from "@/hooks/form";
+import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
 const MIN_REASON_LENGTH = 3;
@@ -47,8 +49,25 @@ function normalizeReason(value: string) {
 }
 
 function formatDelta(delta: number) {
-  if (delta === 0) return "Sin cambio";
+  if (delta === 0) return "Sin cambios";
   return `${delta > 0 ? "+" : "−"}${Math.abs(delta)}`;
+}
+
+function describeStockChange(currentStock: number, nextStock: number) {
+  if (!Number.isFinite(nextStock)) return "Indica un total válido para continuar.";
+
+  const delta = nextStock - currentStock;
+  if (delta === 0) return "Cambia el total para continuar.";
+
+  const direction = delta > 0 ? "Aumentará" : "Reducirá";
+  const change = `${direction} de ${currentStock} a ${nextStock} (${formatDelta(delta)}).`;
+  return nextStock === 0 ? `${change} El producto quedará sin existencias.` : change;
+}
+
+function getStockChangeSurfaceClass(currentStock: number, nextStock: number) {
+  if (!Number.isFinite(nextStock) || nextStock === currentStock) return "bg-muted/40";
+  if (nextStock === 0) return "bg-warning/15";
+  return nextStock > currentStock ? "bg-success/10" : "bg-destructive/10";
 }
 
 export function AdjustProductStockModal({ open, onOpenChange, product }: AdjustProductStockModalProps) {
@@ -63,11 +82,7 @@ export function AdjustProductStockModal({ open, onOpenChange, product }: AdjustP
       reason: "",
     },
     onSubmit: async ({ value }) => {
-      if (value.stock === product.stock) {
-        toast.info("Las nuevas existencias deben ser diferentes a las actuales.");
-        return;
-      }
-
+      if (value.stock === product.stock) return;
       setPendingAdjustment({ stock: value.stock, reason: normalizeReason(value.reason) });
       setConfirmOpen(true);
     },
@@ -128,16 +143,18 @@ export function AdjustProductStockModal({ open, onOpenChange, product }: AdjustP
     });
   };
 
-  const confirmedDelta = pendingAdjustment ? pendingAdjustment.stock - product.stock : 0;
-
   return (
     <>
       <ResponsiveModal
         open={open}
         onOpenChange={handleModalOpenChange}
         title="Ajustar existencias"
-        description="Corrige el total disponible. El ajuste quedará registrado en el historial."
+        description="Modifica el total disponible del producto."
         dialogClassName="sm:max-w-lg"
+        headerClassName="px-6 pt-5 pb-4"
+        titleClassName="text-base font-semibold normal-case tracking-normal"
+        bodyClassName="px-4 py-5 sm:px-6"
+        footerClassName="py-4"
         avoidCloseFromOutsideClick={adjustStock.isPending}
         avoidCloseFromEsc={adjustStock.isPending}
         footer={
@@ -150,12 +167,18 @@ export function AdjustProductStockModal({ open, onOpenChange, product }: AdjustP
             >
               Cancelar
             </Button>
-            <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
-              {([canSubmit, isSubmitting]) => (
+            <form.Subscribe
+              selector={(state) => ({
+                canSubmit: state.canSubmit,
+                isSubmitting: state.isSubmitting,
+                nextStock: state.values.stock,
+              })}
+            >
+              {({ canSubmit, isSubmitting, nextStock }) => (
                 <Button
                   type="submit"
                   form="adjust-product-stock-form"
-                  disabled={!canSubmit || isSubmitting || adjustStock.isPending}
+                  disabled={!canSubmit || isSubmitting || adjustStock.isPending || nextStock === product.stock}
                 >
                   Revisar ajuste
                 </Button>
@@ -164,63 +187,64 @@ export function AdjustProductStockModal({ open, onOpenChange, product }: AdjustP
           </div>
         }
       >
-        <form id="adjust-product-stock-form" onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-          <header className="bg-muted/30 flex min-w-0 items-center justify-between gap-3 rounded-md px-3 py-2.5">
-            <ModalProductIdentity code={product.code} description={product.description} />
-            <Badge variant={product.active ? "success" : "secondary"}>{product.active ? "Activo" : "Inactivo"}</Badge>
-          </header>
+        <form id="adjust-product-stock-form" onSubmit={handleFormSubmit} className="flex flex-col gap-5">
+          <div className="flex min-w-0 items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <OverflowTooltip className="text-sm font-medium">{product.description}</OverflowTooltip>
+              <p className="product-code mt-0.5 uppercase">{product.code}</p>
+            </div>
+            <Badge variant={product.active ? "success" : "secondary"} className="shrink-0">
+              {product.active ? "Activo" : "Inactivo"}
+            </Badge>
+          </div>
 
           <form.Subscribe selector={(state) => state.values.stock}>
             {(nextStock) => {
-              const delta = nextStock - product.stock;
-
               return (
-                <section
-                  className="grid grid-cols-[minmax(3.5rem,0.75fr)_minmax(6.5rem,1fr)_auto] items-end gap-3 border-y py-3"
-                  aria-label="Cambio de existencias"
-                >
-                  <div className="flex min-w-0 flex-col gap-1 pb-0.5">
-                    <span className="text-muted-foreground text-[10px] leading-tight font-semibold tracking-wider uppercase">
-                      Actual
-                    </span>
-                    <strong className="flex h-9 items-center text-base font-semibold tabular-nums">
-                      {product.stock}
-                    </strong>
-                  </div>
+                <div className="border-y py-4">
+                  <section className="grid grid-cols-2 items-start gap-3" aria-label="Cambio de existencias">
+                    <div className="flex min-w-0 flex-col gap-1.5">
+                      <span className={COMPACT_FIELD_LABEL_CLASS_NAME}>Actual</span>
+                      <strong className="bg-muted/40 border-input flex h-9 items-center rounded-md border px-3 font-mono text-sm font-semibold tabular-nums">
+                        {product.stock}
+                      </strong>
+                    </div>
 
-                  <form.AppField
-                    name="stock"
-                    validators={{
-                      onBlur: ({ value }) => validateStock(value),
-                      onSubmit: ({ value }) => validateStock(value),
-                      onChange: ({ value, fieldApi }) =>
-                        fieldApi.state.meta.isTouched ? validateStock(value) : undefined,
-                    }}
-                  >
-                    {(field) => (
-                      <field.NumberField
-                        label="Nuevo total"
-                        compact
-                        showZero
-                        step="1"
-                        min="0"
-                        required
-                        className="h-9 text-sm tabular-nums"
-                      />
-                    )}
-                  </form.AppField>
-
-                  <div className="flex min-w-0 flex-col gap-1 pb-0.5">
-                    <span className="text-muted-foreground text-[10px] leading-tight font-semibold tracking-wider uppercase">
-                      Diferencia
-                    </span>
-                    <span className="flex h-9 items-center" role="status" aria-live="polite">
-                      <Badge variant={delta > 0 ? "success" : delta < 0 ? "destructive" : "secondary"}>
-                        {Number.isFinite(delta) ? formatDelta(delta) : "—"}
-                      </Badge>
-                    </span>
-                  </div>
-                </section>
+                    <form.AppField
+                      name="stock"
+                      validators={{
+                        onBlur: ({ value }) => validateStock(value),
+                        onSubmit: ({ value }) => validateStock(value),
+                        onChange: ({ value }) => validateStock(value),
+                      }}
+                    >
+                      {(field) => (
+                        <field.NumberField
+                          label="Nuevo total"
+                          compact
+                          showZero
+                          step="1"
+                          min="0"
+                          required
+                          autoFocus
+                          emptyValue={Number.NaN}
+                          className="h-9 font-mono text-sm font-semibold tabular-nums"
+                        />
+                      )}
+                    </form.AppField>
+                  </section>
+                  {Number.isFinite(nextStock) ? (
+                    <p
+                      className={cn(
+                        "text-foreground mt-3 rounded-md px-3 py-2 text-xs leading-relaxed font-medium transition-colors duration-150 motion-reduce:transition-none",
+                        getStockChangeSurfaceClass(product.stock, nextStock),
+                      )}
+                      role="status"
+                    >
+                      {describeStockChange(product.stock, nextStock)}
+                    </p>
+                  ) : null}
+                </div>
               );
             }}
           </form.Subscribe>
@@ -233,19 +257,35 @@ export function AdjustProductStockModal({ open, onOpenChange, product }: AdjustP
               onChange: ({ value, fieldApi }) => (fieldApi.state.meta.isTouched ? validateReason(value) : undefined),
             }}
           >
-            {(field) => (
-              <field.TextareaField
-                label="Motivo (opcional)"
-                description="Si lo dejas vacío, el historial mostrará «Sin motivo indicado»."
-                placeholder="Ej.: Corrección por conteo físico"
-                compact
-                descriptionBelow
-                maxLength={MAX_REASON_LENGTH}
-                autoComplete="off"
-                rows={2}
-                className="min-h-16 resize-y text-sm"
-              />
-            )}
+            {(field) => {
+              const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+              return (
+                <div className="space-y-1.5">
+                  <Label htmlFor={field.name} className={COMPACT_FIELD_LABEL_CLASS_NAME}>
+                    Motivo (opcional)
+                  </Label>
+                  <Textarea
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    placeholder="Ej.: Corrección por conteo físico"
+                    maxLength={MAX_REASON_LENGTH}
+                    autoComplete="off"
+                    rows={2}
+                    aria-invalid={isInvalid}
+                    aria-describedby={`${field.name}-description`}
+                    className="min-h-16 resize-y text-sm"
+                  />
+                  {isInvalid ? <FieldError errors={field.state.meta.errors} /> : null}
+                  <p id={`${field.name}-description`} className="text-muted-foreground text-xs leading-relaxed">
+                    Si lo dejas vacío, el historial mostrará “Sin motivo indicado”.
+                  </p>
+                </div>
+              );
+            }}
           </form.AppField>
         </form>
       </ResponsiveModal>
@@ -254,29 +294,38 @@ export function AdjustProductStockModal({ open, onOpenChange, product }: AdjustP
         isOpen={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Confirmar ajuste de existencias"
-        description="El cambio quedará registrado con tu usuario en el historial del producto."
+        description="Verifica el producto y el nuevo total antes de aplicar el ajuste."
         confirmLabel="Aplicar ajuste"
+        cancelLabel="Volver a editar"
         pendingLabel="Ajustando…"
         isSubmissionPending={adjustStock.isPending}
         onConfirmSubmit={handleConfirmSubmit}
         contentClassName="data-[size=default]:sm:max-w-lg"
       >
-        <ConfirmDialogSummarySection className="gap-2">
-          <div className="grid grid-cols-3 gap-3">
-            <span>
+        <ConfirmDialogSummarySection className="bg-card gap-0 overflow-hidden p-0">
+          <div className="min-w-0 px-3 py-3">
+            <OverflowTooltip className="text-foreground text-sm font-medium">{product.description}</OverflowTooltip>
+            <p className="product-code mt-0.5 uppercase">{product.code}</p>
+          </div>
+          <div className="border-border/60 grid grid-cols-2 divide-x border-t">
+            <span className="px-3 py-3">
               <span className="text-muted-foreground block">Actual</span>
-              <strong className="text-sm tabular-nums">{product.stock}</strong>
+              <strong className="font-mono text-sm tabular-nums">{product.stock}</strong>
             </span>
-            <span>
-              <span className="text-muted-foreground block">Nuevo</span>
-              <strong className="text-sm tabular-nums">{pendingAdjustment?.stock ?? product.stock}</strong>
-            </span>
-            <span>
-              <span className="text-muted-foreground block">Diferencia</span>
-              <strong className="text-sm tabular-nums">{formatDelta(confirmedDelta)}</strong>
+            <span className="px-3 py-3">
+              <span className="text-muted-foreground block">Nuevo total</span>
+              <strong className="font-mono text-sm tabular-nums">{pendingAdjustment?.stock ?? product.stock}</strong>
             </span>
           </div>
-          <div className="border-border/60 border-t pt-2">
+          <p
+            className={cn(
+              "border-border/60 text-foreground border-t px-3 py-2 text-xs leading-relaxed font-medium",
+              getStockChangeSurfaceClass(product.stock, pendingAdjustment?.stock ?? product.stock),
+            )}
+          >
+            {describeStockChange(product.stock, pendingAdjustment?.stock ?? product.stock)}
+          </p>
+          <div className="border-border/60 border-t px-3 py-3">
             <span className="text-muted-foreground block">Motivo</span>
             <strong className="text-foreground break-words">{pendingAdjustment?.reason}</strong>
           </div>

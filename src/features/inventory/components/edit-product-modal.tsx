@@ -5,11 +5,7 @@ import { Button } from "@/components/ui/button";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { TableHead } from "@/components/ui/table";
 import { ResponsiveModal } from "@/components/modals/shared/responsive-modal";
-import {
-  ConfirmDialogTableSection,
-  ModalConfirmDialog,
-  ModalProductIdentity,
-} from "@/components/modals/shared/modal-ui";
+import { ConfirmDialogTableSection, ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
 import { useAppForm } from "@/hooks/form";
 import { useUpdateProductCatalog } from "@/features/inventory/hooks/useProductMutations";
 import { formatCurrencyUSD } from "@/utils/formatters";
@@ -157,6 +153,10 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
         avoidCloseFromOutsideClick={updateProduct.isPending}
         avoidCloseFromEsc={updateProduct.isPending}
         dialogClassName="sm:max-w-xl"
+        headerClassName="px-6 pt-5 pb-4"
+        titleClassName="text-base font-semibold normal-case tracking-normal"
+        bodyClassName="px-4 py-5 sm:px-6"
+        footerClassName="py-4"
         footer={
           <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:justify-end">
             <Button
@@ -167,27 +167,63 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
             >
               Cancelar
             </Button>
-            <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
-              {([canSubmit, isSubmitting]) => (
-                <Button
-                  type="submit"
-                  form="edit-product-form"
-                  disabled={!canSubmit || isSubmitting || updateProduct.isPending}
-                >
-                  Revisar cambios
-                </Button>
-              )}
+            <form.Subscribe
+              selector={(state) => ({
+                canSubmit: state.canSubmit,
+                isSubmitting: state.isSubmitting,
+                values: state.values,
+              })}
+            >
+              {({ canSubmit, isSubmitting, values }) => {
+                const hasChanges = getChangedFields(product, values).length > 0;
+
+                return (
+                  <Button
+                    type="submit"
+                    form="edit-product-form"
+                    disabled={!canSubmit || !hasChanges || isSubmitting || updateProduct.isPending}
+                  >
+                    Revisar cambios
+                  </Button>
+                );
+              }}
             </form.Subscribe>
           </div>
         }
       >
-        <form id="edit-product-form" onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-          <header className="flex min-w-0 items-center justify-between gap-3 border-b pb-3">
-            <ModalProductIdentity code={product.code} description={product.description} />
-            <Badge variant={product.active ? "success" : "secondary"}>{product.active ? "Activo" : "Inactivo"}</Badge>
-          </header>
+        <form id="edit-product-form" onSubmit={handleFormSubmit} className="flex flex-col gap-5">
+          <div className="flex min-w-0 items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <OverflowTooltip className="text-sm font-medium">{product.description}</OverflowTooltip>
+              <p className="product-code mt-0.5 uppercase">{product.code}</p>
+            </div>
+            <Badge variant={product.active ? "success" : "secondary"} className="shrink-0">
+              {product.active ? "Activo" : "Inactivo"}
+            </Badge>
+          </div>
 
-          <div className="grid min-w-0 gap-3 sm:grid-cols-[10rem_minmax(0,1fr)]">
+          <form.AppField
+            name="description"
+            validators={{
+              onBlur: ({ value }) => validateRequiredText(value, MAX_DESCRIPTION_LENGTH),
+              onSubmit: ({ value }) => validateRequiredText(value, MAX_DESCRIPTION_LENGTH),
+              onChange: ({ value, fieldApi }) =>
+                fieldApi.state.meta.isTouched ? validateRequiredText(value, MAX_DESCRIPTION_LENGTH) : undefined,
+            }}
+          >
+            {(field) => (
+              <field.TextField
+                label="Descripción"
+                compact
+                required
+                maxLength={MAX_DESCRIPTION_LENGTH}
+                className="h-9 w-full text-sm"
+                autoComplete="off"
+              />
+            )}
+          </form.AppField>
+
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]">
             <form.AppField
               name="code"
               validators={{
@@ -208,30 +244,6 @@ export function EditProductModal({ open, onOpenChange, product }: EditProductMod
                 />
               )}
             </form.AppField>
-
-            <form.AppField
-              name="description"
-              validators={{
-                onBlur: ({ value }) => validateRequiredText(value, MAX_DESCRIPTION_LENGTH),
-                onSubmit: ({ value }) => validateRequiredText(value, MAX_DESCRIPTION_LENGTH),
-                onChange: ({ value, fieldApi }) =>
-                  fieldApi.state.meta.isTouched ? validateRequiredText(value, MAX_DESCRIPTION_LENGTH) : undefined,
-              }}
-            >
-              {(field) => (
-                <field.TextField
-                  label="Descripción"
-                  compact
-                  required
-                  maxLength={MAX_DESCRIPTION_LENGTH}
-                  className="h-9 text-sm"
-                  autoComplete="off"
-                />
-              )}
-            </form.AppField>
-          </div>
-
-          <div className="max-w-48">
             <form.AppField
               name="priceUsd"
               validators={{

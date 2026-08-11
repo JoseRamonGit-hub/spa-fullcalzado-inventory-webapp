@@ -20,7 +20,10 @@ type ResponsiveModalProps = {
   avoidCloseFromOutsideClick?: boolean;
   avoidCloseFromEsc?: boolean;
   dialogClassName?: string;
+  headerClassName?: string;
+  titleClassName?: string;
   bodyClassName?: string;
+  footerClassName?: string;
   footer: React.ReactNode;
 };
 
@@ -33,7 +36,10 @@ export function ResponsiveModal({
   avoidCloseFromOutsideClick,
   avoidCloseFromEsc,
   dialogClassName,
+  headerClassName,
+  titleClassName,
   bodyClassName,
+  footerClassName,
   footer,
 }: ResponsiveModalProps) {
   const isMobile = useIsMobile();
@@ -54,13 +60,13 @@ export function ResponsiveModal({
         onInteractOutside={avoidCloseFromOutsideClick ? (e) => e.preventDefault() : undefined}
         onEscapeKeyDown={avoidCloseFromEsc ? (e) => e.preventDefault() : undefined}
       >
-        <DialogHeader className="border-b px-4 pt-4 pb-2">
-          <DialogTitle className="text-sm font-bold tracking-wide uppercase">{title}</DialogTitle>
+        <DialogHeader className={cn("border-b px-4 pt-4 pb-2", headerClassName)}>
+          <DialogTitle className={cn("text-sm font-bold tracking-wide uppercase", titleClassName)}>{title}</DialogTitle>
           <ActiveBusinessContext />
           <DialogDescription className="sr-only text-xs">{description}</DialogDescription>
         </DialogHeader>
         <DialogBody className={cn("min-h-0", isMobile && "px-4 py-3", bodyClassName)}>{children}</DialogBody>
-        <DialogFooter>{footer}</DialogFooter>
+        <DialogFooter className={footerClassName}>{footer}</DialogFooter>
       </DialogContent>
     </Dialog>
   );

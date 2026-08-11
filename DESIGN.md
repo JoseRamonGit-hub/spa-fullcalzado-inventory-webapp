@@ -71,11 +71,11 @@ typography:
     fontWeight: 400
     lineHeight: 1.4
   label:
-    fontFamily: "Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.625rem"
-    fontWeight: 600
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 500
     lineHeight: 1
-    letterSpacing: "0.1em"
+    letterSpacing: "0.05em"
   data:
     fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
     fontSize: "0.8125rem"
@@ -213,9 +213,9 @@ La implementación usa la arquitectura semántica de **shadcn/ui New York sobre 
 
 **Body Font:** Inter (con `ui-sans-serif`, `system-ui`, `sans-serif` como respaldo)
 
-**Label/Mono Font:** JetBrains Mono (con `ui-monospace`, SFMono-Regular, Menlo y Consolas como respaldo)
+**Data/Mono Font:** JetBrains Mono (con `ui-monospace`, SFMono-Regular, Menlo y Consolas como respaldo)
 
-**Character:** Plus Jakarta Sans aporta geometría firme a títulos y métricas; Inter mantiene los flujos densos neutrales y legibles; JetBrains Mono alinea códigos, tasas, importes y atajos. Las familias preferidas están declaradas en los tokens, pero el proyecto no incorpora archivos de fuente ni imports remotos: los respaldos del sistema son parte real del comportamiento actual.
+**Character:** Plus Jakarta Sans aporta geometría firme a títulos y métricas; Inter mantiene los flujos densos, las etiquetas compactas y el cuerpo neutral y legible; JetBrains Mono alinea códigos, tasas, importes y atajos. Las familias preferidas están declaradas en los tokens, pero el proyecto no incorpora archivos de fuente ni imports remotos: los respaldos del sistema son parte real del comportamiento actual.
 
 ### Hierarchy
 
@@ -224,7 +224,7 @@ La implementación usa la arquitectura semántica de **shadcn/ui New York sobre 
 - **Title** (600, `1rem`, 1.25): títulos de módulos, secciones y tarjetas.
 - **Body** (400–500, `0.875rem`, 1.5): contenido, acciones y formularios.
 - **Body Small** (400–600, `0.75rem`, 1.4): apoyo, metadatos y controles compactos.
-- **Label** (600, `0.625rem`, 0.1em, mayúsculas): agrupaciones, fechas compactas y rótulos de navegación.
+- **Label** (500, `0.6875rem`, 0.05em, mayúsculas): etiquetas compactas de formularios y agrupaciones operativas.
 - **Data** (600–700, `0.8125rem`, 0.03em): códigos de producto, tasas, importes y valores tabulares.
 
 ### Named Rules

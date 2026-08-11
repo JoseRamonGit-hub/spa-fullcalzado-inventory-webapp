@@ -16,6 +16,7 @@ let queryState: "success" | "error";
 let historyState: "success" | "pending" | "error";
 let history: ProductHistoryEvent[];
 let userRole: "admin" | "employee";
+let isMobile: boolean;
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
@@ -78,7 +79,7 @@ vi.mock("@/features/product-detail/hooks/useProductHistory", () => ({
   },
 }));
 
-vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => true }));
+vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => isMobile }));
 
 const product: Product = {
   id: "product-1",
@@ -124,6 +125,7 @@ describe("ProductDetailPage", () => {
     historyState = "success";
     history = [historyEvent];
     userRole = "admin";
+    isMobile = true;
     refetchHistory.mockClear();
     useProductHistoryMock.mockClear();
     useBusinessStore.setState({ activeBusinessId: "business-1" });
@@ -147,7 +149,8 @@ describe("ProductDetailPage", () => {
     expect(within(lifecycleSummary).getByText("Desactivación")).toBeInTheDocument();
   });
 
-  it("offers the inventory maintenance actions to administrators", () => {
+  it("offers product maintenance actions directly to administrators on desktop", () => {
+    isMobile = false;
     render(<ProductDetailPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Editar datos del producto FC-101" }));
@@ -160,6 +163,17 @@ describe("ProductDetailPage", () => {
     expect(screen.getByRole("dialog", { name: "Desactivar producto" })).toBeInTheDocument();
   });
 
+  it("offers product maintenance actions through a drawer on mobile", () => {
+    render(<ProductDetailPage />);
+
+    expect(screen.queryByRole("button", { name: "Editar datos del producto FC-101" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Abrir acciones del producto FC-101" }));
+    fireEvent.click(screen.getByRole("button", { name: "Editar datos del producto" }));
+
+    expect(document.querySelector('[aria-label="Editar producto"]')).toBeInTheDocument();
+  });
+
   it("keeps product maintenance actions hidden from employees", () => {
     userRole = "employee";
     render(<ProductDetailPage />);
@@ -167,14 +181,16 @@ describe("ProductDetailPage", () => {
     expect(screen.queryByRole("button", { name: "Editar datos del producto FC-101" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ajustar existencias de FC-101" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Desactivar producto FC-101" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Abrir acciones del producto FC-101" })).not.toBeInTheDocument();
   });
 
   it("offers reactivation when the product is inactive", () => {
     detail = { ...detail!, product: { ...product, active: false } };
     render(<ProductDetailPage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Reactivar producto FC-101" }));
-    expect(screen.getByRole("dialog", { name: "Reactivar producto" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Abrir acciones del producto FC-101" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reactivar producto" }));
+    expect(document.querySelector('[aria-label="Reactivar producto"]')).toBeInTheDocument();
   });
 
   it("regresa a la pantalla anterior desde la que se abrió el detalle", () => {

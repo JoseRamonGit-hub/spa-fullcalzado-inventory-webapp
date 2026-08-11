@@ -27,7 +27,10 @@ export function ProductMaintenanceActions({
       <Button
         variant={isToolbar ? "outline" : "ghost"}
         size={isToolbar ? "sm" : "icon-xs"}
-        className={cn(!isToolbar && "text-muted-foreground hover:text-primary")}
+        className={cn(
+          !isToolbar && "text-muted-foreground hover:text-primary",
+          isToolbar && "text-foreground/80 hover:text-foreground hover:bg-muted/60",
+        )}
         aria-label={`Editar datos del producto ${product.code}`}
         title="Editar datos del producto"
         onClick={(event) => {
@@ -35,13 +38,16 @@ export function ProductMaintenanceActions({
           onEdit(product);
         }}
       >
-        <Pencil data-icon={isToolbar ? "inline-start" : undefined} aria-hidden="true" />
+        <Pencil data-icon={isToolbar ? "inline-start" : undefined} aria-hidden="true" className={cn(isToolbar && "text-muted-foreground")} />
         {isToolbar ? <span className="hidden sm:inline">Editar</span> : null}
       </Button>
       <Button
         variant={isToolbar ? "outline" : "ghost"}
         size={isToolbar ? "sm" : "icon-xs"}
-        className={cn(!isToolbar && "text-muted-foreground hover:text-primary")}
+        className={cn(
+          !isToolbar && "text-muted-foreground hover:text-primary",
+          isToolbar && "border-primary/20 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary",
+        )}
         aria-label={`Ajustar existencias de ${product.code}`}
         title="Ajustar existencias"
         onClick={(event) => {
@@ -61,7 +67,7 @@ export function ProductMaintenanceActions({
           product.active ? "hover:text-warning-foreground" : "hover:text-success",
           isToolbar &&
             (product.active
-              ? "border-warning/40 bg-warning/5 text-warning-foreground hover:bg-warning/10 hover:text-warning-foreground"
+              ? "border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:text-destructive"
               : "border-success/40 bg-success/5 text-success hover:bg-success/10 hover:text-success"),
         )}
         aria-label={`${statusAction} producto ${product.code}`}

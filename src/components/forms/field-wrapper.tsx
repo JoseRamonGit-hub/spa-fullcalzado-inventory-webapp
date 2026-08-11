@@ -10,6 +10,9 @@ export type FormFieldProps = {
   compact?: boolean;
 };
 
+export const COMPACT_FIELD_LABEL_CLASS_NAME =
+  "text-muted-foreground text-[11px] font-medium tracking-wider uppercase";
+
 type FieldWrapperProps = FormFieldProps & {
   children: React.ReactNode;
   orientation?: VariantProps<typeof Field>["orientation"];
@@ -30,10 +33,7 @@ export function FieldWrapper({
   const errorElement = isInvalid && <FieldError errors={field.state.meta.errors} />;
 
   const labelElement = (
-    <FieldLabel
-      htmlFor={field.name}
-      className={compact ? "text-muted-foreground text-[11px] font-medium tracking-wider uppercase" : undefined}
-    >
+    <FieldLabel htmlFor={field.name} className={compact ? COMPACT_FIELD_LABEL_CLASS_NAME : undefined}>
       {label}
     </FieldLabel>
   );

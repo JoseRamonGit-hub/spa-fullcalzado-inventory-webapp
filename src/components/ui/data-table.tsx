@@ -40,6 +40,7 @@ type DataTableProps<TData, TValue> = {
   tableClassName?: string;
   scrollAreaLabel?: string;
   emptyStateClassName?: string;
+  scrollAreaHeader?: React.ReactNode;
 };
 
 export function DataTable<TData, TValue>({
@@ -61,6 +62,7 @@ export function DataTable<TData, TValue>({
   tableClassName,
   scrollAreaLabel,
   emptyStateClassName,
+  scrollAreaHeader,
 }: DataTableProps<TData, TValue>) {
   const isMobile = useIsMobile();
 
@@ -144,6 +146,7 @@ export function DataTable<TData, TValue>({
         aria-label={scrollAreaLabel}
         tabIndex={scrollAreaLabel ? 0 : undefined}
       >
+        {scrollAreaHeader ? <div className="bg-background sticky left-0 w-full">{scrollAreaHeader}</div> : null}
         <Table className={tableClassName}>
           <TableHeader className="bg-muted/95 sticky top-0 z-[1]">
             {table.getHeaderGroups().map((headerGroup) => (
