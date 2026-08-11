@@ -20,6 +20,7 @@ export function NumberField({
   action,
   descriptionBelow,
   compact,
+  hideErrorMessage,
   showZero = false,
   emptyValue = 0,
   ...props
@@ -53,6 +54,7 @@ export function NumberField({
       action={action}
       descriptionBelow={descriptionBelow}
       compact={compact}
+      hideErrorMessage={hideErrorMessage}
     >
       <Input
         {...props}

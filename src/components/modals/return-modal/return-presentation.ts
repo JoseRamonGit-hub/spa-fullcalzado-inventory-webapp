@@ -30,8 +30,8 @@ export function getReturnPresentation(summary: ReturnSummary, hasReturnItems: bo
   return {
     isExchange,
     outcomeLabel,
-    differenceUsd: hasReturnItems ? summary.differenceUsd : 0,
-    differenceVes: hasReturnItems ? summary.differenceVes : 0,
+    differenceUsd: hasReturnItems ? Math.abs(summary.differenceUsd) : 0,
+    differenceVes: hasReturnItems ? Math.abs(summary.differenceVes) : 0,
     differenceClassName,
     actionLabel: isExchange ? "Registrar cambio" : "Registrar devolución",
     confirmTitle: isExchange ? "Confirmar cambio" : "Confirmar devolución",

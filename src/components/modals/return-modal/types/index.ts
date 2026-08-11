@@ -26,7 +26,9 @@ export type PendingExchangeItem = {
 export type ReturnSummary = {
   returnType: "exchange" | "refund";
   creditUsd: number;
+  creditVes: number;
   newPurchaseUsd: number;
+  newPurchaseVes: number;
   differenceUsd: number;
   differenceVes: number;
 };

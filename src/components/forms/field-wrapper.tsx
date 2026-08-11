@@ -8,6 +8,7 @@ export type FormFieldProps = {
   action?: React.ReactNode;
   descriptionBelow?: boolean;
   compact?: boolean;
+  hideErrorMessage?: boolean;
 };
 
 export const COMPACT_FIELD_LABEL_CLASS_NAME =
@@ -25,12 +26,13 @@ export function FieldWrapper({
   action,
   descriptionBelow,
   compact,
+  hideErrorMessage = false,
 }: FieldWrapperProps) {
   const field = useFieldContext();
 
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-  const errorElement = isInvalid && <FieldError errors={field.state.meta.errors} />;
+  const errorElement = !hideErrorMessage && isInvalid && <FieldError errors={field.state.meta.errors} />;
 
   const labelElement = (
     <FieldLabel htmlFor={field.name} className={compact ? COMPACT_FIELD_LABEL_CLASS_NAME : undefined}>

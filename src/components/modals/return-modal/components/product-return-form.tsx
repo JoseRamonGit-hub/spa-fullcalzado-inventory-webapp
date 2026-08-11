@@ -117,6 +117,7 @@ export function ProductReturnForm({ exchangeRate, requireStock = false, onAddIte
                       <field.NumberField
                         label="Cantidad"
                         compact
+                        hideErrorMessage
                         min={String(MINIMUM_PRODUCT_QUANTITY)}
                         max={requireStock ? selectedProduct?.stock : undefined}
                         step="1"

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +22,7 @@ type ModalConfirmDialogProps = {
   confirmLabel: string;
   cancelLabel?: string;
   pendingLabel: string;
+  submissionErrorMessage: string;
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
   contentClassName?: string;
@@ -59,15 +60,35 @@ export function ModalConfirmDialog({
   confirmLabel,
   cancelLabel = "Cancelar",
   pendingLabel,
+  submissionErrorMessage,
   isSubmissionPending,
   onConfirmSubmit,
   contentClassName,
   confirmDisabled = false,
   children,
 }: ModalConfirmDialogProps) {
+  const [visibleSubmissionError, setVisibleSubmissionError] = useState<string | null>(null);
+  const submissionLockRef = useRef(false);
+
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen && isSubmissionPending) return;
+    if (!nextOpen && (isSubmissionPending || submissionLockRef.current)) return;
+    if (!nextOpen) setVisibleSubmissionError(null);
     onOpenChange(nextOpen);
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (submissionLockRef.current) return;
+
+    submissionLockRef.current = true;
+    setVisibleSubmissionError(null);
+
+    try {
+      await onConfirmSubmit();
+    } catch {
+      setVisibleSubmissionError(submissionErrorMessage);
+    } finally {
+      submissionLockRef.current = false;
+    }
   };
 
   return (
@@ -81,6 +102,15 @@ export function ModalConfirmDialog({
           <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
         </AlertDialogHeader>
 
+        {visibleSubmissionError && (
+          <div
+            role="alert"
+            className="border-destructive/30 bg-destructive/8 text-destructive rounded-md border px-3 py-2 text-xs font-medium"
+          >
+            {visibleSubmissionError}
+          </div>
+        )}
+
         {children}
 
         <AlertDialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
@@ -91,7 +121,7 @@ export function ModalConfirmDialog({
             className="w-full sm:w-auto"
             onClick={(event) => {
               event.preventDefault();
-              void onConfirmSubmit();
+              void handleConfirmSubmit();
             }}
             disabled={isSubmissionPending || confirmDisabled}
           >
@@ -105,7 +135,9 @@ export function ModalConfirmDialog({
 
 export function ConfirmDialogTableSection({ children, className }: ConfirmDialogSectionProps) {
   return (
-    <section className={cn("custom-scrollbar overflow-auto rounded-md border text-xs", className)}>{children}</section>
+    <section className={cn("custom-scrollbar overflow-x-hidden overflow-y-auto rounded-md border text-xs", className)}>
+      {children}
+    </section>
   );
 }
 
