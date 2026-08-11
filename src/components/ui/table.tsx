@@ -96,7 +96,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-muted-foreground text-left align-middle text-[11px] leading-none font-semibold tracking-[0.05em] whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&>button]:uppercase [&>div]:uppercase [&>span]:uppercase",
+        "operational-label text-muted-foreground text-left align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&>button]:uppercase [&>div]:uppercase [&>span]:uppercase",
         tableHeadDensityClassNames[density],
         className,
       )}

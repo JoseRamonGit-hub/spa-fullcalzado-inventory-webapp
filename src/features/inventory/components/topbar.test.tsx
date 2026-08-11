@@ -24,7 +24,7 @@ describe("Topbar de Inventario", () => {
       "font-normal",
       "text-muted-foreground",
     );
-    expect(screen.getByRole("button", { name: "Filtrar por día" })).toHaveClass(
+    expect(screen.getByRole("button", { name: /Filtrar por día/ })).toHaveClass(
       "text-xs",
       "font-normal",
       "text-muted-foreground",
@@ -47,5 +47,26 @@ describe("Topbar de Inventario", () => {
       "border-primary/40",
       "text-foreground",
     );
+  });
+
+  it("permite que ambos filtros se ajusten a la misma fila en pantallas estrechas", () => {
+    render(
+      <Topbar
+        search=""
+        onSearchChange={vi.fn()}
+        date={undefined}
+        onDateChange={vi.fn()}
+        stockStatus={undefined}
+        onStockStatusChange={vi.fn()}
+      />,
+    );
+
+    const dateFilter = screen.getByRole("button", { name: /Filtrar por día/ });
+    const filterGroup = dateFilter.parentElement?.parentElement;
+
+    expect(filterGroup).toHaveClass("grid-cols-2");
+    expect(screen.getByRole("combobox", { name: "Estado de inventario" }).parentElement).toHaveClass("min-w-0", "w-full");
+    expect(dateFilter.parentElement).toHaveClass("min-w-0", "w-full", "md:w-auto");
+    expect(dateFilter).toHaveClass("w-full", "md:w-auto");
   });
 });

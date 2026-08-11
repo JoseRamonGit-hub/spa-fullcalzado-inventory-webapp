@@ -30,8 +30,8 @@ export function DataTablePagination<TData>({
   return (
     <div className="border-border/60 flex shrink-0 items-center justify-between border-t px-3 py-1.5 md:px-4">
       <p className="text-muted-foreground text-xs" aria-live="polite">
-        <span className="data-value">{from}</span>–<span className="data-value">{to}</span> de{" "}
-        <span className="data-value">{totalRows}</span>
+        <span className="tabular-value">{from}</span>–<span className="tabular-value">{to}</span> de{" "}
+        <span className="tabular-value">{totalRows}</span>
       </p>
 
       <div className="flex items-center gap-1.5 md:gap-3">
@@ -55,8 +55,8 @@ export function DataTablePagination<TData>({
 
         {/* Page indicator */}
         <span className="text-muted-foreground text-xs" aria-current="page">
-          Página <span className="data-value">{pageIndex + 1}</span> de{" "}
-          <span className="data-value">{pageCount || 1}</span>
+          Página <span className="tabular-value">{pageIndex + 1}</span> de{" "}
+          <span className="tabular-value">{pageCount || 1}</span>
         </span>
 
         {/* Navigation buttons */}

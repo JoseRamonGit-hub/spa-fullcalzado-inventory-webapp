@@ -23,19 +23,19 @@ export function MovementStockChange({ movement, fallback = "quantity", showDelta
         <span className={cn("text-[11px] font-semibold", signedQuantity > 0 ? "text-success" : "text-destructive")}>
           {signedQuantity > 0 ? "+" : "−"}
         </span>
-        <span className="data-value font-medium">{Math.abs(signedQuantity)}</span>
+        <span className="tabular-value font-medium">{Math.abs(signedQuantity)}</span>
       </span>
     );
   }
 
   if (signedQuantity === 0) {
-    return <span className="data-value text-muted-foreground block text-right">{movement.stock_before}</span>;
+    return <span className="tabular-value text-muted-foreground block text-right">{movement.stock_before}</span>;
   }
 
   const stockAfter = movement.stock_before + signedQuantity;
 
   return (
-    <div className="data-value flex items-center justify-end gap-1.5">
+    <div className="tabular-value flex items-center justify-end gap-1.5">
       <span className="text-muted-foreground">{movement.stock_before}</span>
       <span className="text-muted-foreground">→</span>
       <span className="text-foreground font-medium">{stockAfter}</span>

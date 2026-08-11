@@ -29,7 +29,7 @@ import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 
 const NAV_ITEMS = [
   {
-    title: "Dashboard",
+    title: "Panel principal",
     url: "/dashboard",
     icon: LayoutDashboard,
   },

@@ -10,7 +10,7 @@ const columnHelper = createColumnHelper<DashboardTopProduct>();
 const columns = [
   columnHelper.accessor("rank", {
     header: () => <span className="sr-only">Posición</span>,
-    cell: ({ getValue }) => <span className="data-value text-muted-foreground">#{getValue()}</span>,
+    cell: ({ getValue }) => <span className="tabular-value text-muted-foreground">#{getValue()}</span>,
     enableSorting: false,
   }),
   columnHelper.accessor("code", {
@@ -30,7 +30,7 @@ const columns = [
   }),
   columnHelper.accessor("units", {
     header: () => <div className="text-right">Unidades</div>,
-    cell: ({ getValue }) => <span className="data-value block text-right font-medium">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="tabular-value block text-right font-medium">{getValue()}</span>,
     enableSorting: false,
   }),
   columnHelper.accessor("grossUsd", {

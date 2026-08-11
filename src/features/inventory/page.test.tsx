@@ -2,17 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { InventoryPage } from "./page";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import type { Product, User } from "@/types";
+import type { InventoryProduct, User } from "@/types";
 
 const navigate = vi.fn();
 let isMobile = false;
+let inventoryStatus: "low_stock" | "stagnant" | undefined;
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
 }));
 
 vi.mock("@/routes/_app/inventory", () => ({
-  Route: { useSearch: () => ({ date: undefined }) },
+  Route: { useSearch: () => ({ date: undefined, status: inventoryStatus }) },
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({
@@ -36,14 +37,16 @@ vi.mock("@/components/ui/overflow-tooltip", () => ({
 }));
 
 vi.mock("./components/edit-product-modal", () => ({
-  EditProductModal: ({ product }: { product: Product }) => <div>Editando {product.code}</div>,
+  EditProductModal: ({ product }: { product: InventoryProduct }) => <div>Editando {product.code}</div>,
 }));
 
 vi.mock("./components/adjust-product-stock-modal", () => ({
-  AdjustProductStockModal: ({ product }: { product: Product }) => <div>Ajustando existencias de {product.code}</div>,
+  AdjustProductStockModal: ({ product }: { product: InventoryProduct }) => (
+    <div>Ajustando existencias de {product.code}</div>
+  ),
 }));
 
-const product: Product = {
+const product: InventoryProduct = {
   id: "product-1",
   business_id: "business-1",
   code: "FC-101",
@@ -53,6 +56,8 @@ const product: Product = {
   active: true,
   created_at: "2026-08-01T12:00:00Z",
   updated_at: "2026-08-01T12:00:00Z",
+  stagnantSince: "2026-07-02",
+  stagnantDays: 40,
 };
 
 function setRole(role: User["role"]) {
@@ -74,7 +79,21 @@ describe("InventoryPage product navigation", () => {
   beforeEach(() => {
     navigate.mockClear();
     isMobile = false;
+    inventoryStatus = undefined;
     setRole("admin");
+  });
+
+  it("shows stagnant days only while the stagnant inventory filter is active", () => {
+    const { rerender } = render(<InventoryPage />);
+
+    expect(screen.queryByRole("columnheader", { name: /Sin salida/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("40 días")).not.toBeInTheDocument();
+
+    inventoryStatus = "stagnant";
+    rerender(<InventoryPage />);
+
+    expect(screen.getByRole("columnheader", { name: /Sin salida/i })).toBeInTheDocument();
+    expect(screen.getByText("40 días")).toBeInTheDocument();
   });
 
   it("opens product detail from a desktop row and supports the keyboard", () => {

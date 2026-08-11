@@ -31,7 +31,7 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="data-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
+      <span className="tabular-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("products.code", {

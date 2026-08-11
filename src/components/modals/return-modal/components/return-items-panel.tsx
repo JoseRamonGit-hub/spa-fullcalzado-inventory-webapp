@@ -33,7 +33,7 @@ function ItemRow({ code, description, quantity, totalUsd, striped, onRemove }: I
           <OverflowTooltip className="text-muted-foreground max-w-64">{description}</OverflowTooltip>
         </span>
       </TableCell>
-      <TableCell className="data-value text-right font-medium">{quantity}</TableCell>
+      <TableCell className="tabular-value text-right font-medium">{quantity}</TableCell>
       <TableCell className="data-value text-right font-semibold">{formatCurrencyUSD(totalUsd)}</TableCell>
       <TableCell className="w-10 px-1.5 py-1 text-right">
         <Button
@@ -58,7 +58,7 @@ function GroupRow({ count, totalUsd, kind }: { count: number; totalUsd: number; 
         <span className="flex items-center gap-2">
           <ReturnMovementBadge kind={kind} />
           <span className="text-muted-foreground text-[11px] font-medium">
-            <span className="data-value">{count}</span> {count === 1 ? "producto" : "productos"}
+            <span className="tabular-value">{count}</span> {count === 1 ? "producto" : "productos"}
           </span>
         </span>
       </TableCell>

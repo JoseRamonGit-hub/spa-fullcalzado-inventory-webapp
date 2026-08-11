@@ -14,7 +14,7 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="data-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
+      <span className="tabular-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("products.code", {
@@ -41,7 +41,7 @@ export const columns = [
   columnHelper.accessor("quantity", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Cantidad" className="justify-end" />,
-    cell: ({ getValue }) => <span className="data-value block text-right font-medium">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="tabular-value block text-right font-medium">{getValue()}</span>,
   }),
   columnHelper.accessor("total_usd", {
     enableSorting: true,

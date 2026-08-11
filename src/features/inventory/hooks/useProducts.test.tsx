@@ -4,7 +4,7 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { useProductDetail, useProducts, productKeys } from "./useProductQueries";
 import { useAdjustProductStock, useToggleProductActive, useUpdateProductCatalog } from "./useProductMutations";
 import { productsService } from "@/services/productsService";
-import type { AdjustProductStockPayload, Product, UpdateProductCatalogPayload } from "@/types";
+import type { AdjustProductStockPayload, InventoryProduct, UpdateProductCatalogPayload } from "@/types";
 import type { ReactNode } from "react";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { movementKeys } from "@/features/movements/hooks/useMovementQueries";
@@ -29,7 +29,7 @@ const mockUpdateCatalog = vi.mocked(productsService.updateCatalog);
 const mockAdjustStock = vi.mocked(productsService.adjustStock);
 const mockToggleActive = vi.mocked(productsService.toggleActive);
 
-const fakeProduct: Product = {
+const fakeProduct: InventoryProduct = {
   id: "prod-1",
   business_id: BUSINESS_ID,
   code: "SHO-01",
@@ -39,6 +39,8 @@ const fakeProduct: Product = {
   active: true,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
+  stagnantSince: null,
+  stagnantDays: null,
 };
 
 let testQueryClient: QueryClient;

@@ -45,7 +45,7 @@ function BusinessSummaryCell({ user, businesses }: { user: ManagedUser; business
         {visibleBusinesses.join(", ")}
       </OverflowTooltip>
       {hiddenBusinessCount > 0 ? (
-        <Badge variant="outline" className="data-value h-5 shrink-0 px-1.5 text-[11px] font-medium">
+        <Badge variant="outline" className="tabular-value h-5 shrink-0 px-1.5 text-[11px] font-medium">
           +{hiddenBusinessCount}
         </Badge>
       ) : null}

@@ -33,7 +33,7 @@ const baseColumns = [
       return (
         <span
           className={cn(
-            "data-value block text-right font-medium",
+            "tabular-value block text-right font-medium",
             stock === 0 ? "text-destructive" : stock <= 3 ? "text-warning" : "text-foreground",
           )}
         >
@@ -52,7 +52,9 @@ const stagnantColumns = [
     cell: ({ getValue }) => {
       const stagnantDays = getValue();
 
-      return <span className="data-value block text-right font-medium">{formatProductStagnantDays(stagnantDays)}</span>;
+      return (
+        <span className="tabular-value block text-right font-medium">{formatProductStagnantDays(stagnantDays)}</span>
+      );
     },
     enableSorting: false,
   }),
@@ -60,7 +62,7 @@ const stagnantColumns = [
     header: () => <div className="text-center">Estado</div>,
     cell: ({ getValue }) => (
       <div className="text-center">
-        <Badge variant={getValue() ? "success" : "secondary"}>{getValue() ? "Activo" : "Inactivo"}</Badge>
+        <Badge variant={getValue() ? "success" : "destructive"}>{getValue() ? "Activo" : "Inactivo"}</Badge>
       </div>
     ),
     enableSorting: false,

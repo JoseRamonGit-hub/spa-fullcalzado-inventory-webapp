@@ -10,7 +10,7 @@ export const columns = [
   columnHelper.accessor("closed_at", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
-    cell: ({ getValue }) => <span className="data-value font-medium">{formatDate(getValue()) || "—"}</span>,
+    cell: ({ getValue }) => <span className="tabular-value font-medium">{formatDate(getValue()) || "—"}</span>,
   }),
   columnHelper.accessor((cashClose) => cashClose.total_billed_operations ?? cashClose.total_transactions, {
     id: "billed_operations",
@@ -18,22 +18,22 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Operaciones facturadas" className="justify-end" />
     ),
-    cell: ({ getValue }) => <span className="data-value block text-right">{getValue() ?? "—"}</span>,
+    cell: ({ getValue }) => <span className="tabular-value block text-right">{getValue() ?? "—"}</span>,
   }),
   columnHelper.accessor("total_units_sold", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Unidades" className="justify-end" />,
-    cell: ({ getValue }) => <span className="data-value block text-right">{getValue() ?? "—"}</span>,
+    cell: ({ getValue }) => <span className="tabular-value block text-right">{getValue() ?? "—"}</span>,
   }),
   columnHelper.accessor("total_returns", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Devoluciones" className="justify-end" />,
     cell: ({ getValue, row }) => {
       const count = getValue();
-      if (!count) return <span className="data-value text-muted-foreground block text-right">—</span>;
+      if (!count) return <span className="tabular-value text-muted-foreground block text-right">—</span>;
       return (
         <span
-          className="data-value block text-right text-orange-500"
+          className="tabular-value block text-right text-orange-500"
           title={`Crédito: ${formatCurrencyUSD(row.original.total_returns_usd)}`}
         >
           {count}

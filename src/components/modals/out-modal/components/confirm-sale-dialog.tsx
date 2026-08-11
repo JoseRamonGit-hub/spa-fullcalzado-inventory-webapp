@@ -76,7 +76,7 @@ export function ConfirmSaleDialog({
               </td>
               <td className="flex items-baseline justify-between gap-2 p-0 align-middle sm:table-cell sm:text-right">
                 <span className="text-muted-foreground text-[11px] font-medium sm:hidden">Cantidad</span>
-                <span className="data-value font-semibold">{saleLine.quantity}</span>
+                <span className="tabular-value font-semibold">{saleLine.quantity}</span>
               </td>
               <td className="p-0 text-right align-middle whitespace-nowrap sm:table-cell">
                 <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Importe USD</span>

@@ -25,11 +25,11 @@ function BatchActionBadge({ item }: { item: BatchItem }) {
 
 function BatchQuantity({ item }: { item: BatchItem }) {
   if (item.kind === "new") {
-    return <span className="data-value font-medium">{item.initialStock}</span>;
+    return <span className="tabular-value font-medium">{item.initialStock}</span>;
   }
 
   return (
-    <span className="data-value">
+    <span className="tabular-value">
       <span className="text-muted-foreground">{item.currentStock}</span>
       <span className="text-muted-foreground mx-1">→</span>
       <span className="font-medium">{item.currentStock + item.addedQuantity}</span>

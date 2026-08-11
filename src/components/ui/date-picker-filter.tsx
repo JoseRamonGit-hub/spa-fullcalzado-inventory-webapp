@@ -26,6 +26,8 @@ type DatePickerFilterProps = {
   placeholder?: string;
   /** Optional max CSS width for the trigger button  */
   className?: string;
+  /** Optional layout classes for the trigger container. */
+  wrapperClassName?: string;
 };
 
 export function DatePickerFilter({
@@ -33,6 +35,7 @@ export function DatePickerFilter({
   onChange,
   placeholder = "Filtrar por fecha",
   className,
+  wrapperClassName,
 }: DatePickerFilterProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -76,7 +79,7 @@ export function DatePickerFilter({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <div className="relative inline-flex min-w-0">
+      <div className={cn("relative inline-flex min-w-0", wrapperClassName)}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"

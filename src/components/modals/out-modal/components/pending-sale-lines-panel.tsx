@@ -57,7 +57,7 @@ export function PendingSaleLinesPanel({ pendingSaleLines, onRemovePendingSaleLin
                   <TableCell className="max-w-64">
                     <OverflowTooltip className="font-medium">{saleLine.description}</OverflowTooltip>
                   </TableCell>
-                  <TableCell className="data-value text-right font-medium">{saleLine.quantity}</TableCell>
+                  <TableCell className="tabular-value text-right font-medium">{saleLine.quantity}</TableCell>
                   <TableCell className="data-value text-muted-foreground text-right">
                     {formatCurrencyUSD(saleLine.priceUsd)}
                   </TableCell>

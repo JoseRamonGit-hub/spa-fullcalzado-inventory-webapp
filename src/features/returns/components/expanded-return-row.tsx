@@ -79,7 +79,7 @@ export function ExpandedReturnRow({ row }: { row: Row<ReturnWithRelations> }) {
                       </OverflowTooltip>
                     </div>
                   </TableCell>
-                  <TableCell className="data-value text-right font-medium">{movement.quantity}</TableCell>
+                  <TableCell className="tabular-value text-right font-medium">{movement.quantity}</TableCell>
                   <TableCell className="data-value text-right font-medium">
                     {formatCurrencyUSD(movement.totalUsd)}
                   </TableCell>

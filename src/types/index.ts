@@ -5,6 +5,10 @@ export type User = Tables<"users">;
 export type Business = Tables<"businesses">;
 export type UserBusinessAccess = Tables<"user_business_access">;
 export type Product = Tables<"products">;
+export type InventoryProduct = Product & {
+  stagnantSince: string | null;
+  stagnantDays: number | null;
+};
 export type Transaction = Tables<"transactions">;
 export type InventoryMovement = Tables<"inventory_movements">;
 export type CashClose = Tables<"cash_closes">;

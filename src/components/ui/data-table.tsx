@@ -199,6 +199,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
+                      className={header.column.columnDef.meta?.className}
                       aria-sort={
                         header.column.getCanSort()
                           ? header.column.getIsSorted() === "asc"
@@ -257,7 +258,10 @@ export function DataTable<TData, TValue>({
                       }}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="overflow-hidden">
+                        <TableCell
+                          key={cell.id}
+                          className={cn("overflow-hidden", cell.column.columnDef.meta?.className)}
+                        >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}

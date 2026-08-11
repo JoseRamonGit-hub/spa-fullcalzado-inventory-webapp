@@ -77,7 +77,7 @@ export const productHistoryColumns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="data-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
+      <span className="tabular-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("quantity", {
@@ -91,7 +91,7 @@ export const productHistoryColumns = [
       return (
         <span
           className={cn(
-            "data-value block text-right font-medium",
+            "tabular-value block text-right font-medium",
             signedQuantity > 0 ? "text-success" : "text-destructive",
           )}
         >

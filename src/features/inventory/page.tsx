@@ -64,8 +64,15 @@ export function InventoryPage() {
   );
 
   const columns = useMemo(
-    () => getColumns({ exchangeRate: exchangeRateData?.rate, isExchangeRateLoading, isExchangeRateError, isAdmin }),
-    [exchangeRateData?.rate, isAdmin, isExchangeRateError, isExchangeRateLoading],
+    () =>
+      getColumns({
+        exchangeRate: exchangeRateData?.rate,
+        isExchangeRateLoading,
+        isExchangeRateError,
+        isAdmin,
+        showStagnantDays: status === "stagnant",
+      }),
+    [exchangeRateData?.rate, isAdmin, isExchangeRateError, isExchangeRateLoading, status],
   );
 
   return (

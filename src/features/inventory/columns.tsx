@@ -1,13 +1,14 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import type { Product } from "@/types";
+import type { InventoryProduct, Product } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { ProductMaintenanceActions } from "@/features/inventory/components/product-maintenance-actions";
 import { cn } from "@/lib/utils";
+import { formatProductStagnantDays } from "@/features/inventory/product-stagnation";
 
-const columnHelper = createColumnHelper<Product>();
+const columnHelper = createColumnHelper<InventoryProduct>();
 
 export type InventoryTableMeta = {
   onEdit: (product: Product) => void;
@@ -27,6 +28,7 @@ type InventoryColumnsOptions = {
   isExchangeRateLoading: boolean;
   isExchangeRateError: boolean;
   isAdmin: boolean;
+  showStagnantDays: boolean;
 };
 
 function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading, isExchangeRateError }: PriceBsCellProps) {
@@ -60,6 +62,7 @@ export function getColumns({
   isExchangeRateLoading,
   isExchangeRateError,
   isAdmin,
+  showStagnantDays,
 }: InventoryColumnsOptions) {
   const columns = [
     columnHelper.accessor("code", {
@@ -78,7 +81,7 @@ export function getColumns({
       cell: ({ getValue }) => (
         <span
           className={cn(
-            "data-value block text-right font-medium",
+            "tabular-value block text-right font-medium",
             getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground",
           )}
         >
@@ -110,11 +113,26 @@ export function getColumns({
       header: ({ column }) => <DataTableColumnHeader column={column} title="Estado" className="justify-center" />,
       cell: ({ getValue }) => (
         <div className="text-center">
-          <Badge variant={getValue() ? "success" : "secondary"}>{getValue() ? "Activo" : "Inactivo"}</Badge>
+          <Badge variant={getValue() ? "success" : "destructive"}>{getValue() ? "Activo" : "Inactivo"}</Badge>
         </div>
       ),
     }),
-  ] as ColumnDef<Product>[];
+  ] as ColumnDef<InventoryProduct>[];
+
+  if (showStagnantDays) {
+    columns.splice(
+      3,
+      0,
+      columnHelper.accessor("stagnantDays", {
+        enableSorting: true,
+        meta: { className: "bg-warning/10 text-warning-foreground" },
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Sin salida" className="justify-end" />,
+        cell: ({ getValue }) => (
+          <span className="tabular-value block text-right font-semibold">{formatProductStagnantDays(getValue())}</span>
+        ),
+      }),
+    );
+  }
 
   if (isAdmin) {
     columns.push(

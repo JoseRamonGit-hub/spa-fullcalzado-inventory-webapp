@@ -76,12 +76,18 @@ typography:
     fontWeight: 500
     lineHeight: 1
     letterSpacing: "0.05em"
+  operational-label:
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.625rem"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "0.05em"
   data:
-    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 600
     lineHeight: 1
-    letterSpacing: "0.03em"
+    letterSpacing: "0"
 rounded:
   sm: "4px"
   md: "6px"
@@ -167,7 +173,7 @@ La densidad es deliberadamente compacta porque empleados y administradores opera
 - Densidad compacta y ritmo de 4 px, con agrupaciones frecuentes de 8, 12 y 16 px.
 - Lienzo cálido claro dentro de un marco de navegación carbón cacao.
 - Bronce ámbar reservado para acción, selección y datos de alta importancia.
-- Titulares geométricos, cuerpo neutral y cifras monoespaciadas.
+- Titulares geométricos, cuerpo neutral y cifras tabulares.
 - Bordes y capas tonales primero; sombras solo cuando una superficie realmente se eleva.
 - Interacciones directas y estados semánticos inequívocos.
 
@@ -213,9 +219,9 @@ La implementación usa la arquitectura semántica de **shadcn/ui New York sobre 
 
 **Body Font:** Inter (con `ui-sans-serif`, `system-ui`, `sans-serif` como respaldo)
 
-**Data/Mono Font:** JetBrains Mono (con `ui-monospace`, SFMono-Regular, Menlo y Consolas como respaldo)
+**Mono Font:** JetBrains Mono (con `ui-monospace`, SFMono-Regular, Menlo y Consolas como respaldo)
 
-**Character:** Plus Jakarta Sans aporta geometría firme a títulos y métricas; Inter mantiene los flujos densos, las etiquetas compactas y el cuerpo neutral y legible; JetBrains Mono alinea códigos, tasas, importes y atajos. Las familias preferidas están declaradas en los tokens, pero el proyecto no incorpora archivos de fuente ni imports remotos: los respaldos del sistema son parte real del comportamiento actual.
+**Character:** Plus Jakarta Sans aporta geometría firme a títulos y métricas; Inter mantiene los flujos densos, las etiquetas compactas, los valores tabulares y el cuerpo neutral y legible; JetBrains Mono se reserva para códigos y atajos. Las familias preferidas están declaradas en los tokens, pero el proyecto no incorpora archivos de fuente ni imports remotos: los respaldos del sistema son parte real del comportamiento actual.
 
 ### Hierarchy
 
@@ -225,11 +231,12 @@ La implementación usa la arquitectura semántica de **shadcn/ui New York sobre 
 - **Body** (400–500, `0.875rem`, 1.5): contenido, acciones y formularios.
 - **Body Small** (400–600, `0.75rem`, 1.4): apoyo, metadatos y controles compactos.
 - **Label** (500, `0.6875rem`, 0.05em, mayúsculas): etiquetas compactas de formularios y agrupaciones operativas.
-- **Data** (600–700, `0.8125rem`, 0.03em): códigos de producto, tasas, importes y valores tabulares.
+- **Operational Label** (600, `0.625rem`, 0.05em, mayúsculas): cabeceras de tabla y etiquetas del resumen de producto mediante `operational-label`.
+- **Data** (600–700, `0.8125rem`, cifras tabulares): tasas, importes, cantidades y otros valores operativos en Inter.
 
 ### Named Rules
 
-**La Regla del Dato Monoespaciado.** Usa la familia mono solo cuando la alineación o identificación precisa del valor mejora la lectura: códigos, moneda, tasas y atajos de teclado.
+**La Regla del Dato Monoespaciado.** Usa la familia mono únicamente para códigos y atajos de teclado; los valores operativos permanecen en Inter con cifras tabulares.
 
 **La Regla de Jerarquía Corta.** Una vista operativa trabaja principalmente con Title, Body y Body Small. Display y Headline quedan reservados para marca o métricas, no para ampliar títulos rutinarios.
 
@@ -309,9 +316,9 @@ Los componentes son **compactos, claros y seguros**: estados visibles, objetivos
 
 ### Data Tables
 
-- Cabecera sobre Arena Apagada con Label de 11 px, semibold, tracking de 0.05 em y mayúsculas; filas de 30 px, celdas de 13 px y separadores al 40%.
+- Cabecera sobre Arena Apagada con Operational Label de 10 px, semibold, tracking de 0.05 em y mayúsculas; filas de 30 px, celdas de 13 px y separadores al 40%.
 - Alterna un Table Stripe apenas tonal y usa Table Hover para rastrear filas sin introducir tarjetas por registro. El indicador neutro de orden permanece tenue hasta hover o foco; el orden activo conserva contraste completo.
-- Los códigos de producto usan Bronce Ámbar y JetBrains Mono. Fechas, importes, tasas y cantidades usan el rol `data-value`: JetBrains Mono, cifras tabulares y tracking de 0.01 em; heredan el tamaño y el peso de su densidad y jerarquía contextual.
+- Los códigos de producto conservan Bronce Ámbar y JetBrains Mono. Fechas, importes, tasas, stock, cantidades y conteos usan Inter con cifras tabulares mediante `data-value` o `tabular-value`; ambos roles heredan el tamaño y el peso de su densidad y jerarquía contextual. La fuente monoespaciada no se usa para valores ordinarios de las tablas.
 - Centraliza encabezados, celdas, paginación, estados, scroll y affordances de overflow en `DataTable` y `Table`; ningún módulo redefine por su cuenta la anatomía o densidad de una tabla operativa.
 - `Table` y `DataTable` son la autoridad de las densidades `operational` y `compact`; skeletons, contenido y estados vacíos consumen el mismo contrato para evitar saltos de geometría.
 - Usa rótulos completos y estables como `Cantidad`, `Precio USD` y `Bs.`. El texto largo puede truncarse si conserva acceso al contenido completo; códigos, monedas, cantidades y fechas no deben quebrarse.

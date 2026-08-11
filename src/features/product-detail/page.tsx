@@ -78,9 +78,7 @@ type DetailItemProps = {
 function DetailItem({ label, children, valueClassName }: DetailItemProps) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <dt className="text-muted-foreground text-[11px] leading-none font-semibold tracking-[0.05em] uppercase">
-        {label}
-      </dt>
+      <dt className="operational-label text-muted-foreground">{label}</dt>
       <dd
         className={cn(
           "text-foreground flex min-h-5 min-w-0 items-center text-sm leading-tight font-semibold",
@@ -160,7 +158,7 @@ export function ProductDetailPage() {
           <DetailItem label="Código">
             <span className="product-code truncate uppercase">{productQuery.data.product.code}</span>
           </DetailItem>
-          <DetailItem label="Stock actual" valueClassName="data-value font-bold">
+          <DetailItem label="Stock actual" valueClassName="tabular-value font-bold">
             <span
               className={cn(
                 productQuery.data.product.stock === 0
@@ -174,7 +172,7 @@ export function ProductDetailPage() {
             </span>
           </DetailItem>
           <DetailItem label="Sin salida comercial">
-            <span className="data-value whitespace-nowrap">
+            <span className="tabular-value whitespace-nowrap">
               {formatProductStagnantDays(productQuery.data.stagnantDays)}
             </span>
           </DetailItem>
@@ -213,7 +211,7 @@ export function ProductDetailPage() {
 
         <dl className={lifecycleGroupClassName} aria-label="Estado y actividad">
           <DetailItem label="Estado">
-            <Badge variant={productQuery.data.product.active ? "success" : "secondary"}>
+            <Badge variant={productQuery.data.product.active ? "success" : "destructive"}>
               {productQuery.data.product.active ? "Activo" : "Inactivo"}
             </Badge>
           </DetailItem>
@@ -223,7 +221,7 @@ export function ProductDetailPage() {
                 <Badge variant={getMovementTypeInfo(productQuery.data.lastActivity).variant}>
                   {getMovementTypeInfo(productQuery.data.lastActivity).label}
                 </Badge>
-                <span className="data-value text-muted-foreground text-xs font-normal">
+                <span className="tabular-value text-muted-foreground text-xs font-normal">
                   {formatDateTime(productQuery.data.lastActivity.created_at) || "Fecha no disponible"}
                 </span>
               </div>

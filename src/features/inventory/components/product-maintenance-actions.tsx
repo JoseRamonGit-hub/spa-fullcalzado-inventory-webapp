@@ -1,4 +1,4 @@
-import { Boxes, CirclePause, CirclePlay, Pencil } from "lucide-react";
+import { CirclePause, CirclePlay, PackagePlus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,7 @@ export function ProductMaintenanceActions({
           onAdjustStock(product);
         }}
       >
-        <Boxes data-icon="inline-start" aria-hidden="true" />
+        <PackagePlus data-icon="inline-start" aria-hidden="true" />
         {isToolbar ? <span className="hidden md:inline">Ajustar</span> : null}
       </Button>
       <Separator orientation="vertical" className={cn("mx-0.5 h-4", isToolbar && "mx-1 h-5")} />

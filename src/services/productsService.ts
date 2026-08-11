@@ -3,6 +3,7 @@ import type {
   Product,
   ProductCreateInput,
   AdjustProductStockPayload,
+  InventoryProduct,
   ProductDetail,
   ProductStockAlertType,
   UpdateProductCatalogPayload,
@@ -11,7 +12,11 @@ import type {
 const ALL_MATCHING_PRODUCTS_LIMIT = 2_147_483_647;
 
 export const productsService = {
-  getAll: async (businessId: string, date?: string, stockStatus?: ProductStockAlertType): Promise<Product[]> => {
+  getAll: async (
+    businessId: string,
+    date?: string,
+    stockStatus?: ProductStockAlertType,
+  ): Promise<InventoryProduct[]> => {
     if (stockStatus) {
       const { data, error } = await supabase.rpc("get_product_stock_alerts", {
         p_business_id: businessId,
@@ -31,6 +36,8 @@ export const productsService = {
         active: product.active,
         created_at: product.created_at,
         updated_at: product.updated_at,
+        stagnantSince: product.stagnant_since,
+        stagnantDays: product.stagnant_days,
       }));
     }
 
@@ -47,7 +54,7 @@ export const productsService = {
     const { data, error } = await query;
 
     if (error) throw new Error(error.message);
-    return data;
+    return data.map((product) => ({ ...product, stagnantSince: null, stagnantDays: null }));
   },
 
   getDetail: async (businessId: string, productId: string): Promise<ProductDetail | null> => {

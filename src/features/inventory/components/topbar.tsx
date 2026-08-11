@@ -37,7 +37,7 @@ export function Topbar({ search, onSearchChange, date, onDateChange, stockStatus
         </div>
       </div>
 
-      <div className="flex w-full shrink-0 items-center gap-1.5 md:w-auto">
+      <div className="grid w-full shrink-0 grid-cols-2 gap-1.5 md:flex md:w-auto">
         <NativeSelect
           size="sm"
           value={stockStatus ?? ""}
@@ -45,14 +45,20 @@ export function Topbar({ search, onSearchChange, date, onDateChange, stockStatus
             onStockStatusChange((event.target.value || undefined) as ProductStockAlertType | undefined)
           }
           aria-label="Estado de inventario"
-          wrapperClassName="w-full max-w-36"
+          wrapperClassName="min-w-0 w-full md:w-36"
           className={cn(filterControlTextClassName, filterStateClassName(Boolean(stockStatus)))}
         >
           <NativeSelectOption value="">Todos</NativeSelectOption>
           <NativeSelectOption value="low_stock">Stock bajo</NativeSelectOption>
           <NativeSelectOption value="stagnant">Estancado</NativeSelectOption>
         </NativeSelect>
-        <DatePickerFilter value={date} onChange={onDateChange} placeholder="Filtrar por día" />
+        <DatePickerFilter
+          value={date}
+          onChange={onDateChange}
+          placeholder="Filtrar por día"
+          wrapperClassName="w-full md:w-auto"
+          className="w-full md:w-auto"
+        />
       </div>
     </header>
   );

@@ -83,7 +83,7 @@ export function ConfirmBatchDialog({
               <td className="min-w-0 p-0 align-middle">
                 <ModalProductIdentity code={item.code} description={item.description} />
               </td>
-              <td className="data-value p-0 align-middle whitespace-nowrap sm:text-right">
+              <td className="tabular-value p-0 align-middle whitespace-nowrap sm:text-right">
                 <span className="text-muted-foreground mr-1.5 font-sans text-[11px] font-medium sm:hidden">
                   Cantidad
                 </span>

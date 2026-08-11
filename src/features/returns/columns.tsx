@@ -27,11 +27,11 @@ function MovementTotals({ record }: { record: ReturnWithRelations }) {
   return (
     <span className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
       <span>
-        <span className="data-value">{movements.entries}</span> {movements.entries === 1 ? "entrada" : "entradas"}
+        <span className="tabular-value">{movements.entries}</span> {movements.entries === 1 ? "entrada" : "entradas"}
       </span>
       <span aria-hidden="true">·</span>
       <span>
-        <span className="data-value">{movements.exits}</span> {movements.exits === 1 ? "salida" : "salidas"}
+        <span className="tabular-value">{movements.exits}</span> {movements.exits === 1 ? "salida" : "salidas"}
       </span>
     </span>
   );
@@ -67,7 +67,9 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="data-value text-muted-foreground text-xs">{formatDateTime(row.original.created_at) || "—"}</span>
+      <span className="tabular-value text-muted-foreground text-xs">
+        {formatDateTime(row.original.created_at) || "—"}
+      </span>
     ),
   }),
   columnHelper.accessor("type", {

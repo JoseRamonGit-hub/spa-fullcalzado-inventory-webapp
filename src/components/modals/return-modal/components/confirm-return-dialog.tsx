@@ -112,7 +112,7 @@ export function ConfirmReturnDialog({
               </td>
               <td className="p-0 align-middle whitespace-nowrap sm:text-right">
                 <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cantidad</span>
-                <span className="data-value font-semibold">{item.quantity}</span>
+                <span className="tabular-value font-semibold">{item.quantity}</span>
               </td>
               <td className="p-0 text-right align-middle whitespace-nowrap">
                 <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Importe USD</span>
