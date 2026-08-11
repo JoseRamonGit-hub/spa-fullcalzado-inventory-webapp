@@ -27,24 +27,24 @@ type ItemRowProps = {
 function ItemRow({ code, description, quantity, totalUsd, striped, onRemove }: ItemRowProps) {
   return (
     <TableRow className={cn("bg-card hover:bg-muted/30", striped && "bg-table-stripe")}>
-      <TableCell className="px-3 py-1.5">
+      <TableCell>
         <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
           <span className="product-code shrink-0 uppercase">{code}</span>
           <OverflowTooltip className="text-muted-foreground max-w-64">{description}</OverflowTooltip>
         </span>
       </TableCell>
-      <TableCell className="px-3 py-1.5 text-right font-medium tabular-nums">{quantity}</TableCell>
-      <TableCell className="px-3 py-1.5 text-right font-semibold tabular-nums">{formatCurrencyUSD(totalUsd)}</TableCell>
+      <TableCell className="tabular-value text-right font-medium">{quantity}</TableCell>
+      <TableCell className="data-value text-right font-semibold">{formatCurrencyUSD(totalUsd)}</TableCell>
       <TableCell className="w-10 px-1.5 py-1 text-right">
         <Button
           type="button"
           variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive size-7"
+          size="icon-xs"
+          className="text-muted-foreground hover:text-destructive"
           onClick={onRemove}
           aria-label={`Eliminar ${code}`}
         >
-          <Trash2 data-icon="inline-start" />
+          <Trash2 data-icon="inline-start" aria-hidden="true" />
         </Button>
       </TableCell>
     </TableRow>
@@ -54,17 +54,15 @@ function ItemRow({ code, description, quantity, totalUsd, striped, onRemove }: I
 function GroupRow({ count, totalUsd, kind }: { count: number; totalUsd: number; kind: "entry" | "exit" }) {
   return (
     <TableRow className="bg-muted/35 hover:bg-muted/35">
-      <TableCell colSpan={2} className="px-3 py-1.5">
+      <TableCell colSpan={2}>
         <span className="flex items-center gap-2">
           <ReturnMovementBadge kind={kind} />
-          <span className="text-muted-foreground text-[10px] font-medium tabular-nums">
-            {count} {count === 1 ? "producto" : "productos"}
+          <span className="text-muted-foreground text-[11px] font-medium">
+            <span className="tabular-value">{count}</span> {count === 1 ? "producto" : "productos"}
           </span>
         </span>
       </TableCell>
-      <TableCell className="px-3 py-1.5 text-right text-xs font-bold tabular-nums">
-        {formatCurrencyUSD(totalUsd)}
-      </TableCell>
+      <TableCell className="data-value text-right font-bold">{formatCurrencyUSD(totalUsd)}</TableCell>
       <TableCell />
     </TableRow>
   );
@@ -82,7 +80,7 @@ export function ReturnItemsPanel({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground flex flex-col items-center gap-2">
-          <PackageOpen className="size-8 opacity-40" />
+          <PackageOpen className="size-8 opacity-40" aria-hidden="true" />
           <span className="text-sm">Agrega productos de entrada para comenzar.</span>
         </div>
       </div>
@@ -94,12 +92,12 @@ export function ReturnItemsPanel({
 
   return (
     <div className="custom-scrollbar h-full overflow-auto">
-      <Table className="min-w-130 text-xs">
-        <TableHeader className="bg-card sticky top-0">
+      <Table density="compact" className="min-w-130" scrollAreaLabel="Productos de la devolución">
+        <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="bg-muted/20 hover:bg-muted/20">
-            <TableHead className="h-8 px-3">Producto</TableHead>
-            <TableHead className="h-8 w-20 px-3 text-right">Cant.</TableHead>
-            <TableHead className="h-8 w-28 px-3 text-right">Total USD</TableHead>
+            <TableHead>Producto</TableHead>
+            <TableHead className="w-20 text-right">Cantidad</TableHead>
+            <TableHead className="w-28 text-right">Total USD</TableHead>
             <TableHead className="h-8 w-10 px-1.5">
               <span className="sr-only">Acciones</span>
             </TableHead>

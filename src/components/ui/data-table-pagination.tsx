@@ -29,23 +29,21 @@ export function DataTablePagination<TData>({
 
   return (
     <div className="border-border/60 flex shrink-0 items-center justify-between border-t px-3 py-1.5 md:px-4">
-      <p className="text-muted-foreground hidden text-xs tabular-nums sm:block">
-        {from}–{to} de {totalRows}
-      </p>
-
-      <p className="text-muted-foreground text-xs tabular-nums sm:hidden">
-        {from}–{to} / {totalRows}
+      <p className="text-muted-foreground text-xs" aria-live="polite">
+        <span className="tabular-value">{from}</span>–<span className="tabular-value">{to}</span> de{" "}
+        <span className="tabular-value">{totalRows}</span>
       </p>
 
       <div className="flex items-center gap-1.5 md:gap-3">
         {/* Page size selector */}
         <div className="hidden items-center gap-1.5 sm:flex">
-          <span className="text-muted-foreground text-xs">Filas</span>
+          <span className="text-muted-foreground text-xs">Filas por página</span>
           <NativeSelect
             size="sm"
-            className="h-7 py-0 pr-7 pl-2 text-xs"
+            className="py-0 pr-7 pl-2 text-xs"
             value={pageSize}
             onChange={(e) => table.setPageSize(Number(e.target.value))}
+            aria-label="Filas por página"
           >
             {pageSizeOptions.map((size) => (
               <NativeSelectOption key={size} value={size}>
@@ -56,51 +54,50 @@ export function DataTablePagination<TData>({
         </div>
 
         {/* Page indicator */}
-        <span className="text-muted-foreground text-xs tabular-nums">
-          Pág. {pageIndex + 1}/{pageCount || 1}
+        <span className="text-muted-foreground text-xs" aria-current="page">
+          Página <span className="tabular-value">{pageIndex + 1}</span> de{" "}
+          <span className="tabular-value">{pageCount || 1}</span>
         </span>
 
         {/* Navigation buttons */}
         <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"
-            size="sm"
-            className="hidden h-7 w-7 p-0 sm:inline-flex"
+            size="icon-sm"
+            className="hidden sm:inline-flex"
             onClick={() => table.firstPage()}
             disabled={!canPreviousPage}
             aria-label="Primera página"
           >
-            <ChevronsLeft className="h-3.5 w-3.5" />
+            <ChevronsLeft data-icon="inline-start" aria-hidden="true" />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
+            size="icon-sm"
             onClick={() => table.previousPage()}
             disabled={!canPreviousPage}
             aria-label="Página anterior"
           >
-            <ChevronLeft className="h-3.5 w-3.5" />
+            <ChevronLeft data-icon="inline-start" aria-hidden="true" />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
+            size="icon-sm"
             onClick={() => table.nextPage()}
             disabled={!canNextPage}
             aria-label="Página siguiente"
           >
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight data-icon="inline-start" aria-hidden="true" />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
-            className="hidden h-7 w-7 p-0 sm:inline-flex"
+            size="icon-sm"
+            className="hidden sm:inline-flex"
             onClick={() => table.lastPage()}
             disabled={!canNextPage}
             aria-label="Última página"
           >
-            <ChevronsRight className="h-3.5 w-3.5" />
+            <ChevronsRight data-icon="inline-start" aria-hidden="true" />
           </Button>
         </div>
       </div>

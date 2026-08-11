@@ -42,16 +42,6 @@ const dateDisplayFormatter = new Intl.DateTimeFormat(LOCALE_VE, {
   timeZone: TIMEZONE_CCS,
 });
 
-const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE_VE, {
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: true,
-  timeZone: TIMEZONE_CCS,
-});
-
 const timeDisplayFormatter = new Intl.DateTimeFormat(LOCALE_VE, {
   hour: "2-digit",
   minute: "2-digit",
@@ -81,7 +71,7 @@ type DateInput = string | Date | number | null;
  * Returns null if the parsed date is invalid.
  */
 function safelyParseDate(date?: DateInput): Date | null {
-  if (!date) return null;
+  if (date === undefined || date === null || date === "") return null;
   const parsed = new Date(date);
   return isNaN(parsed.getTime()) ? null : parsed;
 }
@@ -112,7 +102,7 @@ export function formatDate(dateInput?: DateInput): string {
 
 export function formatDateTime(dateInput?: DateInput): string {
   const date = safelyParseDate(dateInput);
-  return date ? dateTimeFormatter.format(date) : "";
+  return date ? `${dateDisplayFormatter.format(date)} · ${timeDisplayFormatter.format(date)}` : "";
 }
 
 export function formatTime(dateInput?: DateInput): string {

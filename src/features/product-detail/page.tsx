@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { ArrowLeft, PackageSearch, RotateCcw } from "lucide-react";
+import { ArrowLeft, Ellipsis, PackageSearch, RotateCcw } from "lucide-react";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { EditProductModal } from "@/features/inventory/components/edit-product-m
 import { AdjustProductStockModal } from "@/features/inventory/components/adjust-product-stock-modal";
 import { ToggleStatusModal } from "@/features/inventory/components/toggle-status-modal";
 import { ProductMaintenanceActions } from "@/features/inventory/components/product-maintenance-actions";
+import { MobileActionDrawer } from "@/features/inventory/components/mobile-action-drawer";
 import { formatProductStagnantDays } from "@/features/inventory/product-stagnation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getMovementTypeInfo } from "@/features/movements/movement-presentation";
@@ -23,6 +24,7 @@ import { useProductHistory } from "./hooks/useProductHistory";
 import { getProductHistoryRange, type ProductHistoryPeriod } from "./product-history-filter";
 import { Route } from "@/routes/_app/inventory_.$productId";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatCalendarDateForBackend, formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 
 const summaryGridClassName =
@@ -76,7 +78,7 @@ type DetailItemProps = {
 function DetailItem({ label, children, valueClassName }: DetailItemProps) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <dt className="text-muted-foreground text-[10px] leading-tight font-semibold uppercase">{label}</dt>
+      <dt className="operational-label text-muted-foreground">{label}</dt>
       <dd
         className={cn(
           "text-foreground flex min-h-5 min-w-0 items-center text-sm leading-tight font-semibold",
@@ -96,11 +98,13 @@ export function ProductDetailPage() {
   const businessId = useBusinessStore((state) => state.activeBusinessId);
   const initialBusinessId = useRef(businessId);
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
+  const isMobile = useIsMobile();
   const [historyPeriod, setHistoryPeriod] = useState<ProductHistoryPeriod>("last-30-days");
   const [customHistoryRange, setCustomHistoryRange] = useState<DateRange>();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAdjustStockOpen, setIsAdjustStockOpen] = useState(false);
   const [isToggleStatusOpen, setIsToggleStatusOpen] = useState(false);
+  const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
   const productQuery = useProductDetail(productId);
   const exchangeRateQuery = useExchangeRate();
   const customRange = customHistoryRange?.from
@@ -132,8 +136,103 @@ export function ProductDetailPage() {
 
     navigate({ to: "/inventory" });
   };
-  const isPending = productQuery.isPending || exchangeRateQuery.isPending;
-  const isError = productQuery.isError || exchangeRateQuery.isError;
+  const isPending = productQuery.isPending && !productQuery.data;
+  const isBlockingError = productQuery.isError && !productQuery.data;
+  const historyToolbar = (
+    <div className="flex shrink-0 flex-col items-start gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between md:px-4">
+      <h2 id="product-history-title" className="font-heading text-foreground/75 text-xs font-semibold">
+        Historial de producto
+      </h2>
+      <ProductHistoryPeriodFilter
+        period={historyPeriod}
+        customRange={customHistoryRange}
+        onPeriodChange={setHistoryPeriod}
+        onCustomRangeChange={setCustomHistoryRange}
+      />
+    </div>
+  );
+  const productSummary = productQuery.data ? (
+    <section className="shrink-0 border-b px-3 py-3 md:px-4" aria-label="Resumen del producto">
+      <div className={summaryGridClassName}>
+        <dl className={inventoryGroupClassName} aria-label="Inventario">
+          <DetailItem label="Código">
+            <span className="product-code truncate uppercase">{productQuery.data.product.code}</span>
+          </DetailItem>
+          <DetailItem label="Stock actual" valueClassName="tabular-value font-bold">
+            <span
+              className={cn(
+                productQuery.data.product.stock === 0
+                  ? "text-destructive"
+                  : productQuery.data.product.stock <= 3
+                    ? "text-warning"
+                    : "text-foreground",
+              )}
+            >
+              {productQuery.data.product.stock}
+            </span>
+          </DetailItem>
+          <DetailItem label="Sin salida comercial">
+            <span className="tabular-value whitespace-nowrap">
+              {formatProductStagnantDays(productQuery.data.stagnantDays)}
+            </span>
+          </DetailItem>
+        </dl>
+
+        <dl className={priceGroupClassName} aria-label="Precios">
+          <DetailItem label="Precio USD">
+            <span className="data-value whitespace-nowrap">
+              {formatCurrencyUSD(productQuery.data.product.price_usd)}
+            </span>
+          </DetailItem>
+          <DetailItem label="Precio VES">
+            {exchangeRateQuery.data ? (
+              <span className="data-value whitespace-nowrap">
+                {formatCurrencyVES(productQuery.data.product.price_usd * exchangeRateQuery.data.rate)}
+              </span>
+            ) : exchangeRateQuery.isPending ? (
+              <span className="text-muted-foreground text-sm whitespace-nowrap">Consultando tasa…</span>
+            ) : exchangeRateQuery.isError ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className="text-warning hover:text-warning h-auto px-0"
+                disabled={exchangeRateQuery.isFetching}
+                onClick={() => void exchangeRateQuery.refetch()}
+              >
+                <RotateCcw className={exchangeRateQuery.isFetching ? "animate-spin" : undefined} aria-hidden="true" />
+                {exchangeRateQuery.isFetching ? "Reintentando…" : "Reintentar tasa"}
+              </Button>
+            ) : (
+              <span className="text-warning text-sm whitespace-nowrap">Tasa no disponible</span>
+            )}
+          </DetailItem>
+        </dl>
+
+        <dl className={lifecycleGroupClassName} aria-label="Estado y actividad">
+          <DetailItem label="Estado">
+            <Badge variant={productQuery.data.product.active ? "success" : "destructive"}>
+              {productQuery.data.product.active ? "Activo" : "Inactivo"}
+            </Badge>
+          </DetailItem>
+          <DetailItem label="Última actividad">
+            {productQuery.data.lastActivity ? (
+              <div className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
+                <Badge variant={getMovementTypeInfo(productQuery.data.lastActivity).variant}>
+                  {getMovementTypeInfo(productQuery.data.lastActivity).label}
+                </Badge>
+                <span className="tabular-value text-muted-foreground text-xs font-normal">
+                  {formatDateTime(productQuery.data.lastActivity.created_at) || "Fecha no disponible"}
+                </span>
+              </div>
+            ) : (
+              <span className="text-muted-foreground text-xs font-normal">Sin actividad registrada</span>
+            )}
+          </DetailItem>
+        </dl>
+      </div>
+    </section>
+  ) : null;
 
   return (
     <section className="custom-scrollbar flex min-h-0 flex-1 flex-col overflow-auto">
@@ -147,19 +246,31 @@ export function ProductDetailPage() {
           titleClassName="truncate"
         />
         {isAdmin && productQuery.data ? (
-          <ProductMaintenanceActions
-            product={productQuery.data.product}
-            onEdit={() => setIsEditOpen(true)}
-            onAdjustStock={() => setIsAdjustStockOpen(true)}
-            onToggleStatus={() => setIsToggleStatusOpen(true)}
-            presentation="toolbar"
-          />
+          isMobile ? (
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label={`Abrir acciones del producto ${productQuery.data.product.code}`}
+              title="Acciones del producto"
+              onClick={() => setIsMobileActionsOpen(true)}
+            >
+              <Ellipsis aria-hidden="true" />
+            </Button>
+          ) : (
+            <ProductMaintenanceActions
+              product={productQuery.data.product}
+              onEdit={() => setIsEditOpen(true)}
+              onAdjustStock={() => setIsAdjustStockOpen(true)}
+              onToggleStatus={() => setIsToggleStatusOpen(true)}
+              presentation="toolbar"
+            />
+          )
         ) : null}
       </header>
 
       {isPending ? (
         <DetailSkeleton />
-      ) : isError ? (
+      ) : isBlockingError ? (
         <div className="flex flex-1 items-center justify-center p-6">
           <div className="flex max-w-sm flex-col items-center gap-3 text-center">
             <div className="bg-destructive/10 flex size-11 items-center justify-center rounded-xl">
@@ -184,94 +295,19 @@ export function ProductDetailPage() {
           </div>
         </div>
       ) : productQuery.data ? (
-        <>
-          <section className="shrink-0 border-b px-3 py-3 md:px-4" aria-label="Resumen del producto">
-            <div className={summaryGridClassName}>
-              <dl className={inventoryGroupClassName} aria-label="Inventario">
-                <DetailItem label="Código">
-                  <span className="product-code truncate font-bold uppercase">{productQuery.data.product.code}</span>
-                </DetailItem>
-                <DetailItem
-                  label="Stock actual"
-                  valueClassName="font-heading text-lg leading-none font-bold tabular-nums"
-                >
-                  <span
-                    className={cn(
-                      productQuery.data.product.stock === 0
-                        ? "text-destructive"
-                        : productQuery.data.product.stock <= 3
-                          ? "text-warning"
-                          : "text-foreground",
-                    )}
-                  >
-                    {productQuery.data.product.stock}
-                  </span>
-                </DetailItem>
-                <DetailItem label="Sin salida comercial">
-                  <span className="whitespace-nowrap tabular-nums">
-                    {formatProductStagnantDays(productQuery.data.stagnantDays)}
-                  </span>
-                </DetailItem>
-              </dl>
-
-              <dl className={priceGroupClassName} aria-label="Precios">
-                <DetailItem label="Precio USD">
-                  <span className="whitespace-nowrap tabular-nums">
-                    {formatCurrencyUSD(productQuery.data.product.price_usd)}
-                  </span>
-                </DetailItem>
-                <DetailItem label="Precio VES">
-                  {exchangeRateQuery.data ? (
-                    <span className="whitespace-nowrap tabular-nums">
-                      {formatCurrencyVES(productQuery.data.product.price_usd * exchangeRateQuery.data.rate)}
-                    </span>
-                  ) : (
-                    <span className="text-warning text-sm whitespace-nowrap">Tasa no disponible</span>
-                  )}
-                </DetailItem>
-              </dl>
-
-              <dl className={lifecycleGroupClassName} aria-label="Estado y actividad">
-                <DetailItem label="Estado">
-                  <Badge variant={productQuery.data.product.active ? "success" : "secondary"}>
-                    {productQuery.data.product.active ? "Activo" : "Inactivo"}
-                  </Badge>
-                </DetailItem>
-                <DetailItem label="Última actividad">
-                  {productQuery.data.lastActivity ? (
-                    <div className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
-                      <Badge variant={getMovementTypeInfo(productQuery.data.lastActivity).variant}>
-                        {getMovementTypeInfo(productQuery.data.lastActivity).label}
-                      </Badge>
-                      <span className="text-muted-foreground text-xs font-normal tabular-nums">
-                        {formatDateTime(productQuery.data.lastActivity.created_at) || "Fecha no disponible"}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground text-xs font-normal">Sin actividad registrada</span>
-                  )}
-                </DetailItem>
-              </dl>
-            </div>
-          </section>
-
-          <section className="flex min-h-72 flex-1 flex-col" aria-labelledby="product-history-title">
-            <div className="flex shrink-0 flex-col items-start gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between md:px-4">
-              <h2 id="product-history-title" className="font-heading text-foreground/75 text-xs font-semibold">
-                Historial de producto
-              </h2>
-              <ProductHistoryPeriodFilter
-                period={historyPeriod}
-                customRange={customHistoryRange}
-                onPeriodChange={setHistoryPeriod}
-                onCustomRangeChange={setCustomHistoryRange}
-              />
-            </div>
-            {!historyRange ? (
-              <div className="text-muted-foreground flex flex-1 items-center justify-center p-6 text-center text-sm">
+        <section className="flex min-h-72 flex-1 flex-col" aria-labelledby="product-history-title">
+          {!historyRange ? (
+            <>
+              {productSummary}
+              {historyToolbar}
+              <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center p-6 text-center text-sm">
                 Selecciona una fecha inicial y una fecha final. Ninguna puede ser futura.
               </div>
-            ) : historyQuery.isError ? (
+            </>
+          ) : historyQuery.isError && !historyQuery.data ? (
+            <>
+              {productSummary}
+              {historyToolbar}
               <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
                 <div>
                   <p className="text-sm font-medium">No pudimos cargar el historial del producto</p>
@@ -289,24 +325,30 @@ export function ProductDetailPage() {
                   Reintentar historial
                 </Button>
               </div>
-            ) : (
-              <DataTable
-                key={`${historyPeriod}-${historyRange.startDate ?? ""}-${historyRange.endDate ?? ""}-${historyRange.showAll}`}
-                columns={productHistoryColumns}
-                data={historyQuery.data ?? []}
-                isLoading={historyQuery.isPending}
-                getRowId={(row) => row.id}
-                emptyMessage={
-                  historyPeriod === "all"
-                    ? "Este producto aún no tiene movimientos registrados."
-                    : "No hay movimientos en el período seleccionado."
-                }
-                tableClassName="min-w-[520px] sm:min-w-[640px] [&_tbody_td]:h-auto [&_tbody_td]:py-1 sm:[&_tbody_td]:h-[30px] sm:[&_tbody_td]:py-0"
-                scrollAreaLabel="Tabla de historial con desplazamiento horizontal"
-              />
-            )}
-          </section>
-        </>
+            </>
+          ) : (
+            <DataTable
+              key={`${historyPeriod}-${historyRange.startDate ?? ""}-${historyRange.endDate ?? ""}-${historyRange.showAll}`}
+              columns={productHistoryColumns}
+              data={historyQuery.data ?? []}
+              isLoading={historyQuery.isPending}
+              getRowId={(row) => row.id}
+              emptyMessage={
+                historyPeriod === "all"
+                  ? "Este producto aún no tiene movimientos registrados."
+                  : "No hay movimientos en el período seleccionado."
+              }
+              scrollAreaHeader={
+                <>
+                  {productSummary}
+                  {historyToolbar}
+                </>
+              }
+              tableClassName="min-w-[640px]"
+              scrollAreaLabel="Historial del producto"
+            />
+          )}
+        </section>
       ) : (
         <DetailSkeleton />
       )}
@@ -328,6 +370,27 @@ export function ProductDetailPage() {
           open={isAdjustStockOpen}
           onOpenChange={setIsAdjustStockOpen}
           product={productQuery.data.product}
+        />
+      ) : null}
+
+      {productQuery.data ? (
+        <MobileActionDrawer
+          product={isMobileActionsOpen ? productQuery.data.product : null}
+          isAdmin={isAdmin}
+          onClose={() => setIsMobileActionsOpen(false)}
+          onEdit={() => {
+            setIsMobileActionsOpen(false);
+            setIsEditOpen(true);
+          }}
+          onAdjustStock={() => {
+            setIsMobileActionsOpen(false);
+            setIsAdjustStockOpen(true);
+          }}
+          onToggleStatus={() => {
+            setIsMobileActionsOpen(false);
+            setIsToggleStatusOpen(true);
+          }}
+          showViewDetail={false}
         />
       ) : null}
     </section>

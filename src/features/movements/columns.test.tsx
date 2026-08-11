@@ -15,9 +15,9 @@ describe("movement status presentation", () => {
     });
   });
 
-  it("presents deactivations as neutral product-state events", () => {
+  it("presents deactivations as destructive product-state events", () => {
     expect(getMovementTypeInfo(statusMovement("deactivation"))).toMatchObject({
-      variant: "secondary",
+      variant: "destructive",
       label: "Desactivación",
       title: "Producto desactivado",
     });

@@ -39,7 +39,7 @@ export function getMovementTypeInfo(movement: Pick<InventoryMovement, "type" | "
 
   if (type === "deactivation") {
     return {
-      variant: "secondary" as const,
+      variant: "destructive" as const,
       label: "Desactivación",
       title: "Producto desactivado",
     };

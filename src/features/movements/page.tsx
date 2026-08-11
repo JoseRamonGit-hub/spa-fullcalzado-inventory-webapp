@@ -13,35 +13,24 @@ export function MovementsPage() {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const { data: movements, isLoading, isError } = useMovements(date);
-
-  function renderContent() {
-    if (isLoading) {
-      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" />;
-    }
-
-    if (isError) {
-      return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar los movimientos.</p>
-        </div>
-      );
-    }
-
-    return (
-      <DataTable
-        columns={columns}
-        data={movements || []}
-        getRowId={(row) => row.id}
-        emptyMessage="No hay movimientos registrados."
-      />
-    );
-  }
+  const { data: movements, isLoading, isError, isFetching, refetch } = useMovements(date);
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
       <Topbar date={date} onDateChange={setDate} />
-      {renderContent()}
+      <DataTable
+        columns={columns}
+        data={movements || []}
+        isLoading={isLoading}
+        errorState={
+          isError && !movements
+            ? { title: "No pudimos cargar los movimientos", onRetry: refetch, isRetrying: isFetching }
+            : undefined
+        }
+        getRowId={(row) => row.id}
+        emptyMessage={date ? "No hay movimientos registrados para esta fecha." : "No hay movimientos registrados."}
+        scrollAreaLabel="Movimientos de inventario"
+      />
     </section>
   );
 }

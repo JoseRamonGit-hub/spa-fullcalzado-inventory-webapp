@@ -17,7 +17,7 @@ export function TransactionsPage() {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const { data: transactions, isLoading, isError } = useTransactions(date);
+  const { data: transactions, isLoading, isError, isFetching, refetch } = useTransactions(date);
   const {
     data: todayTransactions,
     isLoading: isTodayTransactionsLoading,
@@ -38,7 +38,9 @@ export function TransactionsPage() {
     if (isSummaryError) {
       return (
         <div className="border-b px-3 py-3 md:px-4">
-          <p className="text-destructive text-sm">No se pudo calcular el resumen del período.</p>
+          <p className="text-destructive text-sm">
+            No pudimos calcular el resumen. Recarga la página para intentarlo de nuevo.
+          </p>
         </div>
       );
     }
@@ -47,29 +49,20 @@ export function TransactionsPage() {
   }
 
   function renderContent() {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-0 flex-1 flex-col">
-          <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
-        </div>
-      );
-    }
-
-    if (isError) {
-      return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar las ventas.</p>
-        </div>
-      );
-    }
-
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <DataTable
           columns={columns}
           data={transactions || []}
+          isLoading={isLoading}
+          errorState={
+            isError && !transactions
+              ? { title: "No pudimos cargar las ventas", onRetry: refetch, isRetrying: isFetching }
+              : undefined
+          }
           getRowId={(row) => row.id}
           emptyMessage={date ? "No hay ventas registradas para esta fecha." : "No hay ventas en los últimos 30 días."}
+          scrollAreaLabel="Ventas"
         />
       </div>
     );

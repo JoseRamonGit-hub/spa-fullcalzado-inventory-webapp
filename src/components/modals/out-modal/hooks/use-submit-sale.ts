@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateSale } from "@/features/transactions/hooks/useTransactionMutations";
 import type { PendingSaleLine } from "../types";
+import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
 
 type SubmitSaleOptions = {
   pendingSaleLines: PendingSaleLine[];
@@ -41,7 +42,7 @@ export function useSubmitSale({
     toast.promise(salePromise, {
       loading: `Registrando venta con ${lineLabel}...`,
       success: "Venta registrada correctamente",
-      error: "Error al registrar la venta",
+      error: MODAL_SUBMISSION_ERROR_MESSAGES.sale,
     });
 
     await salePromise;

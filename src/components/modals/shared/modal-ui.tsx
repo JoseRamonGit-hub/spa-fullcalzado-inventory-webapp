@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, useState, type ComponentProps, type ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +20,9 @@ type ModalConfirmDialogProps = {
   title: string;
   description: ReactNode;
   confirmLabel: string;
+  cancelLabel?: string;
   pendingLabel: string;
+  submissionErrorMessage: string;
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
   contentClassName?: string;
@@ -32,6 +34,13 @@ type ConfirmDialogSectionProps = {
   children: ReactNode;
   className?: string;
 };
+
+type ConfirmDialogLineTableProps = {
+  header: ReactNode;
+  children: ReactNode;
+};
+
+type ConfirmDialogLineRowProps = ComponentProps<"tr">;
 
 type ModalProductIdentityProps = {
   code: string;
@@ -56,16 +65,37 @@ export function ModalConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = "Cancelar",
   pendingLabel,
+  submissionErrorMessage,
   isSubmissionPending,
   onConfirmSubmit,
   contentClassName,
   confirmDisabled = false,
   children,
 }: ModalConfirmDialogProps) {
+  const [visibleSubmissionError, setVisibleSubmissionError] = useState<string | null>(null);
+  const submissionLockRef = useRef(false);
+
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen && isSubmissionPending) return;
+    if (!nextOpen && (isSubmissionPending || submissionLockRef.current)) return;
+    if (!nextOpen) setVisibleSubmissionError(null);
     onOpenChange(nextOpen);
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (submissionLockRef.current) return;
+
+    submissionLockRef.current = true;
+    setVisibleSubmissionError(null);
+
+    try {
+      await onConfirmSubmit();
+    } catch {
+      setVisibleSubmissionError(submissionErrorMessage);
+    } finally {
+      submissionLockRef.current = false;
+    }
   };
 
   return (
@@ -79,17 +109,26 @@ export function ModalConfirmDialog({
           <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
         </AlertDialogHeader>
 
+        {visibleSubmissionError && (
+          <div
+            role="alert"
+            className="border-destructive/30 bg-destructive/8 text-destructive rounded-md border px-3 py-2 text-xs font-medium"
+          >
+            {visibleSubmissionError}
+          </div>
+        )}
+
         {children}
 
         <AlertDialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
           <AlertDialogCancel className="w-full sm:w-auto" disabled={isSubmissionPending}>
-            Cancelar
+            {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
             className="w-full sm:w-auto"
             onClick={(event) => {
               event.preventDefault();
-              void onConfirmSubmit();
+              void handleConfirmSubmit();
             }}
             disabled={isSubmissionPending || confirmDisabled}
           >
@@ -103,7 +142,37 @@ export function ModalConfirmDialog({
 
 export function ConfirmDialogTableSection({ children, className }: ConfirmDialogSectionProps) {
   return (
-    <section className={cn("custom-scrollbar overflow-auto rounded-md border text-xs", className)}>{children}</section>
+    <section
+      className={cn(
+        "custom-scrollbar [&_thead]:bg-muted/95 overflow-auto rounded-md border text-xs sm:[&_td]:px-3 sm:[&_td]:py-2 [&_th]:py-1.5 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10",
+        className,
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
+export function ConfirmDialogLineTable({ header, children }: ConfirmDialogLineTableProps) {
+  return (
+    <table className="w-full">
+      <thead className="hidden sm:table-header-group">
+        <tr className="text-muted-foreground border-b">{header}</tr>
+      </thead>
+      <tbody className="divide-border/60 divide-y">{children}</tbody>
+    </table>
+  );
+}
+
+export function ConfirmDialogLineRow({ className, ...props }: ConfirmDialogLineRowProps) {
+  return (
+    <tr
+      className={cn(
+        "bg-card grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 px-3 py-2 sm:table-row sm:px-0 sm:py-0",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

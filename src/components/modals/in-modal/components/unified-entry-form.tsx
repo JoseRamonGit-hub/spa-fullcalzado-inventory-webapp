@@ -239,6 +239,7 @@ export function UnifiedEntryForm({ pendingBatchItems, onAddPendingBatchItem }: U
               <field.NumberField
                 label="Cantidad a ingresar"
                 compact
+                hideErrorMessage
                 min={String(MIN_QUANTITY)}
                 step="1"
                 placeholder="0"

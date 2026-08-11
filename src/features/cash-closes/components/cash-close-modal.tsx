@@ -73,9 +73,9 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
 
         {hasReturns && (
           <>
-            <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-orange-500/25">
+            <div className="border-refund/25 bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
               <div className="bg-card col-span-2 flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="flex items-center gap-1 text-[10px] font-medium tracking-wider text-orange-500 uppercase">
+                <span className="text-refund flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
                   <IterationCcw className="h-3 w-3" aria-hidden="true" /> Devoluciones ({metrics.returnsCount})
                 </span>
               </div>
@@ -83,7 +83,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
                 <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
                   <DollarSign className="h-3 w-3" aria-hidden="true" /> Crédito USD
                 </span>
-                <span className="text-sm font-bold text-orange-500 tabular-nums">
+                <span className="text-refund text-sm font-bold tabular-nums">
                   {formatCurrencyUSD(metrics.returnsCreditUsd)}
                 </span>
               </div>
@@ -91,7 +91,7 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
                 <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
                   <Banknote className="h-3 w-3" aria-hidden="true" /> Crédito Bs.
                 </span>
-                <span className="text-sm font-bold text-orange-500 tabular-nums">
+                <span className="text-refund text-sm font-bold tabular-nums">
                   {formatCurrencyVES(metrics.returnsCreditVes)}
                 </span>
               </div>
@@ -114,12 +114,9 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           </>
         )}
 
-        <div className="flex items-start gap-2.5 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5">
-          <AlertTriangle
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400"
-            aria-hidden="true"
-          />
-          <p className="text-muted-foreground text-[11px] leading-relaxed">
+        <div className="border-warning/25 bg-warning/8 flex items-start gap-2.5 rounded-lg border px-3 py-2.5">
+          <AlertTriangle className="text-warning-foreground mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <p className="text-warning-foreground/80 text-[11px] leading-relaxed">
             Una vez confirmado, no se puede deshacer. Asegúrate de que todas las ventas y devoluciones del día están
             registradas.
           </p>

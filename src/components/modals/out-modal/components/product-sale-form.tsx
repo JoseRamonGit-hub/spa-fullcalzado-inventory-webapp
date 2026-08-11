@@ -115,6 +115,7 @@ export function ProductSaleForm({ exchangeRate, onAddPendingSaleLine }: ProductS
                     <field.NumberField
                       label="Cantidad"
                       compact
+                      hideErrorMessage
                       min={String(MINIMUM_PRODUCT_QUANTITY)}
                       max={selectedProduct?.stock}
                       step="1"

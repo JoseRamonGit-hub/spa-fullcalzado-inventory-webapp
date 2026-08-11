@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateReturn } from "@/features/returns/hooks/useReturnMutations";
 import type { PendingReturnItem, PendingExchangeItem } from "../types";
+import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
 
 type UseSubmitReturnProps = {
   returnItems: readonly PendingReturnItem[];
@@ -57,7 +58,8 @@ export function useSubmitReturn({
     toast.promise(returnPromise, {
       loading: `Registrando ${label}...`,
       success: `${label.charAt(0).toUpperCase() + label.slice(1)} registrado correctamente`,
-      error: (err: Error) => err.message || `Error al registrar el ${label}`,
+      error:
+        returnType === "exchange" ? MODAL_SUBMISSION_ERROR_MESSAGES.exchange : MODAL_SUBMISSION_ERROR_MESSAGES.refund,
     });
 
     await returnPromise;

@@ -31,7 +31,8 @@ export function Topbar({ search, totalUsers, onSearchChange, onCreateUser }: Top
         <div className="bg-card rounded-md">
           <InputGroup className="h-8">
             <InputGroupInput
-              placeholder="Buscar por nombre, correo o negocio..."
+              placeholder="Buscar por nombre, correo o negocio…"
+              aria-label="Buscar usuarios por nombre, correo o negocio"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               className="border-0 text-sm md:text-xs"

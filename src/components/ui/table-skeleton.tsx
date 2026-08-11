@@ -1,9 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { TableRow, TableCell } from "@/components/ui/table";
+import { TableRow, TableCell, type TableDensity } from "@/components/ui/table";
 
 type TableSkeletonProps = {
   columnCount: number;
   rowCount?: number;
+  density?: Extract<TableDensity, "operational" | "compact">;
 };
 
 // Width patterns to organically simulate real data columns
@@ -30,14 +31,20 @@ function getWidth(colIndex: number, columnCount: number): string {
   return widthPatterns[colIndex] || widthPatterns[colIndex % widthPatterns.length];
 }
 
-export function TableSkeleton({ columnCount, rowCount = 8 }: TableSkeletonProps) {
+export function TableSkeleton({ columnCount, rowCount = 8, density = "operational" }: TableSkeletonProps) {
   return (
     <>
       {Array.from({ length: rowCount }).map((_, rowIndex) => (
-        <TableRow key={rowIndex} className={`border-border/40 border-b ${rowIndex % 2 === 1 ? "bg-table-stripe" : ""}`}>
+        <TableRow
+          key={rowIndex}
+          aria-hidden="true"
+          className={`border-border/40 border-b ${rowIndex % 2 === 1 ? "bg-table-stripe" : ""}`}
+        >
           {Array.from({ length: columnCount }).map((_, colIndex) => (
-            <TableCell key={colIndex} className="px-2.5 py-1 whitespace-nowrap">
-              <Skeleton className={`h-4 rounded ${getWidth(colIndex, columnCount)}`} />
+            <TableCell key={colIndex}>
+              <Skeleton
+                className={`${density === "compact" ? "h-3" : "h-4"} rounded ${getWidth(colIndex, columnCount)}`}
+              />
             </TableCell>
           ))}
         </TableRow>

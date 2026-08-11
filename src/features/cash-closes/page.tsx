@@ -31,7 +31,7 @@ export function CashClosesPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const isFiltered = !!date;
 
-  const { data: cashCloses, isLoading, isError } = useCashCloses(date);
+  const { data: cashCloses, isLoading, isError, isFetching, refetch } = useCashCloses(date);
   const { data: cashCloseSummary, isLoading: isMetricsLoading, isError: hasMetricsError } = useCashCloseSummary(date);
   const closeMutation = useGenerateCashClose();
   const user = useAuthStore((s) => s.user);
@@ -76,10 +76,10 @@ export function CashClosesPage() {
       return <MetricsSkeleton count={4} />;
     }
 
-    if (hasMetricsError) {
+    if (hasMetricsError && !cashCloseSummary) {
       return (
         <div className="border-b px-3 py-3 md:px-4">
-          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+          <div className="border-warning/30 bg-warning/10 text-warning-foreground rounded-md border px-3 py-2 text-sm">
             {metricsErrorMessage}
           </div>
         </div>
@@ -99,26 +99,24 @@ export function CashClosesPage() {
   }
 
   function renderContent() {
-    if (isLoading) {
-      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" />;
-    }
-
-    if (isError) {
-      return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar los cierres de caja.</p>
-        </div>
-      );
-    }
-
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <DataTable
           columns={columns}
           data={cashCloses || []}
+          isLoading={isLoading}
+          errorState={
+            isError && !cashCloses
+              ? { title: "No pudimos cargar los cierres de caja", onRetry: refetch, isRetrying: isFetching }
+              : undefined
+          }
           getRowId={(row) => row.id}
-          emptyMessage="No hay cierres de caja registrados."
+          emptyMessage={
+            date ? "No hay cierres de caja registrados para esta fecha." : "No hay cierres de caja registrados."
+          }
           onRowClick={handleRowClick}
+          getRowAriaLabel={(row) => `Ver ventas del cierre del ${formatDate(row.date + "T12:00:00")}`}
+          scrollAreaLabel="Cierres de caja"
         />
       </div>
     );

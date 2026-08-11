@@ -3,6 +3,7 @@ import { useCreateManyProducts } from "@/features/inventory/hooks/useProductMuta
 import { useCreateManyMovements } from "@/features/movements/hooks/useMovementMutations";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { isExistingBatchItem, isNewBatchItem, type BatchItem } from "../types";
+import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
 
 type UseSubmitBatchProps = {
   pendingBatchItems: BatchItem[];
@@ -50,13 +51,13 @@ export function useSubmitBatch({ pendingBatchItems, clearPendingBatchItems, onSu
     }
 
     const totalItemsCount = pendingBatchItems.length;
-    const isMultipleItems = totalItemsCount > 1;
+    const isMultipleProducts = totalItemsCount > 1;
     const batchPromises = Promise.all(batchOperations);
 
     toast.promise(batchPromises, {
-      loading: `Procesando ${totalItemsCount} item${isMultipleItems ? "s" : ""}...`,
-      success: `${totalItemsCount} item${isMultipleItems ? "s" : ""} cargado${isMultipleItems ? "s" : ""} correctamente`,
-      error: "Error al procesar el lote",
+      loading: `Cargando ${totalItemsCount} producto${isMultipleProducts ? "s" : ""}...`,
+      success: `${totalItemsCount} producto${isMultipleProducts ? "s" : ""} cargado${isMultipleProducts ? "s" : ""} correctamente`,
+      error: MODAL_SUBMISSION_ERROR_MESSAGES.inventoryLoad,
     });
 
     await batchPromises;

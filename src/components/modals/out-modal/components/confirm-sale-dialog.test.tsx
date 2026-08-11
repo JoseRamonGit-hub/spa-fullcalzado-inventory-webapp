@@ -89,7 +89,7 @@ describe("ConfirmSaleDialog", () => {
     useBusinessStore.setState({ userId: USER_ID, activeBusinessId: BUSINESS_ID });
   });
 
-  it("presenta varios Productos como Renglones de una sola Venta", () => {
+  it("presenta varios productos como renglones de venta", () => {
     render(
       <ConfirmSaleDialog
         isOpen
@@ -112,7 +112,7 @@ describe("ConfirmSaleDialog", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Confirmar venta" })).toBeInTheDocument();
-    expect(screen.getByText("2 Renglones de venta")).toBeInTheDocument();
+    expect(screen.getByText("2 renglones de venta")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Registrar venta" })).toBeInTheDocument();
   });
 });

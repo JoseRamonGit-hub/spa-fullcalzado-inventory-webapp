@@ -6,7 +6,9 @@ function makeSummary(overrides: Partial<ReturnSummary> = {}): ReturnSummary {
   return {
     returnType: "exchange",
     creditUsd: 40,
+    creditVes: 3_510,
     newPurchaseUsd: 60,
+    newPurchaseVes: 5_265,
     differenceUsd: 20,
     differenceVes: 1_755,
     ...overrides,
@@ -22,11 +24,12 @@ describe("getReturnPresentation", () => {
     expect(presentation.differenceClassName).toBe("text-success");
   });
 
-  it("muestra diferencia negativa en rojo cuando paga la tienda", () => {
+  it("muestra el importe absoluto en rojo cuando paga la tienda", () => {
     const presentation = getReturnPresentation(makeSummary({ differenceUsd: -15, differenceVes: -1_316.25 }), true);
 
     expect(presentation.outcomeLabel).toBe("Tienda devuelve");
-    expect(presentation.differenceUsd).toBe(-15);
+    expect(presentation.differenceUsd).toBe(15);
+    expect(presentation.differenceVes).toBe(1_316.25);
     expect(presentation.differenceClassName).toBe("text-destructive");
   });
 

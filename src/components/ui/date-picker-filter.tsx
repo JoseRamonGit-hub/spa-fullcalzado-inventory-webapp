@@ -26,6 +26,8 @@ type DatePickerFilterProps = {
   placeholder?: string;
   /** Optional max CSS width for the trigger button  */
   className?: string;
+  /** Optional layout classes for the trigger container. */
+  wrapperClassName?: string;
 };
 
 export function DatePickerFilter({
@@ -33,15 +35,27 @@ export function DatePickerFilter({
   onChange,
   placeholder = "Filtrar por fecha",
   className,
+  wrapperClassName,
 }: DatePickerFilterProps) {
   const [open, setOpen] = React.useState(false);
 
   /** Convert stored YYYY-MM-DD string back to a Date for the calendar. */
   const selected = React.useMemo(() => {
     if (!value) return undefined;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+
     // Parse as local date to avoid UTC off-by-one shifts
     const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
+    if (year < 1900) return undefined;
+
+    const date = new Date(year, month - 1, day);
+    const isValidDate =
+      !Number.isNaN(date.getTime()) &&
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day;
+
+    return isValidDate ? date : undefined;
   }, [value]);
 
   const handleSelect = (date: Date | undefined) => {
@@ -54,34 +68,41 @@ export function DatePickerFilter({
     setOpen(false);
   };
 
-  const handleReset = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleReset = () => {
     onChange(undefined);
   };
 
   const displayLabel = selected ? format(selected, "d MMM, yyyy", { locale: es }) : placeholder;
+  const triggerLabel = selected
+    ? `Cambiar fecha. Fecha seleccionada: ${displayLabel}`
+    : `${placeholder}. Seleccionar fecha`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(filterTriggerClassName, filterStateClassName(Boolean(value)), className)}
-        >
-          <CalendarDays className={filterIconClassName(Boolean(value))} />
-          <span className="truncate">{displayLabel}</span>
-          {value && (
-            <span
-              role="button"
-              aria-label="Limpiar filtro de fecha"
-              onClick={handleReset}
-              className="text-muted-foreground hover:text-foreground hover:bg-accent ml-0.5 cursor-pointer rounded-sm p-0.5 transition-colors"
-            >
-              <X className="h-3 w-3" />
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
+      <div className={cn("relative inline-flex min-w-0", wrapperClassName)}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(filterTriggerClassName, value && "pe-9", filterStateClassName(Boolean(value)), className)}
+            aria-label={triggerLabel}
+          >
+            <CalendarDays data-icon="inline-start" className={filterIconClassName(Boolean(value))} aria-hidden="true" />
+            <span className="truncate">{displayLabel}</span>
+          </Button>
+        </PopoverTrigger>
+        {value ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground hover:text-foreground absolute end-0.5 top-1/2 -translate-y-1/2"
+            aria-label="Limpiar filtro de fecha"
+            onClick={handleReset}
+          >
+            <X data-icon="inline-start" aria-hidden="true" />
+          </Button>
+        ) : null}
+      </div>
       <PopoverContent className="bg-card w-auto p-0 shadow-lg" align="end" sideOffset={6}>
         <div className="flex flex-col">
           <Calendar
@@ -108,7 +129,7 @@ export function DatePickerFilter({
                   setOpen(false);
                 }}
               >
-                <X className="mr-1.5 h-3 w-3" />
+                <X data-icon="inline-start" aria-hidden="true" />
                 Limpiar filtro
               </Button>
             </div>

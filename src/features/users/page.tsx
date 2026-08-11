@@ -50,7 +50,8 @@ export function UsersPage() {
   const businesses = businessesQuery.data ?? [];
   const filteredUsers = filterUsers(usersQuery.data ?? [], businesses, search);
   const isLoading = usersQuery.isLoading || businessesQuery.isLoading;
-  const isError = usersQuery.isError || businessesQuery.isError;
+  const isBlockingError =
+    (usersQuery.isError && !usersQuery.data) || (businessesQuery.isError && !businessesQuery.data);
   const isSaving = createUser.isPending || updateUser.isPending;
 
   const openCreateModal = () => {
@@ -72,22 +73,29 @@ export function UsersPage() {
         onCreateUser={openCreateModal}
       />
 
-      {isLoading ? (
-        <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
-      ) : isError ? (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar los usuarios.</p>
-        </div>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={filteredUsers}
-          emptyMessage={search.trim() ? "No se encontraron usuarios." : "No hay usuarios registrados."}
-          onRowClick={openEditModal}
-          meta={{ businesses, onEdit: openEditModal }}
-          getRowId={(row) => row.id}
-        />
-      )}
+      <DataTable
+        columns={columns}
+        data={filteredUsers}
+        isLoading={isLoading}
+        errorState={
+          isBlockingError
+            ? {
+                title: "No pudimos cargar los usuarios",
+                onRetry: () => Promise.all([usersQuery.refetch(), businessesQuery.refetch()]),
+                isRetrying: usersQuery.isFetching || businessesQuery.isFetching,
+              }
+            : undefined
+        }
+        emptyMessage={
+          search.trim() ? "No se encontraron usuarios que coincidan con la búsqueda." : "No hay usuarios registrados."
+        }
+        onRowClick={openEditModal}
+        getRowAriaLabel={(user) => `Editar usuario ${user.fullname}`}
+        meta={{ businesses, onEdit: openEditModal }}
+        getRowId={(row) => row.id}
+        tableClassName="min-w-[64rem]"
+        scrollAreaLabel="Usuarios"
+      />
 
       {isFormOpen ? (
         <UserFormModal

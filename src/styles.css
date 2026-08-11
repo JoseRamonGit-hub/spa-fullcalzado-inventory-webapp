@@ -132,8 +132,8 @@
   --bottombar-height: 3.5rem;
 
   /* ── Zebra / table ── */
-  --table-stripe: oklch(0.95 0.008 75);
-  --table-hover: oklch(0.935 0.018 55);
+  --table-stripe: oklch(0.975 0.004 75);
+  --table-hover: oklch(0.95 0.01 75);
 }
 
 /* ─── Dark theme ────────────────────────────────────────────── */
@@ -179,8 +179,8 @@
   --sidebar-accent-foreground: oklch(0.9 0.006 75);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.68 0.16 55);
-  --table-stripe: oklch(0.155 0.014 55);
-  --table-hover: oklch(0.2 0.02 55);
+  --table-stripe: oklch(0.16 0.012 55);
+  --table-hover: oklch(0.19 0.015 55);
 }
 
 /* ─── Base layer ────────────────────────────────────────────── */
@@ -226,6 +226,22 @@
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     letter-spacing: 0.03em;
+  }
+
+  .data-value {
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: normal;
+  }
+
+  .tabular-value {
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: normal;
+  }
+
+  .operational-label {
+    @apply text-[10px] leading-none font-semibold tracking-[0.05em] uppercase;
   }
 
   .tabular-nums {

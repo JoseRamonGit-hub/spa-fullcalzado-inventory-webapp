@@ -21,8 +21,10 @@ export function PendingSaleLinesPanel({ pendingSaleLines, onRemovePendingSaleLin
     >
       <header className="bg-muted/35 border-b px-3 py-2">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-muted-foreground text-[10px] font-semibold uppercase">Venta en curso</h3>
-          <span className="text-muted-foreground text-xs tabular-nums">
+          <h3 className="text-muted-foreground text-[11px] leading-none font-semibold tracking-[0.05em] uppercase">
+            Venta en curso
+          </h3>
+          <span className="text-muted-foreground text-xs">
             {hasPendingSaleLines
               ? `${pendingSaleLineCount} producto${pendingSaleLineCount === 1 ? "" : "s"}`
               : "Sin productos"}
@@ -32,47 +34,38 @@ export function PendingSaleLinesPanel({ pendingSaleLines, onRemovePendingSaleLin
 
       {hasPendingSaleLines ? (
         <div className="custom-scrollbar min-h-0 flex-1 overflow-auto">
-          <Table className="min-w-[42rem] text-xs">
+          <Table density="compact" className="min-w-[42rem]" scrollAreaLabel="Productos de la venta en curso">
             <TableHeader className="bg-muted/20 sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-48 px-2 md:hidden">Producto</TableHead>
-                <TableHead className="hidden px-2 md:table-cell">Código</TableHead>
-                <TableHead className="hidden px-2 md:table-cell">Descripción</TableHead>
-                <TableHead className="px-2 text-right">Cant.</TableHead>
-                <TableHead className="hidden px-2 text-right md:table-cell">P. Unit.</TableHead>
-                <TableHead className="px-2 text-right">Total USD</TableHead>
-                <TableHead className="px-2 text-right">Total Bs.</TableHead>
-                <TableHead className="px-2 text-right md:hidden">P. Unit.</TableHead>
-                <TableHead className="h-7 w-8 px-1" />
+                <TableHead>Código</TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead className="text-right">Cantidad</TableHead>
+                <TableHead className="text-right">Precio unitario USD</TableHead>
+                <TableHead className="text-right">Total USD</TableHead>
+                <TableHead className="text-right">Total Bs.</TableHead>
+                <TableHead className="h-7 w-8 px-1">
+                  <span className="sr-only">Acciones</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {pendingSaleLines.map((saleLine) => (
                 <TableRow key={saleLine.tempId} className="hover:bg-muted/25">
-                  <TableCell className="max-w-48 px-2 py-1.5 md:hidden">
-                    <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
-                      <span className="product-code shrink-0 uppercase">{saleLine.code}</span>
-                      <OverflowTooltip className="flex-1 font-medium">{saleLine.description}</OverflowTooltip>
-                    </span>
-                  </TableCell>
-                  <TableCell className="hidden px-2 py-1.5 md:table-cell">
+                  <TableCell>
                     <span className="product-code uppercase">{saleLine.code}</span>
                   </TableCell>
-                  <TableCell className="hidden max-w-64 px-2 py-1.5 md:table-cell">
+                  <TableCell className="max-w-64">
                     <OverflowTooltip className="font-medium">{saleLine.description}</OverflowTooltip>
                   </TableCell>
-                  <TableCell className="px-2 py-1.5 text-right font-medium tabular-nums">{saleLine.quantity}</TableCell>
-                  <TableCell className="text-muted-foreground hidden px-2 py-1.5 text-right tabular-nums md:table-cell">
+                  <TableCell className="tabular-value text-right font-medium">{saleLine.quantity}</TableCell>
+                  <TableCell className="data-value text-muted-foreground text-right">
                     {formatCurrencyUSD(saleLine.priceUsd)}
                   </TableCell>
-                  <TableCell className="px-2 py-1.5 text-right font-semibold tabular-nums">
+                  <TableCell className="data-value text-right font-semibold">
                     {formatCurrencyUSD(saleLine.totalUsd)}
                   </TableCell>
-                  <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums">
+                  <TableCell className="data-value text-muted-foreground text-right">
                     {formatCurrencyVES(saleLine.totalVes)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground px-2 py-1.5 text-right tabular-nums md:hidden">
-                    {formatCurrencyUSD(saleLine.priceUsd)}
                   </TableCell>
                   <TableCell className="px-1 py-1 text-right">
                     <Button
@@ -83,7 +76,7 @@ export function PendingSaleLinesPanel({ pendingSaleLines, onRemovePendingSaleLin
                       onClick={() => onRemovePendingSaleLine(saleLine.tempId)}
                       aria-label={`Eliminar ${saleLine.code}`}
                     >
-                      <Trash2 aria-hidden="true" />
+                      <Trash2 data-icon="inline-start" aria-hidden="true" />
                     </Button>
                   </TableCell>
                 </TableRow>

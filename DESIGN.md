@@ -32,8 +32,8 @@ colors:
   chart-magenta: "oklch(0.6 0.15 330)"
   chart-gold: "oklch(0.7 0.16 80)"
   chart-red: "oklch(0.58 0.2 25)"
-  table-stripe: "oklch(0.95 0.008 75)"
-  table-hover: "oklch(0.935 0.018 55)"
+  table-stripe: "oklch(0.975 0.004 75)"
+  table-hover: "oklch(0.95 0.01 75)"
   background-dark: "oklch(0.13 0.015 55)"
   card-dark: "oklch(0.17 0.015 55)"
   foreground-dark: "oklch(0.93 0.006 75)"
@@ -71,17 +71,23 @@ typography:
     fontWeight: 400
     lineHeight: 1.4
   label:
-    fontFamily: "Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 500
+    lineHeight: 1
+    letterSpacing: "0.05em"
+  operational-label:
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.625rem"
     fontWeight: 600
     lineHeight: 1
-    letterSpacing: "0.1em"
+    letterSpacing: "0.05em"
   data:
-    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 600
     lineHeight: 1
-    letterSpacing: "0.03em"
+    letterSpacing: "0"
 rounded:
   sm: "4px"
   md: "6px"
@@ -167,7 +173,7 @@ La densidad es deliberadamente compacta porque empleados y administradores opera
 - Densidad compacta y ritmo de 4 px, con agrupaciones frecuentes de 8, 12 y 16 px.
 - Lienzo cálido claro dentro de un marco de navegación carbón cacao.
 - Bronce ámbar reservado para acción, selección y datos de alta importancia.
-- Titulares geométricos, cuerpo neutral y cifras monoespaciadas.
+- Titulares geométricos, cuerpo neutral y cifras tabulares.
 - Bordes y capas tonales primero; sombras solo cuando una superficie realmente se eleva.
 - Interacciones directas y estados semánticos inequívocos.
 
@@ -213,9 +219,9 @@ La implementación usa la arquitectura semántica de **shadcn/ui New York sobre 
 
 **Body Font:** Inter (con `ui-sans-serif`, `system-ui`, `sans-serif` como respaldo)
 
-**Label/Mono Font:** JetBrains Mono (con `ui-monospace`, SFMono-Regular, Menlo y Consolas como respaldo)
+**Mono Font:** JetBrains Mono (con `ui-monospace`, SFMono-Regular, Menlo y Consolas como respaldo)
 
-**Character:** Plus Jakarta Sans aporta geometría firme a títulos y métricas; Inter mantiene los flujos densos neutrales y legibles; JetBrains Mono alinea códigos, tasas, importes y atajos. Las familias preferidas están declaradas en los tokens, pero el proyecto no incorpora archivos de fuente ni imports remotos: los respaldos del sistema son parte real del comportamiento actual.
+**Character:** Plus Jakarta Sans aporta geometría firme a títulos y métricas; Inter mantiene los flujos densos, las etiquetas compactas, los valores tabulares y el cuerpo neutral y legible; JetBrains Mono se reserva para códigos y atajos. Las familias preferidas están declaradas en los tokens, pero el proyecto no incorpora archivos de fuente ni imports remotos: los respaldos del sistema son parte real del comportamiento actual.
 
 ### Hierarchy
 
@@ -224,12 +230,13 @@ La implementación usa la arquitectura semántica de **shadcn/ui New York sobre 
 - **Title** (600, `1rem`, 1.25): títulos de módulos, secciones y tarjetas.
 - **Body** (400–500, `0.875rem`, 1.5): contenido, acciones y formularios.
 - **Body Small** (400–600, `0.75rem`, 1.4): apoyo, metadatos y controles compactos.
-- **Label** (600, `0.625rem`, 0.1em, mayúsculas): agrupaciones, fechas compactas y rótulos de navegación.
-- **Data** (600–700, `0.8125rem`, 0.03em): códigos de producto, tasas, importes y valores tabulares.
+- **Label** (500, `0.6875rem`, 0.05em, mayúsculas): etiquetas compactas de formularios y agrupaciones operativas.
+- **Operational Label** (600, `0.625rem`, 0.05em, mayúsculas): cabeceras de tabla y etiquetas del resumen de producto mediante `operational-label`.
+- **Data** (600–700, `0.8125rem`, cifras tabulares): tasas, importes, cantidades y otros valores operativos en Inter.
 
 ### Named Rules
 
-**La Regla del Dato Monoespaciado.** Usa la familia mono solo cuando la alineación o identificación precisa del valor mejora la lectura: códigos, moneda, tasas y atajos de teclado.
+**La Regla del Dato Monoespaciado.** Usa la familia mono únicamente para códigos y atajos de teclado; los valores operativos permanecen en Inter con cifras tabulares.
 
 **La Regla de Jerarquía Corta.** Una vista operativa trabaja principalmente con Title, Body y Body Small. Display y Headline quedan reservados para marca o métricas, no para ampliar títulos rutinarios.
 
@@ -239,7 +246,7 @@ El sistema usa una carcasa responsiva de altura completa. En escritorio, una sid
 
 El ritmo base es de 4 px. Los controles y filas se agrupan normalmente con 8 px; los márgenes internos más comunes son 12 y 16 px; 24 px se reserva para tarjetas amplias, diálogos y separaciones mayores. El dashboard limita su lectura a 72 rem (`max-w-6xl`), mientras tablas y páginas de operación aprovechan el ancho disponible. Los breakpoints observados siguen Tailwind: `sm` 640 px, `md` 768 px, `lg` 1024 px y `xl` 1280 px.
 
-Las tablas son densas: filas de 30 px, celdas de 13 px, padding horizontal de 16 px y columnas secundarias ocultables en móvil. Las cabeceras y filtros deben permanecer próximos a los datos que gobiernan.
+Las tablas operativas usan filas de 30 px, celdas de 13 px y padding horizontal de 16 px. Las tablas compactas de modales, confirmaciones y detalles subordinados usan filas de 28 px, celdas de 12 px y padding horizontal de 12 px. Ambas densidades conservan su esquema mediante anchos mínimos y desplazamiento horizontal; las cabeceras y filtros deben permanecer próximos a los datos que gobiernan.
 
 **La Regla Compacta por Defecto.** No introduzcas espacio vacío para aparentar lujo. Añade separación solo cuando aclare una agrupación, una jerarquía o un cambio de tarea.
 
@@ -309,9 +316,19 @@ Los componentes son **compactos, claros y seguros**: estados visibles, objetivos
 
 ### Data Tables
 
-- Cabecera sobre Arena Apagada al 50%, filas de 30 px, celdas de 13 px y separadores al 40%.
-- Alterna Table Stripe y usa Table Hover para rastrear filas sin introducir tarjetas por registro.
-- Los códigos de producto usan Bronce Ámbar y JetBrains Mono; importes y cantidades usan cifras tabulares.
+- Cabecera sobre Arena Apagada con Operational Label de 10 px, semibold, tracking de 0.05 em y mayúsculas; filas de 30 px, celdas de 13 px y separadores al 40%.
+- Alterna un Table Stripe apenas tonal y usa Table Hover para rastrear filas sin introducir tarjetas por registro. El indicador neutro de orden permanece tenue hasta hover o foco; el orden activo conserva contraste completo.
+- Los códigos de producto conservan Bronce Ámbar y JetBrains Mono. Fechas, importes, tasas, stock, cantidades y conteos usan Inter con cifras tabulares mediante `data-value` o `tabular-value`; ambos roles heredan el tamaño y el peso de su densidad y jerarquía contextual. La fuente monoespaciada no se usa para valores ordinarios de las tablas.
+- Centraliza encabezados, celdas, paginación, estados, scroll y affordances de overflow en `DataTable` y `Table`; ningún módulo redefine por su cuenta la anatomía o densidad de una tabla operativa.
+- `Table` y `DataTable` son la autoridad de las densidades `operational` y `compact`; skeletons, contenido y estados vacíos consumen el mismo contrato para evitar saltos de geometría.
+- Usa rótulos completos y estables como `Cantidad`, `Precio USD` y `Bs.`. El texto largo puede truncarse si conserva acceso al contenido completo; códigos, monedas, cantidades y fechas no deben quebrarse.
+- El contenedor con desplazamiento horizontal debe ser alcanzable por teclado, tener un nombre accesible y mostrar una sombra lateral mientras exista contenido fuera de la vista.
+
+**La Regla de Paridad Tabular.** Las tablas operativas conservan en móvil el mismo esquema, orden de columnas y densidad que en escritorio. Las columnas vitales se recorren horizontalmente y solo una excepción explícita —como una confirmación o el drawer de inventario— puede adaptar su composición. La sombra de overflow es la primera señal de continuidad; no fijes columnas hasta que la evidencia demuestre que esa señal y el desplazamiento son insuficientes.
+
+**La Regla de un Solo Momento.** Todo evento usa una única columna `Fecha y hora`, formateada con los helpers canónicos y ordenada por su timestamp original, no por el texto presentado. Las entidades de día operativo, como el cierre de caja, mantienen fecha sin hora.
+
+**La Regla del Estado Honesto.** Distingue carga, vacío real, filtros sin coincidencias y error. Conserva los datos previos cuando falle una actualización, ofrece reintento en errores bloqueantes y representa relaciones o valores ausentes con un fallback explícito como `—`, nunca con una celda ambigua ni un cero inventado.
 
 ### Business Context
 
@@ -329,6 +346,9 @@ Los componentes son **compactos, claros y seguros**: estados visibles, objetivos
 - **Do** usa colores semánticos de forma estable y acompaña el color con texto, icono o etiqueta cuando el significado sea crítico.
 - **Do** conserva objetivos táctiles importantes de 36–44 px y el FAB móvil de 56 px aunque la presentación sea densa.
 - **Do** usa el tema oscuro como traducción tonal completa, no como inversión automática.
+- **Do** conserva todas las columnas vitales de las tablas operativas en móvil y usa desplazamiento horizontal con sombra de continuidad.
+- **Do** muestra los eventos en una sola columna `Fecha y hora`, ordenada por el timestamp original, y reserva la fecha sola para entidades de día operativo.
+- **Do** distingue carga, vacío real, filtros sin coincidencias y error; ofrece reintento y muestra fallbacks explícitos cuando falten datos.
 
 ### Don't:
 
@@ -338,3 +358,6 @@ Los componentes son **compactos, claros y seguros**: estados visibles, objetivos
 - **Don't** uses sombras fuertes en superficies estáticas cuando un borde o cambio tonal sea suficiente.
 - **Don't** introduzcas nuevas familias tipográficas o colores de acento sin actualizar primero esta autoridad.
 - **Don't** uses color contextual del negocio como sustituto de éxito, advertencia, devolución o error.
+- **Don't** conviertas tablas operativas en tarjetas móviles ni ocultes columnas para evitar el desplazamiento horizontal; limita las excepciones a composiciones explícitas como confirmaciones o el drawer de inventario.
+- **Don't** fijes columnas antes de comprobar que la sombra de overflow y el desplazamiento horizontal son insuficientes.
+- **Don't** dividas fecha y hora de un evento en columnas separadas ni formatees fechas, monedas o cantidades fuera de los helpers centrales.

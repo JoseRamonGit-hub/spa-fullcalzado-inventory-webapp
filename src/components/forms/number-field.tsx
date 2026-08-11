@@ -6,9 +6,11 @@ import { FieldWrapper, type FormFieldProps } from "./field-wrapper";
 type NumberFieldProps = FormFieldProps &
   React.ComponentProps<"input"> & {
     showZero?: boolean;
+    emptyValue?: number;
   };
 
 function formatDisplayValue(value: number, showZero: boolean) {
+  if (!Number.isFinite(value)) return "";
   return value || showZero ? String(value) : "";
 }
 
@@ -18,7 +20,9 @@ export function NumberField({
   action,
   descriptionBelow,
   compact,
+  hideErrorMessage,
   showZero = false,
+  emptyValue = 0,
   ...props
 }: NumberFieldProps) {
   const field = useFieldContext<number>();
@@ -28,7 +32,7 @@ export function NumberField({
     text: formatDisplayValue(field.state.value, showZero),
   }));
 
-  if (display.formValue !== field.state.value) {
+  if (!Object.is(display.formValue, field.state.value)) {
     setDisplay({
       formValue: field.state.value,
       text: formatDisplayValue(field.state.value, showZero),
@@ -37,7 +41,7 @@ export function NumberField({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value;
-    const formValue = text === "" ? 0 : Number(text);
+    const formValue = text === "" ? emptyValue : Number(text);
 
     setDisplay({ formValue, text });
     field.handleChange(formValue);
@@ -50,6 +54,7 @@ export function NumberField({
       action={action}
       descriptionBelow={descriptionBelow}
       compact={compact}
+      hideErrorMessage={hideErrorMessage}
     >
       <Input
         {...props}

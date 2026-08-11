@@ -7,7 +7,7 @@ import { MovementStockChange } from "@/features/movements/components/movement-st
 import { getMovementSignedQuantity, getMovementTypeInfo } from "@/features/movements/movement-presentation";
 import { cn } from "@/lib/utils";
 import type { ProductHistoryEvent } from "@/types";
-import { formatCurrencyUSD, formatDate, formatTime } from "@/utils/formatters";
+import { formatCurrencyUSD, formatDateTime } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<ProductHistoryEvent>();
 
@@ -46,7 +46,7 @@ function MovementContext({ event }: { event: ProductHistoryEvent }) {
       {hasDescriptionChange ? <span>Descripción</span> : null}
       {hasDescriptionChange && priceChange ? <span aria-hidden="true">·</span> : null}
       {priceChange ? (
-        <span>
+        <span className="data-value">
           {formatCurrencyUSD(priceChange.before)} → {formatCurrencyUSD(priceChange.after)}
         </span>
       ) : null}
@@ -69,9 +69,6 @@ export const productHistoryColumns = [
             </Badge>
             <MovementContext event={row.original} />
           </div>
-          <span className="text-muted-foreground max-w-48 truncate text-xs leading-tight sm:hidden">
-            {row.original.user_fullname}
-          </span>
         </div>
       );
     },
@@ -80,14 +77,11 @@ export const productHistoryColumns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="text-muted-foreground flex flex-col leading-tight tabular-nums sm:block sm:leading-normal">
-        <span>{formatDate(row.original.created_at)}</span>
-        <span className="sm:before:content-[',_']">{formatTime(row.original.created_at)}</span>
-      </span>
+      <span className="tabular-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("quantity", {
-    header: () => <div className="text-right">Cant.</div>,
+    header: () => <div className="text-right">Cantidad</div>,
     cell: ({ row }) => {
       const signedQuantity = getMovementSignedQuantity(row.original);
       if (signedQuantity == null || signedQuantity === 0) {
@@ -97,7 +91,7 @@ export const productHistoryColumns = [
       return (
         <span
           className={cn(
-            "block text-right font-medium tabular-nums",
+            "tabular-value block text-right font-medium",
             signedQuantity > 0 ? "text-success" : "text-destructive",
           )}
         >
@@ -114,7 +108,10 @@ export const productHistoryColumns = [
   }),
   columnHelper.accessor("user_fullname", {
     header: "Usuario",
-    cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
-    meta: { hideOnMobile: true },
+    cell: ({ getValue }) => (
+      <OverflowTooltip focusable={false} className="text-muted-foreground max-w-44">
+        {getValue() || "—"}
+      </OverflowTooltip>
+    ),
   }),
 ] as ColumnDef<ProductHistoryEvent>[];

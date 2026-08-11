@@ -35,7 +35,9 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
     removeExchangeItem,
     clearAll,
     creditUsd,
+    creditVes,
     newPurchaseUsd,
+    newPurchaseVes,
     differenceUsd,
     differenceVes,
     returnType,
@@ -43,7 +45,9 @@ export function ReturnModal({ isOpen, onOpenChange }: ReturnModalProps) {
   const summary: ReturnSummary = {
     returnType,
     creditUsd,
+    creditVes,
     newPurchaseUsd,
+    newPurchaseVes,
     differenceUsd,
     differenceVes,
   };
