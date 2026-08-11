@@ -136,8 +136,8 @@ export function ProductDetailPage() {
 
     navigate({ to: "/inventory" });
   };
-  const isPending = productQuery.isPending || exchangeRateQuery.isPending;
-  const isError = productQuery.isError || exchangeRateQuery.isError;
+  const isPending = productQuery.isPending && !productQuery.data;
+  const isBlockingError = productQuery.isError && !productQuery.data;
   const historyToolbar = (
     <div className="flex shrink-0 flex-col items-start gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between md:px-4">
       <h2 id="product-history-title" className="font-heading text-foreground/75 text-xs font-semibold">
@@ -189,6 +189,20 @@ export function ProductDetailPage() {
               <span className="whitespace-nowrap tabular-nums">
                 {formatCurrencyVES(productQuery.data.product.price_usd * exchangeRateQuery.data.rate)}
               </span>
+            ) : exchangeRateQuery.isPending ? (
+              <span className="text-muted-foreground text-sm whitespace-nowrap">Consultando tasa…</span>
+            ) : exchangeRateQuery.isError ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className="text-warning hover:text-warning h-auto px-0"
+                disabled={exchangeRateQuery.isFetching}
+                onClick={() => void exchangeRateQuery.refetch()}
+              >
+                <RotateCcw className={exchangeRateQuery.isFetching ? "animate-spin" : undefined} aria-hidden="true" />
+                {exchangeRateQuery.isFetching ? "Reintentando…" : "Reintentar tasa"}
+              </Button>
             ) : (
               <span className="text-warning text-sm whitespace-nowrap">Tasa no disponible</span>
             )}
@@ -256,7 +270,7 @@ export function ProductDetailPage() {
 
       {isPending ? (
         <DetailSkeleton />
-      ) : isError ? (
+      ) : isBlockingError ? (
         <div className="flex flex-1 items-center justify-center p-6">
           <div className="flex max-w-sm flex-col items-center gap-3 text-center">
             <div className="bg-destructive/10 flex size-11 items-center justify-center rounded-xl">
@@ -290,7 +304,7 @@ export function ProductDetailPage() {
                 Selecciona una fecha inicial y una fecha final. Ninguna puede ser futura.
               </div>
             </>
-          ) : historyQuery.isError ? (
+          ) : historyQuery.isError && !historyQuery.data ? (
             <>
               {productSummary}
               {historyToolbar}
@@ -330,8 +344,8 @@ export function ProductDetailPage() {
                   {historyToolbar}
                 </>
               }
-              tableClassName="min-w-[520px] sm:min-w-[640px] [&_tbody_td]:h-auto [&_tbody_td]:py-1 sm:[&_tbody_td]:h-[30px] sm:[&_tbody_td]:py-0"
-              scrollAreaLabel="Tabla de historial con desplazamiento horizontal"
+              tableClassName="min-w-[640px]"
+              scrollAreaLabel="Historial del producto"
             />
           )}
         </section>

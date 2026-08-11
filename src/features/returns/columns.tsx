@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
-import { formatCurrencyUSD, formatCurrencyVES, formatDate, formatTime } from "@/utils/formatters";
+import { formatCurrencyUSD, formatCurrencyVES, formatDateTime } from "@/utils/formatters";
 import { getReturnMovementTotals, getReturnOutcome } from "./return-display";
 
 const columnHelper = createColumnHelper<ReturnWithRelations>();
@@ -52,11 +52,12 @@ function Outcome({ record }: { record: ReturnWithRelations }) {
 export const columns = [
   columnHelper.display({
     id: "expand",
-    header: () => null,
+    header: () => <span className="sr-only">Detalles</span>,
     cell: ({ row }) => (
       <span className="flex justify-center">
         <ChevronRight
           className={cn("text-muted-foreground size-4 transition-transform", row.getIsExpanded() && "rotate-90")}
+          aria-hidden="true"
         />
       </span>
     ),
@@ -64,10 +65,10 @@ export const columns = [
   }),
   columnHelper.accessor("created_at", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Registro" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
       <span className="text-muted-foreground text-xs tabular-nums">
-        {formatDate(row.original.created_at)} · {formatTime(row.original.created_at)}
+        {formatDateTime(row.original.created_at) || "—"}
       </span>
     ),
   }),
@@ -101,7 +102,7 @@ export const columns = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Usuario" />,
     cell: ({ getValue }) => (
       <OverflowTooltip focusable={false} className="text-muted-foreground max-w-44">
-        {getValue()}
+        {getValue() || "—"}
       </OverflowTooltip>
     ),
   }),

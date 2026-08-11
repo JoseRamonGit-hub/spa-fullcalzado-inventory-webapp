@@ -27,7 +27,6 @@ const columns = [
     header: "Descripción",
     cell: ({ getValue }) => <OverflowTooltip className="max-w-table-row">{getValue()}</OverflowTooltip>,
     enableSorting: false,
-    meta: { hideOnMobile: true },
   }),
   columnHelper.accessor("units", {
     header: () => <div className="text-right">Unidades</div>,
@@ -64,8 +63,8 @@ export function TopProductsTable({ products, isLoading, onProductClick }: TopPro
       getRowClassName={() =>
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset focus-visible:outline-none"
       }
-      tableClassName="[&_tbody_tr]:h-11 md:[&_tbody_tr]:h-[30px]"
-      scrollAreaLabel="Top productos"
+      tableClassName="min-w-[42rem]"
+      scrollAreaLabel="Productos más vendidos"
     />
   );
 }

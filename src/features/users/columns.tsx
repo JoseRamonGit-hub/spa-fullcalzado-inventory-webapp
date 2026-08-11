@@ -1,11 +1,12 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import { ChevronRight, Pencil, Store } from "lucide-react";
+import { Pencil, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import type { Business, ManagedUser } from "@/types";
 import { getUserRoleLabel } from "./utils/user-labels";
+import { cn } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<ManagedUser>();
 
@@ -52,52 +53,19 @@ function BusinessSummaryCell({ user, businesses }: { user: ManagedUser; business
   );
 }
 
-function MobileUserDetails({ user, businesses }: { user: ManagedUser; businesses: Business[] }) {
-  const businessSummary = getBusinessSummary(user, businesses);
-  const defaultBusiness = getBusinessName(businesses, user.default_business_id);
-  const isActive = user.is_active !== false;
-
-  return (
-    <div className="mt-2 flex flex-col gap-1.5 md:hidden">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <Badge variant={user.role === "admin" ? "default" : "secondary"}>{getUserRoleLabel(user.role)}</Badge>
-        <span className="inline-flex items-center gap-1.5 text-xs">
-          <span className={isActive ? "bg-success size-1.5 rounded-full" : "bg-destructive size-1.5 rounded-full"} />
-          {isActive ? "Activo" : "Inactivo"}
-        </span>
-      </div>
-      <div className="text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs">
-        <Store className="size-3.5 shrink-0" />
-        <span className="break-words">{businessSummary.join(", ")}</span>
-      </div>
-      <span className="text-muted-foreground text-[11px] break-words">Inicio: {defaultBusiness}</span>
-    </div>
-  );
-}
-
 export const columns = [
   columnHelper.accessor("fullname", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Usuario" />,
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as UsersTableMeta;
-
+    cell: ({ row }) => {
       return (
-        <div className="flex min-w-0 items-start justify-between gap-3 py-1.5 md:py-0">
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 flex-col">
-              <span className="text-sm font-semibold break-words md:hidden">{row.original.fullname}</span>
-              <OverflowTooltip focusable={false} className="hidden text-sm font-semibold md:block">
-                {row.original.fullname}
-              </OverflowTooltip>
-              <span className="text-muted-foreground text-[11px] break-all md:hidden">{row.original.email}</span>
-              <OverflowTooltip focusable={false} className="text-muted-foreground hidden text-[11px] md:block">
-                {row.original.email}
-              </OverflowTooltip>
-            </div>
-            <MobileUserDetails user={row.original} businesses={meta.businesses} />
-          </div>
-          <ChevronRight className="text-muted-foreground mt-1 size-4 shrink-0 md:hidden" />
+        <div className="flex min-w-0 flex-col">
+          <OverflowTooltip focusable={false} className="text-sm font-semibold">
+            {row.original.fullname}
+          </OverflowTooltip>
+          <OverflowTooltip focusable={false} className="text-muted-foreground text-[11px]">
+            {row.original.email}
+          </OverflowTooltip>
         </div>
       );
     },
@@ -105,7 +73,6 @@ export const columns = [
   columnHelper.accessor("role", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Rol" />,
-    meta: { hideOnMobile: true },
     cell: ({ getValue }) => (
       <Badge variant={getValue() === "admin" ? "default" : "secondary"}>{getUserRoleLabel(getValue())}</Badge>
     ),
@@ -113,13 +80,12 @@ export const columns = [
   columnHelper.accessor("is_active", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Estado" />,
-    meta: { hideOnMobile: true },
     cell: ({ getValue }) => {
       const isActive = getValue() !== false;
 
       return (
         <span className="inline-flex items-center gap-1.5">
-          <span className={isActive ? "bg-success size-1.5 rounded-full" : "bg-destructive size-1.5 rounded-full"} />
+          <span className={cn("size-1.5 rounded-full", isActive ? "bg-success" : "bg-destructive")} />
           {isActive ? "Activo" : "Inactivo"}
         </span>
       );
@@ -128,7 +94,6 @@ export const columns = [
   columnHelper.display({
     id: "businesses",
     header: "Negocios",
-    meta: { hideOnMobile: true },
     cell: ({ row, table }) => {
       const meta = table.options.meta as UsersTableMeta;
       return <BusinessSummaryCell user={row.original} businesses={meta.businesses} />;
@@ -136,13 +101,12 @@ export const columns = [
   }),
   columnHelper.accessor("default_business_id", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Predeterminado" />,
-    meta: { hideOnMobile: true },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Negocio predeterminado" />,
     cell: ({ row, table }) => {
       const meta = table.options.meta as UsersTableMeta;
       return (
         <span className="text-muted-foreground inline-flex max-w-64 items-center gap-1.5">
-          <Store className="size-3.5 shrink-0" />
+          <Store className="size-3.5 shrink-0" aria-hidden="true" />
           <OverflowTooltip focusable={false}>
             {getBusinessName(meta.businesses, row.original.default_business_id)}
           </OverflowTooltip>
@@ -153,7 +117,6 @@ export const columns = [
   columnHelper.display({
     id: "actions",
     header: () => <div className="text-center">Acciones</div>,
-    meta: { hideOnMobile: true },
     cell: ({ row, table }) => {
       const meta = table.options.meta as UsersTableMeta;
 
@@ -170,7 +133,7 @@ export const columns = [
               meta.onEdit(row.original);
             }}
           >
-            <Pencil />
+            <Pencil data-icon="inline-start" aria-hidden="true" />
           </Button>
         </div>
       );

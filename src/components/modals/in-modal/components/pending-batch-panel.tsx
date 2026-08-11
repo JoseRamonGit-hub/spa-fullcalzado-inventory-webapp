@@ -75,16 +75,17 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
 
       {hasPendingBatchItems ? (
         <div className="custom-scrollbar min-h-0 flex-1 overflow-auto">
-          <Table className="min-w-[36rem] text-xs md:min-w-[40rem]">
+          <Table className="min-w-[40rem] text-xs" scrollAreaLabel="Productos del lote de carga">
             <TableHeader className="bg-muted/20 sticky top-0 z-10">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-20 px-2">Acción</TableHead>
-                <TableHead className="w-44 px-2 md:hidden">Producto</TableHead>
-                <TableHead className="hidden px-2 md:table-cell">Código</TableHead>
-                <TableHead className="hidden px-2 md:table-cell">Descripción</TableHead>
+                <TableHead className="px-2">Código</TableHead>
+                <TableHead className="px-2">Descripción</TableHead>
                 <TableHead className="w-28 px-2 text-right">Cantidad</TableHead>
-                <TableHead className="px-2 text-right">Precio</TableHead>
-                <TableHead className="h-7 w-8 px-1" />
+                <TableHead className="px-2 text-right">Precio USD</TableHead>
+                <TableHead className="h-7 w-8 px-1">
+                  <span className="sr-only">Acciones</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -93,16 +94,10 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
                   <TableCell className="px-2 py-1.5">
                     <BatchActionBadge item={item} />
                   </TableCell>
-                  <TableCell className="max-w-44 px-2 py-1.5 md:hidden">
-                    <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
-                      <span className="product-code shrink-0 uppercase">{item.code}</span>
-                      <OverflowTooltip className="flex-1 font-medium">{item.description}</OverflowTooltip>
-                    </span>
-                  </TableCell>
-                  <TableCell className="hidden px-2 py-1.5 md:table-cell">
+                  <TableCell className="px-2 py-1.5">
                     <span className="product-code uppercase">{item.code}</span>
                   </TableCell>
-                  <TableCell className="hidden max-w-72 px-2 py-1.5 md:table-cell">
+                  <TableCell className="max-w-72 px-2 py-1.5">
                     <OverflowTooltip className="font-medium">{item.description}</OverflowTooltip>
                   </TableCell>
                   <TableCell className="px-2 py-1.5 text-right">
@@ -120,7 +115,7 @@ export function PendingBatchPanel({ pendingBatchItems, onRemovePendingBatchItem 
                       onClick={() => onRemovePendingBatchItem(item.tempId)}
                       aria-label={`Eliminar ${item.code}`}
                     >
-                      <Trash2 aria-hidden="true" />
+                      <Trash2 data-icon="inline-start" aria-hidden="true" />
                     </Button>
                   </TableCell>
                 </TableRow>

@@ -47,12 +47,12 @@ export function ExpandedReturnRow({ row }: { row: Row<ReturnWithRelations> }) {
   return (
     <div className="bg-muted/25 border-t px-3 py-3 md:px-4">
       <div className="bg-background overflow-hidden rounded-md border">
-        <Table className="min-w-[42rem] text-xs">
+        <Table className="min-w-[42rem] text-xs" scrollAreaLabel="Movimientos de la devolución">
           <TableHeader>
             <TableRow className="bg-muted/35 hover:bg-muted/35">
               <TableHead>Movimiento</TableHead>
               <TableHead>Producto</TableHead>
-              <TableHead className="text-right">Cant.</TableHead>
+              <TableHead className="text-right">Cantidad</TableHead>
               <TableHead className="text-right">USD</TableHead>
               <TableHead className="text-right">Bs.</TableHead>
             </TableRow>

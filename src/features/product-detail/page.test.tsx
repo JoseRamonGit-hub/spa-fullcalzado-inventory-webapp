@@ -231,7 +231,7 @@ describe("ProductDetailPage", () => {
     expect(
       screen.getByRole("region", { name: "Tabla de historial con desplazamiento horizontal" }),
     ).toBeInTheDocument();
-    for (const heading of ["Movimiento", "Fecha y hora", "Cant.", "Stock"]) {
+    for (const heading of ["Movimiento", "Fecha y hora", "Cantidad", "Stock"]) {
       expect(screen.getByRole("columnheader", { name: heading })).toBeInTheDocument();
     }
     expect(screen.queryByRole("columnheader", { name: "Usuario" })).not.toBeInTheDocument();

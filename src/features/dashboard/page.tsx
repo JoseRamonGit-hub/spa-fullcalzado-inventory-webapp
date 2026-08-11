@@ -8,7 +8,7 @@ import { SalesPeriodSection } from "./components/sales-period-section";
 import { ProductStockAlertsSection } from "./components/product-stock-alerts-section";
 import { useDashboardMetrics } from "./hooks/useDashboardMetrics";
 import { DEFAULT_SALES_PERIOD, type DashboardSalesPeriodSelection } from "./sales-period";
-import { formatCurrencyUSD, formatDate, formatInteger, formatTime } from "@/utils/formatters";
+import { formatCurrencyUSD, formatDateTime, formatInteger } from "@/utils/formatters";
 
 function DashboardCurrentDateTime() {
   const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
@@ -25,7 +25,7 @@ function DashboardCurrentDateTime() {
       className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase"
       aria-label="Fecha y hora actual en Caracas"
     >
-      {formatDate(currentDateTime)} · {formatTime(currentDateTime)}
+      {formatDateTime(currentDateTime)}
     </time>
   );
 }

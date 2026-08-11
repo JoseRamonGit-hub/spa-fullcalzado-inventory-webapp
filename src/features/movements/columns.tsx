@@ -1,7 +1,7 @@
 import type { InventoryMovementWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { formatDate, formatTime, formatCurrencyUSD } from "@/utils/formatters";
+import { formatCurrencyUSD, formatDateTime } from "@/utils/formatters";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { IterationCcw, Pencil } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -27,23 +27,16 @@ export const columns = [
       );
     },
   }),
-  columnHelper.accessor("date", {
+  columnHelper.accessor("created_at", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{formatDate(row.original.created_at)}</span>
-    ),
-  }),
-  columnHelper.accessor("time", {
-    enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Hora" />,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{formatTime(row.original.created_at)}</span>
+      <span className="text-muted-foreground tabular-nums">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("products.code", {
     header: "Código",
-    cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue() || "—"}</span>,
   }),
   columnHelper.accessor("products.description", {
     header: "Descripción",
@@ -54,7 +47,7 @@ export const columns = [
 
       return (
         <span className="max-w-table-row flex items-center gap-1.5">
-          <OverflowTooltip className="flex-1">{description}</OverflowTooltip>
+          <OverflowTooltip className="flex-1">{description || "—"}</OverflowTooltip>
           {hasDescriptionChange && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -74,12 +67,12 @@ export const columns = [
     },
   }),
   columnHelper.accessor("quantity", {
-    header: () => <div className="text-right">Cant.</div>,
+    header: () => <div className="text-right">Cantidad</div>,
     cell: ({ row }) => <MovementStockChange movement={row.original} />,
   }),
   columnHelper.display({
     id: "price",
-    header: () => <div className="text-right">Precio</div>,
+    header: () => <div className="text-right">Precio USD</div>,
     cell: ({ row }) => {
       const { type, price_usd, price_usd_before } = row.original;
 
@@ -107,6 +100,10 @@ export const columns = [
   }),
   columnHelper.accessor("users.fullname", {
     header: "Usuario",
-    cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
+    cell: ({ getValue }) => (
+      <OverflowTooltip focusable={false} className="text-muted-foreground max-w-44">
+        {getValue() || "—"}
+      </OverflowTooltip>
+    ),
   }),
 ] as ColumnDef<InventoryMovementWithRelations>[];

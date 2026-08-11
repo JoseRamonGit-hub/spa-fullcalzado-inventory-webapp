@@ -38,7 +38,7 @@ export function ProductMaintenanceActions({
           onEdit(product);
         }}
       >
-        <Pencil data-icon={isToolbar ? "inline-start" : undefined} aria-hidden="true" className={cn(isToolbar && "text-muted-foreground")} />
+        <Pencil data-icon="inline-start" aria-hidden="true" className={cn(isToolbar && "text-muted-foreground")} />
         {isToolbar ? <span className="hidden sm:inline">Editar</span> : null}
       </Button>
       <Button
@@ -55,7 +55,7 @@ export function ProductMaintenanceActions({
           onAdjustStock(product);
         }}
       >
-        <Boxes data-icon={isToolbar ? "inline-start" : undefined} aria-hidden="true" />
+        <Boxes data-icon="inline-start" aria-hidden="true" />
         {isToolbar ? <span className="hidden md:inline">Ajustar</span> : null}
       </Button>
       <Separator orientation="vertical" className={cn("mx-0.5 h-4", isToolbar && "mx-1 h-5")} />
@@ -78,9 +78,9 @@ export function ProductMaintenanceActions({
         }}
       >
         {product.active ? (
-          <CirclePause data-icon={isToolbar ? "inline-start" : undefined} aria-hidden="true" />
+          <CirclePause data-icon="inline-start" aria-hidden="true" />
         ) : (
-          <CirclePlay data-icon={isToolbar ? "inline-start" : undefined} aria-hidden="true" />
+          <CirclePlay data-icon="inline-start" aria-hidden="true" />
         )}
         {isToolbar ? <span className="hidden sm:inline">{statusAction}</span> : null}
       </Button>

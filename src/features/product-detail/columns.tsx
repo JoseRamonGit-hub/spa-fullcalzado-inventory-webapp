@@ -7,7 +7,7 @@ import { MovementStockChange } from "@/features/movements/components/movement-st
 import { getMovementSignedQuantity, getMovementTypeInfo } from "@/features/movements/movement-presentation";
 import { cn } from "@/lib/utils";
 import type { ProductHistoryEvent } from "@/types";
-import { formatCurrencyUSD, formatDate, formatTime } from "@/utils/formatters";
+import { formatCurrencyUSD, formatDateTime } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<ProductHistoryEvent>();
 
@@ -69,9 +69,6 @@ export const productHistoryColumns = [
             </Badge>
             <MovementContext event={row.original} />
           </div>
-          <span className="text-muted-foreground max-w-48 truncate text-xs leading-tight sm:hidden">
-            {row.original.user_fullname}
-          </span>
         </div>
       );
     },
@@ -80,14 +77,11 @@ export const productHistoryColumns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="text-muted-foreground flex flex-col leading-tight tabular-nums sm:block sm:leading-normal">
-        <span>{formatDate(row.original.created_at)}</span>
-        <span className="sm:before:content-[',_']">{formatTime(row.original.created_at)}</span>
-      </span>
+      <span className="text-muted-foreground tabular-nums">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("quantity", {
-    header: () => <div className="text-right">Cant.</div>,
+    header: () => <div className="text-right">Cantidad</div>,
     cell: ({ row }) => {
       const signedQuantity = getMovementSignedQuantity(row.original);
       if (signedQuantity == null || signedQuantity === 0) {
@@ -114,7 +108,10 @@ export const productHistoryColumns = [
   }),
   columnHelper.accessor("user_fullname", {
     header: "Usuario",
-    cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
-    meta: { hideOnMobile: true },
+    cell: ({ getValue }) => (
+      <OverflowTooltip focusable={false} className="text-muted-foreground max-w-44">
+        {getValue() || "—"}
+      </OverflowTooltip>
+    ),
   }),
 ] as ColumnDef<ProductHistoryEvent>[];

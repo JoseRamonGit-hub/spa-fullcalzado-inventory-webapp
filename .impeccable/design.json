@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-11T05:50:20.000Z",
+  "generatedAt": "2026-08-11T07:57:58.000Z",
   "title": "Design System: Full Calzado — El Taller de Caja",
   "extensions": {
     "colorMeta": {
@@ -812,6 +812,21 @@
         "name": "La Regla del Radio Funcional",
         "body": "El radio aumenta con el tamaño y la independencia de la superficie. No conviertas cada bloque compacto en una cápsula ni mezcles radios sin relación con su escala.",
         "section": "shapes"
+      },
+      {
+        "name": "La Regla de Paridad Tabular",
+        "body": "Las tablas operativas conservan en móvil el mismo esquema, orden de columnas y densidad que en escritorio. Las columnas vitales se recorren horizontalmente y solo una excepción explícita —como una confirmación o el drawer de inventario— puede adaptar su composición. La sombra de overflow es la primera señal de continuidad; no fijes columnas hasta que la evidencia demuestre que esa señal y el desplazamiento son insuficientes.",
+        "section": "components"
+      },
+      {
+        "name": "La Regla de un Solo Momento",
+        "body": "Todo evento usa una única columna `Fecha y hora`, formateada con los helpers canónicos y ordenada por su timestamp original, no por el texto presentado. Las entidades de día operativo, como el cierre de caja, mantienen fecha sin hora.",
+        "section": "components"
+      },
+      {
+        "name": "La Regla del Estado Honesto",
+        "body": "Distingue carga, vacío real, filtros sin coincidencias y error. Conserva los datos previos cuando falle una actualización, ofrece reintento en errores bloqueantes y representa relaciones o valores ausentes con un fallback explícito como `—`, nunca con una celda ambigua ni un cero inventado.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -820,7 +835,10 @@
       "**Do** reserva Bronce Ámbar para acción, foco, selección y datos de alta prioridad.",
       "**Do** usa colores semánticos de forma estable y acompaña el color con texto, icono o etiqueta cuando el significado sea crítico.",
       "**Do** conserva objetivos táctiles importantes de 36–44 px y el FAB móvil de 56 px aunque la presentación sea densa.",
-      "**Do** usa el tema oscuro como traducción tonal completa, no como inversión automática."
+      "**Do** usa el tema oscuro como traducción tonal completa, no como inversión automática.",
+      "**Do** conserva todas las columnas vitales de las tablas operativas en móvil y usa desplazamiento horizontal con sombra de continuidad.",
+      "**Do** muestra los eventos en una sola columna `Fecha y hora`, ordenada por el timestamp original, y reserva la fecha sola para entidades de día operativo.",
+      "**Do** distingue carga, vacío real, filtros sin coincidencias y error; ofrece reintento y muestra fallbacks explícitos cuando falten datos."
     ],
     "donts": [
       "**Don't** añadas espacio generoso sin una función clara; la aplicación es compacta por defecto.",
@@ -828,7 +846,10 @@
       "**Don't** cubras grandes superficies con Bronce Ámbar ni hagas competir varias acciones primarias.",
       "**Don't** uses sombras fuertes en superficies estáticas cuando un borde o cambio tonal sea suficiente.",
       "**Don't** introduzcas nuevas familias tipográficas o colores de acento sin actualizar primero esta autoridad.",
-      "**Don't** uses color contextual del negocio como sustituto de éxito, advertencia, devolución o error."
+      "**Don't** uses color contextual del negocio como sustituto de éxito, advertencia, devolución o error.",
+      "**Don't** conviertas tablas operativas en tarjetas móviles ni ocultes columnas para evitar el desplazamiento horizontal; limita las excepciones a composiciones explícitas como confirmaciones o el drawer de inventario.",
+      "**Don't** fijes columnas antes de comprobar que la sombra de overflow y el desplazamiento horizontal son insuficientes.",
+      "**Don't** dividas fecha y hora de un evento en columnas separadas ni formatees fechas, monedas o cantidades fuera de los helpers centrales."
     ]
   }
 }

@@ -3,6 +3,7 @@ import { useCashCloses, useCashCloseSummary } from "./hooks/useCashCloseQueries"
 import { useGenerateCashClose } from "./hooks/useCashCloseMutations";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
+import { DataTableError } from "@/components/ui/data-table-error";
 import { columns } from "./columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { toast } from "sonner";
@@ -31,7 +32,7 @@ export function CashClosesPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const isFiltered = !!date;
 
-  const { data: cashCloses, isLoading, isError } = useCashCloses(date);
+  const { data: cashCloses, isLoading, isError, isFetching, refetch } = useCashCloses(date);
   const { data: cashCloseSummary, isLoading: isMetricsLoading, isError: hasMetricsError } = useCashCloseSummary(date);
   const closeMutation = useGenerateCashClose();
   const user = useAuthStore((s) => s.user);
@@ -76,7 +77,7 @@ export function CashClosesPage() {
       return <MetricsSkeleton count={4} />;
     }
 
-    if (hasMetricsError) {
+    if (hasMetricsError && !cashCloseSummary) {
       return (
         <div className="border-b px-3 py-3 md:px-4">
           <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
@@ -100,15 +101,11 @@ export function CashClosesPage() {
 
   function renderContent() {
     if (isLoading) {
-      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" />;
+      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Cierres de caja" />;
     }
 
-    if (isError) {
-      return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar los cierres de caja.</p>
-        </div>
-      );
+    if (isError && !cashCloses) {
+      return <DataTableError title="No pudimos cargar los cierres de caja" onRetry={refetch} isRetrying={isFetching} />;
     }
 
     return (
@@ -117,8 +114,12 @@ export function CashClosesPage() {
           columns={columns}
           data={cashCloses || []}
           getRowId={(row) => row.id}
-          emptyMessage="No hay cierres de caja registrados."
+          emptyMessage={
+            date ? "No hay cierres de caja registrados para esta fecha." : "No hay cierres de caja registrados."
+          }
           onRowClick={handleRowClick}
+          getRowAriaLabel={(row) => `Ver ventas del cierre del ${formatDate(row.date + "T12:00:00")}`}
+          scrollAreaLabel="Cierres de caja"
         />
       </div>
     );

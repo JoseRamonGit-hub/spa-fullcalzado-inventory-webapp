@@ -61,7 +61,7 @@ export function ConfirmSaleDialog({
                 Producto
               </TableHead>
               <TableHead scope="col" className="py-1.5 text-right">
-                Cant.
+                Cantidad
               </TableHead>
               <TableHead scope="col" className="py-1.5 text-right">
                 Importe USD
@@ -78,7 +78,7 @@ export function ConfirmSaleDialog({
                   <ModalProductIdentity code={saleLine.code} description={saleLine.description} />
                 </td>
                 <td className="flex items-baseline justify-between gap-2 p-0 align-middle sm:table-cell sm:px-3 sm:py-2 sm:text-right">
-                  <span className="text-muted-foreground text-[11px] font-medium sm:hidden">Cant.</span>
+                  <span className="text-muted-foreground text-[11px] font-medium sm:hidden">Cantidad</span>
                   <span className="font-semibold tabular-nums">{saleLine.quantity}</span>
                 </td>
                 <td className="p-0 text-right align-middle whitespace-nowrap sm:table-cell sm:px-3 sm:py-2">

@@ -39,12 +39,12 @@ function ItemRow({ code, description, quantity, totalUsd, striped, onRemove }: I
         <Button
           type="button"
           variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive size-7"
+          size="icon-xs"
+          className="text-muted-foreground hover:text-destructive"
           onClick={onRemove}
           aria-label={`Eliminar ${code}`}
         >
-          <Trash2 data-icon="inline-start" />
+          <Trash2 data-icon="inline-start" aria-hidden="true" />
         </Button>
       </TableCell>
     </TableRow>
@@ -82,7 +82,7 @@ export function ReturnItemsPanel({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground flex flex-col items-center gap-2">
-          <PackageOpen className="size-8 opacity-40" />
+          <PackageOpen className="size-8 opacity-40" aria-hidden="true" />
           <span className="text-sm">Agrega productos de entrada para comenzar.</span>
         </div>
       </div>
@@ -94,11 +94,11 @@ export function ReturnItemsPanel({
 
   return (
     <div className="custom-scrollbar h-full overflow-auto">
-      <Table className="min-w-130 text-xs">
+      <Table className="min-w-130 text-xs" scrollAreaLabel="Productos de la devolución">
         <TableHeader className="bg-card sticky top-0">
           <TableRow className="bg-muted/20 hover:bg-muted/20">
             <TableHead className="h-8 px-3">Producto</TableHead>
-            <TableHead className="h-8 w-20 px-3 text-right">Cant.</TableHead>
+            <TableHead className="h-8 w-20 px-3 text-right">Cantidad</TableHead>
             <TableHead className="h-8 w-28 px-3 text-right">Total USD</TableHead>
             <TableHead className="h-8 w-10 px-1.5">
               <span className="sr-only">Acciones</span>

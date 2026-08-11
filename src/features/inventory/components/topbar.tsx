@@ -24,7 +24,8 @@ export function Topbar({ search, onSearchChange, date, onDateChange, stockStatus
         <div className="bg-card flex-1 rounded-md md:max-w-xs">
           <InputGroup className="h-8">
             <InputGroupInput
-              placeholder="Buscar código o descripción..."
+              placeholder="Buscar por código o descripción…"
+              aria-label="Buscar productos por código o descripción"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               className="border-0 text-sm md:text-xs"

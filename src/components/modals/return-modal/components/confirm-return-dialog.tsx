@@ -96,7 +96,7 @@ export function ConfirmReturnDialog({
                 Producto
               </TableHead>
               <TableHead scope="col" className="py-1.5 text-right">
-                Cant.
+                Cantidad
               </TableHead>
               <TableHead scope="col" className="py-1.5 text-right">
                 Importe USD
@@ -116,7 +116,7 @@ export function ConfirmReturnDialog({
                   <ModalProductIdentity code={item.code} description={item.description} />
                 </td>
                 <td className="p-0 align-middle whitespace-nowrap sm:px-3 sm:py-2 sm:text-right">
-                  <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cant.</span>
+                  <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cantidad</span>
                   <span className="font-semibold tabular-nums">{item.quantity}</span>
                 </td>
                 <td className="p-0 text-right align-middle whitespace-nowrap sm:px-3 sm:py-2">

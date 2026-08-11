@@ -1,6 +1,7 @@
 import type { CashCloseWithRelations } from "@/types";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
 
 const columnHelper = createColumnHelper<CashCloseWithRelations>();
@@ -9,7 +10,7 @@ export const columns = [
   columnHelper.accessor("closed_at", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
-    cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue())}</span>,
+    cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue()) || "—"}</span>,
   }),
   columnHelper.accessor((cashClose) => cashClose.total_billed_operations ?? cashClose.total_transactions, {
     id: "billed_operations",
@@ -17,16 +18,16 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Operaciones facturadas" className="justify-end" />
     ),
-    cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue() ?? "—"}</span>,
   }),
   columnHelper.accessor("total_units_sold", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Unidades" className="justify-end" />,
-    cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue() ?? "—"}</span>,
   }),
   columnHelper.accessor("total_returns", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Devol." className="justify-end" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Devoluciones" className="justify-end" />,
     cell: ({ getValue, row }) => {
       const count = getValue();
       if (!count) return <span className="text-muted-foreground block text-right tabular-nums">—</span>;
@@ -43,7 +44,7 @@ export const columns = [
   columnHelper.accessor("total_usd", {
     enableSorting: true,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total Producido USD" className="justify-end" />
+      <DataTableColumnHeader column={column} title="Total producido USD" className="justify-end" />
     ),
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
@@ -52,7 +53,7 @@ export const columns = [
   columnHelper.accessor("total_ves", {
     enableSorting: true,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Total Producido BS" className="justify-end" />
+      <DataTableColumnHeader column={column} title="Total producido Bs." className="justify-end" />
     ),
     cell: ({ getValue }) => (
       <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
@@ -62,6 +63,10 @@ export const columns = [
     id: "closed_by",
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Cerrado por" />,
-    cell: ({ row }) => <span className="text-muted-foreground">{row.original.users?.fullname ?? "—"}</span>,
+    cell: ({ row }) => (
+      <OverflowTooltip focusable={false} className="text-muted-foreground max-w-44">
+        {row.original.users?.fullname || "—"}
+      </OverflowTooltip>
+    ),
   }),
 ] as ColumnDef<CashCloseWithRelations>[];

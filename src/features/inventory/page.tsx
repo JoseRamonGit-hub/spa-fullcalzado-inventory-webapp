@@ -3,6 +3,7 @@ import { useProducts } from "./hooks/useProductQueries";
 import { useProductSearch } from "./hooks/useProductSearch";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
+import { DataTableError } from "@/components/ui/data-table-error";
 import { getColumns } from "./columns";
 import { EditProductModal } from "./components/edit-product-modal";
 import { AdjustProductStockModal } from "./components/adjust-product-stock-modal";
@@ -23,12 +24,13 @@ export function InventoryPage() {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const { data: products, isLoading, isError } = useProducts(date, status);
-  const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useExchangeRate();
+  const { data: products, isLoading, isError, isFetching, refetch } = useProducts(date, status);
+  const { data: exchangeRateData, isLoading: isExchangeRateLoading, isError: isExchangeRateError } = useExchangeRate();
   const isMobile = useIsMobile();
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
 
   const { searchInput, setSearchInput, filteredProducts } = useProductSearch(products);
+  const hasActiveFilters = Boolean(searchInput.trim() || date || status);
 
   // Action modals state
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -64,8 +66,8 @@ export function InventoryPage() {
   );
 
   const columns = useMemo(
-    () => getColumns({ exchangeRate: exchangeRateData?.rate, isExchangeRateLoading }),
-    [exchangeRateData?.rate, isExchangeRateLoading],
+    () => getColumns({ exchangeRate: exchangeRateData?.rate, isExchangeRateLoading, isExchangeRateError }),
+    [exchangeRateData?.rate, isExchangeRateError, isExchangeRateLoading],
   );
 
   return (
@@ -80,26 +82,23 @@ export function InventoryPage() {
       />
 
       {isLoading ? (
-        <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
-      ) : isError ? (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar el inventario.</p>
-        </div>
+        <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Inventario" />
+      ) : isError && !products ? (
+        <DataTableError title="No pudimos cargar el inventario" onRetry={refetch} isRetrying={isFetching} />
       ) : (
         <DataTable
           columns={columns}
           data={filteredProducts}
           emptyMessage={
-            status === "low_stock"
-              ? "No hay Productos con Stock bajo."
-              : status === "stagnant"
-                ? "No hay Productos estancados."
-                : "No hay productos registrados."
+            hasActiveFilters
+              ? "No se encontraron productos con los filtros aplicados."
+              : "No hay productos registrados."
           }
           onRowClick={handleRowClick}
-          getRowAriaLabel={(product) => `Ver detalles de ${product.code}`}
+          getRowAriaLabel={(product) => `Abrir producto ${product.code}`}
           meta={tableMeta}
           getRowId={(row) => row.id}
+          scrollAreaLabel="Inventario"
         />
       )}
 

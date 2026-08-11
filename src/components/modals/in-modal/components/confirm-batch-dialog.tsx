@@ -69,7 +69,7 @@ export function ConfirmBatchDialog({
                 Producto
               </TableHead>
               <TableHead scope="col" className="py-1.5 text-right">
-                Cant.
+                Cantidad
               </TableHead>
               <TableHead scope="col" className="py-1.5 text-right">
                 Precio USD
@@ -89,7 +89,7 @@ export function ConfirmBatchDialog({
                   <ModalProductIdentity code={item.code} description={item.description} />
                 </td>
                 <td className="p-0 align-middle whitespace-nowrap tabular-nums sm:px-3 sm:py-2 sm:text-right">
-                  <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cant.</span>
+                  <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cantidad</span>
                   {item.kind === "new" ? (
                     <span className="text-foreground font-semibold">{item.initialStock}</span>
                   ) : (

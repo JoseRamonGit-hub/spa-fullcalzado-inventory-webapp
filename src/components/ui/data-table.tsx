@@ -16,6 +16,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { ScrollShadow } from "@/components/ui/scroll-shadow";
 import { PackageOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -127,6 +128,7 @@ export function DataTable<TData, TValue>({
       ...(renderSubRow ? { expanded: expandedState } : {}),
     },
     onPaginationChange: setPagination,
+    autoResetPageIndex: true,
     onSortingChange: (updater) => {
       setSorting(updater);
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
@@ -136,18 +138,22 @@ export function DataTable<TData, TValue>({
     getRowId,
   });
 
-  const showPagination = !hidePagination && !isLoading && data.length > pageSize;
+  const rows = table.getRowModel().rows;
+  const visibleColumnCount = Math.max(1, table.getVisibleFlatColumns().length);
+  const showPagination = !hidePagination && !isLoading && table.getPageCount() > 1;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div
-        className="custom-scrollbar min-w-0 flex-1 overflow-auto [&_div[data-slot=table-container]]:overflow-visible"
+      <ScrollShadow
+        containerClassName="min-w-0 flex-1"
+        className="custom-scrollbar overflow-auto"
         role={scrollAreaLabel ? "region" : undefined}
         aria-label={scrollAreaLabel}
+        aria-busy={isLoading}
         tabIndex={scrollAreaLabel ? 0 : undefined}
       >
         {scrollAreaHeader ? <div className="bg-background sticky left-0 w-full">{scrollAreaHeader}</div> : null}
-        <Table className={tableClassName}>
+        <Table className={tableClassName} scrollShadow={false}>
           <TableHeader className="bg-muted/95 sticky top-0 z-[1]">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-border bg-muted/50 hover:bg-muted/50 border-b">
@@ -175,26 +181,33 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSkeleton columnCount={table.getVisibleFlatColumns().length} />
-            ) : table.getRowModel().rows?.length ? (
-              table
-                .getRowModel()
-                .rows.map((row, index) => (
+              <TableSkeleton columnCount={visibleColumnCount} />
+            ) : rows.length ? (
+              rows
+                .map((row, index) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    tabIndex={onRowClick ? 0 : undefined}
-                    aria-label={onRowClick ? getRowAriaLabel?.(row.original) : undefined}
-                    className={`border-border/40 hover:bg-table-hover border-b transition-colors ${index % 2 === 1 ? "bg-table-stripe" : ""} ${onRowClick || renderSubRow ? "cursor-pointer" : ""} ${getRowClassName?.(row, index) ?? ""}`}
+                    tabIndex={onRowClick || renderSubRow ? 0 : undefined}
+                    aria-label={onRowClick || renderSubRow ? getRowAriaLabel?.(row.original) : undefined}
+                    aria-expanded={renderSubRow ? row.getIsExpanded() : undefined}
+                    className={cn(
+                      "border-border/40 hover:bg-table-hover border-b transition-colors",
+                      index % 2 === 1 && "bg-table-stripe",
+                      (onRowClick || renderSubRow) &&
+                        "focus-visible:ring-ring/50 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                      getRowClassName?.(row, index),
+                    )}
                     onClick={() => {
                       if (renderSubRow) row.toggleExpanded();
                       onRowClick?.(row.original);
                     }}
                     onKeyDown={(event) => {
-                      if (!onRowClick || event.currentTarget !== event.target) return;
+                      if ((!onRowClick && !renderSubRow) || event.currentTarget !== event.target) return;
                       if (event.key !== "Enter" && event.key !== " ") return;
                       event.preventDefault();
-                      onRowClick(row.original);
+                      if (renderSubRow) row.toggleExpanded();
+                      onRowClick?.(row.original);
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -208,7 +221,7 @@ export function DataTable<TData, TValue>({
                   </TableRow>
                 ))
                 .flatMap((rowEl, index) => {
-                  const row = table.getRowModel().rows[index];
+                  const row = rows[index];
                   if (renderSubRow && row.getIsExpanded()) {
                     return [
                       rowEl,
@@ -223,12 +236,9 @@ export function DataTable<TData, TValue>({
                 })
             ) : (
               <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={table.getVisibleFlatColumns().length}
-                  className={cn("h-56 text-center", emptyStateClassName)}
-                >
+                <TableCell colSpan={visibleColumnCount} className={cn("h-56 text-center", emptyStateClassName)}>
                   <div className="text-muted-foreground flex flex-col items-center gap-2">
-                    <PackageOpen className="h-8 w-8 opacity-40" />
+                    <PackageOpen className="size-8 opacity-40" aria-hidden="true" />
                     <span className="text-sm">{emptyMessage}</span>
                   </div>
                 </TableCell>
@@ -236,7 +246,7 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-      </div>
+      </ScrollShadow>
       {showPagination && (
         <DataTablePagination
           table={table}

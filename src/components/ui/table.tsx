@@ -1,12 +1,35 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { ScrollShadow } from "@/components/ui/scroll-shadow";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+type TableProps = React.ComponentProps<"table"> & {
+  scrollShadow?: boolean;
+  scrollAreaLabel?: string;
+};
+
+function Table({ className, scrollShadow = true, scrollAreaLabel, ...props }: TableProps) {
+  const table = <table data-slot="table" className={cn("w-full caption-bottom text-sm", className)} {...props} />;
+
+  if (!scrollShadow) {
+    return (
+      <div data-slot="table-container" className="relative h-full w-full">
+        {table}
+      </div>
+    );
+  }
+
   return (
-    <div data-slot="table-container" className="relative h-full w-full overflow-x-auto">
-      <table data-slot="table" className={cn("w-full caption-bottom text-sm", className)} {...props} />
-    </div>
+    <ScrollShadow
+      containerClassName="h-full w-full"
+      className="custom-scrollbar overflow-x-auto"
+      data-slot="table-container"
+      role={scrollAreaLabel ? "region" : undefined}
+      aria-label={scrollAreaLabel}
+      tabIndex={scrollAreaLabel ? 0 : undefined}
+    >
+      {table}
+    </ScrollShadow>
   );
 }
 

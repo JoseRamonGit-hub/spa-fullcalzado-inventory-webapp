@@ -5,6 +5,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { ProductMaintenanceActions } from "@/features/inventory/components/product-maintenance-actions";
+import { cn } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<Product>();
 
@@ -19,16 +20,30 @@ type PriceBsCellProps = {
   priceUsd: number;
   exchangeRate?: number;
   isExchangeRateLoading: boolean;
+  isExchangeRateError: boolean;
 };
 
 type InventoryColumnsOptions = {
   exchangeRate?: number;
   isExchangeRateLoading: boolean;
+  isExchangeRateError: boolean;
 };
 
-function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading }: PriceBsCellProps) {
+function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading, isExchangeRateError }: PriceBsCellProps) {
   if (isExchangeRateLoading) {
-    return <div className="text-muted-foreground text-right text-sm">...</div>;
+    return (
+      <div className="text-muted-foreground text-right text-sm" aria-label="Consultando tasa de cambio">
+        …
+      </div>
+    );
+  }
+
+  if (isExchangeRateError) {
+    return (
+      <div className="text-warning text-right text-xs font-medium" title="No se pudo consultar la tasa de cambio">
+        No disponible
+      </div>
+    );
   }
 
   if (!exchangeRate) {
@@ -40,7 +55,7 @@ function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading }: Pr
   return <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(priceBs)}</div>;
 }
 
-export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryColumnsOptions) {
+export function getColumns({ exchangeRate, isExchangeRateLoading, isExchangeRateError }: InventoryColumnsOptions) {
   return [
     columnHelper.accessor("code", {
       enableSorting: true,
@@ -57,9 +72,10 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
       header: ({ column }) => <DataTableColumnHeader column={column} title="Stock" className="justify-end" />,
       cell: ({ getValue }) => (
         <span
-          className={`block text-right font-medium tabular-nums ${
-            getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground"
-          }`}
+          className={cn(
+            "block text-right font-medium tabular-nums",
+            getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground",
+          )}
         >
           {getValue()}
         </span>
@@ -75,12 +91,13 @@ export function getColumns({ exchangeRate, isExchangeRateLoading }: InventoryCol
     columnHelper.accessor((row) => row.price_usd, {
       id: "price_ves",
       enableSorting: true,
-      header: ({ column }) => <DataTableColumnHeader column={column} title="VES" className="justify-end" />,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Bs." className="justify-end" />,
       cell: ({ row }) =>
         renderPriceBsCell({
           priceUsd: row.original.price_usd,
           exchangeRate,
           isExchangeRateLoading,
+          isExchangeRateError,
         }),
     }),
     columnHelper.accessor("active", {

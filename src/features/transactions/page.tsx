@@ -2,6 +2,7 @@ import { useTransactions, useTodayTransactions } from "./hooks/useTransactionQue
 import { useTodayReturns } from "@/features/returns/hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
+import { DataTableError } from "@/components/ui/data-table-error";
 import { columns } from "./columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { SalesSummary } from "./components/sales-summary";
@@ -17,7 +18,7 @@ export function TransactionsPage() {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const { data: transactions, isLoading, isError } = useTransactions(date);
+  const { data: transactions, isLoading, isError, isFetching, refetch } = useTransactions(date);
   const {
     data: todayTransactions,
     isLoading: isTodayTransactionsLoading,
@@ -38,7 +39,9 @@ export function TransactionsPage() {
     if (isSummaryError) {
       return (
         <div className="border-b px-3 py-3 md:px-4">
-          <p className="text-destructive text-sm">No se pudo calcular el resumen del período.</p>
+          <p className="text-destructive text-sm">
+            No pudimos calcular el resumen. Recarga la página para intentarlo de nuevo.
+          </p>
         </div>
       );
     }
@@ -50,17 +53,13 @@ export function TransactionsPage() {
     if (isLoading) {
       return (
         <div className="flex min-h-0 flex-1 flex-col">
-          <DataTable columns={columns} data={[]} isLoading emptyMessage="" />
+          <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Ventas" />
         </div>
       );
     }
 
-    if (isError) {
-      return (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-destructive text-sm">Error al cargar las ventas.</p>
-        </div>
-      );
+    if (isError && !transactions) {
+      return <DataTableError title="No pudimos cargar las ventas" onRetry={refetch} isRetrying={isFetching} />;
     }
 
     return (
@@ -70,6 +69,7 @@ export function TransactionsPage() {
           data={transactions || []}
           getRowId={(row) => row.id}
           emptyMessage={date ? "No hay ventas registradas para esta fecha." : "No hay ventas en los últimos 30 días."}
+          scrollAreaLabel="Ventas"
         />
       </div>
     );
