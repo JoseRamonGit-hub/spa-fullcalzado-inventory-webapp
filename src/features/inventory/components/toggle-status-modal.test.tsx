@@ -10,15 +10,16 @@ vi.mock("@/features/inventory/hooks/useProductMutations", () => ({
 }));
 
 vi.mock("@/components/modals/shared/modal-ui", () => ({
-  ModalProductIdentity: ({ code, description }: { code: string; description: string }) => (
-    <span>
-      {code} — {description}
-    </span>
-  ),
+  ConfirmDialogSummarySection: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
 }));
 
-vi.mock("@/components/modals/shared/responsive-alert-modal", () => ({
-  ResponsiveAlertModal: ({
+vi.mock("@/components/modals/shared/confirmation-modal", () => ({
+  ConfirmationProductIdentity: ({ code, description }: { code: string; description: string }) => (
+    <span>
+      {description} — {code}
+    </span>
+  ),
+  ConfirmationModal: ({
     title,
     description,
     confirmLabel,
@@ -55,9 +56,10 @@ describe("ToggleStatusModal", () => {
 
     expect(
       screen.getByText(
-        "Ya no admitirá entradas de inventario. Podrá venderse hasta agotar sus existencias y seguirá aceptando devoluciones.",
+        "No podrás registrar nuevas entradas para este producto. Podrás seguir vendiendo las existencias disponibles y registrando devoluciones.",
       ),
     ).toBeInTheDocument();
+    expect(screen.getByLabelText("Confirmar desactivación")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Desactivar producto" })).toBeInTheDocument();
   });
 
@@ -65,8 +67,11 @@ describe("ToggleStatusModal", () => {
     render(<ToggleStatusModal open onOpenChange={vi.fn()} product={{ ...product, active: false }} />);
 
     expect(
-      screen.getByText("Volverá a admitir entradas de inventario. Sus ventas y devoluciones seguirán disponibles."),
+      screen.getByText(
+        "Podrás volver a registrar entradas para este producto. Las ventas y devoluciones seguirán disponibles.",
+      ),
     ).toBeInTheDocument();
+    expect(screen.getByLabelText("Confirmar reactivación")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reactivar producto" })).toBeInTheDocument();
   });
 });

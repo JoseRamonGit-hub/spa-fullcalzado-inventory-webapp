@@ -46,26 +46,37 @@ vi.mock("@/components/modals/shared/responsive-modal", () => ({
 
 vi.mock("@/components/modals/shared/modal-ui", () => ({
   ConfirmDialogSummarySection: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
-  ModalConfirmDialog: ({
-    isOpen,
+}));
+
+vi.mock("@/components/modals/shared/confirmation-modal", () => ({
+  ConfirmationProductIdentity: ({ code, description }: { code: string; description: string }) => (
+    <span>
+      {description} — {code}
+    </span>
+  ),
+  ConfirmationModal: ({
+    open,
     title,
+    description,
     confirmLabel,
     cancelLabel,
     children,
-    onConfirmSubmit,
+    onConfirm,
   }: {
-    isOpen: boolean;
+    open: boolean;
     title: string;
+    description: React.ReactNode;
     confirmLabel: string;
     cancelLabel?: string;
     children: React.ReactNode;
-    onConfirmSubmit: () => void;
+    onConfirm: () => void;
   }) =>
-    isOpen ? (
+    open ? (
       <section aria-label={title}>
+        <p>{description}</p>
         {children}
-        <button type="button">{cancelLabel ?? "Cancelar"}</button>
-        <button type="button" onClick={onConfirmSubmit}>
+        <button type="button">{cancelLabel ?? "Volver a editar"}</button>
+        <button type="button" onClick={onConfirm}>
           {confirmLabel}
         </button>
       </section>
@@ -105,11 +116,12 @@ describe("AdjustProductStockModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Revisar ajuste" }));
 
     const confirmation = await screen.findByLabelText("Confirmar ajuste de existencias");
+    expect(confirmation).toHaveTextContent("Confirma el nuevo total y el motivo antes de ajustar las existencias.");
     expect(confirmation).toHaveTextContent("Deportivo clásico");
     expect(confirmation).toHaveTextContent("FC-101");
-    expect(confirmation).toHaveTextContent("Actual8");
+    expect(confirmation).toHaveTextContent("Total actual8");
     expect(confirmation).toHaveTextContent("Nuevo total10");
-    expect(confirmation).toHaveTextContent("Aumentará de 8 a 10 (+2).");
+    expect(confirmation).toHaveTextContent("Las existencias aumentarán de 8 a 10 (+2).");
     expect(confirmation).toHaveTextContent("Corrección por conteo físico");
     expect(screen.getByRole("button", { name: "Volver a editar" })).toBeInTheDocument();
 
@@ -141,10 +153,10 @@ describe("AdjustProductStockModal", () => {
     renderModal();
 
     fireEvent.change(screen.getByLabelText("Nuevo total"), { target: { value: "10" } });
-    expect(screen.getByRole("status")).toHaveTextContent("Aumentará de 8 a 10 (+2).");
+    expect(screen.getByRole("status")).toHaveTextContent("Las existencias aumentarán de 8 a 10 (+2).");
 
     fireEvent.change(screen.getByLabelText("Nuevo total"), { target: { value: "6" } });
-    expect(screen.getByRole("status")).toHaveTextContent("Reducirá de 8 a 6 (−2).");
+    expect(screen.getByRole("status")).toHaveTextContent("Las existencias se reducirán de 8 a 6 (−2).");
   });
 
   it("warns when the new total leaves the product without stock", async () => {
@@ -152,7 +164,7 @@ describe("AdjustProductStockModal", () => {
 
     fireEvent.change(screen.getByLabelText("Nuevo total"), { target: { value: "0" } });
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Reducirá de 8 a 0 (−8). El producto quedará sin existencias.",
+      "Las existencias se reducirán de 8 a 0 (−8). El producto quedará sin existencias.",
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Revisar ajuste" }));
@@ -164,7 +176,9 @@ describe("AdjustProductStockModal", () => {
     renderModal();
 
     expect(screen.getByLabelText("Motivo (opcional)")).not.toBeRequired();
-    expect(screen.getByText("Si lo dejas vacío, el historial mostrará “Sin motivo indicado”.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Si lo dejas vacío, se guardará como “Sin motivo indicado” en el historial."),
+    ).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Nuevo total"), { target: { value: "7" } });
     fireEvent.click(screen.getByRole("button", { name: "Revisar ajuste" }));
 
@@ -195,7 +209,7 @@ describe("AdjustProductStockModal", () => {
     fireEvent.blur(reasonInput);
     fireEvent.click(screen.getByRole("button", { name: "Revisar ajuste" }));
 
-    expect(await screen.findByText("Indica al menos 3 caracteres")).toBeInTheDocument();
+    expect(await screen.findByText("Escribe al menos 3 caracteres")).toBeInTheDocument();
     expect(screen.queryByLabelText("Confirmar ajuste de existencias")).not.toBeInTheDocument();
     expect(mutateAsync).not.toHaveBeenCalled();
   });

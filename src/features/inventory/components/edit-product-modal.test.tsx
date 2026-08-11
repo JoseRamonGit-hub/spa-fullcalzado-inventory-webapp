@@ -39,8 +39,38 @@ vi.mock("@/components/modals/shared/responsive-modal", () => ({
 }));
 
 vi.mock("@/components/modals/shared/modal-ui", () => ({
-  ConfirmDialogTableSection: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
-  ModalConfirmDialog: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <section>Confirmación</section> : null),
+  ConfirmDialogSummarySection: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
+}));
+
+vi.mock("@/components/modals/shared/confirmation-modal", () => ({
+  ConfirmationProductIdentity: ({ code, description }: { code: string; description: string }) => (
+    <span>
+      {description} — {code}
+    </span>
+  ),
+  ConfirmationModal: ({
+    open,
+    title,
+    description,
+    confirmLabel,
+    cancelLabel,
+    children,
+  }: {
+    open: boolean;
+    title: string;
+    description: React.ReactNode;
+    confirmLabel: string;
+    cancelLabel?: string;
+    children: React.ReactNode;
+  }) =>
+    open ? (
+      <section aria-label={title}>
+        <p>{description}</p>
+        {children}
+        <button type="button">{cancelLabel ?? "Volver a editar"}</button>
+        <button type="button">{confirmLabel}</button>
+      </section>
+    ) : null,
 }));
 
 const product: Product = {
@@ -71,5 +101,22 @@ describe("EditProductModal", () => {
     });
 
     await waitFor(() => expect(reviewButton).toBeEnabled());
+  });
+
+  it("states what will change before saving", async () => {
+    render(<EditProductModal open onOpenChange={vi.fn()} product={product} />);
+
+    fireEvent.change(screen.getByLabelText("Descripción"), {
+      target: { value: "Deportivo clásico para caballero con suela de goma" },
+    });
+
+    const reviewButton = screen.getByRole("button", { name: "Revisar cambios" });
+    await waitFor(() => expect(reviewButton).toBeEnabled());
+    fireEvent.click(reviewButton);
+
+    const confirmation = await screen.findByLabelText("Confirmar cambios del producto");
+    expect(confirmation).toHaveTextContent("Se actualizará 1 campo de FC-101. Revisa el valor antes de guardar.");
+    expect(screen.getByRole("button", { name: "Volver a editar" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeInTheDocument();
   });
 });
