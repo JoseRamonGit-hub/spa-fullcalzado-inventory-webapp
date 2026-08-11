@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
-import { DataTableError } from "@/components/ui/data-table-error";
 import { useBusinesses } from "@/features/business/hooks/useBusinessQueries";
 import type { Business, ManagedUser } from "@/types";
 import { columns } from "./columns";
@@ -74,36 +73,29 @@ export function UsersPage() {
         onCreateUser={openCreateModal}
       />
 
-      {isLoading ? (
-        <DataTable
-          columns={columns}
-          data={[]}
-          isLoading
-          emptyMessage=""
-          tableClassName="min-w-[64rem]"
-          scrollAreaLabel="Usuarios"
-        />
-      ) : isBlockingError ? (
-        <DataTableError
-          title="No pudimos cargar los usuarios"
-          onRetry={() => Promise.all([usersQuery.refetch(), businessesQuery.refetch()])}
-          isRetrying={usersQuery.isFetching || businessesQuery.isFetching}
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={filteredUsers}
-          emptyMessage={
-            search.trim() ? "No se encontraron usuarios que coincidan con la búsqueda." : "No hay usuarios registrados."
-          }
-          onRowClick={openEditModal}
-          getRowAriaLabel={(user) => `Editar usuario ${user.fullname}`}
-          meta={{ businesses, onEdit: openEditModal }}
-          getRowId={(row) => row.id}
-          tableClassName="min-w-[64rem]"
-          scrollAreaLabel="Usuarios"
-        />
-      )}
+      <DataTable
+        columns={columns}
+        data={filteredUsers}
+        isLoading={isLoading}
+        errorState={
+          isBlockingError
+            ? {
+                title: "No pudimos cargar los usuarios",
+                onRetry: () => Promise.all([usersQuery.refetch(), businessesQuery.refetch()]),
+                isRetrying: usersQuery.isFetching || businessesQuery.isFetching,
+              }
+            : undefined
+        }
+        emptyMessage={
+          search.trim() ? "No se encontraron usuarios que coincidan con la búsqueda." : "No hay usuarios registrados."
+        }
+        onRowClick={openEditModal}
+        getRowAriaLabel={(user) => `Editar usuario ${user.fullname}`}
+        meta={{ businesses, onEdit: openEditModal }}
+        getRowId={(row) => row.id}
+        tableClassName="min-w-[64rem]"
+        scrollAreaLabel="Usuarios"
+      />
 
       {isFormOpen ? (
         <UserFormModal

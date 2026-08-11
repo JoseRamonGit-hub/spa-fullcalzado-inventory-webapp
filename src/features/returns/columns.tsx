@@ -25,13 +25,13 @@ function MovementTotals({ record }: { record: ReturnWithRelations }) {
   const movements = getReturnMovementTotals(record);
 
   return (
-    <span className="text-muted-foreground flex items-center gap-2 text-xs font-medium tabular-nums">
+    <span className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
       <span>
-        {movements.entries} {movements.entries === 1 ? "entrada" : "entradas"}
+        <span className="data-value">{movements.entries}</span> {movements.entries === 1 ? "entrada" : "entradas"}
       </span>
       <span aria-hidden="true">·</span>
       <span>
-        {movements.exits} {movements.exits === 1 ? "salida" : "salidas"}
+        <span className="data-value">{movements.exits}</span> {movements.exits === 1 ? "salida" : "salidas"}
       </span>
     </span>
   );
@@ -41,10 +41,10 @@ function Outcome({ record }: { record: ReturnWithRelations }) {
   const outcome = getReturnOutcome(record);
 
   return (
-    <div className="flex items-center gap-x-2 tabular-nums">
+    <div className="flex items-center gap-x-2">
       <span className="text-foreground text-xs font-medium">{outcome.label}</span>
-      <span className={cn("font-semibold", outcome.className)}>{formatCurrencyUSD(outcome.usd)}</span>
-      <span className={cn("font-semibold", outcome.className)}>{formatCurrencyVES(outcome.ves)}</span>
+      <span className={cn("data-value font-semibold", outcome.className)}>{formatCurrencyUSD(outcome.usd)}</span>
+      <span className={cn("data-value font-semibold", outcome.className)}>{formatCurrencyVES(outcome.ves)}</span>
     </div>
   );
 }
@@ -67,9 +67,7 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-xs tabular-nums">
-        {formatDateTime(row.original.created_at) || "—"}
-      </span>
+      <span className="data-value text-muted-foreground text-xs">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("type", {

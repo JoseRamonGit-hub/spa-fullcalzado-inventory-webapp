@@ -78,7 +78,9 @@ type DetailItemProps = {
 function DetailItem({ label, children, valueClassName }: DetailItemProps) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <dt className="text-muted-foreground text-[10px] leading-tight font-semibold uppercase">{label}</dt>
+      <dt className="text-muted-foreground text-[11px] leading-none font-semibold tracking-[0.05em] uppercase">
+        {label}
+      </dt>
       <dd
         className={cn(
           "text-foreground flex min-h-5 min-w-0 items-center text-sm leading-tight font-semibold",
@@ -156,9 +158,9 @@ export function ProductDetailPage() {
       <div className={summaryGridClassName}>
         <dl className={inventoryGroupClassName} aria-label="Inventario">
           <DetailItem label="Código">
-            <span className="product-code truncate font-bold uppercase">{productQuery.data.product.code}</span>
+            <span className="product-code truncate uppercase">{productQuery.data.product.code}</span>
           </DetailItem>
-          <DetailItem label="Stock actual" valueClassName="font-bold tabular-nums">
+          <DetailItem label="Stock actual" valueClassName="data-value font-bold">
             <span
               className={cn(
                 productQuery.data.product.stock === 0
@@ -172,7 +174,7 @@ export function ProductDetailPage() {
             </span>
           </DetailItem>
           <DetailItem label="Sin salida comercial">
-            <span className="whitespace-nowrap tabular-nums">
+            <span className="data-value whitespace-nowrap">
               {formatProductStagnantDays(productQuery.data.stagnantDays)}
             </span>
           </DetailItem>
@@ -180,13 +182,13 @@ export function ProductDetailPage() {
 
         <dl className={priceGroupClassName} aria-label="Precios">
           <DetailItem label="Precio USD">
-            <span className="whitespace-nowrap tabular-nums">
+            <span className="data-value whitespace-nowrap">
               {formatCurrencyUSD(productQuery.data.product.price_usd)}
             </span>
           </DetailItem>
           <DetailItem label="Precio VES">
             {exchangeRateQuery.data ? (
-              <span className="whitespace-nowrap tabular-nums">
+              <span className="data-value whitespace-nowrap">
                 {formatCurrencyVES(productQuery.data.product.price_usd * exchangeRateQuery.data.rate)}
               </span>
             ) : exchangeRateQuery.isPending ? (
@@ -221,7 +223,7 @@ export function ProductDetailPage() {
                 <Badge variant={getMovementTypeInfo(productQuery.data.lastActivity).variant}>
                   {getMovementTypeInfo(productQuery.data.lastActivity).label}
                 </Badge>
-                <span className="text-muted-foreground text-xs font-normal tabular-nums">
+                <span className="data-value text-muted-foreground text-xs font-normal">
                   {formatDateTime(productQuery.data.lastActivity.created_at) || "Fecha no disponible"}
                 </span>
               </div>

@@ -46,7 +46,7 @@ function MovementContext({ event }: { event: ProductHistoryEvent }) {
       {hasDescriptionChange ? <span>Descripción</span> : null}
       {hasDescriptionChange && priceChange ? <span aria-hidden="true">·</span> : null}
       {priceChange ? (
-        <span>
+        <span className="data-value">
           {formatCurrencyUSD(priceChange.before)} → {formatCurrencyUSD(priceChange.after)}
         </span>
       ) : null}
@@ -77,7 +77,7 @@ export const productHistoryColumns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{formatDateTime(row.original.created_at) || "—"}</span>
+      <span className="data-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("quantity", {
@@ -91,7 +91,7 @@ export const productHistoryColumns = [
       return (
         <span
           className={cn(
-            "block text-right font-medium tabular-nums",
+            "data-value block text-right font-medium",
             signedQuantity > 0 ? "text-success" : "text-destructive",
           )}
         >

@@ -31,12 +31,12 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{formatDateTime(row.original.created_at) || "—"}</span>
+      <span className="data-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("products.code", {
     header: "Código",
-    cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue() || "—"}</span>,
+    cell: ({ getValue }) => <span className="product-code uppercase">{getValue() || "—"}</span>,
   }),
   columnHelper.accessor("products.description", {
     header: "Descripción",
@@ -51,11 +51,15 @@ export const columns = [
           {hasDescriptionChange && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="text-edit shrink-0">
+                <button
+                  type="button"
+                  className="text-edit focus-visible:ring-ring/50 shrink-0 rounded-sm p-0.5 outline-none focus-visible:ring-2"
+                  aria-label="Ver descripción anterior"
+                >
                   <Pencil className="size-3" aria-hidden="true" />
-                </span>
+                </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-xs">
+              <TooltipContent side="bottom" className="max-w-xs break-words">
                 <p className="text-muted-foreground text-[11px]">
                   Antes: <span className="text-white">{description_before}</span>
                 </p>
@@ -83,7 +87,7 @@ export const columns = [
       // Edit with price change: show old → new
       if (type === "edit" && price_usd_before != null) {
         return (
-          <div className="flex items-center justify-end gap-1.5 tabular-nums">
+          <div className="data-value flex items-center justify-end gap-1.5">
             <span className="text-muted-foreground text-[11px] line-through">
               {formatCurrencyUSD(price_usd_before)}
             </span>
@@ -93,9 +97,7 @@ export const columns = [
         );
       }
 
-      return (
-        <span className="text-muted-foreground block text-right tabular-nums">{formatCurrencyUSD(price_usd)}</span>
-      );
+      return <span className="data-value text-muted-foreground block text-right">{formatCurrencyUSD(price_usd)}</span>;
     },
   }),
   columnHelper.accessor("users.fullname", {

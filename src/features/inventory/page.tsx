@@ -3,7 +3,6 @@ import { useProducts } from "./hooks/useProductQueries";
 import { useProductSearch } from "./hooks/useProductSearch";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { DataTableError } from "@/components/ui/data-table-error";
 import { getColumns } from "./columns";
 import { EditProductModal } from "./components/edit-product-modal";
 import { AdjustProductStockModal } from "./components/adjust-product-stock-modal";
@@ -60,14 +59,13 @@ export function InventoryPage() {
       onEdit: (product: Product) => setEditProduct(product),
       onAdjustStock: (product: Product) => setAdjustStockProduct(product),
       onToggleStatus: (product: Product) => setToggleStatusProduct(product),
-      isAdmin,
     }),
-    [isAdmin],
+    [],
   );
 
   const columns = useMemo(
-    () => getColumns({ exchangeRate: exchangeRateData?.rate, isExchangeRateLoading, isExchangeRateError }),
-    [exchangeRateData?.rate, isExchangeRateError, isExchangeRateLoading],
+    () => getColumns({ exchangeRate: exchangeRateData?.rate, isExchangeRateLoading, isExchangeRateError, isAdmin }),
+    [exchangeRateData?.rate, isAdmin, isExchangeRateError, isExchangeRateLoading],
   );
 
   return (
@@ -81,26 +79,24 @@ export function InventoryPage() {
         onStockStatusChange={(value) => navigate({ search: (prev) => ({ ...prev, status: value }) })}
       />
 
-      {isLoading ? (
-        <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Inventario" />
-      ) : isError && !products ? (
-        <DataTableError title="No pudimos cargar el inventario" onRetry={refetch} isRetrying={isFetching} />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={filteredProducts}
-          emptyMessage={
-            hasActiveFilters
-              ? "No se encontraron productos con los filtros aplicados."
-              : "No hay productos registrados."
-          }
-          onRowClick={handleRowClick}
-          getRowAriaLabel={(product) => `Abrir producto ${product.code}`}
-          meta={tableMeta}
-          getRowId={(row) => row.id}
-          scrollAreaLabel="Inventario"
-        />
-      )}
+      <DataTable
+        columns={columns}
+        data={filteredProducts}
+        isLoading={isLoading}
+        errorState={
+          isError && !products
+            ? { title: "No pudimos cargar el inventario", onRetry: refetch, isRetrying: isFetching }
+            : undefined
+        }
+        emptyMessage={
+          hasActiveFilters ? "No se encontraron productos con los filtros aplicados." : "No hay productos registrados."
+        }
+        onRowClick={handleRowClick}
+        getRowAriaLabel={(product) => `Abrir producto ${product.code}`}
+        meta={tableMeta}
+        getRowId={(row) => row.id}
+        scrollAreaLabel="Inventario"
+      />
 
       {editProduct && (
         <EditProductModal

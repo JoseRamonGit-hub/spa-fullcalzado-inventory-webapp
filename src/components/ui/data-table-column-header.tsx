@@ -16,7 +16,7 @@ export function DataTableColumnHeader<TData, TValue>({
   "use no memo";
 
   if (!column.getCanSort()) {
-    return <div className={className}>{title}</div>;
+    return <div className={cn("uppercase", className)}>{title}</div>;
   }
 
   const sorted = column.getIsSorted();
@@ -33,7 +33,7 @@ export function DataTableColumnHeader<TData, TValue>({
       <button
         type="button"
         className={cn(
-          "hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded-sm transition-colors outline-none select-none focus-visible:ring-2",
+          "group/sort hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded-sm uppercase transition-colors outline-none select-none focus-visible:ring-2",
           sorted && "text-foreground",
         )}
         onClick={column.getToggleSortingHandler()}
@@ -41,11 +41,14 @@ export function DataTableColumnHeader<TData, TValue>({
       >
         {title}
         {sorted === "asc" ? (
-          <ChevronUp className="size-3.5" aria-hidden="true" />
+          <ChevronUp className="size-3" aria-hidden="true" />
         ) : sorted === "desc" ? (
-          <ChevronDown className="size-3.5" aria-hidden="true" />
+          <ChevronDown className="size-3" aria-hidden="true" />
         ) : (
-          <ChevronsUpDown className="size-3.5 opacity-50" aria-hidden="true" />
+          <ChevronsUpDown
+            className="size-3 opacity-20 transition-opacity group-hover/sort:opacity-50 group-focus-visible/sort:opacity-50"
+            aria-hidden="true"
+          />
         )}
       </button>
     </div>

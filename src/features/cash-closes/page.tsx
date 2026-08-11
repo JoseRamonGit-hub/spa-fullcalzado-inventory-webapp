@@ -3,7 +3,6 @@ import { useCashCloses, useCashCloseSummary } from "./hooks/useCashCloseQueries"
 import { useGenerateCashClose } from "./hooks/useCashCloseMutations";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { DataTableError } from "@/components/ui/data-table-error";
 import { columns } from "./columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { toast } from "sonner";
@@ -80,7 +79,7 @@ export function CashClosesPage() {
     if (hasMetricsError && !cashCloseSummary) {
       return (
         <div className="border-b px-3 py-3 md:px-4">
-          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+          <div className="border-warning/30 bg-warning/10 text-warning-foreground rounded-md border px-3 py-2 text-sm">
             {metricsErrorMessage}
           </div>
         </div>
@@ -100,19 +99,17 @@ export function CashClosesPage() {
   }
 
   function renderContent() {
-    if (isLoading) {
-      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Cierres de caja" />;
-    }
-
-    if (isError && !cashCloses) {
-      return <DataTableError title="No pudimos cargar los cierres de caja" onRetry={refetch} isRetrying={isFetching} />;
-    }
-
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <DataTable
           columns={columns}
           data={cashCloses || []}
+          isLoading={isLoading}
+          errorState={
+            isError && !cashCloses
+              ? { title: "No pudimos cargar los cierres de caja", onRetry: refetch, isRetrying: isFetching }
+              : undefined
+          }
           getRowId={(row) => row.id}
           emptyMessage={
             date ? "No hay cierres de caja registrados para esta fecha." : "No hay cierres de caja registrados."

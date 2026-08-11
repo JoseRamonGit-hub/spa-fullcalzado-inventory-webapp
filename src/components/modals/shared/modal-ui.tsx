@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ComponentProps, type ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,13 @@ type ConfirmDialogSectionProps = {
   children: ReactNode;
   className?: string;
 };
+
+type ConfirmDialogLineTableProps = {
+  header: ReactNode;
+  children: ReactNode;
+};
+
+type ConfirmDialogLineRowProps = ComponentProps<"tr">;
 
 type ModalProductIdentityProps = {
   code: string;
@@ -135,9 +142,37 @@ export function ModalConfirmDialog({
 
 export function ConfirmDialogTableSection({ children, className }: ConfirmDialogSectionProps) {
   return (
-    <section className={cn("custom-scrollbar overflow-x-hidden overflow-y-auto rounded-md border text-xs", className)}>
+    <section
+      className={cn(
+        "custom-scrollbar [&_thead]:bg-muted/95 overflow-auto rounded-md border text-xs sm:[&_td]:px-3 sm:[&_td]:py-2 [&_th]:py-1.5 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10",
+        className,
+      )}
+    >
       {children}
     </section>
+  );
+}
+
+export function ConfirmDialogLineTable({ header, children }: ConfirmDialogLineTableProps) {
+  return (
+    <table className="w-full">
+      <thead className="hidden sm:table-header-group">
+        <tr className="text-muted-foreground border-b">{header}</tr>
+      </thead>
+      <tbody className="divide-border/60 divide-y">{children}</tbody>
+    </table>
+  );
+}
+
+export function ConfirmDialogLineRow({ className, ...props }: ConfirmDialogLineRowProps) {
+  return (
+    <tr
+      className={cn(
+        "bg-card grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 px-3 py-2 sm:table-row sm:px-0 sm:py-0",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

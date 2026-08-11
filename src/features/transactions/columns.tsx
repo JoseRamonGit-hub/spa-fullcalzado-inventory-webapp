@@ -14,7 +14,7 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
-      <span className="text-muted-foreground tabular-nums">{formatDateTime(row.original.created_at) || "—"}</span>
+      <span className="data-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("products.code", {
@@ -27,7 +27,7 @@ export const columns = [
 
       return (
         <span className="flex items-center gap-1.5">
-          <span className="product-code font-bold uppercase">{getValue() || "—"}</span>
+          <span className="product-code uppercase">{getValue() || "—"}</span>
           {isExchange && returnId && <ExchangeBadge date={exchangeDate} returnId={returnId} />}
         </span>
       );
@@ -41,7 +41,7 @@ export const columns = [
   columnHelper.accessor("quantity", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Cantidad" className="justify-end" />,
-    cell: ({ getValue }) => <span className="block text-right font-medium tabular-nums">{getValue()}</span>,
+    cell: ({ getValue }) => <span className="data-value block text-right font-medium">{getValue()}</span>,
   }),
   columnHelper.accessor("total_usd", {
     enableSorting: true,
@@ -49,7 +49,7 @@ export const columns = [
     cell: ({ getValue }) => {
       const value = getValue();
       return (
-        <span className="block text-right font-medium tabular-nums">
+        <span className="data-value block text-right font-medium">
           {value == null ? "—" : formatCurrencyUSD(value)}
         </span>
       );
@@ -61,15 +61,17 @@ export const columns = [
     cell: ({ getValue }) => {
       const value = getValue();
       return (
-        <span className="text-muted-foreground block text-right tabular-nums">
+        <span className="data-value text-muted-foreground block text-right">
           {value == null ? "—" : formatCurrencyVES(value)}
         </span>
       );
     },
   }),
   columnHelper.accessor("exchange_rate", {
-    header: "Tasa",
-    cell: ({ getValue }) => <span className="text-muted-foreground tabular-nums">{formatCurrencyVES(getValue())}</span>,
+    header: () => <div className="text-right">Tasa</div>,
+    cell: ({ getValue }) => (
+      <span className="data-value text-muted-foreground block text-right">{formatCurrencyVES(getValue())}</span>
+    ),
   }),
   columnHelper.accessor("users.fullname", {
     enableSorting: true,
@@ -87,7 +89,7 @@ function ExchangeBadge({ date, returnId }: { date: string; returnId: string }) {
   const navigate = useNavigate();
 
   return (
-    <Badge asChild variant="exchange" className="px-1.5 py-0 text-[10px] transition-opacity hover:opacity-80">
+    <Badge asChild variant="exchange" className="px-1.5 py-0 text-[11px] transition-opacity hover:opacity-80">
       <button
         type="button"
         onClick={(event) => {

@@ -32,8 +32,8 @@ colors:
   chart-magenta: "oklch(0.6 0.15 330)"
   chart-gold: "oklch(0.7 0.16 80)"
   chart-red: "oklch(0.58 0.2 25)"
-  table-stripe: "oklch(0.95 0.008 75)"
-  table-hover: "oklch(0.935 0.018 55)"
+  table-stripe: "oklch(0.975 0.004 75)"
+  table-hover: "oklch(0.95 0.01 75)"
   background-dark: "oklch(0.13 0.015 55)"
   card-dark: "oklch(0.17 0.015 55)"
   foreground-dark: "oklch(0.93 0.006 75)"
@@ -239,7 +239,7 @@ El sistema usa una carcasa responsiva de altura completa. En escritorio, una sid
 
 El ritmo base es de 4 px. Los controles y filas se agrupan normalmente con 8 px; los márgenes internos más comunes son 12 y 16 px; 24 px se reserva para tarjetas amplias, diálogos y separaciones mayores. El dashboard limita su lectura a 72 rem (`max-w-6xl`), mientras tablas y páginas de operación aprovechan el ancho disponible. Los breakpoints observados siguen Tailwind: `sm` 640 px, `md` 768 px, `lg` 1024 px y `xl` 1280 px.
 
-Las tablas son densas: filas de 30 px, celdas de 13 px y padding horizontal de 16 px. Conservan su esquema completo en móvil mediante anchos mínimos y desplazamiento horizontal; las cabeceras y filtros deben permanecer próximos a los datos que gobiernan.
+Las tablas operativas usan filas de 30 px, celdas de 13 px y padding horizontal de 16 px. Las tablas compactas de modales, confirmaciones y detalles subordinados usan filas de 28 px, celdas de 12 px y padding horizontal de 12 px. Ambas densidades conservan su esquema mediante anchos mínimos y desplazamiento horizontal; las cabeceras y filtros deben permanecer próximos a los datos que gobiernan.
 
 **La Regla Compacta por Defecto.** No introduzcas espacio vacío para aparentar lujo. Añade separación solo cuando aclare una agrupación, una jerarquía o un cambio de tarea.
 
@@ -309,10 +309,11 @@ Los componentes son **compactos, claros y seguros**: estados visibles, objetivos
 
 ### Data Tables
 
-- Cabecera sobre Arena Apagada al 50%, filas de 30 px, celdas de 13 px y separadores al 40%.
-- Alterna Table Stripe y usa Table Hover para rastrear filas sin introducir tarjetas por registro.
-- Los códigos de producto usan Bronce Ámbar y JetBrains Mono; importes y cantidades usan cifras tabulares.
+- Cabecera sobre Arena Apagada con Label de 11 px, semibold, tracking de 0.05 em y mayúsculas; filas de 30 px, celdas de 13 px y separadores al 40%.
+- Alterna un Table Stripe apenas tonal y usa Table Hover para rastrear filas sin introducir tarjetas por registro. El indicador neutro de orden permanece tenue hasta hover o foco; el orden activo conserva contraste completo.
+- Los códigos de producto usan Bronce Ámbar y JetBrains Mono. Fechas, importes, tasas y cantidades usan el rol `data-value`: JetBrains Mono, cifras tabulares y tracking de 0.01 em; heredan el tamaño y el peso de su densidad y jerarquía contextual.
 - Centraliza encabezados, celdas, paginación, estados, scroll y affordances de overflow en `DataTable` y `Table`; ningún módulo redefine por su cuenta la anatomía o densidad de una tabla operativa.
+- `Table` y `DataTable` son la autoridad de las densidades `operational` y `compact`; skeletons, contenido y estados vacíos consumen el mismo contrato para evitar saltos de geometría.
 - Usa rótulos completos y estables como `Cantidad`, `Precio USD` y `Bs.`. El texto largo puede truncarse si conserva acceso al contenido completo; códigos, monedas, cantidades y fechas no deben quebrarse.
 - El contenedor con desplazamiento horizontal debe ser alcanzable por teclado, tener un nombre accesible y mostrar una sombra lateral mientras exista contenido fuera de la vista.
 

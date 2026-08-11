@@ -1,7 +1,6 @@
 import { useReturns } from "./hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { DataTableError } from "@/components/ui/data-table-error";
 import { columns } from "./columns";
 import { ExpandedReturnRow } from "./components/expanded-return-row";
 import { ReturnsSummary } from "./components/returns-summary";
@@ -29,18 +28,16 @@ export function ReturnsPage() {
   const { data: returns, isLoading, isError, isFetching, refetch } = useReturns(date);
 
   function renderContent() {
-    if (isLoading) {
-      return <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Devoluciones" />;
-    }
-
-    if (isError && !returns) {
-      return <DataTableError title="No pudimos cargar las devoluciones" onRetry={refetch} isRetrying={isFetching} />;
-    }
-
     return (
       <DataTable
         columns={columns}
         data={returns || []}
+        isLoading={isLoading}
+        errorState={
+          isError && !returns
+            ? { title: "No pudimos cargar las devoluciones", onRetry: refetch, isRetrying: isFetching }
+            : undefined
+        }
         getRowId={(row) => row.id}
         emptyMessage={
           date ? "No hay devoluciones registradas para esta fecha." : "No hay devoluciones en los últimos 30 días."

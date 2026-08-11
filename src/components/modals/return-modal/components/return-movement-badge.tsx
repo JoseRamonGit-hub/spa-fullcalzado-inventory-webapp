@@ -34,7 +34,7 @@ export function ReturnMovementBadge({ kind }: ReturnMovementBadgeProps) {
   const config = badgeConfig[kind];
 
   return (
-    <Badge variant={config.variant} className="px-1.5 py-0.5 text-[9px]" title={config.title}>
+    <Badge variant={config.variant} className="px-1.5 py-0.5 text-[11px]" title={config.title}>
       <IterationCcw aria-hidden="true" />
       {config.label}
     </Badge>

@@ -13,7 +13,6 @@ export type InventoryTableMeta = {
   onEdit: (product: Product) => void;
   onAdjustStock: (product: Product) => void;
   onToggleStatus: (product: Product) => void;
-  isAdmin: boolean;
 };
 
 type PriceBsCellProps = {
@@ -27,12 +26,13 @@ type InventoryColumnsOptions = {
   exchangeRate?: number;
   isExchangeRateLoading: boolean;
   isExchangeRateError: boolean;
+  isAdmin: boolean;
 };
 
 function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading, isExchangeRateError }: PriceBsCellProps) {
   if (isExchangeRateLoading) {
     return (
-      <div className="text-muted-foreground text-right text-sm" aria-label="Consultando tasa de cambio">
+      <div className="text-muted-foreground text-right" aria-label="Consultando tasa de cambio">
         …
       </div>
     );
@@ -40,27 +40,32 @@ function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading, isEx
 
   if (isExchangeRateError) {
     return (
-      <div className="text-warning text-right text-xs font-medium" title="No se pudo consultar la tasa de cambio">
+      <div className="text-warning text-right font-medium" title="No se pudo consultar la tasa de cambio">
         No disponible
       </div>
     );
   }
 
   if (!exchangeRate) {
-    return <div className="text-warning text-right text-xs font-medium">Sin tasa</div>;
+    return <div className="text-warning text-right font-medium">Sin tasa</div>;
   }
 
   const priceBs = priceUsd * exchangeRate;
 
-  return <div className="text-muted-foreground text-right tabular-nums">{formatCurrencyVES(priceBs)}</div>;
+  return <div className="data-value text-muted-foreground text-right">{formatCurrencyVES(priceBs)}</div>;
 }
 
-export function getColumns({ exchangeRate, isExchangeRateLoading, isExchangeRateError }: InventoryColumnsOptions) {
-  return [
+export function getColumns({
+  exchangeRate,
+  isExchangeRateLoading,
+  isExchangeRateError,
+  isAdmin,
+}: InventoryColumnsOptions) {
+  const columns = [
     columnHelper.accessor("code", {
       enableSorting: true,
       header: ({ column }) => <DataTableColumnHeader column={column} title="Código" />,
-      cell: ({ getValue }) => <span className="product-code font-bold uppercase">{getValue()}</span>,
+      cell: ({ getValue }) => <span className="product-code uppercase">{getValue()}</span>,
     }),
     columnHelper.accessor("description", {
       enableSorting: true,
@@ -73,7 +78,7 @@ export function getColumns({ exchangeRate, isExchangeRateLoading, isExchangeRate
       cell: ({ getValue }) => (
         <span
           className={cn(
-            "block text-right font-medium tabular-nums",
+            "data-value block text-right font-medium",
             getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground",
           )}
         >
@@ -85,7 +90,7 @@ export function getColumns({ exchangeRate, isExchangeRateLoading, isExchangeRate
       enableSorting: true,
       header: ({ column }) => <DataTableColumnHeader column={column} title="USD" className="justify-end" />,
       cell: ({ getValue }) => (
-        <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
+        <span className="data-value block text-right font-medium">{formatCurrencyUSD(getValue())}</span>
       ),
     }),
     columnHelper.accessor((row) => row.price_usd, {
@@ -109,27 +114,32 @@ export function getColumns({ exchangeRate, isExchangeRateLoading, isExchangeRate
         </div>
       ),
     }),
-    columnHelper.display({
-      id: "actions",
-      header: () => <div className="text-center">Acciones</div>,
-      meta: { hideOnMobile: true },
-      cell: ({ row, table }) => {
-        const product = row.original;
-        const meta = table.options.meta as InventoryTableMeta;
-
-        if (!meta.isAdmin) return null;
-
-        return (
-          <div className="flex justify-center">
-            <ProductMaintenanceActions
-              product={product}
-              onEdit={meta.onEdit}
-              onAdjustStock={meta.onAdjustStock}
-              onToggleStatus={meta.onToggleStatus}
-            />
-          </div>
-        );
-      },
-    }),
   ] as ColumnDef<Product>[];
+
+  if (isAdmin) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: () => <div className="text-center">Acciones</div>,
+        meta: { hideOnMobile: true },
+        cell: ({ row, table }) => {
+          const product = row.original;
+          const meta = table.options.meta as InventoryTableMeta;
+
+          return (
+            <div className="flex justify-center">
+              <ProductMaintenanceActions
+                product={product}
+                onEdit={meta.onEdit}
+                onAdjustStock={meta.onAdjustStock}
+                onToggleStatus={meta.onToggleStatus}
+              />
+            </div>
+          );
+        },
+      }),
+    );
+  }
+
+  return columns;
 }

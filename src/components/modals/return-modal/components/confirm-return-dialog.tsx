@@ -6,6 +6,8 @@ import type { PendingReturnItem, PendingExchangeItem, ReturnSummary } from "../t
 import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
 import { getReturnPresentation } from "../return-presentation";
 import {
+  ConfirmDialogLineRow,
+  ConfirmDialogLineTable,
   ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
   ModalConfirmDialog,
@@ -86,47 +88,39 @@ export function ConfirmReturnDialog({
       contentClassName="data-[size=default]:sm:max-w-xl"
     >
       <ConfirmDialogTableSection className="bg-card border-border/80 max-h-52">
-        <table className="w-full">
-          <thead className="hidden sm:table-header-group">
-            <tr className="bg-muted/35 text-muted-foreground border-b">
-              <TableHead scope="col" className="py-1.5">
-                Movimiento
-              </TableHead>
-              <TableHead scope="col" className="py-1.5">
-                Producto
-              </TableHead>
-              <TableHead scope="col" className="py-1.5 text-right">
+        <ConfirmDialogLineTable
+          header={
+            <>
+              <TableHead scope="col">Movimiento</TableHead>
+              <TableHead scope="col">Producto</TableHead>
+              <TableHead scope="col" className="text-right">
                 Cantidad
               </TableHead>
-              <TableHead scope="col" className="py-1.5 text-right">
+              <TableHead scope="col" className="text-right">
                 Importe USD
               </TableHead>
-            </tr>
-          </thead>
-          <tbody className="divide-border/60 divide-y">
-            {allItems.map((item) => (
-              <tr
-                key={item.tempId}
-                className="bg-card grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 px-3 py-2 sm:table-row sm:px-0 sm:py-0"
-              >
-                <td className="p-0 align-middle sm:px-3 sm:py-2">
-                  <ReturnMovementBadge kind={item.movement === "Entrada" ? "entry" : "exit"} />
-                </td>
-                <td className="min-w-0 p-0 align-middle sm:px-3 sm:py-2">
-                  <ModalProductIdentity code={item.code} description={item.description} />
-                </td>
-                <td className="p-0 align-middle whitespace-nowrap sm:px-3 sm:py-2 sm:text-right">
-                  <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cantidad</span>
-                  <span className="font-semibold tabular-nums">{item.quantity}</span>
-                </td>
-                <td className="p-0 text-right align-middle whitespace-nowrap sm:px-3 sm:py-2">
-                  <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Importe USD</span>
-                  <span className="font-semibold tabular-nums">{formatCurrencyUSD(item.totalUsd)}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </>
+          }
+        >
+          {allItems.map((item) => (
+            <ConfirmDialogLineRow key={item.tempId}>
+              <td className="p-0 align-middle">
+                <ReturnMovementBadge kind={item.movement === "Entrada" ? "entry" : "exit"} />
+              </td>
+              <td className="min-w-0 p-0 align-middle">
+                <ModalProductIdentity code={item.code} description={item.description} />
+              </td>
+              <td className="p-0 align-middle whitespace-nowrap sm:text-right">
+                <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cantidad</span>
+                <span className="data-value font-semibold">{item.quantity}</span>
+              </td>
+              <td className="p-0 text-right align-middle whitespace-nowrap">
+                <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Importe USD</span>
+                <span className="data-value font-semibold">{formatCurrencyUSD(item.totalUsd)}</span>
+              </td>
+            </ConfirmDialogLineRow>
+          ))}
+        </ConfirmDialogLineTable>
       </ConfirmDialogTableSection>
 
       <ConfirmDialogSummarySection className="border-primary/20 bg-card gap-0 overflow-hidden p-0">
@@ -142,7 +136,7 @@ export function ConfirmReturnDialog({
             <p className="text-muted-foreground text-[11px] font-semibold uppercase">USD</p>
             <p
               className={cn(
-                "mt-1 text-base leading-tight font-bold whitespace-nowrap tabular-nums sm:text-lg",
+                "data-value mt-1 text-base leading-tight font-bold whitespace-nowrap sm:text-lg",
                 presentation.differenceClassName,
               )}
             >
@@ -153,7 +147,7 @@ export function ConfirmReturnDialog({
             <p className="text-muted-foreground text-[11px] font-semibold uppercase">Bs.</p>
             <p
               className={cn(
-                "mt-1 text-base leading-tight font-bold whitespace-nowrap tabular-nums sm:text-lg",
+                "data-value mt-1 text-base leading-tight font-bold whitespace-nowrap sm:text-lg",
                 presentation.differenceClassName,
               )}
             >
@@ -177,7 +171,7 @@ export function ConfirmReturnDialog({
 
         <div className="flex items-center justify-between gap-3 border-t px-3 py-2">
           <p className="text-muted-foreground text-[11px] font-semibold uppercase">Tasa aplicada</p>
-          <p className="font-medium whitespace-nowrap tabular-nums">{exchangeRate.displayValue}</p>
+          <p className="data-value font-medium whitespace-nowrap">{exchangeRate.displayValue}</p>
         </div>
 
         {notes && (

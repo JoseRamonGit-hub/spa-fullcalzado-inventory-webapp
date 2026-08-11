@@ -3,23 +3,49 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ScrollShadow } from "@/components/ui/scroll-shadow";
 
+export type TableDensity = "default" | "operational" | "compact";
+
 type TableProps = React.ComponentProps<"table"> & {
   scrollShadow?: boolean;
   scrollAreaLabel?: string;
+  density?: TableDensity;
 };
 
-function Table({ className, scrollShadow = true, scrollAreaLabel, ...props }: TableProps) {
-  const table = <table data-slot="table" className={cn("w-full caption-bottom text-sm", className)} {...props} />;
+const TableDensityContext = React.createContext<TableDensity>("default");
 
-  if (!scrollShadow) {
-    return (
-      <div data-slot="table-container" className="relative h-full w-full">
-        {table}
-      </div>
-    );
-  }
+const tableTextClassNames: Record<TableDensity, string> = {
+  default: "text-sm",
+  operational: "text-[13px]",
+  compact: "text-xs",
+};
 
-  return (
+const tableHeadDensityClassNames: Record<TableDensity, string> = {
+  default: "h-7 px-3",
+  operational: "h-7 px-4",
+  compact: "h-7 px-3",
+};
+
+const tableCellDensityClassNames: Record<TableDensity, string> = {
+  default: "p-2",
+  operational: "h-[30px] px-4 py-0 text-[13px]",
+  compact: "h-7 px-3 py-1.5 text-xs",
+};
+
+function Table({ className, scrollShadow = true, scrollAreaLabel, density = "default", ...props }: TableProps) {
+  const table = (
+    <table
+      data-slot="table"
+      data-density={density}
+      className={cn("w-full caption-bottom", tableTextClassNames[density], className)}
+      {...props}
+    />
+  );
+
+  const content = !scrollShadow ? (
+    <div data-slot="table-container" className="relative h-full w-full">
+      {table}
+    </div>
+  ) : (
     <ScrollShadow
       containerClassName="h-full w-full"
       className="custom-scrollbar overflow-x-auto"
@@ -31,6 +57,8 @@ function Table({ className, scrollShadow = true, scrollAreaLabel, ...props }: Ta
       {table}
     </ScrollShadow>
   );
+
+  return <TableDensityContext.Provider value={density}>{content}</TableDensityContext.Provider>;
 }
 
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
@@ -62,11 +90,14 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
 }
 
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+  const density = React.useContext(TableDensityContext);
+
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "text-muted-foreground h-7 px-3 text-left align-middle text-[10px] font-semibold whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-muted-foreground text-left align-middle text-[11px] leading-none font-semibold tracking-[0.05em] whitespace-nowrap uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] [&>button]:uppercase [&>div]:uppercase [&>span]:uppercase",
+        tableHeadDensityClassNames[density],
         className,
       )}
       {...props}
@@ -75,11 +106,14 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 }
 
 function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+  const density = React.useContext(TableDensityContext);
+
   return (
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        tableCellDensityClassNames[density],
         className,
       )}
       {...props}

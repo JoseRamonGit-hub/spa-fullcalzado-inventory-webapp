@@ -10,7 +10,7 @@ export const columns = [
   columnHelper.accessor("closed_at", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
-    cell: ({ getValue }) => <span className="font-medium tabular-nums">{formatDate(getValue()) || "—"}</span>,
+    cell: ({ getValue }) => <span className="data-value font-medium">{formatDate(getValue()) || "—"}</span>,
   }),
   columnHelper.accessor((cashClose) => cashClose.total_billed_operations ?? cashClose.total_transactions, {
     id: "billed_operations",
@@ -18,22 +18,22 @@ export const columns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Operaciones facturadas" className="justify-end" />
     ),
-    cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue() ?? "—"}</span>,
+    cell: ({ getValue }) => <span className="data-value block text-right">{getValue() ?? "—"}</span>,
   }),
   columnHelper.accessor("total_units_sold", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Unidades" className="justify-end" />,
-    cell: ({ getValue }) => <span className="block text-right tabular-nums">{getValue() ?? "—"}</span>,
+    cell: ({ getValue }) => <span className="data-value block text-right">{getValue() ?? "—"}</span>,
   }),
   columnHelper.accessor("total_returns", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Devoluciones" className="justify-end" />,
     cell: ({ getValue, row }) => {
       const count = getValue();
-      if (!count) return <span className="text-muted-foreground block text-right tabular-nums">—</span>;
+      if (!count) return <span className="data-value text-muted-foreground block text-right">—</span>;
       return (
         <span
-          className="block text-right text-orange-500 tabular-nums"
+          className="data-value block text-right text-orange-500"
           title={`Crédito: ${formatCurrencyUSD(row.original.total_returns_usd)}`}
         >
           {count}
@@ -47,7 +47,7 @@ export const columns = [
       <DataTableColumnHeader column={column} title="Total producido USD" className="justify-end" />
     ),
     cell: ({ getValue }) => (
-      <span className="block text-right font-medium tabular-nums">{formatCurrencyUSD(getValue())}</span>
+      <span className="data-value block text-right font-medium">{formatCurrencyUSD(getValue())}</span>
     ),
   }),
   columnHelper.accessor("total_ves", {
@@ -56,7 +56,7 @@ export const columns = [
       <DataTableColumnHeader column={column} title="Total producido Bs." className="justify-end" />
     ),
     cell: ({ getValue }) => (
-      <span className="block text-right font-medium tabular-nums">{formatCurrencyVES(getValue())}</span>
+      <span className="data-value block text-right font-medium">{formatCurrencyVES(getValue())}</span>
     ),
   }),
   columnHelper.display({

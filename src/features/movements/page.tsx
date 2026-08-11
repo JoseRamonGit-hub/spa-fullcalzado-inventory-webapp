@@ -1,6 +1,5 @@
 import { useMovements } from "./hooks/useMovementQueries";
 import { DataTable } from "@/components/ui/data-table";
-import { DataTableError } from "@/components/ui/data-table-error";
 import { columns } from "./columns";
 import { Topbar } from "./components/topbar";
 import { Route } from "@/routes/_app/movements";
@@ -16,32 +15,22 @@ export function MovementsPage() {
 
   const { data: movements, isLoading, isError, isFetching, refetch } = useMovements(date);
 
-  function renderContent() {
-    if (isLoading) {
-      return (
-        <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Movimientos de inventario" />
-      );
-    }
-
-    if (isError && !movements) {
-      return <DataTableError title="No pudimos cargar los movimientos" onRetry={refetch} isRetrying={isFetching} />;
-    }
-
-    return (
+  return (
+    <section className="flex min-h-0 flex-1 flex-col">
+      <Topbar date={date} onDateChange={setDate} />
       <DataTable
         columns={columns}
         data={movements || []}
+        isLoading={isLoading}
+        errorState={
+          isError && !movements
+            ? { title: "No pudimos cargar los movimientos", onRetry: refetch, isRetrying: isFetching }
+            : undefined
+        }
         getRowId={(row) => row.id}
         emptyMessage={date ? "No hay movimientos registrados para esta fecha." : "No hay movimientos registrados."}
         scrollAreaLabel="Movimientos de inventario"
       />
-    );
-  }
-
-  return (
-    <section className="flex min-h-0 flex-1 flex-col">
-      <Topbar date={date} onDateChange={setDate} />
-      {renderContent()}
     </section>
   );
 }

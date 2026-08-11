@@ -20,27 +20,27 @@ export function MovementStockChange({ movement, fallback = "quantity", showDelta
 
     return (
       <span className="flex items-center justify-end gap-1">
-        <span className={cn("text-[10px] font-semibold", signedQuantity > 0 ? "text-emerald-500" : "text-red-500")}>
+        <span className={cn("text-[11px] font-semibold", signedQuantity > 0 ? "text-success" : "text-destructive")}>
           {signedQuantity > 0 ? "+" : "−"}
         </span>
-        <span className="font-medium tabular-nums">{Math.abs(signedQuantity)}</span>
+        <span className="data-value font-medium">{Math.abs(signedQuantity)}</span>
       </span>
     );
   }
 
   if (signedQuantity === 0) {
-    return <span className="text-muted-foreground block text-right tabular-nums">{movement.stock_before}</span>;
+    return <span className="data-value text-muted-foreground block text-right">{movement.stock_before}</span>;
   }
 
   const stockAfter = movement.stock_before + signedQuantity;
 
   return (
-    <div className="flex items-center justify-end gap-1.5 tabular-nums">
+    <div className="data-value flex items-center justify-end gap-1.5">
       <span className="text-muted-foreground">{movement.stock_before}</span>
       <span className="text-muted-foreground">→</span>
       <span className="text-foreground font-medium">{stockAfter}</span>
       {showDelta ? (
-        <span className={cn("text-[10px]", signedQuantity > 0 ? "text-emerald-500" : "text-red-500")}>
+        <span className={cn("text-[11px]", signedQuantity > 0 ? "text-success" : "text-destructive")}>
           ({signedQuantity > 0 ? "+" : "−"}
           {Math.abs(signedQuantity)})
         </span>

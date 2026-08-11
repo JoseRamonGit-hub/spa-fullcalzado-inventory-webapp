@@ -15,7 +15,7 @@ export function CurrencyStack({ usd, ves, emphasized = false, className }: Curre
         <span className="text-muted-foreground w-7 shrink-0 text-[11px] font-semibold uppercase">USD</span>
         <span
           className={cn(
-            "min-w-0 text-xs leading-tight break-words tabular-nums sm:text-sm",
+            "data-value min-w-0 text-xs leading-tight break-words sm:text-sm",
             emphasized ? "font-bold" : "font-semibold",
           )}
         >
@@ -26,7 +26,7 @@ export function CurrencyStack({ usd, ves, emphasized = false, className }: Curre
         <span className="text-muted-foreground w-7 shrink-0 text-[11px] font-semibold">Bs.</span>
         <span
           className={cn(
-            "min-w-0 text-xs leading-tight break-words tabular-nums sm:text-sm",
+            "data-value min-w-0 text-xs leading-tight break-words sm:text-sm",
             emphasized ? "font-bold" : "font-semibold",
           )}
         >

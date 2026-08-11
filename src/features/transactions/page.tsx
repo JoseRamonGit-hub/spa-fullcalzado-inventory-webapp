@@ -2,7 +2,6 @@ import { useTransactions, useTodayTransactions } from "./hooks/useTransactionQue
 import { useTodayReturns } from "@/features/returns/hooks/useReturnQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
-import { DataTableError } from "@/components/ui/data-table-error";
 import { columns } from "./columns";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { SalesSummary } from "./components/sales-summary";
@@ -50,23 +49,17 @@ export function TransactionsPage() {
   }
 
   function renderContent() {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-0 flex-1 flex-col">
-          <DataTable columns={columns} data={[]} isLoading emptyMessage="" scrollAreaLabel="Ventas" />
-        </div>
-      );
-    }
-
-    if (isError && !transactions) {
-      return <DataTableError title="No pudimos cargar las ventas" onRetry={refetch} isRetrying={isFetching} />;
-    }
-
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <DataTable
           columns={columns}
           data={transactions || []}
+          isLoading={isLoading}
+          errorState={
+            isError && !transactions
+              ? { title: "No pudimos cargar las ventas", onRetry: refetch, isRetrying: isFetching }
+              : undefined
+          }
           getRowId={(row) => row.id}
           emptyMessage={date ? "No hay ventas registradas para esta fecha." : "No hay ventas en los últimos 30 días."}
           scrollAreaLabel="Ventas"

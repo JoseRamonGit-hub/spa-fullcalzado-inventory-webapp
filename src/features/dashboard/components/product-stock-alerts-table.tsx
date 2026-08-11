@@ -13,7 +13,7 @@ const baseColumns = [
   columnHelper.accessor("code", {
     header: "Código",
     cell: ({ getValue }) => (
-      <span className="product-code inline-flex items-center gap-1 font-bold uppercase">
+      <span className="product-code inline-flex items-center gap-1 uppercase">
         {getValue()}
         <ChevronRight className="size-3 opacity-60" aria-hidden="true" />
       </span>
@@ -33,7 +33,7 @@ const baseColumns = [
       return (
         <span
           className={cn(
-            "block text-right font-medium tabular-nums",
+            "data-value block text-right font-medium",
             stock === 0 ? "text-destructive" : stock <= 3 ? "text-warning" : "text-foreground",
           )}
         >
@@ -52,9 +52,7 @@ const stagnantColumns = [
     cell: ({ getValue }) => {
       const stagnantDays = getValue();
 
-      return (
-        <span className="block text-right font-medium tabular-nums">{formatProductStagnantDays(stagnantDays)}</span>
-      );
+      return <span className="data-value block text-right font-medium">{formatProductStagnantDays(stagnantDays)}</span>;
     },
     enableSorting: false,
   }),
@@ -107,6 +105,7 @@ export function ProductStockAlertsTable({ type, products, isLoading, onProductCl
       columns={config.columns}
       data={products}
       isLoading={isLoading}
+      skeletonRowCount={3}
       hidePagination
       emptyMessage={config.emptyMessage}
       emptyStateClassName="h-24"
