@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render as renderWithProviders, screen, within } from "@testing-library/react";
 import { InventoryPage } from "./page";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import type { InventoryProduct, User } from "@/types";
 
@@ -11,6 +12,15 @@ let inventoryDate: string | undefined;
 let productsQueryError = false;
 let productsQueryHasStaleData = false;
 let productsQueryLoading = false;
+
+function render(ui: React.ReactElement) {
+  const result = renderWithProviders(<TooltipProvider>{ui}</TooltipProvider>);
+
+  return {
+    ...result,
+    rerender: (nextUi: React.ReactElement) => result.rerender(<TooltipProvider>{nextUi}</TooltipProvider>),
+  };
+}
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
@@ -86,6 +96,17 @@ function setRole(role: User["role"]) {
 }
 
 describe("InventoryPage product navigation", () => {
+  beforeAll(() => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class ResizeObserver {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+  });
+
   beforeEach(() => {
     navigate.mockClear();
     isMobile = false;
@@ -110,7 +131,7 @@ describe("InventoryPage product navigation", () => {
     expect(screen.getByText("40 días")).toBeInTheDocument();
   });
 
-  it("explica el alcance y el orden de revisión de los productos estancados", () => {
+  it("explica el alcance y el orden de revisión de los productos estancados", async () => {
     inventoryStatus = "stagnant";
     render(<InventoryPage />);
 
@@ -123,16 +144,13 @@ describe("InventoryPage product navigation", () => {
       "1 producto por revisar. Orden de revisión: mayor tiempo sin salida primero.",
     );
     expect(within(context).getByText("mayor tiempo sin salida primero").parentElement).toHaveClass("text-[11px]");
-    expect(within(context).queryByText(/Incluye inactivos para liquidación o limpieza/)).not.toBeInTheDocument();
+    expect(within(context).queryByText(/Incluye inactivos para liquidación/)).not.toBeInTheDocument();
     expect(within(context).queryByText("Sin filtro por fecha de creación")).not.toBeInTheDocument();
 
-    fireEvent.click(within(context).getByRole("button", { name: "Ver criterio del filtro Estancado" }));
+    fireEvent.focus(within(context).getByRole("button", { name: "Ver criterio del filtro Estancado" }));
 
-    expect(
-      screen
-        .getByText(/Incluye productos inactivos para liquidación o limpieza/)
-        .closest("[data-slot=popover-content]"),
-    ).toHaveClass("w-[min(18rem,calc(100vw-1.5rem))]");
+    const [definition] = await screen.findAllByText(/Incluye inactivos para liquidación/);
+    expect(definition.closest("[data-slot=tooltip-content]")).toHaveClass("max-w-[min(18rem,calc(100vw-1.5rem))]");
   });
 
   it("permite reorganizar las acciones en pantallas estrechas sin alterar la tabla", () => {

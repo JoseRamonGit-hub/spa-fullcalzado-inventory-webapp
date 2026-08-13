@@ -72,7 +72,7 @@ Activar la alerta produce una buena sensación inicial de control: el usuario sa
 
 **Por qué importa:** su definición larga, prioridad, ausencia de fecha y acciones pueden ocupar entre cuatro y seis líneas antes de la tabla. La barra termina compitiendo con el contenido que debe contextualizar.
 
-**Arreglo:** mostrar permanentemente solo cantidad y orden. Convertir `Incluye inactivos para liquidación o limpieza` en ayuda desplegable o tooltip accesible. Mantener la misma tabla móvil/escritorio; el problema está en la barra, no en la tabla.
+**Arreglo:** mostrar permanentemente solo cantidad y orden. Convertir `Incluye inactivos para liquidación` en ayuda desplegable o tooltip accesible. Mantener la misma tabla móvil/escritorio; el problema está en la barra, no en la tabla.
 
 **Comando sugerido:** `$impeccable adapt`
 

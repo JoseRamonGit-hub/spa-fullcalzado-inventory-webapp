@@ -17,7 +17,7 @@ const ALERT_COPY = {
   stagnant: {
     title: "Productos estancados",
     description:
-      "Con existencias, 30 días o más sin salidas comerciales · Incluye inactivos para liquidación o limpieza",
+      "30 días o más sin salidas comerciales · Incluye inactivos para liquidación",
     actionLabel: "Ver todos los estancados",
   },
 } as const;

@@ -55,8 +55,12 @@ Venta o Cambio que entrega Productos y aporta sus importes brutos al Total factu
 _Avoid_: Renglón de venta, transacción
 
 **Total facturado**:
-Suma bruta de los importes registrados por Operaciones facturadas durante un período, antes de descontar los créditos generados por devoluciones.
-_Avoid_: Total producido, ganancia, ingreso neto
+Suma bruta de las ventas registradas durante un período, sin descontar devoluciones ni aplicar las diferencias generadas por cambios.
+_Avoid_: Ganancia, ingreso neto
+
+**Total producido**:
+Cifra real resultante en caja durante un período, después de aplicar al Total facturado los créditos de devoluciones y las diferencias generadas por cambios.
+_Avoid_: Total facturado, ganancia
 
 **Ticket promedio**:
 Total facturado de un período dividido entre su cantidad de Operaciones facturadas.
