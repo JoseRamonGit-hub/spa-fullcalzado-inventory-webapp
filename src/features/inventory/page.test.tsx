@@ -147,7 +147,7 @@ describe("InventoryPage product navigation", () => {
     expect(within(context).queryByText(/Incluye inactivos para liquidación/)).not.toBeInTheDocument();
     expect(within(context).queryByText("Sin filtro por fecha de creación")).not.toBeInTheDocument();
 
-    fireEvent.focus(within(context).getByRole("button", { name: "Ver criterio del filtro Estancado" }));
+    fireEvent.focus(within(context).getAllByRole("button", { name: "Ver criterio del filtro Estancado" })[0]);
 
     const [definition] = await screen.findAllByText(/Incluye inactivos para liquidación/);
     expect(definition.closest("[data-slot=tooltip-content]")).toHaveClass("max-w-[min(18rem,calc(100vw-1.5rem))]");

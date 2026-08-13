@@ -14,8 +14,7 @@ const ALERT_CONTEXT_COPY = {
   },
   stagnant: {
     title: "Estancado",
-    definition:
-      "30 días o más sin salidas comerciales · Incluye inactivos para liquidación",
+    definition: "30 días o más sin salidas comerciales · Incluye inactivos para liquidación",
     recommendedOrder: "mayor tiempo sin salida primero",
   },
 } as const;
@@ -60,6 +59,12 @@ export function InventoryAlertContext({
       ? "No se pudo calcular el total por revisar"
       : countLabel;
   const orderLabel = hasCustomSorting ? "personalizado" : copy.recommendedOrder;
+  const renderTooltipContent = (align: "start" | "end") => (
+    <TooltipContent side="bottom" align={align} className="max-w-[min(18rem,calc(100vw-1.5rem))] leading-relaxed">
+      <span className="block font-semibold">Qué incluye {copy.title}</span>
+      <span className="text-background/75 block">{copy.definition}</span>
+    </TooltipContent>
+  );
 
   return (
     <section
@@ -81,14 +86,17 @@ export function InventoryAlertContext({
           </span>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="button" variant="ghost" size="icon-xs" aria-label={`Ver criterio del filtro ${copy.title}`}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                className="hidden md:inline-flex"
+                aria-label={`Ver criterio del filtro ${copy.title}`}
+              >
                 <Info aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" align="start" className="max-w-[min(18rem,calc(100vw-1.5rem))] leading-relaxed">
-              <span className="block font-semibold">Qué incluye {copy.title}</span>
-              <span className="block text-background/75">{copy.definition}</span>
-            </TooltipContent>
+            {renderTooltipContent("start")}
           </Tooltip>
         </div>
       </div>
@@ -117,6 +125,20 @@ export function InventoryAlertContext({
           <X aria-hidden="true" />
           Quitar filtro de stock
         </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="md:hidden"
+              aria-label={`Ver criterio del filtro ${copy.title}`}
+            >
+              <Info aria-hidden="true" />
+            </Button>
+          </TooltipTrigger>
+          {renderTooltipContent("end")}
+        </Tooltip>
       </div>
     </section>
   );

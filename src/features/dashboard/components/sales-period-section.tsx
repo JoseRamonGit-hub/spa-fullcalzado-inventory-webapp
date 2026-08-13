@@ -100,13 +100,18 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
               value && onSelectionChange({ ...selection, preset: value as DashboardSalesPeriodPreset })
             }
             aria-label="Período de facturación"
-            className="grid w-full grid-cols-2 md:flex md:w-auto"
+            className="bg-card grid w-full grid-cols-2 overflow-hidden rounded-md border shadow-xs md:flex md:w-auto md:overflow-visible md:border-0 md:bg-transparent"
           >
-            {SALES_PERIOD_OPTIONS.map((option) => (
+            {SALES_PERIOD_OPTIONS.map((option, index) => (
               <ToggleGroupItem
                 key={option.value}
                 value={option.value}
-                className={cn("h-9 min-w-0 md:h-8 md:flex-none", filterToggleItemClassName)}
+                className={cn(
+                  "h-9 min-w-0 max-md:rounded-none max-md:!border-0 max-md:shadow-none md:h-8 md:flex-none",
+                  index < 2 && "max-md:!border-b",
+                  index % 2 === 0 && "max-md:!border-r",
+                  filterToggleItemClassName,
+                )}
               >
                 {option.label}
               </ToggleGroupItem>
@@ -503,7 +508,7 @@ function SalesIntervalChart({ data, showBucketComparison }: SalesPeriodContentPr
           className={cn(
             "grid min-w-full gap-1",
             data.preset === "week"
-              ? "grid-cols-7"
+              ? "min-w-[584px] grid-cols-[repeat(7,minmax(80px,1fr))] md:min-w-[420px] md:grid-cols-7"
               : data.preset === "month"
                 ? data.buckets.length === 4
                   ? "grid-cols-4"
@@ -516,9 +521,7 @@ function SalesIntervalChart({ data, showBucketComparison }: SalesPeriodContentPr
                   gridTemplateColumns: `repeat(${data.buckets.length}, minmax(72px, 1fr))`,
                   minWidth: Math.max(480, data.buckets.length * 72),
                 }
-              : data.preset === "week"
-                ? { minWidth: 420 }
-                : undefined
+              : undefined
           }
         >
           {data.buckets.map((bucket, bucketPosition) => {
