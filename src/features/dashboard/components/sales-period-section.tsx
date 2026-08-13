@@ -158,7 +158,11 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
                       onRetry={() => salesQuery.refetch()}
                     />
                   ) : null}
-                  <SalesPeriodContent data={salesQuery.data} isRefreshing={salesQuery.isFetching} />
+                  <SalesPeriodContent
+                    data={salesQuery.data}
+                    isRefreshing={salesQuery.isFetching}
+                    showBucketComparison={customAnalysis?.isValid ? customAnalysis.granularity !== "month" : true}
+                  />
                 </div>
               )}
               <Separator />
@@ -381,9 +385,10 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
 type SalesPeriodContentProps = {
   data: NonNullable<ReturnType<typeof useDashboardSalesPeriod>["data"]>;
   isRefreshing?: boolean;
+  showBucketComparison: boolean;
 };
 
-function SalesPeriodContent({ data, isRefreshing = false }: SalesPeriodContentProps) {
+function SalesPeriodContent({ data, isRefreshing = false, showBucketComparison }: SalesPeriodContentProps) {
   const comparison = getBillingComparison(data.totalUsd, data.previousTotalUsd);
   const hasNoActivityInEitherPeriod = data.totalUsd === 0 && data.previousTotalUsd === 0;
 
@@ -453,35 +458,39 @@ function SalesPeriodContent({ data, isRefreshing = false }: SalesPeriodContentPr
           </EmptyHeader>
         </Empty>
       ) : data.preset !== "today" ? (
-        <SalesIntervalChart data={data} />
+        <SalesIntervalChart data={data} showBucketComparison={showBucketComparison} />
       ) : null}
     </div>
   );
 }
 
-function SalesIntervalChart({ data }: SalesPeriodContentProps) {
+function SalesIntervalChart({ data, showBucketComparison }: SalesPeriodContentProps) {
   const maxTotalUsd = Math.max(
     0,
     ...data.buckets
       .filter((bucket) => bucket.isAvailable)
-      .flatMap((bucket) => [bucket.totalUsd, bucket.comparisonTotalUsd ?? 0]),
+      .flatMap((bucket) =>
+        showBucketComparison ? [bucket.totalUsd, bucket.comparisonTotalUsd ?? 0] : [bucket.totalUsd],
+      ),
   );
   const isCustom = data.preset === "custom";
   const seriesKey = `${data.preset}-${data.currentStart}-${data.currentEnd}`;
 
   return (
     <div className="flex flex-col gap-3">
-      <div
-        className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs leading-[1.4] font-medium"
-        aria-label="Leyenda"
-      >
-        <span className="inline-flex items-center gap-1.5">
-          <span className="bg-primary size-2.5 rounded-sm" aria-hidden="true" /> Período actual
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="bg-muted-foreground/35 size-2.5 rounded-sm" aria-hidden="true" /> Período anterior
-        </span>
-      </div>
+      {showBucketComparison ? (
+        <div
+          className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs leading-[1.4] font-medium"
+          aria-label="Leyenda"
+        >
+          <span className="inline-flex items-center gap-1.5">
+            <span className="bg-primary size-2.5 rounded-sm" aria-hidden="true" /> Período actual
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="bg-muted-foreground/35 size-2.5 rounded-sm" aria-hidden="true" /> Período anterior
+          </span>
+        </div>
+      ) : null}
       <div
         role="region"
         aria-label="Ventas brutas por intervalo"
@@ -529,7 +538,9 @@ function SalesIntervalChart({ data }: SalesPeriodContentProps) {
               !bucket.isAvailable && (bucketPosition === 0 || data.buckets[bucketPosition - 1]?.isAvailable);
             const bucketComparison = getBucketComparison(bucket.totalUsd, previousTotalUsd);
             const accessibleLabel = bucket.isAvailable
-              ? `${bucket.label}: actual ${formatCurrencyUSD(bucket.totalUsd)}, anterior ${formatCurrencyUSD(previousTotalUsd)}, ${bucketComparison.accessibleLabel}`
+              ? showBucketComparison
+                ? `${bucket.label}: actual ${formatCurrencyUSD(bucket.totalUsd)}, anterior ${formatCurrencyUSD(previousTotalUsd)}, ${bucketComparison.accessibleLabel}`
+                : `${bucket.label}: ventas ${formatCurrencyUSD(bucket.totalUsd)} del ${formatPeriodRange(bucket.startDate, bucket.endDate)}`
               : `${bucket.label}: aún no disponible porque es una fecha futura`;
 
             return (
@@ -560,32 +571,43 @@ function SalesIntervalChart({ data }: SalesPeriodContentProps) {
                       >
                         {bucket.isAvailable ? (
                           <>
-                            {previousTotalUsd > 0 ? (
-                              <div
-                                data-slot="sales-interval-bar"
-                                data-series-kind="previous"
-                                className="dashboard-chart-bar bg-muted-foreground/35 w-[38%] max-w-6 rounded-t-sm"
-                                style={{ height: previousBarHeight, animationDelay: `${barDelayMs}ms` }}
-                              />
-                            ) : (
-                              <span
-                                data-slot="sales-interval-zero-marker"
-                                data-series-kind="previous"
-                                className="border-muted-foreground/35 mb-px w-[38%] max-w-6 border-t"
-                              />
-                            )}
+                            {showBucketComparison ? (
+                              previousTotalUsd > 0 ? (
+                                <div
+                                  data-slot="sales-interval-bar"
+                                  data-series-kind="previous"
+                                  className="dashboard-chart-bar bg-muted-foreground/35 w-[38%] max-w-6 rounded-t-sm"
+                                  style={{ height: previousBarHeight, animationDelay: `${barDelayMs}ms` }}
+                                />
+                              ) : (
+                                <span
+                                  data-slot="sales-interval-zero-marker"
+                                  data-series-kind="previous"
+                                  className="border-muted-foreground/35 mb-px w-[38%] max-w-6 border-t"
+                                />
+                              )
+                            ) : null}
                             {bucket.totalUsd > 0 ? (
                               <div
                                 data-slot="sales-interval-bar"
                                 data-series-kind="current"
-                                className="dashboard-chart-bar bg-primary w-[38%] max-w-6 rounded-t-sm"
-                                style={{ height: currentBarHeight, animationDelay: `${barDelayMs + 30}ms` }}
+                                className={cn(
+                                  "dashboard-chart-bar bg-primary max-w-6 rounded-t-sm",
+                                  showBucketComparison ? "w-[38%]" : "w-[52%]",
+                                )}
+                                style={{
+                                  height: currentBarHeight,
+                                  animationDelay: `${barDelayMs + (showBucketComparison ? 30 : 0)}ms`,
+                                }}
                               />
                             ) : (
                               <span
                                 data-slot="sales-interval-zero-marker"
                                 data-series-kind="current"
-                                className="border-primary/50 mb-px w-[38%] max-w-6 border-t"
+                                className={cn(
+                                  "border-primary/50 mb-px max-w-6 border-t",
+                                  showBucketComparison ? "w-[38%]" : "w-[52%]",
+                                )}
                               />
                             )}
                           </>
@@ -601,23 +623,28 @@ function SalesIntervalChart({ data }: SalesPeriodContentProps) {
                       <span className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
                         <span className="text-tooltip-primary inline-flex min-w-0 items-center gap-1.5 font-medium">
                           <span className="bg-tooltip-primary size-2 shrink-0 rounded-sm" aria-hidden="true" />
-                          Actual · {formatPeriodRange(bucket.startDate, bucket.endDate)}
+                          {showBucketComparison ? "Actual" : "Ventas"} ·{" "}
+                          {formatPeriodRange(bucket.startDate, bucket.endDate)}
                         </span>
                         <span className="data-value font-semibold">{formatCurrencyUSD(bucket.totalUsd)}</span>
                       </span>
-                      <span className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-                        <span className="text-background/70 inline-flex min-w-0 items-center gap-1.5 font-medium">
-                          <span className="bg-background/45 size-2 shrink-0 rounded-sm" aria-hidden="true" />
-                          Anterior · {formatPeriodRange(bucket.comparisonStartDate, bucket.comparisonEndDate)}
-                        </span>
-                        <span className="data-value font-semibold">{formatCurrencyUSD(previousTotalUsd)}</span>
-                      </span>
-                      <span className="border-background/20 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t pt-2">
-                        <span className="font-medium">Resultado</span>
-                        <span className={cn("data-value font-semibold", bucketComparison.className)}>
-                          {bucketComparison.label}
-                        </span>
-                      </span>
+                      {showBucketComparison ? (
+                        <>
+                          <span className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+                            <span className="text-background/70 inline-flex min-w-0 items-center gap-1.5 font-medium">
+                              <span className="bg-background/45 size-2 shrink-0 rounded-sm" aria-hidden="true" />
+                              Anterior · {formatPeriodRange(bucket.comparisonStartDate, bucket.comparisonEndDate)}
+                            </span>
+                            <span className="data-value font-semibold">{formatCurrencyUSD(previousTotalUsd)}</span>
+                          </span>
+                          <span className="border-background/20 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t pt-2">
+                            <span className="font-medium">Resultado</span>
+                            <span className={cn("data-value font-semibold", bucketComparison.className)}>
+                              {bucketComparison.label}
+                            </span>
+                          </span>
+                        </>
+                      ) : null}
                     </TooltipContent>
                   ) : null}
                 </Tooltip>
