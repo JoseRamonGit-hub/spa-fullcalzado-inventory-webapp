@@ -9,44 +9,47 @@ import { cn } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<DashboardProductStockAlert>();
 
-const baseColumns = [
-  columnHelper.accessor("code", {
-    header: "Código",
-    cell: ({ getValue }) => (
-      <span className="product-code inline-flex items-center gap-1 uppercase">
-        {getValue()}
-        <ChevronRight className="size-3 opacity-60" aria-hidden="true" />
-      </span>
-    ),
-    enableSorting: false,
-  }),
-  columnHelper.accessor("description", {
-    header: "Descripción",
-    cell: ({ getValue }) => <OverflowTooltip className="max-w-table-row">{getValue()}</OverflowTooltip>,
-    enableSorting: false,
-  }),
-  columnHelper.accessor("stock", {
-    header: () => <div className="text-right">Stock</div>,
-    cell: ({ getValue }) => {
-      const stock = getValue();
+const codeColumn = columnHelper.accessor("code", {
+  header: "Código",
+  cell: ({ getValue }) => (
+    <span className="product-code inline-flex items-center gap-1 uppercase">
+      {getValue()}
+      <ChevronRight className="size-3 opacity-60" aria-hidden="true" />
+    </span>
+  ),
+  enableSorting: false,
+});
 
-      return (
-        <span
-          className={cn(
-            "tabular-value block text-right font-medium",
-            stock === 0 ? "text-destructive" : stock <= 3 ? "text-warning" : "text-foreground",
-          )}
-        >
-          {stock}
-        </span>
-      );
-    },
-    enableSorting: false,
-  }),
-] as ColumnDef<DashboardProductStockAlert>[];
+const descriptionColumn = columnHelper.accessor("description", {
+  header: "Descripción",
+  cell: ({ getValue }) => <OverflowTooltip className="max-w-table-row">{getValue()}</OverflowTooltip>,
+  enableSorting: false,
+});
+
+const stockColumn = columnHelper.accessor("stock", {
+  header: () => <div className="text-right">Stock</div>,
+  cell: ({ getValue }) => {
+    const stock = getValue();
+
+    return (
+      <span
+        className={cn(
+          "tabular-value block text-right font-medium",
+          stock === 0 ? "text-destructive" : stock <= 3 ? "text-warning" : "text-foreground",
+        )}
+      >
+        {stock}
+      </span>
+    );
+  },
+  enableSorting: false,
+});
+
+const baseColumns = [codeColumn, descriptionColumn, stockColumn] as ColumnDef<DashboardProductStockAlert>[];
 
 const stagnantColumns = [
-  ...baseColumns,
+  codeColumn,
+  descriptionColumn,
   columnHelper.accessor("stagnantDays", {
     header: () => <div className="text-right">Sin salida</div>,
     cell: ({ getValue }) => {
@@ -58,6 +61,7 @@ const stagnantColumns = [
     },
     enableSorting: false,
   }),
+  stockColumn,
   columnHelper.accessor("active", {
     header: () => <div className="text-center">Estado</div>,
     cell: ({ getValue }) => (

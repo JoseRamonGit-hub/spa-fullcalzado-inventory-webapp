@@ -12,11 +12,12 @@ const ALERT_COPY = {
   low_stock: {
     title: "Productos con stock bajo",
     description: "Productos activos con 3 unidades o menos",
-    actionLabel: "Ver todas las alertas",
+    actionLabel: "Ver todos con stock bajo",
   },
   stagnant: {
     title: "Productos estancados",
-    description: "Sin salidas comerciales durante 30 días completos",
+    description:
+      "Con existencias, 30 días o más sin salidas comerciales · Incluye inactivos para liquidación o limpieza",
     actionLabel: "Ver todos los estancados",
   },
 } as const;
@@ -28,7 +29,7 @@ export function ProductStockAlertsSection() {
         <h2 id="attention-today-title" className="font-heading text-base font-semibold">
           Atención hoy
         </h2>
-        <p className="text-muted-foreground text-xs">Prioridades de inventario que requieren revisión</p>
+        <p className="text-muted-foreground text-xs">Prioridades vigentes de inventario</p>
       </header>
       <div className="grid min-h-0 min-w-0 grid-cols-1 gap-3 xl:grid-cols-2">
         <ProductStockAlertCard type="low_stock" />

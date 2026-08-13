@@ -28,6 +28,10 @@ type DatePickerFilterProps = {
   className?: string;
   /** Optional layout classes for the trigger container. */
   wrapperClassName?: string;
+  /** Prevents opening or changing the date while another filter owns the result set. */
+  disabled?: boolean;
+  /** Explains why the control is unavailable to assistive technologies and pointer users. */
+  disabledReason?: string;
 };
 
 export function DatePickerFilter({
@@ -36,8 +40,11 @@ export function DatePickerFilter({
   placeholder = "Filtrar por fecha",
   className,
   wrapperClassName,
+  disabled = false,
+  disabledReason,
 }: DatePickerFilterProps) {
   const [open, setOpen] = React.useState(false);
+  const disabledReasonId = React.useId();
 
   /** Convert stored YYYY-MM-DD string back to a Date for the calendar. */
   const selected = React.useMemo(() => {
@@ -59,6 +66,8 @@ export function DatePickerFilter({
   }, [value]);
 
   const handleSelect = (date: Date | undefined) => {
+    if (disabled) return;
+
     if (!date) {
       onChange(undefined);
       setOpen(false);
@@ -69,28 +78,43 @@ export function DatePickerFilter({
   };
 
   const handleReset = () => {
+    if (disabled) return;
     onChange(undefined);
   };
 
-  const displayLabel = selected ? format(selected, "d MMM, yyyy", { locale: es }) : placeholder;
-  const triggerLabel = selected
-    ? `Cambiar fecha. Fecha seleccionada: ${displayLabel}`
-    : `${placeholder}. Seleccionar fecha`;
+  const displayLabel = !disabled && selected ? format(selected, "d MMM, yyyy", { locale: es }) : placeholder;
+  const triggerLabel = disabled
+    ? `${placeholder}. ${disabledReason ?? "No disponible"}`
+    : selected
+      ? `Cambiar fecha. Fecha seleccionada: ${displayLabel}`
+      : `${placeholder}. Seleccionar fecha`;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={disabled ? false : open} onOpenChange={(nextOpen) => !disabled && setOpen(nextOpen)}>
       <div className={cn("relative inline-flex min-w-0", wrapperClassName)}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className={cn(filterTriggerClassName, value && "pe-9", filterStateClassName(Boolean(value)), className)}
+            className={cn(
+              filterTriggerClassName,
+              value && !disabled && "pe-9",
+              filterStateClassName(Boolean(value) && !disabled),
+              className,
+            )}
             aria-label={triggerLabel}
+            aria-describedby={disabled && disabledReason ? disabledReasonId : undefined}
+            disabled={disabled}
+            title={disabled ? disabledReason : undefined}
           >
-            <CalendarDays data-icon="inline-start" className={filterIconClassName(Boolean(value))} aria-hidden="true" />
+            <CalendarDays
+              data-icon="inline-start"
+              className={filterIconClassName(Boolean(value) && !disabled)}
+              aria-hidden="true"
+            />
             <span className="truncate">{displayLabel}</span>
           </Button>
         </PopoverTrigger>
-        {value ? (
+        {value && !disabled ? (
           <Button
             type="button"
             variant="ghost"
@@ -101,6 +125,11 @@ export function DatePickerFilter({
           >
             <X data-icon="inline-start" aria-hidden="true" />
           </Button>
+        ) : null}
+        {disabled && disabledReason ? (
+          <span id={disabledReasonId} className="sr-only">
+            {disabledReason}
+          </span>
         ) : null}
       </div>
       <PopoverContent className="bg-card w-auto p-0 shadow-lg" align="end" sideOffset={6}>

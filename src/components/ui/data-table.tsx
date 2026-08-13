@@ -55,6 +55,8 @@ type DataTableProps<TData, TValue> = {
   autoExpandRowId?: string;
   expanded?: ExpandedState;
   onExpandedChange?: OnChangeFn<ExpandedState>;
+  sorting?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
   getRowClassName?: (row: Row<TData>, index: number) => string | undefined;
   tableClassName?: string;
   scrollAreaLabel?: string;
@@ -84,6 +86,8 @@ export function DataTable<TData, TValue>({
   autoExpandRowId,
   expanded,
   onExpandedChange,
+  sorting,
+  onSortingChange,
   getRowClassName,
   tableClassName,
   scrollAreaLabel,
@@ -109,12 +113,14 @@ export function DataTable<TData, TValue>({
   }, [isMobile, columns]);
 
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize });
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalExpanded, setInternalExpanded] = useState<ExpandedState>({});
   const lastAutoExpandedRowIdRef = useRef<string | undefined>(undefined);
 
   const expandedState = expanded ?? internalExpanded;
   const handleExpandedChange = onExpandedChange ?? setInternalExpanded;
+  const sortingState = sorting ?? internalSorting;
+  const handleSortingChange = onSortingChange ?? setInternalSorting;
 
   useEffect(() => {
     if (!autoExpandRowId) {
@@ -153,13 +159,13 @@ export function DataTable<TData, TValue>({
     state: {
       columnVisibility,
       pagination,
-      sorting,
+      sorting: sortingState,
       ...(renderSubRow ? { expanded: expandedState } : {}),
     },
     onPaginationChange: setPagination,
     autoResetPageIndex: true,
     onSortingChange: (updater) => {
-      setSorting(updater);
+      handleSortingChange(updater);
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     },
     ...(renderSubRow ? { onExpandedChange: handleExpandedChange } : {}),

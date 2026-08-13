@@ -24,7 +24,7 @@ describe("Topbar de Inventario", () => {
       "font-normal",
       "text-muted-foreground",
     );
-    expect(screen.getByRole("button", { name: /Filtrar por día/ })).toHaveClass(
+    expect(screen.getByRole("button", { name: /Fecha de creación/ })).toHaveClass(
       "text-xs",
       "font-normal",
       "text-muted-foreground",
@@ -49,6 +49,26 @@ describe("Topbar de Inventario", () => {
     );
   });
 
+  it("deshabilita y explica el filtro por fecha mientras se revisan alertas", () => {
+    render(
+      <Topbar
+        search=""
+        onSearchChange={vi.fn()}
+        date="2026-08-01"
+        onDateChange={vi.fn()}
+        stockStatus="stagnant"
+        onStockStatusChange={vi.fn()}
+      />,
+    );
+
+    const dateFilter = screen.getByRole("button", { name: /no está disponible mientras revisas alertas/i });
+
+    expect(dateFilter).toBeDisabled();
+    expect(dateFilter).toHaveTextContent("Fecha de creación");
+    expect(screen.queryByRole("button", { name: "Limpiar filtro de fecha" })).not.toBeInTheDocument();
+    expect(screen.getByText(/La fecha de creación no está disponible mientras revisas alertas/)).toHaveClass("sr-only");
+  });
+
   it("permite que ambos filtros se ajusten a la misma fila en pantallas estrechas", () => {
     render(
       <Topbar
@@ -61,11 +81,14 @@ describe("Topbar de Inventario", () => {
       />,
     );
 
-    const dateFilter = screen.getByRole("button", { name: /Filtrar por día/ });
+    const dateFilter = screen.getByRole("button", { name: /Fecha de creación/ });
     const filterGroup = dateFilter.parentElement?.parentElement;
 
     expect(filterGroup).toHaveClass("grid-cols-2");
-    expect(screen.getByRole("combobox", { name: "Estado de inventario" }).parentElement).toHaveClass("min-w-0", "w-full");
+    expect(screen.getByRole("combobox", { name: "Estado de inventario" }).parentElement).toHaveClass(
+      "min-w-0",
+      "w-full",
+    );
     expect(dateFilter.parentElement).toHaveClass("min-w-0", "w-full", "md:w-auto");
     expect(dateFilter).toHaveClass("w-full", "md:w-auto");
   });
