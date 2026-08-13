@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { es } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
-import { CalendarDays, RefreshCw, TriangleAlert } from "lucide-react";
+import { CalendarDays, Info, RefreshCw, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,14 +18,17 @@ import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/compone
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { DashboardServiceError } from "@/services/dashboardService";
 import type { DashboardSalesPeriodPreset, DashboardSalesPeriodRequest, DashboardTopProductsRankMode } from "@/types";
 import {
   formatCalendarDateForBackend,
   formatCalendarDateString,
   formatCurrencyUSD,
   formatDateForBackend,
+  formatInteger,
 } from "@/utils/formatters";
 import { useDashboardSalesPeriod, useDashboardTopProducts } from "../hooks/useDashboardMetrics";
 import {
@@ -37,10 +40,10 @@ import {
 import { TopProductsTable } from "./top-products-table";
 
 const PERIOD_DESCRIPTION: Record<DashboardSalesPeriodPreset, string> = {
-  today: "Comparado con ayer",
-  week: "Comparado con el mismo tramo de la semana anterior",
-  month: "Comparado con los mismos días disponibles del mes anterior",
-  custom: "Comparado con el bloque contiguo anterior de igual duración",
+  today: "Referencia: ayer",
+  week: "Referencia: los mismos días de la semana anterior",
+  month: "Referencia: los mismos días transcurridos del mes anterior",
+  custom: "Referencia: el período inmediatamente anterior de igual duración",
 };
 
 type SalesPeriodSectionProps = {
@@ -69,10 +72,22 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
     <section className="flex min-h-0 flex-col" aria-labelledby="sales-period-title">
       <header className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-1">
-          <h2 id="sales-period-title" className="font-heading text-base font-semibold">
+          <h2 id="sales-period-title" className="font-heading text-base leading-tight font-semibold">
             Ventas por período
           </h2>
-          <p className="text-muted-foreground text-xs">Facturación bruta del negocio activo</p>
+          <div className="text-muted-foreground flex max-w-[65ch] items-center gap-1 text-xs leading-[1.4]">
+            <span>Ventas brutas del negocio activo</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="ghost" size="icon-xs" aria-label="Qué incluyen las ventas brutas">
+                  <Info aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-64 leading-relaxed">
+                Importe facturado antes de descontar devoluciones.
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         <div className="flex w-full flex-col items-stretch gap-2 md:w-auto md:items-end">
@@ -104,7 +119,7 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
       </header>
       <Separator />
 
-      <div className="py-4" aria-live="polite" aria-busy={salesQuery.isFetching || topProductsQuery.isFetching}>
+      <div className="py-4">
         <div className="flex flex-col gap-3">
           {customAnalysis?.isValid && customAnalysis.warning ? (
             <Alert>
@@ -121,23 +136,31 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
                 </EmptyTitle>
               </EmptyHeader>
             </Empty>
-          ) : salesQuery.isPending || topProductsQuery.isPending ? (
-            <SalesPeriodSkeleton />
-          ) : salesQuery.isError ? (
-            <Alert variant="destructive">
-              <TriangleAlert aria-hidden="true" />
-              <AlertTitle>No se pudo cargar la facturación</AlertTitle>
-              <AlertDescription>
-                <p>Verifica la conexión e inténtalo de nuevo.</p>
-                <Button variant="outline" size="sm" onClick={() => salesQuery.refetch()}>
-                  <RefreshCw data-icon="inline-start" />
-                  Reintentar
-                </Button>
-              </AlertDescription>
-            </Alert>
           ) : (
             <div className="flex flex-col gap-4">
-              <SalesPeriodContent data={salesQuery.data} />
+              {salesQuery.isPending ? (
+                <SalesPeriodSkeleton />
+              ) : salesQuery.isError && !salesQuery.data ? (
+                <DashboardQueryError
+                  error={salesQuery.error}
+                  subject="las ventas del período"
+                  isRetrying={salesQuery.isFetching}
+                  onRetry={() => salesQuery.refetch()}
+                />
+              ) : (
+                <div className="flex flex-col gap-3" aria-busy={salesQuery.isFetching}>
+                  {salesQuery.isError ? (
+                    <DashboardQueryError
+                      error={salesQuery.error}
+                      subject="las ventas del período"
+                      mode="refresh"
+                      isRetrying={salesQuery.isFetching}
+                      onRetry={() => salesQuery.refetch()}
+                    />
+                  ) : null}
+                  <SalesPeriodContent data={salesQuery.data} isRefreshing={salesQuery.isFetching} />
+                </div>
+              )}
               <Separator />
               <TopProductsSection
                 rankBy={topRankBy}
@@ -162,13 +185,17 @@ type TopProductsSectionProps = {
 
 function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: TopProductsSectionProps) {
   return (
-    <section className="flex min-h-0 flex-col gap-3" aria-labelledby="top-products-title">
+    <section className="flex min-h-0 flex-col gap-3" aria-labelledby="top-products-title" aria-busy={query.isFetching}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
-          <h3 id="top-products-title" className="font-heading text-sm font-semibold">
-            Top productos
+          <h3 id="top-products-title" className="font-heading text-base leading-tight font-semibold">
+            Productos más vendidos
           </h3>
-          <p className="text-muted-foreground text-xs">Ventas del período seleccionado</p>
+          <p className="text-muted-foreground max-w-[65ch] text-xs leading-[1.4]">
+            {rankBy === "units"
+              ? "Ordenados de mayor a menor por unidades vendidas."
+              : "Ordenados de mayor a menor por ventas brutas en USD."}
+          </p>
         </div>
         <ToggleGroup
           type="single"
@@ -176,7 +203,7 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
           size="sm"
           value={rankBy}
           onValueChange={(value) => value && onRankByChange(value as DashboardTopProductsRankMode)}
-          aria-label="Ordenar Top productos"
+          aria-label="Ordenar productos por"
         >
           <ToggleGroupItem value="units" className={cn("h-9 md:h-8", filterToggleItemClassName)}>
             Unidades
@@ -187,25 +214,96 @@ function TopProductsSection({ rankBy, onRankByChange, query, onProductClick }: T
         </ToggleGroup>
       </div>
 
-      {query.isError ? (
-        <Alert variant="destructive">
-          <TriangleAlert aria-hidden="true" />
-          <AlertTitle>No se pudo cargar el ranking de productos</AlertTitle>
-          <AlertDescription>
-            <Button variant="outline" size="sm" onClick={() => query.refetch()}>
-              <RefreshCw data-icon="inline-start" />
-              Reintentar
-            </Button>
-          </AlertDescription>
-        </Alert>
-      ) : (
-        <TopProductsTable
-          products={query.data ?? []}
-          isLoading={query.isPending}
-          onProductClick={(product) => onProductClick(product.productId)}
+      {query.isFetching && !query.isPending && !query.isError ? (
+        <p className="text-muted-foreground flex items-center gap-1.5 text-xs leading-[1.4]" role="status">
+          <RefreshCw className="size-3 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+          Actualizando productos…
+        </p>
+      ) : null}
+      {query.isError && !query.data ? (
+        <DashboardQueryError
+          error={query.error}
+          subject="los productos más vendidos"
+          isRetrying={query.isFetching}
+          onRetry={() => query.refetch()}
         />
+      ) : (
+        <>
+          {query.isError ? (
+            <DashboardQueryError
+              error={query.error}
+              subject="los productos más vendidos"
+              mode="refresh"
+              isRetrying={query.isFetching}
+              onRetry={() => query.refetch()}
+            />
+          ) : null}
+          <TopProductsTable
+            products={query.data ?? []}
+            isLoading={query.isPending}
+            rankBy={rankBy}
+            onProductClick={(product) => onProductClick(product.productId)}
+          />
+        </>
       )}
     </section>
+  );
+}
+
+type DashboardQueryErrorProps = {
+  error: unknown;
+  subject: string;
+  mode?: "load" | "refresh";
+  isRetrying: boolean;
+  onRetry: () => void | Promise<unknown>;
+};
+
+function DashboardQueryError({ error, subject, mode = "load", isRetrying, onRetry }: DashboardQueryErrorProps) {
+  const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
+  const kind = error instanceof DashboardServiceError ? error.kind : isOffline ? "network" : "unexpected";
+  const title =
+    mode === "refresh"
+      ? `No se pudieron actualizar ${subject}`
+      : kind === "network"
+        ? `Sin conexión para cargar ${subject}`
+        : kind === "access"
+          ? `No tienes acceso a ${subject}`
+          : kind === "invalid-response"
+            ? `No pudimos validar ${subject}`
+            : `No se pudieron cargar ${subject}`;
+  const description =
+    mode === "refresh"
+      ? "Los datos anteriores siguen visibles. Reintenta para obtener la información más reciente."
+      : kind === "network"
+        ? "Revisa tu conexión. Podrás reintentar cuando vuelvas a estar en línea."
+        : kind === "access"
+          ? "Tu usuario no tiene permiso para consultar esta información."
+          : kind === "invalid-response"
+            ? "El servidor devolvió información incompleta. Reintenta para solicitarla de nuevo."
+            : "Verifica la conexión e inténtalo de nuevo.";
+
+  return (
+    <Alert variant="destructive">
+      <TriangleAlert aria-hidden="true" />
+      <AlertTitle>{title}</AlertTitle>
+      <AlertDescription>
+        <p>{description}</p>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isRetrying || isOffline}
+          aria-busy={isRetrying}
+          onClick={() => void onRetry()}
+        >
+          <RefreshCw
+            data-icon="inline-start"
+            className={cn(isRetrying && "animate-spin motion-reduce:animate-none")}
+            aria-hidden="true"
+          />
+          {isRetrying ? "Reintentando…" : "Reintentar"}
+        </Button>
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -253,7 +351,7 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="end">
-        <PopoverTitle className="sr-only">Seleccionar rango personalizado de Ventas</PopoverTitle>
+        <PopoverTitle className="sr-only">Seleccionar período de ventas</PopoverTitle>
         <Calendar
           mode="range"
           selected={draftRange}
@@ -269,7 +367,7 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
         />
         <div className="flex items-center justify-between gap-3 border-t p-3">
           <p className={cn("text-muted-foreground text-xs", !draftAnalysis.isValid && "text-destructive")}>
-            {draftAnalysis.isValid ? `${draftAnalysis.durationDays} días inclusivos` : draftAnalysis.error}
+            {draftAnalysis.isValid ? `${draftAnalysis.durationDays} días seleccionados` : draftAnalysis.error}
           </p>
           <Button size="sm" className="h-9 md:h-8" disabled={!draftAnalysis.isValid} onClick={applyRange}>
             Aplicar rango
@@ -282,56 +380,76 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
 
 type SalesPeriodContentProps = {
   data: NonNullable<ReturnType<typeof useDashboardSalesPeriod>["data"]>;
+  isRefreshing?: boolean;
 };
 
-function SalesPeriodContent({ data }: SalesPeriodContentProps) {
+function SalesPeriodContent({ data, isRefreshing = false }: SalesPeriodContentProps) {
   const comparison = getBillingComparison(data.totalUsd, data.previousTotalUsd);
-  const isEmpty = data.totalUsd === 0;
-  const hasNoActivityInEitherPeriod = isEmpty && data.previousTotalUsd === 0;
+  const hasNoActivityInEitherPeriod = data.totalUsd === 0 && data.previousTotalUsd === 0;
 
   return (
     <div className="flex flex-col gap-4">
+      {isRefreshing ? (
+        <p className="text-muted-foreground flex items-center gap-1.5 text-xs leading-[1.4]" role="status">
+          <RefreshCw className="size-3 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+          Actualizando ventas…
+        </p>
+      ) : null}
       <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <SalesMetric label="Facturado en el período" value={formatCurrencyUSD(data.totalUsd)}>
           <div className="flex flex-wrap items-center gap-2">
             {!hasNoActivityInEitherPeriod ? (
               <Badge
+                className="max-w-full"
+                title={data.previousTotalUsd === 0 ? "Sin base comparable" : comparison.label}
                 variant={
-                  comparison.direction === "positive"
-                    ? "success"
-                    : comparison.direction === "negative"
-                      ? "destructive"
-                      : "secondary"
+                  data.previousTotalUsd === 0
+                    ? "secondary"
+                    : comparison.direction === "positive"
+                      ? "success"
+                      : comparison.direction === "negative"
+                        ? "destructive"
+                        : "secondary"
                 }
               >
-                {comparison.label}
+                {data.previousTotalUsd === 0 ? "Sin base comparable" : comparison.label}
               </Badge>
             ) : null}
-            <span className="text-muted-foreground text-xs">anterior: {formatCurrencyUSD(data.previousTotalUsd)}</span>
+            <span className="text-muted-foreground text-xs leading-[1.4]">
+              {formatMetricComparison(data.totalUsd, data.previousTotalUsd, formatCurrencyUSD, formatSignedCurrency)}
+            </span>
           </div>
         </SalesMetric>
-        <SalesMetric label="Operaciones facturadas" value={String(data.operations)}>
-          <p className="text-muted-foreground text-xs">{data.previousOperations} en el período anterior</p>
+        <SalesMetric label="Operaciones facturadas" value={formatInteger(data.operations)}>
+          <p className="text-muted-foreground text-xs leading-[1.4]">
+            {formatMetricComparison(data.operations, data.previousOperations, formatInteger, formatSignedInteger)}
+          </p>
         </SalesMetric>
         <SalesMetric label="Ticket promedio" value={formatCurrencyUSD(data.averageTicketUsd)}>
-          <p className="text-muted-foreground text-xs">Por operación facturada</p>
+          <p className="text-muted-foreground text-xs leading-[1.4]">
+            Período anterior: {formatCurrencyUSD(data.previousAverageTicketUsd ?? 0)}
+          </p>
         </SalesMetric>
       </div>
 
       <Separator />
 
       <div className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-xs font-medium">{PERIOD_DESCRIPTION[data.preset]}</p>
-        <p className="text-muted-foreground text-xs">
-          {formatPeriodRange(data.currentStart, data.currentEnd)} · período anterior{" "}
+        <p className="text-muted-foreground max-w-[65ch] text-xs leading-[1.4] font-semibold">
+          {PERIOD_DESCRIPTION[data.preset]}
+        </p>
+        <p className="text-muted-foreground max-w-[75ch] text-xs leading-[1.4]">
+          Período actual: {formatPeriodRange(data.currentStart, data.currentEnd)} · Período anterior:{" "}
           {formatPeriodRange(data.comparisonStart, data.comparisonEnd)}
         </p>
       </div>
 
-      {isEmpty ? (
+      {hasNoActivityInEitherPeriod ? (
         <Empty className="border py-6 md:py-6">
           <EmptyHeader>
-            <EmptyTitle className="text-sm font-medium tracking-normal">Sin actividad en este período</EmptyTitle>
+            <EmptyTitle className="text-sm font-medium tracking-normal">
+              No hubo ventas en ninguno de los dos períodos
+            </EmptyTitle>
           </EmptyHeader>
         </Empty>
       ) : data.preset !== "today" ? (
@@ -344,87 +462,191 @@ function SalesPeriodContent({ data }: SalesPeriodContentProps) {
 function SalesIntervalChart({ data }: SalesPeriodContentProps) {
   const maxTotalUsd = Math.max(
     0,
-    ...data.buckets.filter((bucket) => bucket.isAvailable).map((bucket) => bucket.totalUsd),
+    ...data.buckets
+      .filter((bucket) => bucket.isAvailable)
+      .flatMap((bucket) => [bucket.totalUsd, bucket.comparisonTotalUsd ?? 0]),
   );
   const isCustom = data.preset === "custom";
   const seriesKey = `${data.preset}-${data.currentStart}-${data.currentEnd}`;
 
   return (
-    <div
-      role="region"
-      aria-label="Facturación por intervalo"
-      tabIndex={0}
-      className="custom-scrollbar focus-visible:ring-ring w-full overflow-x-auto rounded-sm pb-1 focus-visible:ring-2 focus-visible:outline-none"
-    >
-      <ul
-        key={seriesKey}
-        data-series={seriesKey}
-        className={cn(
-          "grid min-w-full gap-1",
-          data.preset === "week"
-            ? "grid-cols-7"
-            : data.preset === "month"
-              ? data.buckets.length === 4
-                ? "grid-cols-4"
-                : "grid-cols-5"
-              : undefined,
-        )}
-        style={
-          isCustom
-            ? {
-                gridTemplateColumns: `repeat(${data.buckets.length}, minmax(72px, 1fr))`,
-                minWidth: Math.max(480, data.buckets.length * 72),
-              }
-            : data.preset === "week"
-              ? { minWidth: 420 }
-              : undefined
-        }
+    <div className="flex flex-col gap-3">
+      <div
+        className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs leading-[1.4] font-medium"
+        aria-label="Leyenda"
       >
-        {data.buckets.map((bucket, bucketPosition) => {
-          const valueLabel = bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "No disponible";
-          const barHeight =
-            bucket.isAvailable && maxTotalUsd > 0 ? Math.max(4, (bucket.totalUsd / maxTotalUsd) * 100) : 0;
-          const barDelayMs = Math.round((bucketPosition / Math.max(1, data.buckets.length - 1)) * 180);
+        <span className="inline-flex items-center gap-1.5">
+          <span className="bg-primary size-2.5 rounded-sm" aria-hidden="true" /> Período actual
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="bg-muted-foreground/35 size-2.5 rounded-sm" aria-hidden="true" /> Período anterior
+        </span>
+      </div>
+      <div
+        role="region"
+        aria-label="Ventas brutas por intervalo"
+        tabIndex={0}
+        className="custom-scrollbar focus-visible:ring-ring w-full overflow-x-auto rounded-sm pb-1 focus-visible:ring-2 focus-visible:outline-none"
+      >
+        <ul
+          key={seriesKey}
+          data-series={seriesKey}
+          className={cn(
+            "grid min-w-full gap-1",
+            data.preset === "week"
+              ? "grid-cols-7"
+              : data.preset === "month"
+                ? data.buckets.length === 4
+                  ? "grid-cols-4"
+                  : "grid-cols-5"
+                : undefined,
+          )}
+          style={
+            isCustom
+              ? {
+                  gridTemplateColumns: `repeat(${data.buckets.length}, minmax(72px, 1fr))`,
+                  minWidth: Math.max(480, data.buckets.length * 72),
+                }
+              : data.preset === "week"
+                ? { minWidth: 420 }
+                : undefined
+          }
+        >
+          {data.buckets.map((bucket, bucketPosition) => {
+            const currentLabel = bucket.isAvailable ? formatCurrencyUSD(bucket.totalUsd) : "Fecha futura";
+            const currentLabelTitle = bucket.isAvailable ? currentLabel : "Aún no disponible: fecha futura";
+            const previousTotalUsd = bucket.comparisonTotalUsd ?? 0;
+            const currentBarHeight =
+              bucket.isAvailable && bucket.totalUsd > 0 && maxTotalUsd > 0
+                ? `${Math.max(4, (bucket.totalUsd / maxTotalUsd) * 100)}%`
+                : "0";
+            const previousBarHeight =
+              bucket.isAvailable && previousTotalUsd > 0 && maxTotalUsd > 0
+                ? `${Math.max(4, (previousTotalUsd / maxTotalUsd) * 100)}%`
+                : "0";
+            const barDelayMs = Math.round((bucketPosition / Math.max(1, data.buckets.length - 1)) * 180);
+            const beginsFutureRange =
+              !bucket.isAvailable && (bucketPosition === 0 || data.buckets[bucketPosition - 1]?.isAvailable);
+            const bucketComparison = getBucketComparison(bucket.totalUsd, previousTotalUsd);
+            const accessibleLabel = bucket.isAvailable
+              ? `${bucket.label}: actual ${formatCurrencyUSD(bucket.totalUsd)}, anterior ${formatCurrencyUSD(previousTotalUsd)}, ${bucketComparison.accessibleLabel}`
+              : `${bucket.label}: aún no disponible porque es una fecha futura`;
 
-          return (
-            <li
-              key={bucket.index}
-              className="grid min-w-0 grid-rows-[8rem_auto_auto] gap-1 rounded-sm px-1 text-center"
-              aria-label={`${bucket.label}: ${valueLabel}`}
-            >
-              <div className="border-border/60 flex min-h-0 items-end justify-center border-b px-1" aria-hidden="true">
-                {bucket.isAvailable ? (
-                  <div
-                    data-slot="sales-interval-bar"
-                    className={cn(
-                      "dashboard-chart-bar bg-primary w-full max-w-13 rounded-t-sm",
-                      bucket.totalUsd === 0 && "bg-muted-foreground/30",
-                    )}
-                    style={{ height: `${barHeight}%`, animationDelay: `${barDelayMs}ms` }}
-                  />
-                ) : (
-                  <span className="text-muted-foreground pb-1 text-xs">—</span>
-                )}
-              </div>
-              <span
-                className="text-muted-foreground max-w-full truncate text-[10px] font-semibold tracking-wide uppercase"
-                title={bucket.label}
-              >
-                {bucket.label}
-              </span>
-              <span
+            return (
+              <li
+                key={bucket.index}
+                data-availability={bucket.isAvailable ? "available" : "future"}
                 className={cn(
-                  "max-w-full truncate font-mono text-[10px] tabular-nums",
-                  !bucket.isAvailable && "text-muted-foreground italic",
+                  "grid min-w-0 grid-rows-[8rem_auto_auto] gap-1 rounded-sm px-1 text-center",
+                  beginsFutureRange && "border-border/60 border-l border-dashed",
                 )}
-                title={valueLabel}
               >
-                {valueLabel}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      tabIndex={0}
+                      aria-label={accessibleLabel}
+                      className={cn(
+                        "focus-visible:ring-ring h-full rounded-sm outline-none focus-visible:ring-2",
+                        !bucket.isAvailable && "text-muted-foreground",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex h-full min-h-0 items-end justify-center gap-1 border-b px-1",
+                          bucket.isAvailable ? "border-border/60" : "border-border/35",
+                        )}
+                        aria-hidden="true"
+                      >
+                        {bucket.isAvailable ? (
+                          <>
+                            {previousTotalUsd > 0 ? (
+                              <div
+                                data-slot="sales-interval-bar"
+                                data-series-kind="previous"
+                                className="dashboard-chart-bar bg-muted-foreground/35 w-[38%] max-w-6 rounded-t-sm"
+                                style={{ height: previousBarHeight, animationDelay: `${barDelayMs}ms` }}
+                              />
+                            ) : (
+                              <span
+                                data-slot="sales-interval-zero-marker"
+                                data-series-kind="previous"
+                                className="border-muted-foreground/35 mb-px w-[38%] max-w-6 border-t"
+                              />
+                            )}
+                            {bucket.totalUsd > 0 ? (
+                              <div
+                                data-slot="sales-interval-bar"
+                                data-series-kind="current"
+                                className="dashboard-chart-bar bg-primary w-[38%] max-w-6 rounded-t-sm"
+                                style={{ height: currentBarHeight, animationDelay: `${barDelayMs + 30}ms` }}
+                              />
+                            ) : (
+                              <span
+                                data-slot="sales-interval-zero-marker"
+                                data-series-kind="current"
+                                className="border-primary/50 mb-px w-[38%] max-w-6 border-t"
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <span className="border-muted-foreground/25 mb-1 w-10 border-t border-dashed" />
+                        )}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  {bucket.isAvailable ? (
+                    <TooltipContent side="top" className="grid min-w-64 gap-2 shadow-md">
+                      <span className="font-heading font-semibold">{bucket.label}</span>
+                      <span className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+                        <span className="inline-flex min-w-0 items-center gap-1.5 font-medium text-[color-mix(in_oklab,var(--primary)_40%,var(--background))]">
+                          <span
+                            className="size-2 shrink-0 rounded-sm bg-[color-mix(in_oklab,var(--primary)_40%,var(--background))]"
+                            aria-hidden="true"
+                          />
+                          Actual · {formatPeriodRange(bucket.startDate, bucket.endDate)}
+                        </span>
+                        <span className="data-value font-semibold">{formatCurrencyUSD(bucket.totalUsd)}</span>
+                      </span>
+                      <span className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+                        <span className="text-background/70 inline-flex min-w-0 items-center gap-1.5 font-medium">
+                          <span className="bg-background/45 size-2 shrink-0 rounded-sm" aria-hidden="true" />
+                          Anterior · {formatPeriodRange(bucket.comparisonStartDate, bucket.comparisonEndDate)}
+                        </span>
+                        <span className="data-value font-semibold">{formatCurrencyUSD(previousTotalUsd)}</span>
+                      </span>
+                      <span className="border-background/20 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t pt-2">
+                        <span className="font-medium">Resultado</span>
+                        <span className={cn("data-value font-semibold", bucketComparison.className)}>
+                          {bucketComparison.label}
+                        </span>
+                      </span>
+                    </TooltipContent>
+                  ) : null}
+                </Tooltip>
+                <span
+                  className={cn(
+                    "max-w-full truncate text-xs font-semibold tracking-wide uppercase",
+                    bucket.isAvailable ? "text-muted-foreground" : "text-muted-foreground/65",
+                  )}
+                  title={bucket.label}
+                >
+                  {bucket.label}
+                </span>
+                <span
+                  className={cn(
+                    "max-w-full truncate text-xs font-semibold tabular-nums",
+                    !bucket.isAvailable && "text-muted-foreground/65 italic",
+                  )}
+                  title={currentLabelTitle}
+                >
+                  {bucket.isAvailable && bucket.totalUsd === 0 ? "$0 en ventas" : currentLabel}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -447,6 +669,57 @@ function formatCustomRangeLabel(startDate: string | undefined, endDate: string |
   return `${formatCalendarDateString(startDate)} – ${formatCalendarDateString(endDate)}`;
 }
 
+function formatSignedCurrency(value: number) {
+  if (value === 0) return "Sin variación";
+  return `${value > 0 ? "+" : "−"}${formatCurrencyUSD(Math.abs(value))}`;
+}
+
+function formatSignedInteger(value: number) {
+  if (value === 0) return "Sin variación";
+  return `${value > 0 ? "+" : "−"}${formatInteger(Math.abs(value))}`;
+}
+
+function formatMetricComparison(
+  currentValue: number,
+  previousValue: number,
+  formatValue: (value: number) => string,
+  formatDifference: (value: number) => string,
+) {
+  const baseline = `Período anterior: ${formatValue(previousValue)}`;
+  if (previousValue === 0 || currentValue === previousValue) return baseline;
+
+  return `${formatDifference(currentValue - previousValue)} · ${baseline}`;
+}
+
+function getBucketComparison(currentValue: number, previousValue: number) {
+  if (previousValue === 0 && currentValue > 0) {
+    return {
+      label: "Sin base comparable",
+      accessibleLabel: "sin base comparable",
+      className: "text-background/70",
+    };
+  }
+
+  if (currentValue === previousValue) {
+    return {
+      label: "Sin variación",
+      accessibleLabel: "sin variación",
+      className: "text-background/70",
+    };
+  }
+
+  const difference = currentValue - previousValue;
+  const label = formatSignedCurrency(difference);
+  return {
+    label,
+    accessibleLabel: `diferencia ${label}`,
+    className:
+      difference > 0
+        ? "text-[color-mix(in_oklab,var(--success)_40%,var(--background))]"
+        : "text-[color-mix(in_oklab,var(--destructive)_40%,var(--background))]",
+  };
+}
+
 function formatPeriodRange(startDate: string, endDate: string) {
   const start = formatCalendarDateString(startDate);
   if (startDate === endDate) return start;
@@ -457,8 +730,13 @@ function formatPeriodRange(startDate: string, endDate: string) {
 function SalesMetric({ label, value, children }: { label: string; value: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-2 px-0 py-3 first:pt-0 last:pb-0 sm:px-4 sm:py-0 sm:first:pl-0 sm:last:pr-0">
-      <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">{label}</p>
-      <p className="font-heading text-xl leading-none font-bold tracking-tight tabular-nums">{value}</p>
+      <p className="operational-label text-muted-foreground">{label}</p>
+      <p
+        className="font-heading min-w-0 text-2xl leading-none font-bold tracking-tight [overflow-wrap:anywhere] tabular-nums"
+        title={value}
+      >
+        {value}
+      </p>
       {children}
     </div>
   );
@@ -466,7 +744,7 @@ function SalesMetric({ label, value, children }: { label: string; value: string;
 
 function SalesPeriodSkeleton() {
   return (
-    <div className="flex flex-col gap-4" aria-label="Cargando facturación por período">
+    <div className="flex flex-col gap-4" aria-label="Cargando ventas por período">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, index) => (
           <div key={index} className="flex flex-col gap-2">

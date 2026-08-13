@@ -2,15 +2,21 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import { dashboardService } from "@/services/dashboardService";
+import { DashboardServiceError, dashboardService } from "@/services/dashboardService";
 import type { DashboardSalesPeriodRequest } from "@/types";
 import { useDashboardSalesPeriod } from "./useDashboardMetrics";
 
-vi.mock("@/services/dashboardService", () => ({
-  dashboardService: {
-    getSalesPeriod: vi.fn(),
-  },
-}));
+vi.mock("@/services/dashboardService", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services/dashboardService")>();
+
+  return {
+    ...actual,
+    dashboardService: {
+      ...actual.dashboardService,
+      getSalesPeriod: vi.fn(),
+    },
+  };
+});
 
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -69,5 +75,46 @@ describe("useDashboardSalesPeriod", () => {
     rerender({ request: weekRequest });
     await waitFor(() => expect(result.current.data?.preset).toBe("week"));
     expect(dashboardService.getSalesPeriod).toHaveBeenCalledTimes(2);
+  });
+
+  it("cancela la solicitud anterior al cambiar de período", async () => {
+    let firstSignal: AbortSignal | undefined;
+    vi.mocked(dashboardService.getSalesPeriod).mockImplementation((_businessId, request, signal) => {
+      if (request.preset === "week") {
+        firstSignal = signal;
+        return new Promise((_resolve, reject) => {
+          signal?.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
+        });
+      }
+
+      return Promise.resolve({ preset: "month" } as never);
+    });
+
+    const { result, rerender } = renderHook(
+      ({ request }: { request: DashboardSalesPeriodRequest }) => useDashboardSalesPeriod(request),
+      {
+        initialProps: { request: { preset: "week" } },
+        wrapper: createWrapper(),
+      },
+    );
+    await waitFor(() => expect(firstSignal).toBeInstanceOf(AbortSignal));
+
+    rerender({ request: { preset: "month" } });
+
+    await waitFor(() => expect(firstSignal?.aborted).toBe(true));
+    await waitFor(() => expect(result.current.data?.preset).toBe("month"));
+  });
+
+  it("no repite automáticamente errores de acceso", async () => {
+    vi.mocked(dashboardService.getSalesPeriod).mockRejectedValue(
+      new DashboardServiceError("permission denied", "access"),
+    );
+
+    const { result } = renderHook(() => useDashboardSalesPeriod({ preset: "week" }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(dashboardService.getSalesPeriod).toHaveBeenCalledOnce();
   });
 });

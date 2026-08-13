@@ -42,6 +42,9 @@ export type DashboardSalesPeriodBucket = {
   endDate: string;
   isAvailable: boolean;
   totalUsd: number;
+  comparisonStartDate: string;
+  comparisonEndDate: string;
+  comparisonTotalUsd: number;
 };
 
 export type DashboardSalesPeriod = {
@@ -55,6 +58,7 @@ export type DashboardSalesPeriod = {
   operations: number;
   previousOperations: number;
   averageTicketUsd: number;
+  previousAverageTicketUsd: number;
   buckets: DashboardSalesPeriodBucket[];
 };
 
@@ -67,6 +71,7 @@ export type DashboardTopProduct = {
   description: string;
   units: number;
   grossUsd: number;
+  participationPercentage: number;
 };
 
 export type ProductStockAlertType = "low_stock" | "stagnant";

@@ -6,7 +6,7 @@
 
 BEGIN;
 
-SELECT plan(25);
+SELECT plan(28);
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
 SELECT set_config('app.suppress_log_entry', 'true', true);
 
@@ -205,6 +205,48 @@ SELECT results_eq(
   $$,
   $$ VALUES (45::numeric, 1) $$,
   'La comparación semanal usa solamente lunes a miércoles anteriores'
+);
+
+SELECT results_eq(
+  $$
+    SELECT bucket_label, bucket_total_usd, comparison_bucket_total_usd
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'week',
+      '2024-03-27'
+    )
+    WHERE bucket_index = 2
+  $$,
+  $$ VALUES ('Mié'::text, 25::numeric, 45::numeric) $$,
+  'Cada intervalo disponible incluye el importe de su posición comparable'
+);
+
+SELECT results_eq(
+  $$
+    SELECT comparison_bucket_start, comparison_bucket_end
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'week',
+      '2024-03-27'
+    )
+    WHERE bucket_index = 2
+  $$,
+  $$ VALUES ('2024-03-20'::date, '2024-03-20'::date) $$,
+  'El bucket comparable conserva las fechas exactas de la posición anterior'
+);
+
+SELECT is(
+  (
+    SELECT previous_average_ticket_usd
+    FROM private.get_dashboard_sales_period(
+      '10000000-0000-0000-0000-000000000001',
+      'week',
+      '2024-03-27'
+    )
+    LIMIT 1
+  ),
+  45::numeric,
+  'El ticket anterior se calcula con las operaciones del bloque comparable'
 );
 
 SELECT is(

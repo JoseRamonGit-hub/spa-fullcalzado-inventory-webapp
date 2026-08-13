@@ -772,6 +772,9 @@ export type Database = {
           bucket_label: string;
           bucket_start: string;
           bucket_total_usd: number;
+          comparison_bucket_end: string;
+          comparison_bucket_start: string;
+          comparison_bucket_total_usd: number;
           comparison_end: string;
           comparison_start: string;
           current_end: string;
@@ -780,6 +783,7 @@ export type Database = {
           current_total_usd: number;
           is_available: boolean;
           period: string;
+          previous_average_ticket_usd: number;
           previous_operations: number;
           previous_total_usd: number;
         }[];
@@ -796,6 +800,7 @@ export type Database = {
           code: string;
           description: string;
           gross_usd: number;
+          participation_percentage: number;
           product_id: string;
           rank: number;
           units: number;
