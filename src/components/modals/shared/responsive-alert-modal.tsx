@@ -54,14 +54,14 @@ export function ResponsiveAlertModal({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={handleOpenChange}>
-        <DrawerContent>
-          <DrawerHeader className="text-left">
+        <DrawerContent className="max-h-[calc(100dvh-1rem)]">
+          <DrawerHeader className="shrink-0 text-left">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             <ActiveBusinessContext />
             <DrawerDescription className="text-xs">{description}</DrawerDescription>
           </DrawerHeader>
-          {children && <div className="px-4 pb-2">{children}</div>}
-          <DrawerFooter className="flex-row gap-2">
+          {children && <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">{children}</div>}
+          <DrawerFooter className="bg-background shrink-0 flex-row gap-2 border-t pb-[max(1rem,env(safe-area-inset-bottom))]">
             <DrawerClose asChild>
               <Button variant="outline" className="flex-1" disabled={isPending}>
                 Cancelar
