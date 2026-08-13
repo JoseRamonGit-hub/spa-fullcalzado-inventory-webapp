@@ -109,6 +109,29 @@ const activeCustomPeriod = {
   ],
 };
 
+const monthlyCustomPeriod = {
+  ...activeCustomPeriod,
+  currentStart: "2026-05-01",
+  currentEnd: "2026-07-31",
+  comparisonStart: "2026-01-29",
+  comparisonEnd: "2026-04-30",
+  totalUsd: 7_203.9,
+  previousTotalUsd: 7_263.3,
+  buckets: [
+    {
+      index: 2,
+      label: "07/2026",
+      startDate: "2026-07-01",
+      endDate: "2026-07-31",
+      isAvailable: true,
+      totalUsd: 7_203.9,
+      comparisonStartDate: "2026-04-19",
+      comparisonEndDate: "2026-05-19",
+      comparisonTotalUsd: 7_263.3,
+    },
+  ],
+};
+
 function StatefulSalesPeriodSection() {
   const [selection, setSelection] = useState<DashboardSalesPeriodSelection>({ preset: "week" });
 
@@ -224,6 +247,30 @@ describe("Ventas por período", () => {
     expect(bars[0]).toHaveClass("dashboard-chart-bar");
     expect(bars[0]).toHaveStyle({ animationDelay: "0ms" });
     expect(bars[1]).toHaveAttribute("data-series-kind", "current");
+  });
+
+  it("muestra una sola serie cuando un rango personalizado se agrupa por meses", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: monthlyCustomPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+
+    render(
+      <SalesPeriodSection
+        selection={{ preset: "custom", customStartDate: "2026-05-01", customEndDate: "2026-07-31" }}
+        onSelectionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Leyenda")).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-series-kind="previous"]')).toHaveLength(0);
+    expect(screen.getByLabelText("07/2026: ventas $7,203.90 del 01 jul. 2026–31 jul. 2026")).toBeInTheDocument();
+
+    const currentBar = document.querySelector('[data-series-kind="current"]');
+    expect(currentBar).toHaveClass("w-[52%]");
+    expect(currentBar).toHaveStyle({ height: "100%", animationDelay: "0ms" });
   });
 
   it("evita repetir el valor actual cuando no existen ventas anteriores", () => {
