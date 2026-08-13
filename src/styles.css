@@ -49,6 +49,9 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-tooltip-primary: var(--tooltip-primary);
+  --color-tooltip-success: var(--tooltip-success);
+  --color-tooltip-destructive: var(--tooltip-destructive);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-exchange: var(--exchange);
@@ -104,6 +107,11 @@
   --refund-foreground: oklch(0.98 0 0);
   --edit: oklch(0.5 0.08 65);
   --edit-foreground: oklch(0.98 0 0);
+
+  /* ── Tooltip: vivid semantics on the inverted surface ── */
+  --tooltip-primary: oklch(0.78 0.18 62);
+  --tooltip-success: oklch(0.76 0.2 150);
+  --tooltip-destructive: oklch(0.72 0.2 25);
 
   /* ── Borders & Inputs ── */
   --border: oklch(0.88 0.01 75);
@@ -163,6 +171,9 @@
   --refund-foreground: oklch(0.12 0.02 310);
   --edit: oklch(0.72 0.09 68);
   --edit-foreground: oklch(0.14 0.02 68);
+  --tooltip-primary: oklch(0.43 0.16 52);
+  --tooltip-success: oklch(0.43 0.17 150);
+  --tooltip-destructive: oklch(0.5 0.22 25);
   --border: oklch(1 0 0 / 15%);
   --input: oklch(1 0 0 / 20%);
   --ring: oklch(0.68 0.16 55);

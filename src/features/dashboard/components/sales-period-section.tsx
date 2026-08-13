@@ -599,11 +599,8 @@ function SalesIntervalChart({ data }: SalesPeriodContentProps) {
                     <TooltipContent side="top" className="grid min-w-64 gap-2 shadow-md">
                       <span className="font-heading font-semibold">{bucket.label}</span>
                       <span className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-                        <span className="inline-flex min-w-0 items-center gap-1.5 font-medium text-[color-mix(in_oklab,var(--primary)_40%,var(--background))]">
-                          <span
-                            className="size-2 shrink-0 rounded-sm bg-[color-mix(in_oklab,var(--primary)_40%,var(--background))]"
-                            aria-hidden="true"
-                          />
+                        <span className="text-tooltip-primary inline-flex min-w-0 items-center gap-1.5 font-medium">
+                          <span className="bg-tooltip-primary size-2 shrink-0 rounded-sm" aria-hidden="true" />
                           Actual · {formatPeriodRange(bucket.startDate, bucket.endDate)}
                         </span>
                         <span className="data-value font-semibold">{formatCurrencyUSD(bucket.totalUsd)}</span>
@@ -713,10 +710,7 @@ function getBucketComparison(currentValue: number, previousValue: number) {
   return {
     label,
     accessibleLabel: `diferencia ${label}`,
-    className:
-      difference > 0
-        ? "text-[color-mix(in_oklab,var(--success)_40%,var(--background))]"
-        : "text-[color-mix(in_oklab,var(--destructive)_40%,var(--background))]",
+    className: difference > 0 ? "text-tooltip-success" : "text-tooltip-destructive",
   };
 }
 
