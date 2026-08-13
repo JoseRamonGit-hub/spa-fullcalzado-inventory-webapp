@@ -60,12 +60,13 @@ describe("rango personalizado de Ventas", () => {
 
 describe("comparación de facturación", () => {
   it.each([
-    [0, 0, "Sin actividad en este período", "neutral"],
-    [125, 0, "Nuevo · sin actividad anterior", "positive"],
+    [0, 0, "Sin ventas en ninguno de los dos períodos", "neutral"],
+    [125, 0, "Sin ventas anteriores", "positive"],
     [0, 125, "−100%", "negative"],
     [150, 100, "+50%", "positive"],
     [75, 100, "−25%", "negative"],
     [100.4, 100, "0%", "neutral"],
+    [10_001, 1, "+1.000.000%", "positive"],
   ] as const)("compara %s contra %s", (current, previous, label, direction) => {
     expect(getBillingComparison(current, previous)).toEqual({ label, direction });
   });

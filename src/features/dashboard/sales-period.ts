@@ -1,4 +1,5 @@
 import type { DashboardSalesPeriodPreset } from "@/types";
+import { formatInteger } from "@/utils/formatters";
 
 export const DEFAULT_SALES_PERIOD: DashboardSalesPeriodPreset = "week";
 
@@ -108,11 +109,11 @@ export type BillingComparison = {
 
 export function getBillingComparison(currentTotal: number, previousTotal: number): BillingComparison {
   if (currentTotal === 0 && previousTotal === 0) {
-    return { label: "Sin actividad en este período", direction: "neutral" };
+    return { label: "Sin ventas en ninguno de los dos períodos", direction: "neutral" };
   }
 
   if (previousTotal === 0) {
-    return { label: "Nuevo · sin actividad anterior", direction: "positive" };
+    return { label: "Sin ventas anteriores", direction: "positive" };
   }
 
   if (currentTotal === 0) {
@@ -123,7 +124,7 @@ export function getBillingComparison(currentTotal: number, previousTotal: number
   if (percentage === 0) return { label: "0%", direction: "neutral" };
 
   return {
-    label: `${percentage > 0 ? "+" : "−"}${Math.abs(percentage)}%`,
+    label: `${percentage > 0 ? "+" : "−"}${formatInteger(Math.abs(percentage))}%`,
     direction: percentage > 0 ? "positive" : "negative",
   };
 }

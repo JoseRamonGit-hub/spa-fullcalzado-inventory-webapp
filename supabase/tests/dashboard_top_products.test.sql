@@ -6,7 +6,7 @@
 
 begin;
 
-select plan(4);
+select plan(6);
 select set_config('request.jwt.claim.sub', 'a0000000-0000-0000-0000-000000000001', true);
 select set_config('app.suppress_log_entry', 'true', true);
 
@@ -116,6 +116,30 @@ select results_eq(
       (10, 'TOP-J', 1::bigint, 1::numeric)
   $$,
   'USD bruto usa el importe entregado y conserva un orden determinista'
+);
+
+select is(
+  (
+    select round(participation_percentage, 2)
+    from private.get_dashboard_top_products(
+      '10000000-0000-0000-0000-000000000001', 'week', 'units', '2024-03-27'
+    )
+    where code = 'TOP-A'
+  ),
+  18.75::numeric,
+  'La participación por unidades usa el total completo del período'
+);
+
+select is(
+  (
+    select round(participation_percentage, 2)
+    from private.get_dashboard_top_products(
+      '10000000-0000-0000-0000-000000000001', 'week', 'gross_usd', '2024-03-27'
+    )
+    where code = 'TOP-E'
+  ),
+  35.46::numeric,
+  'La participación por USD usa la facturación completa del período'
 );
 
 select is(

@@ -1,6 +1,6 @@
 import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import { dashboardService } from "@/services/dashboardService";
+import { DashboardServiceError, dashboardService } from "@/services/dashboardService";
 import type { DashboardSalesPeriodRequest, DashboardTopProductsRankMode, ProductStockAlertType } from "@/types";
 
 export const dashboardKeys = {
@@ -18,11 +18,20 @@ export const dashboardKeys = {
     [...dashboardKeys.business(businessId), "product-stock-alerts", type] as const,
 };
 
+function retryDashboardQuery(failureCount: number, error: unknown) {
+  if (error instanceof DashboardServiceError && (error.kind === "access" || error.kind === "invalid-response")) {
+    return false;
+  }
+
+  return failureCount < 2;
+}
+
 const dashboardMetricsQueryOptions = (businessId: string | null) =>
   queryOptions({
     queryKey: dashboardKeys.dailyMetrics(businessId),
     queryFn: businessId ? ({ signal }) => dashboardService.getDailyMetrics(businessId, signal) : skipToken,
     staleTime: 30_000,
+    retry: retryDashboardQuery,
   });
 
 export function useDashboardMetrics() {
@@ -39,6 +48,7 @@ export function useDashboardSalesPeriod(request: DashboardSalesPeriodRequest | n
     queryFn:
       businessId && request ? ({ signal }) => dashboardService.getSalesPeriod(businessId, request, signal) : skipToken,
     staleTime: 30_000,
+    retry: retryDashboardQuery,
   });
 }
 
@@ -55,6 +65,7 @@ export function useDashboardTopProducts(
         ? ({ signal }) => dashboardService.getTopProducts(businessId, request, rankBy, signal)
         : skipToken,
     staleTime: 30_000,
+    retry: retryDashboardQuery,
   });
 }
 
@@ -65,5 +76,6 @@ export function useDashboardProductStockAlerts(type: ProductStockAlertType) {
     queryKey: dashboardKeys.productStockAlerts(businessId, type),
     queryFn: businessId ? ({ signal }) => dashboardService.getProductStockAlerts(businessId, type, signal) : skipToken,
     staleTime: 30_000,
+    retry: retryDashboardQuery,
   });
 }
