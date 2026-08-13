@@ -425,15 +425,21 @@ function SalesPeriodContent({ data, isRefreshing = false, showBucketComparison }
                 {data.previousTotalUsd === 0 ? "Sin base comparable" : comparison.label}
               </Badge>
             ) : null}
-            <span className="text-muted-foreground text-xs leading-[1.4]">
-              {formatMetricComparison(data.totalUsd, data.previousTotalUsd, formatCurrencyUSD, formatSignedCurrency)}
-            </span>
+            <MetricComparison
+              currentValue={data.totalUsd}
+              previousValue={data.previousTotalUsd}
+              formatValue={formatCurrencyUSD}
+              formatDifference={formatSignedCurrency}
+            />
           </div>
         </SalesMetric>
         <SalesMetric label="Operaciones facturadas" value={formatInteger(data.operations)}>
-          <p className="text-muted-foreground text-xs leading-[1.4]">
-            {formatMetricComparison(data.operations, data.previousOperations, formatInteger, formatSignedInteger)}
-          </p>
+          <MetricComparison
+            currentValue={data.operations}
+            previousValue={data.previousOperations}
+            formatValue={formatInteger}
+            formatDifference={formatSignedInteger}
+          />
         </SalesMetric>
         <SalesMetric label="Ticket promedio" value={formatCurrencyUSD(data.averageTicketUsd)}>
           <p className="text-muted-foreground text-xs leading-[1.4]">
@@ -444,14 +450,24 @@ function SalesPeriodContent({ data, isRefreshing = false, showBucketComparison }
 
       <Separator />
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         <p className="text-muted-foreground max-w-[65ch] text-xs leading-[1.4] font-semibold">
           {PERIOD_DESCRIPTION[data.preset]}
         </p>
-        <p className="text-muted-foreground max-w-[75ch] text-xs leading-[1.4]">
-          Período actual: {formatPeriodRange(data.currentStart, data.currentEnd)} · Período anterior:{" "}
-          {formatPeriodRange(data.comparisonStart, data.comparisonEnd)}
-        </p>
+        <dl className="flex flex-col gap-1.5 text-xs leading-[1.4] sm:flex-row sm:flex-wrap sm:gap-x-8">
+          <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+            <dt className="text-muted-foreground font-medium">Período actual</dt>
+            <dd className="text-foreground whitespace-nowrap tabular-nums">
+              {formatPeriodRange(data.currentStart, data.currentEnd)}
+            </dd>
+          </div>
+          <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+            <dt className="text-muted-foreground font-medium">Período anterior</dt>
+            <dd className="text-foreground whitespace-nowrap tabular-nums">
+              {formatPeriodRange(data.comparisonStart, data.comparisonEnd)}
+            </dd>
+          </div>
+        </dl>
       </div>
 
       {hasNoActivityInEitherPeriod ? (
@@ -708,16 +724,53 @@ function formatSignedInteger(value: number) {
   return `${value > 0 ? "+" : "−"}${formatInteger(Math.abs(value))}`;
 }
 
-function formatMetricComparison(
-  currentValue: number,
-  previousValue: number,
-  formatValue: (value: number) => string,
-  formatDifference: (value: number) => string,
-) {
-  const baseline = `Período anterior: ${formatValue(previousValue)}`;
-  if (previousValue === 0 || currentValue === previousValue) return baseline;
+function MetricComparison({
+  currentValue,
+  previousValue,
+  formatValue,
+  formatDifference,
+}: {
+  currentValue: number;
+  previousValue: number;
+  formatValue: (value: number) => string;
+  formatDifference: (value: number) => string;
+}) {
+  const differenceValue = currentValue - previousValue;
+  const difference = formatDifference(differenceValue);
 
-  return `${formatDifference(currentValue - previousValue)} · ${baseline}`;
+  return (
+    <div className="text-muted-foreground flex min-w-0 items-center gap-0.5 text-xs leading-[1.4]">
+      <span>Período anterior: {formatValue(previousValue)}</span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="shrink-0"
+            aria-label="Ver diferencia frente al período anterior"
+          >
+            <Info aria-hidden="true" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={4} className="max-w-64 leading-relaxed">
+          <span className="text-background/70">Diferencia: </span>
+          <span
+            className={cn(
+              "font-semibold tabular-nums",
+              differenceValue > 0
+                ? "text-tooltip-success"
+                : differenceValue < 0
+                  ? "text-tooltip-destructive"
+                  : "text-background",
+            )}
+          >
+            {difference}
+          </span>
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
 }
 
 function getBucketComparison(currentValue: number, previousValue: number) {
@@ -750,7 +803,7 @@ function formatPeriodRange(startDate: string, endDate: string) {
   const start = formatCalendarDateString(startDate);
   if (startDate === endDate) return start;
 
-  return `${start}–${formatCalendarDateString(endDate)}`;
+  return `${start} al ${formatCalendarDateString(endDate)}`;
 }
 
 function SalesMetric({ label, value, children }: { label: string; value: string; children: ReactNode }) {

@@ -266,7 +266,7 @@ describe("Ventas por período", () => {
 
     expect(screen.queryByLabelText("Leyenda")).not.toBeInTheDocument();
     expect(document.querySelectorAll('[data-series-kind="previous"]')).toHaveLength(0);
-    expect(screen.getByLabelText("07/2026: ventas $7,203.90 del 01 jul. 2026–31 jul. 2026")).toBeInTheDocument();
+    expect(screen.getByLabelText("07/2026: ventas $7,203.90 del 01 jul. 2026 al 31 jul. 2026")).toBeInTheDocument();
 
     const currentBar = document.querySelector('[data-series-kind="current"]');
     expect(currentBar).toHaveClass("w-[52%]");
@@ -594,9 +594,10 @@ describe("Ventas por período", () => {
     expect(revenueLabel.nextElementSibling).toHaveClass("text-2xl");
     expect(screen.getAllByText("Período anterior: $0.00")).toHaveLength(2);
     expect(screen.getByText("Referencia: los mismos días de la semana anterior")).toBeInTheDocument();
-    expect(
-      screen.getByText("Período actual: 25 mar. 2024–27 mar. 2024 · Período anterior: 18 mar. 2024–20 mar. 2024"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Período actual")).toBeInTheDocument();
+    expect(screen.getByText("25 mar. 2024 al 27 mar. 2024")).toBeInTheDocument();
+    expect(screen.getByText("Período anterior")).toBeInTheDocument();
+    expect(screen.getByText("18 mar. 2024 al 20 mar. 2024")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Productos más vendidos" })).toHaveClass("text-base", "leading-tight");
     expect(screen.getByText("Ordenados de mayor a menor por unidades vendidas.")).toBeInTheDocument();
   });
