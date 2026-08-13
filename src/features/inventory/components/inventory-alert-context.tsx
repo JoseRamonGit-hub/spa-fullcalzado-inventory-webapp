@@ -1,14 +1,7 @@
 import { useRef } from "react";
 import { Info, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ProductStockAlertType } from "@/types";
 import { formatInteger } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
@@ -22,7 +15,7 @@ const ALERT_CONTEXT_COPY = {
   stagnant: {
     title: "Estancado",
     definition:
-      "Productos con existencias y 30 días o más sin salidas comerciales. Incluye productos inactivos para liquidación o limpieza.",
+      "30 días o más sin salidas comerciales · Incluye inactivos para liquidación",
     recommendedOrder: "mayor tiempo sin salida primero",
   },
 } as const;
@@ -86,19 +79,17 @@ export function InventoryAlertContext({
           <span className="text-warning-foreground/75 text-[11px] leading-tight">
             Orden de revisión: <span className="text-warning-foreground font-medium">{orderLabel}</span>
           </span>
-          <Popover>
-            <PopoverTrigger asChild>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button type="button" variant="ghost" size="icon-xs" aria-label={`Ver criterio del filtro ${copy.title}`}>
                 <Info aria-hidden="true" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-[min(18rem,calc(100vw-1.5rem))] p-3">
-              <PopoverHeader>
-                <PopoverTitle>Qué incluye {copy.title}</PopoverTitle>
-                <PopoverDescription>{copy.definition}</PopoverDescription>
-              </PopoverHeader>
-            </PopoverContent>
-          </Popover>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" align="start" className="max-w-[min(18rem,calc(100vw-1.5rem))] leading-relaxed">
+              <span className="block font-semibold">Qué incluye {copy.title}</span>
+              <span className="block text-background/75">{copy.definition}</span>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 

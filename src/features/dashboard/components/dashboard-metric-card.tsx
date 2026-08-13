@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 type DashboardMetricCardProps = {
   title: string;
   value: string;
-  description: string;
+  description?: string;
   icon: LucideIcon;
   emphasis?: "primary" | "warning";
   actionLabel?: string;
@@ -25,9 +25,13 @@ export function DashboardMetricCard({
   onAction,
 }: DashboardMetricCardProps) {
   return (
-    <Card className={cn("h-full gap-3 py-3", emphasis === "warning" && "bg-warning/5")}>
-      <CardHeader className="grid grid-cols-[1fr_auto] gap-3 px-4">
-        <CardTitle className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+    <Card className={cn("h-full min-w-0 gap-3 py-3", emphasis === "warning" && "bg-warning/5")}>
+      <CardHeader className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-3 px-4">
+        <CardTitle
+          role="heading"
+          aria-level={3}
+          className="text-muted-foreground min-w-0 text-[10px] font-semibold tracking-wider uppercase"
+        >
           {title}
         </CardTitle>
         <div
@@ -40,28 +44,32 @@ export function DashboardMetricCard({
           <Icon className="size-4" aria-hidden="true" />
         </div>
       </CardHeader>
-      <CardContent className="px-4">
-        <p className="font-heading text-xl leading-tight font-bold tracking-tight tabular-nums sm:text-2xl sm:leading-none">
+      <CardContent className="min-w-0 px-4">
+        <p className="font-heading min-w-0 text-xl leading-tight font-bold tracking-tight tabular-nums sm:text-2xl sm:leading-none">
           {value}
         </p>
       </CardContent>
-      <CardFooter className="mt-auto flex-col items-stretch gap-2 px-4">
-        <CardDescription className="text-xs leading-relaxed">{description}</CardDescription>
-        {actionLabel && onAction ? (
-          <Button variant="outline" className="h-9 w-full justify-between text-xs" onClick={onAction}>
-            {actionLabel}
-            <ArrowRight aria-hidden="true" />
-          </Button>
-        ) : null}
-      </CardFooter>
+      {description || (actionLabel && onAction) ? (
+        <CardFooter className="mt-auto min-w-0 flex-col items-start gap-1 px-4">
+          {description ? (
+            <CardDescription className="min-w-0 text-xs leading-relaxed break-words">{description}</CardDescription>
+          ) : null}
+          {actionLabel && onAction ? (
+            <Button variant="link" size="xs" className="-ml-2" onClick={onAction}>
+              {actionLabel}
+              <ArrowRight aria-hidden="true" />
+            </Button>
+          ) : null}
+        </CardFooter>
+      ) : null}
     </Card>
   );
 }
 
 export function DashboardMetricCardSkeleton() {
   return (
-    <Card className="gap-3 py-3">
-      <CardHeader className="grid grid-cols-[1fr_auto] gap-3 px-4">
+    <Card className="h-full min-w-0 gap-3 py-3">
+      <CardHeader className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-3 px-4">
         <Skeleton className="h-3 w-28" />
         <Skeleton className="size-8 rounded-lg" />
       </CardHeader>

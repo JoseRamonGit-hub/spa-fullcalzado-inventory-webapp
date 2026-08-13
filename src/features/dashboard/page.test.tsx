@@ -43,7 +43,11 @@ describe("DashboardPage", () => {
     render(<DashboardPage />);
 
     expect(screen.getByText("1.350 unidades")).toBeInTheDocument();
-    expect(screen.getByText("Total facturado $100.00 · Sin devoluciones")).toBeInTheDocument();
+    expect(screen.getByText("Facturado $100.00")).toBeInTheDocument();
+    expect(screen.queryByText("Sin ajustes por devoluciones o cambios")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Total producido", level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Stock bajo", level: 3 })).toBeInTheDocument();
+    expect(screen.queryByText("Productos activos con 3 unidades o menos")).not.toBeInTheDocument();
     expect(screen.queryByText("Pulso del negocio")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Indicadores de hoy" })).toBeInTheDocument();
     expect(
@@ -54,7 +58,7 @@ describe("DashboardPage", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/inventory", search: { status: "low_stock" } });
   });
 
-  it("explica la diferencia entre ambos totales cuando hubo devoluciones", () => {
+  it("mantiene el total facturado como único detalle cuando hubo ajustes", () => {
     vi.mocked(useDashboardMetrics).mockReturnValue({
       data: {
         total_produced_usd: 100,
@@ -73,7 +77,8 @@ describe("DashboardPage", () => {
     render(<DashboardPage />);
 
     expect(screen.getByText("$100.00")).toBeInTheDocument();
-    expect(screen.getByText("Total facturado $120.00 · −$20.00 en devoluciones")).toBeInTheDocument();
+    expect(screen.getByText("Facturado $120.00")).toBeInTheDocument();
+    expect(screen.queryByText(/Ajustes|devoluciones|cambios/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /revisar .* productos/i })).not.toBeInTheDocument();
   });
 });

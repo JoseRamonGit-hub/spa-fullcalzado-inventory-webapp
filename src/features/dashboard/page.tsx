@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Boxes, CircleDollarSign, ReceiptText, RefreshCw, TriangleAlert } from "lucide-react";
+import { CircleDollarSign, Package, ReceiptText, RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./components/dashboard-metric-card";
@@ -80,7 +80,7 @@ export function DashboardPage() {
               <DashboardMetricCard
                 title="Total producido"
                 value={formatCurrencyUSD(metricsQuery.data.total_produced_usd)}
-                description={`Total facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)} · ${metricsQuery.data.returns_credit_usd > 0 ? `−${formatCurrencyUSD(metricsQuery.data.returns_credit_usd)} en devoluciones` : "Sin devoluciones"}`}
+                description={`Facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)}`}
                 icon={CircleDollarSign}
                 emphasis="primary"
               />
@@ -94,12 +94,11 @@ export function DashboardPage() {
                 title="Stock disponible"
                 value={`${formatInteger(metricsQuery.data.stock_units)} unidades`}
                 description={`${metricsQuery.data.products_in_stock} productos con stock`}
-                icon={Boxes}
+                icon={Package}
               />
               <DashboardMetricCard
                 title="Stock bajo"
                 value={String(metricsQuery.data.low_stock_products)}
-                description="Productos activos con 3 unidades o menos"
                 icon={TriangleAlert}
                 emphasis={metricsQuery.data.low_stock_products > 0 ? "warning" : undefined}
                 actionLabel={metricsQuery.data.low_stock_products > 0 ? "Revisar stock bajo" : undefined}
