@@ -115,8 +115,11 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
         )}
 
         <div className="border-warning/25 bg-warning/8 flex items-start gap-2.5 rounded-lg border px-3 py-2.5">
-          <AlertTriangle className="text-warning-foreground mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <p className="text-warning-foreground/80 text-[11px] leading-relaxed">
+          <AlertTriangle
+            className="text-warning-foreground dark:text-warning mt-0.5 h-3.5 w-3.5 shrink-0"
+            aria-hidden="true"
+          />
+          <p className="text-warning-foreground/80 dark:text-warning/90 text-[11px] leading-relaxed">
             Una vez confirmado, no se puede deshacer. Asegúrate de que todas las ventas y devoluciones del día están
             registradas.
           </p>
