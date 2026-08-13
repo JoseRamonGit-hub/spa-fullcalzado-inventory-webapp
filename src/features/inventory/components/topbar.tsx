@@ -6,6 +6,7 @@ import { BusinessModuleTitle } from "@/features/business/components/business-mod
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import type { ProductStockAlertType } from "@/types";
 import { cn } from "@/lib/utils";
+import type { Ref } from "react";
 
 type TopbarProps = {
   search: string;
@@ -14,9 +15,22 @@ type TopbarProps = {
   onDateChange: (value: string | undefined) => void;
   stockStatus: ProductStockAlertType | undefined;
   onStockStatusChange: (value: ProductStockAlertType | undefined) => void;
+  stockStatusRef?: Ref<HTMLSelectElement>;
 };
 
-export function Topbar({ search, onSearchChange, date, onDateChange, stockStatus, onStockStatusChange }: TopbarProps) {
+export function Topbar({
+  search,
+  onSearchChange,
+  date,
+  onDateChange,
+  stockStatus,
+  onStockStatusChange,
+  stockStatusRef,
+}: TopbarProps) {
+  const dateDisabledReason = stockStatus
+    ? "La fecha de creación no está disponible mientras revisas alertas de inventario."
+    : undefined;
+
   return (
     <header className="bg-background flex shrink-0 flex-col gap-2 border-b px-3 py-2 md:h-(--topbar-height) md:flex-row md:items-center md:justify-between md:px-4 md:py-0">
       <div className="flex w-full min-w-0 items-center gap-4 md:flex-1">
@@ -39,6 +53,7 @@ export function Topbar({ search, onSearchChange, date, onDateChange, stockStatus
 
       <div className="grid w-full shrink-0 grid-cols-2 gap-1.5 md:flex md:w-auto">
         <NativeSelect
+          ref={stockStatusRef}
           size="sm"
           value={stockStatus ?? ""}
           onChange={(event) =>
@@ -55,9 +70,11 @@ export function Topbar({ search, onSearchChange, date, onDateChange, stockStatus
         <DatePickerFilter
           value={date}
           onChange={onDateChange}
-          placeholder="Filtrar por día"
+          placeholder="Fecha de creación"
           wrapperClassName="w-full md:w-auto"
           className="w-full md:w-auto"
+          disabled={Boolean(stockStatus)}
+          disabledReason={dateDisabledReason}
         />
       </div>
     </header>

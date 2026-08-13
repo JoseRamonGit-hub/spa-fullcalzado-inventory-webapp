@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDashboardProductStockAlerts } from "../hooks/useDashboardMetrics";
 import { ProductStockAlertsSection } from "./product-stock-alerts-section";
@@ -44,7 +44,7 @@ describe("Alertas de inventario del Dashboard", () => {
     render(<ProductStockAlertsSection />);
 
     expect(screen.getByRole("heading", { name: "Atención hoy" })).toBeInTheDocument();
-    expect(screen.getByText("Prioridades de inventario que requieren revisión")).toBeInTheDocument();
+    expect(screen.getByText("Prioridades vigentes de inventario")).toBeInTheDocument();
     const lowStockCard = screen.getByText("Productos con stock bajo").closest('[data-slot="card"]');
     const stagnantCard = screen.getByText("Productos estancados").closest('[data-slot="card"]');
     expect(lowStockCard).not.toBeNull();
@@ -69,10 +69,19 @@ describe("Alertas de inventario del Dashboard", () => {
     expect(screen.getByText("5")).toHaveClass("text-foreground");
   });
 
+  it("prioriza los días sin salida antes del stock y el estado en productos estancados", () => {
+    render(<ProductStockAlertsSection />);
+
+    const stagnantTable = within(screen.getByRole("region", { name: "Productos estancados" }));
+    const headers = stagnantTable.getAllByRole("columnheader").map((header) => header.textContent);
+
+    expect(headers).toEqual(["Código", "Descripción", "Sin salida", "Stock", "Estado"]);
+  });
+
   it("abre Inventario con el estado equivalente validado", () => {
     render(<ProductStockAlertsSection />);
 
-    const lowStockAction = screen.getByRole("button", { name: "Ver todas las alertas" });
+    const lowStockAction = screen.getByRole("button", { name: "Ver todos con stock bajo" });
     const stagnantAction = screen.getByRole("button", { name: "Ver todos los estancados" });
 
     expect(lowStockAction.closest('[data-slot="card-footer"]')).not.toBeNull();
@@ -122,7 +131,7 @@ describe("Alertas de inventario del Dashboard", () => {
 
     expect(screen.getByText("No hay productos estancados.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ver todos los estancados" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ver todas las alertas" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver todos con stock bajo" })).toBeInTheDocument();
   });
 
   it("no inventa cero días cuando falta la antigüedad de un producto estancado", () => {

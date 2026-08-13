@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { useProducts } from "./hooks/useProductQueries";
 import { useProductSearch } from "./hooks/useProductSearch";
 import { Topbar } from "./components/topbar";
@@ -14,22 +14,36 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
 import { Route } from "@/routes/_app/inventory";
 import { useNavigate } from "@tanstack/react-router";
+import type { SortingState } from "@tanstack/react-table";
+import { InventoryAlertContext } from "./components/inventory-alert-context";
 
 export function InventoryPage() {
   const { date, status } = Route.useSearch();
+  const effectiveDate = status ? undefined : date;
   const navigate = useNavigate({ from: "/inventory" });
+  const stockStatusFilterRef = useRef<HTMLSelectElement>(null);
 
   const setDate = (value: string | undefined) => {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const { data: products, isLoading, isError, isFetching, refetch } = useProducts(date, status);
+  const { data: products, isLoading, isError, isFetching, refetch } = useProducts(effectiveDate, status);
   const { data: exchangeRateData, isLoading: isExchangeRateLoading, isError: isExchangeRateError } = useExchangeRate();
   const isMobile = useIsMobile();
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
 
   const { searchInput, setSearchInput, filteredProducts } = useProductSearch(products);
-  const hasActiveFilters = Boolean(searchInput.trim() || date || status);
+  const hasActiveFilters = Boolean(searchInput.trim() || effectiveDate || status);
+  const emptyMessage = searchInput.trim()
+    ? "No se encontraron productos con la búsqueda actual."
+    : status === "low_stock"
+      ? "No hay productos con stock bajo."
+      : status === "stagnant"
+        ? "No hay productos estancados."
+        : effectiveDate
+          ? "No hay productos creados en la fecha seleccionada."
+          : "No hay productos registrados.";
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Action modals state
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -80,11 +94,32 @@ export function InventoryPage() {
       <Topbar
         search={searchInput}
         onSearchChange={setSearchInput}
-        date={date}
+        date={effectiveDate}
         onDateChange={setDate}
         stockStatus={status}
-        onStockStatusChange={(value) => navigate({ search: (prev) => ({ ...prev, status: value }) })}
+        stockStatusRef={stockStatusFilterRef}
+        onStockStatusChange={(value) => {
+          setSorting([]);
+          navigate({ search: (prev) => ({ ...prev, date: value ? undefined : prev.date, status: value }) });
+        }}
       />
+
+      {status ? (
+        <InventoryAlertContext
+          status={status}
+          totalCount={products?.length ?? 0}
+          visibleCount={filteredProducts.length}
+          isLoading={isLoading}
+          isError={isError && products === undefined}
+          hasCustomSorting={sorting.length > 0}
+          onResetRecommendedOrder={() => setSorting([])}
+          onClear={() => {
+            setSorting([]);
+            navigate({ search: (prev) => ({ ...prev, status: undefined }) });
+            stockStatusFilterRef.current?.focus();
+          }}
+        />
+      ) : null}
 
       <DataTable
         columns={columns}
@@ -95,14 +130,14 @@ export function InventoryPage() {
             ? { title: "No pudimos cargar el inventario", onRetry: refetch, isRetrying: isFetching }
             : undefined
         }
-        emptyMessage={
-          hasActiveFilters ? "No se encontraron productos con los filtros aplicados." : "No hay productos registrados."
-        }
+        emptyMessage={hasActiveFilters ? emptyMessage : "No hay productos registrados."}
         onRowClick={handleRowClick}
         getRowAriaLabel={(product) => `Abrir producto ${product.code}`}
         meta={tableMeta}
         getRowId={(row) => row.id}
         scrollAreaLabel="Inventario"
+        sorting={sorting}
+        onSortingChange={setSorting}
       />
 
       {editProduct && (
