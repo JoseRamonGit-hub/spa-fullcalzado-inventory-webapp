@@ -7,7 +7,7 @@ import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { MobileMenuSheet } from "./mobile-menu-sheet";
 
 const MOBILE_NAV_ITEMS = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Panel", url: "/dashboard", icon: LayoutDashboard },
   { title: "Inventario", url: "/inventory", icon: Package },
   { title: "Ventas", url: "/transactions", icon: ShoppingCart },
 ] as const;

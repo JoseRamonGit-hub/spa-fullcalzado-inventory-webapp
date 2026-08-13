@@ -59,12 +59,6 @@ export function InventoryAlertContext({
       ? "No se pudo calcular el total por revisar"
       : countLabel;
   const orderLabel = hasCustomSorting ? "personalizado" : copy.recommendedOrder;
-  const renderTooltipContent = (align: "start" | "end") => (
-    <TooltipContent side="bottom" align={align} className="max-w-[min(18rem,calc(100vw-1.5rem))] leading-relaxed">
-      <span className="block font-semibold">Qué incluye {copy.title}</span>
-      <span className="text-background/75 block">{copy.definition}</span>
-    </TooltipContent>
-  );
 
   return (
     <section
@@ -96,7 +90,14 @@ export function InventoryAlertContext({
                 <Info aria-hidden="true" />
               </Button>
             </TooltipTrigger>
-            {renderTooltipContent("start")}
+            <TooltipContent
+              side="bottom"
+              align="start"
+              className="max-w-[min(18rem,calc(100vw-1.5rem))] leading-relaxed"
+            >
+              <span className="block font-semibold">Qué incluye {copy.title}</span>
+              <span className="text-background/75 block">{copy.definition}</span>
+            </TooltipContent>
           </Tooltip>
         </div>
       </div>
@@ -125,20 +126,6 @@ export function InventoryAlertContext({
           <X aria-hidden="true" />
           Quitar filtro de stock
         </Button>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              className="md:hidden"
-              aria-label={`Ver criterio del filtro ${copy.title}`}
-            >
-              <Info aria-hidden="true" />
-            </Button>
-          </TooltipTrigger>
-          {renderTooltipContent("end")}
-        </Tooltip>
       </div>
     </section>
   );
