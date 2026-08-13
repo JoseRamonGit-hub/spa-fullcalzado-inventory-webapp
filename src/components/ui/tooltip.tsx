@@ -6,6 +6,7 @@ import { Tooltip as TooltipPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 
 type TouchTooltipContextValue = {
+  beginTouch: () => void;
   clearTouchState: () => void;
   contentRef: React.RefCallback<HTMLDivElement>;
   isTouchOpen: boolean;
@@ -52,6 +53,7 @@ function Tooltip({
   }, [touchOpen]);
 
   const contextValue: TouchTooltipContextValue = {
+    beginTouch: () => setTouchOpen((current) => (current === true ? true : false)),
     clearTouchState: () => setTouchOpen(null),
     contentRef: (element) => {
       contentElementRef.current = element;
@@ -86,11 +88,14 @@ function Tooltip({
 }
 
 function TooltipTrigger({
+  onPointerCancel,
   onPointerDown,
   onPointerMove,
+  onPointerUp,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
   const touchTooltip = React.useContext(TouchTooltipContext);
+  const touchGestureRef = React.useRef<{ clientX: number; clientY: number; moved: boolean } | null>(null);
 
   return (
     <TooltipPrimitive.Trigger
@@ -98,13 +103,34 @@ function TooltipTrigger({
       ref={touchTooltip?.triggerRef}
       onPointerDown={(event) => {
         onPointerDown?.(event);
-        if (!event.defaultPrevented && event.pointerType === "touch") touchTooltip?.toggleTouch();
+        if (!event.defaultPrevented && event.pointerType === "touch") {
+          touchGestureRef.current = { clientX: event.clientX, clientY: event.clientY, moved: false };
+          touchTooltip?.beginTouch();
+        }
       }}
       onPointerMove={(event) => {
         onPointerMove?.(event);
+        const touchGesture = touchGestureRef.current;
+        if (event.pointerType === "touch" && touchGesture) {
+          const movedX = event.clientX - touchGesture.clientX;
+          const movedY = event.clientY - touchGesture.clientY;
+          if (Math.hypot(movedX, movedY) > 8) touchGesture.moved = true;
+        }
         if (!event.defaultPrevented && event.pointerType === "mouse" && touchTooltip?.isTouchOpen) {
           touchTooltip.clearTouchState();
         }
+      }}
+      onPointerUp={(event) => {
+        onPointerUp?.(event);
+        const touchGesture = touchGestureRef.current;
+        touchGestureRef.current = null;
+        if (!event.defaultPrevented && event.pointerType === "touch" && touchGesture && !touchGesture.moved) {
+          touchTooltip?.toggleTouch();
+        }
+      }}
+      onPointerCancel={(event) => {
+        onPointerCancel?.(event);
+        if (event.pointerType === "touch") touchGestureRef.current = null;
       }}
       {...props}
     />

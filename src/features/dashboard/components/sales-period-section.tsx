@@ -663,6 +663,8 @@ function SalesIntervalChart({ data, showBucketComparison }: SalesPeriodContentPr
                 <span
                   className={cn(
                     "max-w-full truncate text-xs font-semibold tabular-nums",
+                    (!bucket.isAvailable || bucket.totalUsd === 0) &&
+                      "max-md:overflow-visible max-md:text-[11px] max-md:leading-tight max-md:whitespace-normal",
                     !bucket.isAvailable && "text-muted-foreground/65 italic",
                   )}
                   title={currentLabelTitle}

@@ -32,10 +32,14 @@ describe("Tooltip", () => {
 
     const trigger = screen.getByRole("button", { name: "Ver ayuda" });
     fireEvent.pointerDown(trigger, { pointerType: "touch" });
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    fireEvent.pointerUp(trigger, { pointerType: "touch" });
 
     expect(await screen.findByRole("tooltip")).toHaveTextContent("Detalle para leer");
 
     fireEvent.pointerDown(trigger, { pointerType: "touch" });
+    expect(screen.getByRole("tooltip")).toBeInTheDocument();
+    fireEvent.pointerUp(trigger, { pointerType: "touch" });
 
     await waitFor(() => expect(screen.queryByRole("tooltip")).not.toBeInTheDocument());
   });
@@ -48,12 +52,25 @@ describe("Tooltip", () => {
       </>,
     );
 
-    fireEvent.pointerDown(screen.getByRole("button", { name: "Ver ayuda" }), { pointerType: "touch" });
+    const trigger = screen.getByRole("button", { name: "Ver ayuda" });
+    fireEvent.pointerDown(trigger, { pointerType: "touch" });
+    fireEvent.pointerUp(trigger, { pointerType: "touch" });
     expect(await screen.findByRole("tooltip")).toHaveTextContent("Detalle para leer");
 
     fireEvent.pointerDown(screen.getByRole("button", { name: "Otra acción" }), { pointerType: "touch" });
 
     await waitFor(() => expect(screen.queryByRole("tooltip")).not.toBeInTheDocument());
+  });
+
+  it("no abre el tooltip cuando el gesto táctil se convierte en un deslizamiento", () => {
+    render(<TouchTooltip />);
+
+    const trigger = screen.getByRole("button", { name: "Ver ayuda" });
+    fireEvent.pointerDown(trigger, { pointerType: "touch", clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(trigger, { pointerType: "touch", clientX: 40, clientY: 10 });
+    fireEvent.pointerUp(trigger, { pointerType: "touch", clientX: 40, clientY: 10 });
+
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
   });
 
   it("conserva la apertura por foco para teclado y escritorio", async () => {
