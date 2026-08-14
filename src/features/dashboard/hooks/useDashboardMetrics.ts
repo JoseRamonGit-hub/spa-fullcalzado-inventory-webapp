@@ -1,4 +1,4 @@
-import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { DashboardServiceError, dashboardService } from "@/services/dashboardService";
 import type { DashboardSalesPeriodRequest, DashboardTopProductsRankMode, ProductStockAlertType } from "@/types";
@@ -49,6 +49,7 @@ export function useDashboardSalesPeriod(request: DashboardSalesPeriodRequest | n
       businessId && request ? ({ signal }) => dashboardService.getSalesPeriod(businessId, request, signal) : skipToken,
     staleTime: 30_000,
     retry: retryDashboardQuery,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -66,6 +67,7 @@ export function useDashboardTopProducts(
         : skipToken,
     staleTime: 30_000,
     retry: retryDashboardQuery,
+    placeholderData: keepPreviousData,
   });
 }
 

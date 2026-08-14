@@ -7,6 +7,16 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import {
   filterIconClassName,
@@ -14,7 +24,7 @@ import {
   filterToggleItemClassName,
   filterTriggerClassName,
 } from "@/components/ui/filter-control";
-import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -54,6 +64,7 @@ type SalesPeriodSectionProps = {
 export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriodSectionProps) {
   const navigate = useNavigate({ from: "/dashboard" });
   const [topRankBy, setTopRankBy] = useState<DashboardTopProductsRankMode>("units");
+  const [isChoosingCustomRange, setIsChoosingCustomRange] = useState(false);
   const today = formatDateForBackend(new Date());
   const customAnalysis =
     selection.preset === "custom"
@@ -95,10 +106,17 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
             type="single"
             variant="outline"
             size="sm"
-            value={selection.preset}
-            onValueChange={(value) =>
-              value && onSelectionChange({ ...selection, preset: value as DashboardSalesPeriodPreset })
-            }
+            value={isChoosingCustomRange ? "custom" : selection.preset}
+            onValueChange={(value) => {
+              if (!value) return;
+              if (value === "custom") {
+                setIsChoosingCustomRange(true);
+                return;
+              }
+
+              setIsChoosingCustomRange(false);
+              onSelectionChange({ ...selection, preset: value as DashboardSalesPeriodPreset });
+            }}
             aria-label="Período de facturación"
             className="bg-card grid w-full grid-cols-2 overflow-hidden rounded-md border shadow-xs md:flex md:w-auto md:overflow-visible md:border-0 md:bg-transparent"
           >
@@ -117,8 +135,15 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-          {selection.preset === "custom" ? (
-            <CustomRangePicker selection={selection} today={today} onSelectionChange={onSelectionChange} />
+          {selection.preset === "custom" || isChoosingCustomRange ? (
+            <CustomRangePicker
+              selection={selection}
+              today={today}
+              onSelectionChange={(nextSelection) => {
+                setIsChoosingCustomRange(false);
+                onSelectionChange(nextSelection);
+              }}
+            />
           ) : null}
         </div>
       </header>
@@ -137,7 +162,9 @@ export function SalesPeriodSection({ selection, onSelectionChange }: SalesPeriod
             <Empty className="border py-6 md:py-6">
               <EmptyHeader>
                 <EmptyTitle className="text-sm font-medium tracking-normal">
-                  {customAnalysis?.error ?? "Selecciona un rango personalizado"}
+                  {!selection.customStartDate || !selection.customEndDate
+                    ? "Elige un rango personalizado para consultar las ventas."
+                    : (customAnalysis?.error ?? "Elige un rango personalizado.")}
                 </EmptyTitle>
               </EmptyHeader>
             </Empty>
@@ -333,57 +360,237 @@ function CustomRangePicker({ selection, today, onSelectionChange }: SalesPeriodS
     setOpen(false);
   };
 
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(nextOpen) => {
-        setOpen(nextOpen);
-        if (nextOpen) setDraftRange(selectedRange);
-      }}
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (nextOpen) setDraftRange(selectedRange);
+  };
+
+  const cancelRange = () => setOpen(false);
+
+  const clearRange = () => setDraftRange(undefined);
+
+  const editRangeStart = () => setDraftRange(undefined);
+
+  const editRangeEnd = () => {
+    if (!draftRange?.from) return;
+    setDraftRange({ from: draftRange.from, to: undefined });
+  };
+
+  const trigger = (
+    <Button
+      variant="outline"
+      size="sm"
+      className={cn(
+        "h-11 w-full justify-start md:h-8 md:w-auto",
+        filterTriggerClassName,
+        filterStateClassName(Boolean(selection.customStartDate && selection.customEndDate)),
+      )}
     >
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            "h-9 w-full justify-start md:h-8 md:w-auto",
-            filterTriggerClassName,
-            filterStateClassName(Boolean(selection.customStartDate && selection.customEndDate)),
-          )}
-        >
-          <CalendarDays
-            data-icon="inline-start"
-            aria-hidden="true"
-            className={filterIconClassName(Boolean(selection.customStartDate && selection.customEndDate))}
-          />
-          {formatCustomRangeLabel(selection.customStartDate, selection.customEndDate)}
-        </Button>
-      </PopoverTrigger>
+      <CalendarDays
+        data-icon="inline-start"
+        aria-hidden="true"
+        className={filterIconClassName(Boolean(selection.customStartDate && selection.customEndDate))}
+      />
+      {formatCustomRangeLabel(selection.customStartDate, selection.customEndDate)}
+    </Button>
+  );
+
+  const calendar = (
+    <Calendar
+      mode="range"
+      selected={draftRange}
+      onSelect={setDraftRange}
+      defaultMonth={draftRange?.from ?? todayDate}
+      numberOfMonths={isMobile ? 1 : 2}
+      captionLayout="dropdown"
+      startMonth={new Date(1900, 0, 1)}
+      endMonth={todayDate}
+      disabled={{ after: todayDate }}
+      locale={es}
+      showOutsideDays={false}
+      className={cn(
+        "[@media(pointer:coarse)]:[--cell-size:2.75rem]",
+        isMobile
+          ? "w-full px-1 py-3 [--cell-size:2.75rem]"
+          : "py-2 [&_.rdp-month]:gap-2 [&_.rdp-months]:gap-3 [&_.rdp-week]:mt-1",
+      )}
+      classNames={isMobile ? { root: "w-full", month: "w-full", month_grid: "w-full" } : undefined}
+    />
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={handleOpenChange} repositionInputs={false}>
+        <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+        <DrawerContent className="max-h-[calc(100dvh-0.5rem)]">
+          <DrawerHeader className="shrink-0 gap-3 border-b pb-3 text-left">
+            <DrawerTitle>Período personalizado</DrawerTitle>
+            <DrawerDescription className="sr-only">Selecciona las fechas del período de ventas.</DrawerDescription>
+            <DraftRangeValues range={draftRange} onEditStart={editRangeStart} onEditEnd={editRangeEnd} />
+          </DrawerHeader>
+          <div className="min-h-0 overflow-y-auto overscroll-contain">
+            <div className="mx-auto w-fit max-w-full">{calendar}</div>
+          </div>
+          <DrawerFooter className="bg-background shrink-0 gap-3 border-t pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <DraftRangeSummary range={draftRange} analysis={draftAnalysis} />
+            {draftRange?.from ? (
+              <Button variant="ghost" className="h-11 self-start px-3" onClick={clearRange} aria-label="Limpiar fechas">
+                Limpiar
+              </Button>
+            ) : null}
+            <div className="grid grid-cols-2 gap-2">
+              <DrawerClose asChild>
+                <Button variant="outline" className="h-11">
+                  Cancelar
+                </Button>
+              </DrawerClose>
+              <Button className="h-11" disabled={!draftAnalysis.isValid} onClick={applyRange}>
+                Aplicar rango
+              </Button>
+            </div>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="end">
-        <PopoverTitle className="sr-only">Seleccionar período de ventas</PopoverTitle>
-        <Calendar
-          mode="range"
-          selected={draftRange}
-          onSelect={setDraftRange}
-          defaultMonth={draftRange?.from ?? todayDate}
-          numberOfMonths={isMobile ? 1 : 2}
-          captionLayout="dropdown"
-          startMonth={new Date(1900, 0, 1)}
-          endMonth={todayDate}
-          disabled={{ after: todayDate }}
-          locale={es}
-          autoFocus
-        />
-        <div className="flex items-center justify-between gap-3 border-t p-3">
-          <p className={cn("text-muted-foreground text-xs", !draftAnalysis.isValid && "text-destructive")}>
-            {draftAnalysis.isValid ? `${draftAnalysis.durationDays} días seleccionados` : draftAnalysis.error}
-          </p>
-          <Button size="sm" className="h-9 md:h-8" disabled={!draftAnalysis.isValid} onClick={applyRange}>
-            Aplicar rango
-          </Button>
+        <PopoverHeader className="gap-2 border-b px-3 py-2 text-left">
+          <PopoverTitle>Período personalizado</PopoverTitle>
+          <DraftRangeValues range={draftRange} compact onEditStart={editRangeStart} onEditEnd={editRangeEnd} />
+        </PopoverHeader>
+        {calendar}
+        <div className="flex flex-col gap-2 border-t px-3 py-2">
+          <DraftRangeSummary range={draftRange} analysis={draftAnalysis} />
+          <div className="flex items-center justify-end gap-2">
+            {draftRange?.from ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mr-auto h-8"
+                onClick={clearRange}
+                aria-label="Limpiar fechas"
+              >
+                Limpiar
+              </Button>
+            ) : null}
+            <Button variant="ghost" size="sm" className="h-8" onClick={cancelRange}>
+              Cancelar
+            </Button>
+            <Button size="sm" className="h-8" disabled={!draftAnalysis.isValid} onClick={applyRange}>
+              Aplicar rango
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function DraftRangeValues({
+  range,
+  compact = false,
+  onEditStart,
+  onEditEnd,
+}: {
+  range: DateRange | undefined;
+  compact?: boolean;
+  onEditStart: () => void;
+  onEditEnd: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2" role="group" aria-label="Fechas del rango personalizado">
+      <DraftDateValue
+        label="Inicio"
+        value={range?.from}
+        isActive={!range?.from}
+        compact={compact}
+        onEdit={onEditStart}
+      />
+      <DraftDateValue
+        label="Fin"
+        value={range?.to}
+        isActive={Boolean(range?.from && !range?.to)}
+        compact={compact}
+        disabled={!range?.from}
+        onEdit={onEditEnd}
+      />
+    </div>
+  );
+}
+
+function DraftRangeSummary({
+  range,
+  analysis,
+}: {
+  range: DateRange | undefined;
+  analysis: ReturnType<typeof analyzeCustomSalesRange>;
+}) {
+  if (!analysis.isValid && !(range?.from && range?.to)) return null;
+
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 text-left text-xs" aria-live="polite">
+      {analysis.isValid ? (
+        <>
+          <p className="text-foreground font-medium">
+            {analysis.durationDays === 1 ? "1 día seleccionado" : `${analysis.durationDays} días seleccionados`}
+          </p>
+          <p className="text-muted-foreground">
+            Compararemos con {formatCalendarDateString(analysis.comparisonStart)} –{" "}
+            {formatCalendarDateString(analysis.comparisonEnd)}.
+          </p>
+        </>
+      ) : range?.from && range?.to ? (
+        <p className="text-destructive">{analysis.error}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function DraftDateValue({
+  label,
+  value,
+  isActive,
+  compact = false,
+  disabled = false,
+  onEdit,
+}: {
+  label: string;
+  value: Date | undefined;
+  isActive: boolean;
+  compact?: boolean;
+  disabled?: boolean;
+  onEdit: () => void;
+}) {
+  const formattedValue = value ? formatCalendarDateString(formatCalendarDateForBackend(value)) : "Por elegir";
+
+  return (
+    <button
+      type="button"
+      aria-label={
+        value
+          ? `Editar fecha de ${label.toLocaleLowerCase("es-VE")}: ${formattedValue}`
+          : `Elegir fecha de ${label.toLocaleLowerCase("es-VE")}`
+      }
+      aria-pressed={isActive}
+      disabled={disabled}
+      onClick={onEdit}
+      className={cn(
+        "bg-muted/45 flex min-w-0 flex-col gap-1 rounded-md border px-3 py-2 text-left transition-colors outline-none",
+        "hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        "disabled:pointer-events-none disabled:opacity-55",
+        compact && "py-1 [@media(pointer:coarse)]:py-2",
+        isActive && "border-primary ring-primary/15 ring-2",
+      )}
+    >
+      <span className="text-muted-foreground text-[11px] leading-none font-medium">{label}</span>
+      <span className={cn("w-full truncate text-sm font-medium tabular-nums", !value && "text-muted-foreground")}>
+        {formattedValue}
+      </span>
+    </button>
   );
 }
 
@@ -425,15 +632,21 @@ function SalesPeriodContent({ data, isRefreshing = false, showBucketComparison }
                 {data.previousTotalUsd === 0 ? "Sin base comparable" : comparison.label}
               </Badge>
             ) : null}
-            <span className="text-muted-foreground text-xs leading-[1.4]">
-              {formatMetricComparison(data.totalUsd, data.previousTotalUsd, formatCurrencyUSD, formatSignedCurrency)}
-            </span>
+            <MetricComparison
+              currentValue={data.totalUsd}
+              previousValue={data.previousTotalUsd}
+              formatValue={formatCurrencyUSD}
+              formatDifference={formatSignedCurrency}
+            />
           </div>
         </SalesMetric>
         <SalesMetric label="Operaciones facturadas" value={formatInteger(data.operations)}>
-          <p className="text-muted-foreground text-xs leading-[1.4]">
-            {formatMetricComparison(data.operations, data.previousOperations, formatInteger, formatSignedInteger)}
-          </p>
+          <MetricComparison
+            currentValue={data.operations}
+            previousValue={data.previousOperations}
+            formatValue={formatInteger}
+            formatDifference={formatSignedInteger}
+          />
         </SalesMetric>
         <SalesMetric label="Ticket promedio" value={formatCurrencyUSD(data.averageTicketUsd)}>
           <p className="text-muted-foreground text-xs leading-[1.4]">
@@ -444,14 +657,24 @@ function SalesPeriodContent({ data, isRefreshing = false, showBucketComparison }
 
       <Separator />
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         <p className="text-muted-foreground max-w-[65ch] text-xs leading-[1.4] font-semibold">
           {PERIOD_DESCRIPTION[data.preset]}
         </p>
-        <p className="text-muted-foreground max-w-[75ch] text-xs leading-[1.4]">
-          Período actual: {formatPeriodRange(data.currentStart, data.currentEnd)} · Período anterior:{" "}
-          {formatPeriodRange(data.comparisonStart, data.comparisonEnd)}
-        </p>
+        <dl className="flex flex-col gap-1.5 text-xs leading-[1.4] sm:flex-row sm:flex-wrap sm:gap-x-8">
+          <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+            <dt className="text-muted-foreground font-medium">Período actual</dt>
+            <dd className="text-foreground whitespace-nowrap tabular-nums">
+              {formatPeriodRange(data.currentStart, data.currentEnd)}
+            </dd>
+          </div>
+          <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+            <dt className="text-muted-foreground font-medium">Período anterior</dt>
+            <dd className="text-foreground whitespace-nowrap tabular-nums">
+              {formatPeriodRange(data.comparisonStart, data.comparisonEnd)}
+            </dd>
+          </div>
+        </dl>
       </div>
 
       {hasNoActivityInEitherPeriod ? (
@@ -708,16 +931,53 @@ function formatSignedInteger(value: number) {
   return `${value > 0 ? "+" : "−"}${formatInteger(Math.abs(value))}`;
 }
 
-function formatMetricComparison(
-  currentValue: number,
-  previousValue: number,
-  formatValue: (value: number) => string,
-  formatDifference: (value: number) => string,
-) {
-  const baseline = `Período anterior: ${formatValue(previousValue)}`;
-  if (previousValue === 0 || currentValue === previousValue) return baseline;
+function MetricComparison({
+  currentValue,
+  previousValue,
+  formatValue,
+  formatDifference,
+}: {
+  currentValue: number;
+  previousValue: number;
+  formatValue: (value: number) => string;
+  formatDifference: (value: number) => string;
+}) {
+  const differenceValue = currentValue - previousValue;
+  const difference = formatDifference(differenceValue);
 
-  return `${formatDifference(currentValue - previousValue)} · ${baseline}`;
+  return (
+    <div className="text-muted-foreground flex min-w-0 items-center gap-0.5 text-xs leading-[1.4]">
+      <span>Período anterior: {formatValue(previousValue)}</span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="shrink-0"
+            aria-label="Ver diferencia frente al período anterior"
+          >
+            <Info aria-hidden="true" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={4} className="max-w-64 leading-relaxed">
+          <span className="text-background/70">Diferencia: </span>
+          <span
+            className={cn(
+              "font-semibold tabular-nums",
+              differenceValue > 0
+                ? "text-tooltip-success"
+                : differenceValue < 0
+                  ? "text-tooltip-destructive"
+                  : "text-background",
+            )}
+          >
+            {difference}
+          </span>
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
 }
 
 function getBucketComparison(currentValue: number, previousValue: number) {
@@ -750,7 +1010,7 @@ function formatPeriodRange(startDate: string, endDate: string) {
   const start = formatCalendarDateString(startDate);
   if (startDate === endDate) return start;
 
-  return `${start}–${formatCalendarDateString(endDate)}`;
+  return `${start} al ${formatCalendarDateString(endDate)}`;
 }
 
 function SalesMetric({ label, value, children }: { label: string; value: string; children: ReactNode }) {

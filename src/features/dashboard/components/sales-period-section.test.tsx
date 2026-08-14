@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { useState, type ComponentProps, type ReactNode } from "react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardServiceError } from "@/services/dashboardService";
 import { useDashboardSalesPeriod, useDashboardTopProducts } from "../hooks/useDashboardMetrics";
@@ -19,6 +19,16 @@ vi.mock("@/components/ui/tooltip", () => ({
   TooltipTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
   TooltipContent: () => null,
 }));
+vi.mock("@/components/ui/drawer", () => ({
+  Drawer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  DrawerTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DrawerContent: ({ children }: { children: ReactNode }) => <section data-testid="selector-movil">{children}</section>,
+  DrawerHeader: ({ children }: { children: ReactNode }) => <header>{children}</header>,
+  DrawerTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
+  DrawerDescription: ({ children, ...props }: ComponentProps<"p">) => <p {...props}>{children}</p>,
+  DrawerFooter: ({ children }: { children: ReactNode }) => <footer>{children}</footer>,
+  DrawerClose: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
 vi.mock("../hooks/useDashboardMetrics", () => ({
   useDashboardSalesPeriod: vi.fn(),
   useDashboardTopProducts: vi.fn(),
@@ -29,22 +39,31 @@ vi.mock("@/components/ui/calendar", () => ({
     disabled,
     numberOfMonths,
     captionLayout,
+    autoFocus,
+    showOutsideDays,
   }: {
     onSelect: (range: unknown) => void;
     disabled?: { after?: Date };
     numberOfMonths?: number;
     captionLayout?: string;
+    autoFocus?: boolean;
+    showOutsideDays?: boolean;
   }) => (
-    <button
-      type="button"
+    <div
       data-testid="calendario-personalizado"
       data-future-disabled={disabled?.after instanceof Date}
       data-number-of-months={numberOfMonths}
       data-caption-layout={captionLayout}
-      onClick={() => onSelect({ from: new Date(2024, 2, 20), to: new Date(2024, 2, 27) })}
+      data-auto-focus={autoFocus}
+      data-show-outside-days={showOutsideDays}
     >
-      Elegir rango de prueba
-    </button>
+      <button type="button" onClick={() => onSelect({ from: new Date(2024, 2, 20) })}>
+        Elegir fecha de inicio
+      </button>
+      <button type="button" onClick={() => onSelect({ from: new Date(2024, 2, 20), to: new Date(2024, 2, 27) })}>
+        Elegir rango de prueba
+      </button>
+    </div>
   ),
 }));
 
@@ -150,14 +169,85 @@ describe("Ventas por período", () => {
     } as never);
   });
 
-  it("no consulta ni conserva resultados mientras Personalizado esté incompleto", () => {
-    vi.mocked(useDashboardSalesPeriod).mockReturnValue({ isFetching: false } as never);
+  it("mantiene el filtro y los resultados aplicados mientras se construye un rango personalizado", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: activeCustomPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
 
-    render(<SalesPeriodSection selection={{ preset: "custom" }} onSelectionChange={vi.fn()} />);
+    render(<StatefulSalesPeriodSection />);
 
-    expect(useDashboardSalesPeriod).toHaveBeenCalledWith(null);
-    expect(screen.getByText("Selecciona una fecha de inicio y una fecha de fin.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /seleccionar fechas/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Personalizado" }));
+
+    expect(useDashboardSalesPeriod).toHaveBeenLastCalledWith({ preset: "week" });
+    expect(screen.getByRole("radio", { name: "Personalizado" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("button", { name: "Seleccionar fechas" })).toBeInTheDocument();
+    expect(screen.queryByText("Período personalizado")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Seleccionar fechas" }));
+
+    expect(screen.getByText("Período personalizado")).toBeInTheDocument();
+    expect(screen.getByText("Facturado en el período")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Productos más vendidos" })).toBeInTheDocument();
+    expect(screen.queryByText("Elige un rango personalizado para consultar las ventas.")).not.toBeInTheDocument();
+  });
+
+  it("descarta el borrador y conserva el filtro aplicado al cancelar", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: activeCustomPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+
+    render(<StatefulSalesPeriodSection />);
+
+    fireEvent.click(screen.getByRole("radio", { name: "Personalizado" }));
+    fireEvent.click(screen.getByRole("button", { name: "Seleccionar fechas" }));
+    fireEvent.click(
+      within(screen.getByTestId("calendario-personalizado")).getByRole("button", { name: "Elegir fecha de inicio" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(useDashboardSalesPeriod).toHaveBeenLastCalledWith({ preset: "week" });
+    expect(screen.getByRole("radio", { name: "Personalizado" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByText("Período personalizado")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Seleccionar fechas" })).toBeInTheDocument();
+    expect(screen.getByText("Facturado en el período")).toBeInTheDocument();
+  });
+
+  it("permite reabrir, editar y limpiar un rango aplicado", () => {
+    vi.mocked(useDashboardSalesPeriod).mockReturnValue({
+      data: activeCustomPeriod,
+      isPending: false,
+      isError: false,
+      isFetching: false,
+    } as never);
+
+    render(
+      <SalesPeriodSection
+        selection={{ preset: "custom", customStartDate: "2024-03-20", customEndDate: "2024-03-27" }}
+        onSelectionChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /20 mar\. 2024.*27 mar\. 2024/i }));
+
+    expect(screen.queryByText("Revisa el período antes de aplicarlo.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Editar fecha de inicio: 20 mar. 2024" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Editar fecha de fin: 27 mar. 2024" }));
+
+    expect(screen.queryByText("Ahora elige la fecha de fin.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aplicar rango" })).toBeDisabled();
+    expect(screen.getAllByText("Por elegir")).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Limpiar fechas" }));
+
+    expect(screen.queryByText("Elige la fecha de inicio.")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Por elegir")).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: "Limpiar fechas" })).not.toBeInTheDocument();
   });
 
   it("valida y aplica el rango antes de consultar", () => {
@@ -169,12 +259,27 @@ describe("Ventas por período", () => {
 
     const applyButton = screen.getByRole("button", { name: "Aplicar rango" });
     expect(applyButton).toBeDisabled();
+    expect(screen.queryByText("Elige la fecha de inicio.")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Por elegir")).toHaveLength(2);
     expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-future-disabled", "true");
     expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-number-of-months", "2");
     expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-caption-layout", "dropdown");
+    expect(screen.getByTestId("calendario-personalizado")).not.toHaveAttribute("data-auto-focus");
+    expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-show-outside-days", "false");
+
+    fireEvent.click(
+      within(screen.getByTestId("calendario-personalizado")).getByRole("button", { name: "Elegir fecha de inicio" }),
+    );
+    expect(screen.queryByText("Ahora elige la fecha de fin.")).not.toBeInTheDocument();
+    expect(screen.getByText("20 mar. 2024")).toBeInTheDocument();
+    expect(screen.queryByText("Falta la fecha de fin.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Selecciona una fecha de inicio y una fecha de fin.")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Elegir rango de prueba" }));
     expect(applyButton).toBeEnabled();
+    expect(screen.queryByText("Revisa el período antes de aplicarlo.")).not.toBeInTheDocument();
+    expect(screen.getByText("8 días seleccionados")).toBeInTheDocument();
+    expect(screen.getByText("Compararemos con 12 mar. 2024 – 19 mar. 2024.")).toBeInTheDocument();
     fireEvent.click(applyButton);
 
     expect(useDashboardSalesPeriod).toHaveBeenLastCalledWith({
@@ -193,6 +298,7 @@ describe("Ventas por período", () => {
     fireEvent.click(screen.getByRole("radio", { name: "Personalizado" }));
     fireEvent.click(screen.getByRole("button", { name: "Seleccionar fechas" }));
 
+    expect(screen.getByTestId("selector-movil")).toBeInTheDocument();
     expect(screen.getByTestId("calendario-personalizado")).toHaveAttribute("data-number-of-months", "1");
   });
 
@@ -266,7 +372,7 @@ describe("Ventas por período", () => {
 
     expect(screen.queryByLabelText("Leyenda")).not.toBeInTheDocument();
     expect(document.querySelectorAll('[data-series-kind="previous"]')).toHaveLength(0);
-    expect(screen.getByLabelText("07/2026: ventas $7,203.90 del 01 jul. 2026–31 jul. 2026")).toBeInTheDocument();
+    expect(screen.getByLabelText("07/2026: ventas $7,203.90 del 01 jul. 2026 al 31 jul. 2026")).toBeInTheDocument();
 
     const currentBar = document.querySelector('[data-series-kind="current"]');
     expect(currentBar).toHaveClass("w-[52%]");
@@ -594,9 +700,10 @@ describe("Ventas por período", () => {
     expect(revenueLabel.nextElementSibling).toHaveClass("text-2xl");
     expect(screen.getAllByText("Período anterior: $0.00")).toHaveLength(2);
     expect(screen.getByText("Referencia: los mismos días de la semana anterior")).toBeInTheDocument();
-    expect(
-      screen.getByText("Período actual: 25 mar. 2024–27 mar. 2024 · Período anterior: 18 mar. 2024–20 mar. 2024"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Período actual")).toBeInTheDocument();
+    expect(screen.getByText("25 mar. 2024 al 27 mar. 2024")).toBeInTheDocument();
+    expect(screen.getByText("Período anterior")).toBeInTheDocument();
+    expect(screen.getByText("18 mar. 2024 al 20 mar. 2024")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Productos más vendidos" })).toHaveClass("text-base", "leading-tight");
     expect(screen.getByText("Ordenados de mayor a menor por unidades vendidas.")).toBeInTheDocument();
   });
