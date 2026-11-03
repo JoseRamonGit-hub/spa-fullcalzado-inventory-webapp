@@ -139,6 +139,8 @@ export type InventoryMovementWithRelations = InventoryMovement & {
 export type ProductDetail = {
   product: Product;
   lastActivity: InventoryMovement | null;
+  /** Latest sale (commercial exit that is not part of an exchange). */
+  lastSale: InventoryMovement | null;
   stagnantSince: string | null;
   stagnantDays: number | null;
 };

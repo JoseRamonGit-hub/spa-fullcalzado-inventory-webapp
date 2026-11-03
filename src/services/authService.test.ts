@@ -70,8 +70,25 @@ describe("Auth Service", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error).toBe("Invalid login credentials");
+        expect(result.error).toBe("Correo o contraseña incorrectos. Revisa los datos e inténtalo de nuevo.");
       }
+    });
+
+    it("traduce errores por código y de red", async () => {
+      mockSignIn.mockResolvedValueOnce({
+        data: { user: null, session: null },
+        error: { code: "over_request_rate_limit", message: "Request rate limit reached" } as never,
+      });
+      const rateLimited = await authService.login("a@test.com", "x");
+      expect(!rateLimited.success && rateLimited.error).toBe(
+        "Demasiados intentos seguidos. Espera un minuto antes de volver a intentarlo.",
+      );
+
+      mockSignIn.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+      const offline = await authService.login("a@test.com", "x");
+      expect(!offline.success && offline.error).toBe(
+        "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.",
+      );
     });
 
     it("hace signOut y retorna error si el perfil de usuario no existe", async () => {
@@ -90,7 +107,7 @@ describe("Auth Service", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error).toBe("No se encontró el perfil de usuario");
+        expect(result.error).toBe("Tu usuario no tiene un perfil activo. Habla con el administrador.");
       }
 
       expect(mockSignOut).toHaveBeenCalledWith({ scope: "local" });

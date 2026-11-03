@@ -68,7 +68,7 @@ export const productsService = {
     if (productError) throw new Error(productError.message);
     if (!product) return null;
 
-    const [activityResult, stagnationResult] = await Promise.all([
+    const [activityResult, saleResult, stagnationResult] = await Promise.all([
       supabase
         .from("inventory_movements")
         .select("*")
@@ -78,14 +78,27 @@ export const productsService = {
         .order("id", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from("inventory_movements")
+        .select("*")
+        .eq("business_id", businessId)
+        .eq("product_id", productId)
+        .eq("type", "exit")
+        .is("return_id", null)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
       supabase.rpc("get_product_stagnation", { p_business_id: businessId, p_product_id: productId }).maybeSingle(),
     ]);
 
     if (activityResult.error) throw new Error(activityResult.error.message);
+    if (saleResult.error) throw new Error(saleResult.error.message);
     if (stagnationResult.error) throw new Error(stagnationResult.error.message);
     return {
       product,
       lastActivity: activityResult.data,
+      lastSale: saleResult.data,
       stagnantSince: stagnationResult.data?.stagnant_since ?? null,
       stagnantDays: stagnationResult.data?.stagnant_days ?? null,
     };

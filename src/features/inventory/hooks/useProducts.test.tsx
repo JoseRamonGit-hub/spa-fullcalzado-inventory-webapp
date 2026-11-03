@@ -88,6 +88,7 @@ describe("useProducts", () => {
       mockGetDetail.mockResolvedValueOnce({
         product: fakeProduct,
         lastActivity: null,
+        lastSale: null,
         stagnantSince: null,
         stagnantDays: null,
       });
@@ -102,6 +103,7 @@ describe("useProducts", () => {
       expect(testQueryClient.getQueryData(productKeys.detail(BUSINESS_ID, fakeProduct.id))).toEqual({
         product: fakeProduct,
         lastActivity: null,
+        lastSale: null,
         stagnantSince: null,
         stagnantDays: null,
       });
