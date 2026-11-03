@@ -4,7 +4,7 @@ import { useAppForm } from "@/hooks/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { $loginSchema, type LoginSchema } from "../schemas";
 import { getLastLoginEmail } from "../utils/login-utils";
-import { HeaderLoginForm } from "./header-login-form";
+import { HeaderLoginForm, LoginBrand } from "./header-login-form";
 import { LoginSubmitButton } from "./login-submit-button";
 
 type LoginFormProps = {
@@ -50,81 +50,85 @@ export function LoginForm({ onSubmit, isPending, error, sessionExpired }: LoginF
         e.stopPropagation();
         form.handleSubmit();
       }}
-      className="bg-card flex flex-col justify-center px-6 py-8 sm:px-10 md:px-12 md:py-14"
+      className="bg-card flex flex-col px-6 py-7 sm:px-10 md:px-14 md:py-10"
     >
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-7">
-        <HeaderLoginForm />
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col gap-8 md:gap-10">
+        <LoginBrand />
 
-        {sessionExpired && !error && (
-          <Alert className="bg-secondary/60">
-            <Clock />
-            <AlertTitle>Tu sesión expiró</AlertTitle>
-            <AlertDescription>Vuelve a entrar para continuar donde estabas.</AlertDescription>
-          </Alert>
-        )}
+        <div className="flex flex-1 flex-col justify-center gap-7">
+          <HeaderLoginForm />
 
-        <div className="grid gap-5">
-          {/* Email */}
-          <form.AppField name="email">
-            {(field) => (
-              <field.TextField
-                label="Correo electrónico"
-                type="email"
-                inputMode="email"
-                placeholder="nombre@correo.com"
-                autoComplete="username"
-                autoCapitalize="none"
-                spellCheck={false}
-                autoFocus={canAutoFocus && !lastEmail}
-                className="h-11"
-              />
-            )}
-          </form.AppField>
+          {sessionExpired && !error && (
+            <Alert className="bg-secondary/60">
+              <Clock />
+              <AlertTitle>Tu sesión expiró</AlertTitle>
+              <AlertDescription>Vuelve a entrar para continuar donde estabas.</AlertDescription>
+            </Alert>
+          )}
 
-          {/* Password */}
-          <form.AppField name="password">
-            {(field) => (
-              <field.TextFieldGroup
-                ref={passwordRef}
-                label="Contraseña"
-                type="password"
-                placeholder="Tu contraseña"
-                passwordEye={true}
-                autoComplete="current-password"
-                autoFocus={canAutoFocus && !!lastEmail}
-                onKeyDown={handleCapsLock}
-                onKeyUp={handleCapsLock}
-                onBlurCapture={() => setCapsLockOn(false)}
-                groupClassName="h-11"
-                className="h-full"
-                action={
-                  capsLockOn && (
-                    <p className="text-foreground flex items-center gap-1.5 text-xs" role="status">
-                      <TriangleAlert className="text-warning size-3.5" aria-hidden="true" />
-                      Bloq Mayús está activado
-                    </p>
-                  )
-                }
-              />
-            )}
-          </form.AppField>
-        </div>
+          <div className="grid gap-5">
+            {/* Email */}
+            <form.AppField name="email">
+              {(field) => (
+                <field.TextField
+                  label="Correo electrónico"
+                  type="email"
+                  inputMode="email"
+                  placeholder="nombre@correo.com"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  autoFocus={canAutoFocus && !lastEmail}
+                  className="h-11"
+                />
+              )}
+            </form.AppField>
 
-        {error && !isPending && (
-          <Alert variant="destructive" className="border-destructive/30 bg-destructive/5">
-            <CircleAlert />
-            <AlertDescription>{error.message}</AlertDescription>
-          </Alert>
-        )}
+            {/* Password */}
+            <form.AppField name="password">
+              {(field) => (
+                <field.TextFieldGroup
+                  ref={passwordRef}
+                  label="Contraseña"
+                  type="password"
+                  placeholder="Tu contraseña"
+                  passwordEye={true}
+                  autoComplete="current-password"
+                  autoFocus={canAutoFocus && !!lastEmail}
+                  onKeyDown={handleCapsLock}
+                  onKeyUp={handleCapsLock}
+                  onBlurCapture={() => setCapsLockOn(false)}
+                  groupClassName="h-11"
+                  // The group already draws the border, focus ring and invalid state.
+                  className="h-full border-0"
+                  action={
+                    capsLockOn && (
+                      <p className="text-foreground flex items-center gap-1.5 text-xs" role="status">
+                        <TriangleAlert className="text-warning size-3.5" aria-hidden="true" />
+                        Bloq Mayús está activado
+                      </p>
+                    )
+                  }
+                />
+              )}
+            </form.AppField>
+          </div>
 
-        <div className="flex flex-col gap-4">
+          {error && !isPending && (
+            <Alert variant="destructive" className="border-destructive/30 bg-destructive/5">
+              <CircleAlert />
+              <AlertDescription>{error.message}</AlertDescription>
+            </Alert>
+          )}
+
           <form.AppForm>
             <LoginSubmitButton isPending={isPending} />
           </form.AppForm>
-          <p className="text-muted-foreground text-center text-xs text-pretty">
-            ¿Olvidaste tu contraseña o no tienes acceso? Pide al administrador del negocio que te habilite.
-          </p>
         </div>
+
+        <p className="text-muted-foreground text-xs text-pretty">
+          ¿Olvidaste tu contraseña o no tienes acceso? Pide al administrador del negocio que te habilite.
+        </p>
       </div>
     </form>
   );
