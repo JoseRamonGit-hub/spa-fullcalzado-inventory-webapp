@@ -1,45 +1,48 @@
 import zapatos from "@/assets/calzado.jpg";
 
+/**
+ * Brand side of the login. On desktop it is the left column; on mobile it
+ * collapses into a photo band above the form so the brand survives small screens.
+ */
 export function LoginPanel() {
   return (
-    <aside className="relative hidden flex-col items-start justify-end overflow-hidden bg-black p-10 md:flex">
-      {/* Background photo */}
+    <aside className="bg-sidebar relative isolate flex h-40 flex-col justify-end overflow-hidden p-6 sm:h-48 md:h-auto md:justify-between md:p-10">
       <img
         src={zapatos}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="animate-in fade-in zoom-in-105 absolute inset-0 -z-10 size-full object-cover object-[center_55%] duration-1000 ease-out motion-reduce:animate-none md:object-[center_40%]"
       />
-      {/* Overlay: dark gradient from bottom so text stays readable */}
+      {/* Warm dark wash from the bottom keeps the wordmark readable over the photo */}
       <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to top, oklch(0.10 0.01 50 / 0.92) 0%, oklch(0.12 0.01 50 / 0.50) 40%, oklch(0.14 0.01 50 / 0.20) 100%)",
-        }}
+        className="from-sidebar/95 via-sidebar/40 md:from-sidebar md:to-sidebar/5 absolute inset-0 -z-10 bg-linear-to-t to-transparent"
         aria-hidden="true"
       />
 
-      {/* Branding */}
-      <div className="relative z-10 flex h-full w-full flex-col justify-between">
-        <span className="text-[10px] font-semibold tracking-[0.2em] text-white/30 uppercase">Sistema Interno</span>
+      <img
+        src="/favicon-96x96.png"
+        alt=""
+        aria-hidden="true"
+        className="hidden size-11 rounded-xl shadow-lg shadow-black/30 md:block"
+      />
 
-        <div className="max-w-xs">
-          <h2 className="font-heading mb-3 text-3xl leading-[1.1] font-bold tracking-tight text-white/95">
+      <div className="flex items-center gap-3 md:block md:max-w-xs">
+        <img
+          src="/favicon-96x96.png"
+          alt=""
+          aria-hidden="true"
+          className="size-9 rounded-lg shadow-md shadow-black/30 md:hidden"
+        />
+        <div>
+          <p className="font-heading text-2xl leading-none font-bold tracking-tight text-white md:text-4xl md:leading-[1.05]">
             Full Calzado
-            <br />
-            <span className="text-primary">C.A</span>
-          </h2>
-          <p className="mb-6 text-sm leading-relaxed text-balance text-white/50">
-            Panel de gestión de inventario, ventas y cierres de caja para tu equipo.
           </p>
-          <div className="flex items-center gap-2 text-[11px] text-white/30">
-            <span>Inventario</span>
-            <span className="text-white/15">·</span>
-            <span>Ventas</span>
-            <span className="text-white/15">·</span>
-            <span>Caja</span>
-          </div>
+          <p className="mt-1.5 text-sm text-white/80 md:mt-4 md:text-base md:leading-relaxed md:text-balance">
+            <span className="md:hidden">Gestión de tus zapaterías</span>
+            <span className="hidden md:inline">
+              Inventario, ventas y cierres de caja de tus zapaterías en un solo lugar.
+            </span>
+          </p>
         </div>
       </div>
     </aside>

@@ -3,11 +3,15 @@ import { useRouter } from "@tanstack/react-router";
 import { authService } from "@/services/authService";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { accessibleBusinessesQueryOptions } from "@/features/business/hooks/useBusinessQueries";
+import { getSafeRedirect, saveLastLoginEmail } from "../utils/login-utils";
 
-export function useLogin() {
+/**
+ * Errors are not toasted: the login form renders `error.message` inline,
+ * next to the fields the user has to fix.
+ */
+export function useLogin(redirectTo?: string) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -17,14 +21,18 @@ export function useLogin() {
       if (!result.success) throw new Error(result.error);
       return result.user;
     },
-    onSuccess: async (user) => {
+    onSuccess: async (user, { email }) => {
+      saveLastLoginEmail(email);
       useBusinessStore.getState().clear();
       useAuthStore.getState().setAuth(user);
       void queryClient.prefetchQuery(accessibleBusinessesQueryOptions(user.id));
-      await router.navigate({ to: "/dashboard" });
-    },
-    onError: (error) => {
-      toast.error(error.message);
+
+      const safeRedirect = getSafeRedirect(redirectTo);
+      if (safeRedirect) {
+        await router.navigate({ href: safeRedirect });
+      } else {
+        await router.navigate({ to: "/dashboard" });
+      }
     },
   });
 }
