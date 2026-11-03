@@ -12,7 +12,7 @@ export function LoginPage() {
   return (
     <main className="bg-background flex min-h-dvh flex-col items-center justify-center px-4 py-6 md:p-10">
       <section className="flex w-full max-w-md flex-col gap-6 md:max-w-5xl">
-        <Card className="border-border/60 gap-0 overflow-hidden p-0 shadow-xl">
+        <Card className="border-border/60 gap-0 overflow-hidden rounded-3xl p-0 shadow-xl">
           {/* Wider photo column keeps the landscape photo close to its own proportions */}
           <CardContent className="grid p-0 md:min-h-136 md:grid-cols-[1.15fr_1fr]">
             <LoginPanel />
