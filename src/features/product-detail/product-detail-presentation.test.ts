@@ -46,7 +46,17 @@ describe("product detail presentation", () => {
     ];
     const now = Date.parse("2026-11-03T15:00:00Z");
 
-    expect(buildStockSeries(events, 11, now).map((point) => point.stock)).toEqual([0, 14, 11, 11]);
-    expect(buildStockSeries([], 11, now)).toEqual([]);
+    expect(buildStockSeries(events, 11, undefined, now).map((point) => point.stock)).toEqual([0, 14, 11, 11]);
+    expect(buildStockSeries([], 11, undefined, now)).toEqual([]);
+  });
+
+  it("opens the stock line at the start of the selected period", () => {
+    const events: SeriesEvent[] = [
+      { type: "entry", quantity: 12, stock_before: 0, created_at: "2026-10-31T13:11:00Z" },
+    ];
+    const series = buildStockSeries(events, 12, "2026-10-05", Date.parse("2026-11-03T15:00:00Z"));
+
+    expect(series[0]).toEqual({ time: Date.parse("2026-10-05T04:00:00Z"), stock: 0 });
+    expect(series.map((point) => point.stock)).toEqual([0, 0, 12, 12]);
   });
 });
