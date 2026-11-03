@@ -75,12 +75,14 @@ export const productHistoryColumns = [
   }),
   columnHelper.accessor("created_at", {
     enableSorting: true,
+    meta: { className: "w-56" },
     header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ row }) => (
       <span className="tabular-value text-muted-foreground">{formatDateTime(row.original.created_at) || "—"}</span>
     ),
   }),
   columnHelper.accessor("quantity", {
+    meta: { className: "w-24" },
     header: () => <div className="text-right">Cantidad</div>,
     cell: ({ row }) => {
       const signedQuantity = getMovementSignedQuantity(row.original);
@@ -103,10 +105,12 @@ export const productHistoryColumns = [
   }),
   columnHelper.display({
     id: "stock",
+    meta: { className: "w-28" },
     header: () => <div className="text-right">Stock</div>,
     cell: ({ row }) => <MovementStockChange movement={row.original} fallback="empty" showDelta={false} />,
   }),
   columnHelper.accessor("user_fullname", {
+    meta: { className: "w-52 pl-8" },
     header: "Usuario",
     cell: ({ getValue }) => (
       <OverflowTooltip focusable={false} className="text-muted-foreground max-w-44">

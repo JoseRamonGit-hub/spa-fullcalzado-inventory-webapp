@@ -14,20 +14,13 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { formatCalendarDate, formatDateForBackend } from "@/utils/formatters";
-import type { ProductHistoryPeriod } from "../product-history-filter";
+import { productHistoryPeriodLabels, type ProductHistoryPeriod } from "../product-history-filter";
 
 type ProductHistoryPeriodFilterProps = {
   period: ProductHistoryPeriod;
   customRange: DateRange | undefined;
   onPeriodChange: (period: ProductHistoryPeriod) => void;
   onCustomRangeChange: (range: DateRange | undefined) => void;
-};
-
-const periodLabels: Record<ProductHistoryPeriod, string> = {
-  "last-30-days": "Últimos 30 días",
-  "last-90-days": "Últimos 90 días",
-  all: "Todo el historial",
-  custom: "Rango personalizado",
 };
 
 function getCaracasToday() {
@@ -70,7 +63,7 @@ export function ProductHistoryPeriodFilter({
         className={cn(filterControlTextClassName, filterStateClassName(period !== "last-30-days"))}
         onChange={(event) => onPeriodChange(event.target.value as ProductHistoryPeriod)}
       >
-        {Object.entries(periodLabels).map(([value, label]) => (
+        {Object.entries(productHistoryPeriodLabels).map(([value, label]) => (
           <NativeSelectOption key={value} value={value}>
             {label}
           </NativeSelectOption>

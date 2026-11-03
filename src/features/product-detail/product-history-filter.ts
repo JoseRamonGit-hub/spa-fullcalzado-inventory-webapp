@@ -5,6 +5,13 @@ export const productHistoryPeriods = ["last-30-days", "last-90-days", "all", "cu
 
 export type ProductHistoryPeriod = (typeof productHistoryPeriods)[number];
 
+export const productHistoryPeriodLabels: Record<ProductHistoryPeriod, string> = {
+  "last-30-days": "Últimos 30 días",
+  "last-90-days": "Últimos 90 días",
+  all: "Todo el historial",
+  custom: "Rango personalizado",
+};
+
 export type ProductHistoryCustomRange = {
   startDate?: string;
   endDate?: string;

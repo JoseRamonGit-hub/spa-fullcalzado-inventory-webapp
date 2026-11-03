@@ -14,7 +14,7 @@ let detail: ProductDetail | null;
 let exchangeRate: { rate: number } | null;
 let queryState: "success" | "error";
 let historyState: "success" | "pending" | "error";
-let history: ProductHistoryEvent[];
+let history: ProductHistoryEvent[] | undefined;
 let userRole: "admin" | "employee";
 let isMobile: boolean;
 
@@ -119,7 +119,13 @@ describe("ProductDetailPage", () => {
     canGoBack.mockReset();
     canGoBack.mockReturnValue(true);
     refetch.mockClear();
-    detail = { product, lastActivity: activity, stagnantSince: "2026-06-29", stagnantDays: 40 };
+    detail = {
+      product,
+      lastActivity: activity,
+      lastSale: { ...activity, id: "sale-1", type: "exit", quantity: 1, created_at: new Date().toISOString() },
+      stagnantSince: "2026-06-29",
+      stagnantDays: 40,
+    };
     exchangeRate = { rate: 90 };
     queryState = "success";
     historyState = "success";
@@ -131,22 +137,28 @@ describe("ProductDetailPage", () => {
     useBusinessStore.setState({ activeBusinessId: "business-1" });
   });
 
-  it("shows the current product, the active-rate price and latest audited event", () => {
+  it("shows the product identity, stock, active-rate price and latest sale", () => {
     render(<ProductDetailPage />);
 
-    expect(screen.getByRole("heading", { name: "Historial de producto" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Historial de movimientos" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Deportivo clásico" })).toBeInTheDocument();
-    const inventorySummary = screen.getByLabelText("Inventario");
-    const priceSummary = screen.getByLabelText("Precios");
-    const lifecycleSummary = screen.getByLabelText("Estado y actividad");
+    const summary = screen.getByRole("region", { name: "Resumen del producto" });
 
-    expect(within(inventorySummary).getByText("FC-101")).toBeInTheDocument();
-    expect(within(inventorySummary).getByText("8")).toBeInTheDocument();
-    expect(within(inventorySummary).getByText("40 días")).toBeInTheDocument();
+    expect(within(summary).getByText("FC-101")).toBeInTheDocument();
+    expect(within(summary).getByText("Activo")).toBeInTheDocument();
+    expect(within(summary).getByText("8")).toBeInTheDocument();
+    expect(within(summary).getByText("En existencia")).toBeInTheDocument();
+    expect(within(summary).getByText("$25.00")).toBeInTheDocument();
+    expect(within(summary).getByText("2.250,00 Bs.")).toBeInTheDocument();
+    expect(within(summary).getByText("Hoy")).toBeInTheDocument();
     expect(screen.queryByText("Descripción")).not.toBeInTheDocument();
-    expect(within(priceSummary).getByText("$25.00")).toBeInTheDocument();
-    expect(within(priceSummary).getByText("2.250,00 Bs.")).toBeInTheDocument();
-    expect(within(lifecycleSummary).getByText("Desactivación")).toBeInTheDocument();
+  });
+
+  it("flags low and empty stock", () => {
+    detail = { ...detail!, product: { ...product, stock: 0 } };
+    render(<ProductDetailPage />);
+
+    expect(screen.getByText("Agotado")).toBeInTheDocument();
   });
 
   it("offers product maintenance actions directly to administrators on desktop", () => {
@@ -159,7 +171,8 @@ describe("ProductDetailPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ajustar existencias de FC-101" }));
     expect(screen.getByRole("dialog", { name: "Ajustar existencias" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Desactivar producto FC-101" }));
+    fireEvent.keyDown(screen.getByRole("button", { name: "Más acciones del producto FC-101" }), { key: "Enter" });
+    fireEvent.click(screen.getByRole("menuitem", { name: "Desactivar producto FC-101" }));
     expect(screen.getByRole("dialog", { name: "Desactivar producto" })).toBeInTheDocument();
   });
 
@@ -180,7 +193,7 @@ describe("ProductDetailPage", () => {
 
     expect(screen.queryByRole("button", { name: "Editar datos del producto FC-101" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ajustar existencias de FC-101" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Desactivar producto FC-101" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Más acciones del producto FC-101" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Abrir acciones del producto FC-101" })).not.toBeInTheDocument();
   });
 
@@ -228,13 +241,9 @@ describe("ProductDetailPage", () => {
     ];
     render(<ProductDetailPage />);
 
-    expect(
-      screen.getByRole("region", { name: "Tabla de historial con desplazamiento horizontal" }),
-    ).toBeInTheDocument();
-    for (const heading of ["Movimiento", "Fecha y hora", "Cantidad", "Stock"]) {
+    for (const heading of ["Movimiento", "Fecha y hora", "Cantidad", "Stock", "Usuario"]) {
       expect(screen.getByRole("columnheader", { name: heading })).toBeInTheDocument();
     }
-    expect(screen.queryByRole("columnheader", { name: "Usuario" })).not.toBeInTheDocument();
     expect(screen.getByTitle("Entrada por devolución")).toBeInTheDocument();
     expect(screen.getAllByText("María Pérez")).toHaveLength(2);
     expect(screen.getByText("Descripción")).toBeInTheDocument();
@@ -315,6 +324,7 @@ describe("ProductDetailPage", () => {
 
   it("offers a retry when product history fails", () => {
     historyState = "error";
+    history = undefined;
     render(<ProductDetailPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Reintentar historial" }));
@@ -322,17 +332,20 @@ describe("ProductDetailPage", () => {
   });
 
   it("uses explicit empty values when the rate and activity do not exist", () => {
-    detail = { product, lastActivity: null, stagnantSince: null, stagnantDays: null };
+    detail = { product, lastActivity: null, lastSale: null, stagnantSince: null, stagnantDays: null };
     exchangeRate = null;
+    history = [];
     render(<ProductDetailPage />);
 
     expect(screen.getByText("Tasa no disponible")).toBeInTheDocument();
-    expect(screen.getByText("Sin actividad registrada")).toBeInTheDocument();
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("Sin ventas")).toBeInTheDocument();
+    expect(screen.getByText("Sin movimientos registrados")).toBeInTheDocument();
+    expect(screen.getByText("Sin movimientos de stock en el período.")).toBeInTheDocument();
   });
 
   it("offers retry when the product query fails", () => {
     queryState = "error";
+    detail = null;
     render(<ProductDetailPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Reintentar carga" }));
