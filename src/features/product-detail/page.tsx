@@ -77,9 +77,9 @@ export function ProductDetailPage() {
   const isBlockingError = productQuery.isError && !productQuery.data;
   const historyCount = historyRange && historyQuery.data ? historyQuery.data.length : null;
   const historyToolbar = (
-    <div className="flex shrink-0 flex-col items-start gap-2 px-4 pt-5 pb-3 sm:flex-row sm:items-center sm:justify-between md:px-6">
+    <div className="flex shrink-0 flex-col items-start gap-2 px-4 pt-4 pb-3 sm:flex-row sm:items-center sm:justify-between md:px-6">
       <div className="flex items-baseline gap-2">
-        <h2 id="product-history-title" className="font-heading text-foreground text-base font-semibold tracking-tight">
+        <h2 id="product-history-title" className="font-heading text-foreground text-sm font-semibold">
           Historial de movimientos
         </h2>
         {historyCount !== null ? (
@@ -100,7 +100,11 @@ export function ProductDetailPage() {
     <ProductSummary
       detail={productQuery.data}
       exchangeRate={exchangeRateQuery}
-      stockPoints={buildStockSeries(historyRange ? (historyQuery.data ?? []) : [], productQuery.data.product.stock)}
+      stockPoints={buildStockSeries(
+        historyRange ? (historyQuery.data ?? []) : [],
+        productQuery.data.product.stock,
+        historyRange?.startDate,
+      )}
       isHistoryLoading={!!historyRange && historyQuery.isPending}
       periodLabel={productHistoryPeriodLabels[historyPeriod]}
       actions={

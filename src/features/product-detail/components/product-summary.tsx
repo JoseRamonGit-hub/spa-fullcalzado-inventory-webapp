@@ -43,10 +43,10 @@ function Metric({ label, value, hint, valueClassName }: MetricProps) {
   return (
     <div className={metricClassName}>
       <dt className="operational-label text-muted-foreground">{label}</dt>
-      <dd className={cn("font-heading text-foreground text-2xl leading-none font-bold tracking-tight", valueClassName)}>
+      <dd className={cn("font-heading text-foreground text-xl leading-tight font-bold tracking-tight", valueClassName)}>
         {value}
       </dd>
-      {hint ? <dd className="text-muted-foreground mt-0.5 min-h-4 text-xs">{hint}</dd> : null}
+      {hint ? <dd className="text-muted-foreground min-h-4 text-xs">{hint}</dd> : null}
     </div>
   );
 }
@@ -73,13 +73,13 @@ export function ProductSummary({
   const daysSinceSale = lastSale ? getCalendarDaysSince(lastSale.created_at) : null;
 
   return (
-    <section className="border-b px-4 pt-5 pb-6 md:px-6" aria-label="Resumen del producto">
+    <section className="border-b px-4 pt-4 pb-5 md:px-6" aria-label="Resumen del producto">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <h2 className="font-heading text-foreground text-xl leading-tight font-bold tracking-tight text-balance md:text-2xl">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h2 className="font-heading text-foreground text-lg leading-snug font-semibold tracking-tight text-balance">
             {product.description}
           </h2>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             <span className="product-code uppercase">{product.code}</span>
             <span className="text-border" aria-hidden="true">
               |
@@ -97,7 +97,7 @@ export function ProductSummary({
         {actions}
       </div>
 
-      <dl className={cn(metricsGridClassName, "mt-6")}>
+      <dl className={cn(metricsGridClassName, "mt-5")}>
         <Metric
           label="Stock"
           value={<span className="tabular-value">{product.stock}</span>}
@@ -162,16 +162,16 @@ export function ProductSummary({
 
 export function ProductSummarySkeleton() {
   return (
-    <section className="border-b px-4 pt-5 pb-6 md:px-6" role="status" aria-label="Cargando detalle del producto">
+    <section className="border-b px-4 pt-4 pb-5 md:px-6" role="status" aria-label="Cargando detalle del producto">
       <div className="flex flex-col gap-2">
-        <Skeleton className="h-7 w-64 max-w-full" />
+        <Skeleton className="h-6 w-64 max-w-full" />
         <Skeleton className="h-4 w-32" />
       </div>
-      <div className={cn(metricsGridClassName, "mt-6")}>
+      <div className={cn(metricsGridClassName, "mt-5")}>
         {[0, 1, 2].map((index) => (
           <div key={index} className={metricClassName}>
             <Skeleton className="h-2.5 w-14" />
-            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-5 w-20" />
             <Skeleton className="h-3 w-24" />
           </div>
         ))}

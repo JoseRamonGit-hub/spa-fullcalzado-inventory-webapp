@@ -37,11 +37,13 @@ const toTime = (value: string | null) => (value ? new Date(value).getTime() : Nu
 
 /**
  * Rebuilds the stock level over time from the history events, closing with the current stock
- * so the line always ends at today's value.
+ * so the line always ends at today's value. With a period start, the line opens there so the
+ * chart spans the whole selected period instead of jumping at its left edge.
  */
 export function buildStockSeries(
   events: Pick<InventoryMovement, "type" | "quantity" | "stock_before" | "created_at">[],
   currentStock: number,
+  periodStart?: string,
   now: number = Date.now(),
 ): StockPoint[] {
   const points: StockPoint[] = [];
@@ -53,7 +55,12 @@ export function buildStockSeries(
   for (const event of ordered) {
     const time = toTime(event.created_at);
     const stockBefore = event.stock_before ?? 0;
-    if (points.length === 0) points.push({ time, stock: stockBefore });
+    if (points.length === 0) {
+      // Caracas has no DST, so its midnight is always 04:00 UTC.
+      const startTime = periodStart ? Date.parse(`${periodStart}T00:00:00-04:00`) : Number.NaN;
+      if (startTime < time) points.push({ time: startTime, stock: stockBefore });
+      points.push({ time, stock: stockBefore });
+    }
     points.push({ time, stock: stockBefore + (getMovementSignedQuantity(event) ?? 0) });
   }
 
