@@ -1,19 +1,29 @@
 import { SportShoe } from "lucide-react";
 
-export function HeaderLoginForm() {
+/** Brand lockup: the app mark (same shape as the favicon) next to the product name. */
+export function LoginBrand() {
   return (
-    <header className="flex flex-col items-center gap-3 text-center">
-      <div
-        className="mb-2 inline-flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm ring-1 ring-black/5"
-        style={{
-          background: "linear-gradient(135deg, oklch(0.60 0.16 55), oklch(0.50 0.14 55))",
-        }}
+    <div className="flex items-center gap-2.5">
+      <span
+        className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-lg shadow-xs"
         aria-hidden="true"
       >
-        <SportShoe className="h-7 w-7 text-white" />
-      </div>
-      <h1 className="font-heading text-foreground text-2xl font-bold tracking-tight">Bienvenido de nuevo</h1>
-      <p className="text-muted-foreground text-sm text-balance">Ingresa tus credenciales para acceder al sistema</p>
+        <SportShoe className="size-4.5" />
+      </span>
+      <span className="font-heading text-foreground text-base font-bold tracking-tight">Full Calzado</span>
+    </div>
+  );
+}
+
+export function HeaderLoginForm() {
+  return (
+    <header className="flex flex-col gap-2">
+      <h1 className="font-heading text-foreground text-2xl leading-tight font-bold tracking-tight md:text-3xl">
+        Inicia tu jornada
+      </h1>
+      <p className="text-muted-foreground text-sm text-pretty">
+        Entra con el correo y la contraseña que te asignó el administrador.
+      </p>
     </header>
   );
 }

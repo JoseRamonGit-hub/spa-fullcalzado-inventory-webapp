@@ -10,6 +10,7 @@ type TextFieldGroupProps = FormFieldProps &
     leftAddon?: React.ReactNode;
     rightAddon?: React.ReactNode;
     passwordEye?: boolean;
+    groupClassName?: string;
   };
 
 export function TextFieldGroup({
@@ -20,6 +21,7 @@ export function TextFieldGroup({
   action,
   descriptionBelow,
   passwordEye,
+  groupClassName,
   ...props
 }: TextFieldGroupProps) {
   const field = useFieldContext<string>();
@@ -29,7 +31,7 @@ export function TextFieldGroup({
 
   return (
     <FieldWrapper label={label} description={description} action={action} descriptionBelow={descriptionBelow}>
-      <InputGroup>
+      <InputGroup className={groupClassName}>
         <InputGroupInput
           {...props}
           id={field.name}
@@ -48,7 +50,11 @@ export function TextFieldGroup({
 
         {passwordEye && (
           <InputGroupAddon align="inline-end">
-            <InputGroupButton onClick={() => setShowPassword((state) => !state)}>
+            <InputGroupButton
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((state) => !state)}
+            >
               {showPassword ? <EyeOff /> : <Eye />}
             </InputGroupButton>
           </InputGroupAddon>

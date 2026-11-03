@@ -31,13 +31,22 @@ const {
   data: { subscription: authSubscription },
 } = supabase.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_OUT") {
-    // Session was terminated (user logged out, session expired, or revoked)
+    // Session was terminated (user logged out, session expired, or revoked).
+    // useLogout clears the store before signing out, so a user still present here
+    // means the session ended without the user asking for it.
+    const sessionExpired = useAuthStore.getState().user !== null;
+    const { location } = router.state;
+
     useAuthStore.getState().clearAuth();
     useBusinessStore.getState().clear();
     queryClient.clear();
 
     // Kick user out of protected routes immediately
-    router.navigate({ to: "/login", replace: true });
+    router.navigate({
+      to: "/login",
+      search: sessionExpired ? { reason: "expired", redirect: location.href } : {},
+      replace: true,
+    });
     return;
   }
 

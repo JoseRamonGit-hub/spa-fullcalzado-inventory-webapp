@@ -1,5 +1,25 @@
+import type { AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@/types";
+
+const LOGIN_ERROR_MESSAGES: Record<string, string> = {
+  invalid_credentials: "Correo o contraseña incorrectos. Revisa los datos e inténtalo de nuevo.",
+  email_not_confirmed: "Tu correo aún no está confirmado. Pide ayuda al administrador.",
+  user_banned: "Tu acceso está suspendido. Habla con el administrador.",
+  over_request_rate_limit: "Demasiados intentos seguidos. Espera un minuto antes de volver a intentarlo.",
+};
+
+const NETWORK_ERROR_MESSAGE = "No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.";
+const GENERIC_ERROR_MESSAGE = "No pudimos iniciar sesión. Inténtalo de nuevo en unos segundos.";
+
+/** Translates Supabase auth errors into actionable Spanish copy for the login form. */
+function getLoginErrorMessage(error: AuthError): string {
+  if (error.code && error.code in LOGIN_ERROR_MESSAGES) return LOGIN_ERROR_MESSAGES[error.code];
+  // Older GoTrue versions omit `code` and only send the English message.
+  if (error.message === "Invalid login credentials") return LOGIN_ERROR_MESSAGES.invalid_credentials;
+  if (error.name === "AuthRetryableFetchError" || error.status === 0) return NETWORK_ERROR_MESSAGE;
+  return GENERIC_ERROR_MESSAGE;
+}
 
 async function getProfile(userId: string): Promise<User | null> {
   const { data } = await supabase.from("users").select("*").eq("id", userId).single();
@@ -15,23 +35,27 @@ export const authService = {
     email: string,
     password: string,
   ): Promise<{ success: true; user: User } | { success: false; error: string }> => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-    if (error || !data.user) {
-      return { success: false, error: error?.message ?? "Credenciales incorrectas" };
+      if (error || !data.user) {
+        return { success: false, error: error ? getLoginErrorMessage(error) : GENERIC_ERROR_MESSAGE };
+      }
+
+      const profile = await getProfile(data.user.id);
+
+      if (!profile) {
+        await supabase.auth.signOut({ scope: "local" });
+        return { success: false, error: "Tu usuario no tiene un perfil activo. Habla con el administrador." };
+      }
+
+      return { success: true, user: profile };
+    } catch {
+      return { success: false, error: NETWORK_ERROR_MESSAGE };
     }
-
-    const profile = await getProfile(data.user.id);
-
-    if (!profile) {
-      await supabase.auth.signOut({ scope: "local" });
-      return { success: false, error: "No se encontró el perfil de usuario" };
-    }
-
-    return { success: true, user: profile };
   },
 
   getProfile,

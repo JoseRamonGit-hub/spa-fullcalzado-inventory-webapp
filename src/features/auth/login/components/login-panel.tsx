@@ -1,46 +1,26 @@
 import zapatos from "@/assets/calzado.jpg";
 
+/**
+ * Photo side of the login, purely decorative (the brand lives on the form side).
+ * The photo sits inset in the card like a framed print, with a soft vignette for
+ * depth instead of a heavy dark wash. On mobile it becomes a short band above the form.
+ */
 export function LoginPanel() {
   return (
-    <aside className="relative hidden flex-col items-start justify-end overflow-hidden bg-black p-10 md:flex">
-      {/* Background photo */}
-      <img
-        src={zapatos}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover object-center"
-      />
-      {/* Overlay: dark gradient from bottom so text stays readable */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to top, oklch(0.10 0.01 50 / 0.92) 0%, oklch(0.12 0.01 50 / 0.50) 40%, oklch(0.14 0.01 50 / 0.20) 100%)",
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Branding */}
-      <div className="relative z-10 flex h-full w-full flex-col justify-between">
-        <span className="text-[10px] font-semibold tracking-[0.2em] text-white/30 uppercase">Sistema Interno</span>
-
-        <div className="max-w-xs">
-          <h2 className="font-heading mb-3 text-3xl leading-[1.1] font-bold tracking-tight text-white/95">
-            Full Calzado
-            <br />
-            <span className="text-primary">C.A</span>
-          </h2>
-          <p className="mb-6 text-sm leading-relaxed text-balance text-white/50">
-            Panel de gestión de inventario, ventas y cierres de caja para tu equipo.
-          </p>
-          <div className="flex items-center gap-2 text-[11px] text-white/30">
-            <span>Inventario</span>
-            <span className="text-white/15">·</span>
-            <span>Ventas</span>
-            <span className="text-white/15">·</span>
-            <span>Caja</span>
-          </div>
-        </div>
+    <aside className="bg-card p-2.5 pb-0 md:p-3 md:pr-0" aria-hidden="true">
+      {/* Radius = card radius (20px) minus the inset, so the corners stay concentric */}
+      <div className="bg-muted relative isolate h-32 overflow-hidden rounded-[10px] sm:h-40 md:h-full md:rounded-lg">
+        <img
+          src={zapatos}
+          alt=""
+          className="animate-in fade-in absolute inset-0 -z-10 size-full object-cover object-[center_62%] duration-700 ease-out motion-reduce:animate-none md:object-[55%_center]"
+        />
+        {/* Soft vignette: darkens the edges a touch so the shoe pops without dimming the photo */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_55%_45%,transparent_50%,color-mix(in_oklch,var(--sidebar)_40%,transparent))]" />
+        {/* Light warm floor so the bottom edge settles into the card */}
+        <div className="from-sidebar/30 absolute inset-0 bg-linear-to-t to-transparent to-40%" />
+        {/* Hairline inner edge, like a print mounted in a frame */}
+        <div className="absolute inset-0 rounded-[inherit] ring-1 ring-black/10 ring-inset" />
       </div>
     </aside>
   );

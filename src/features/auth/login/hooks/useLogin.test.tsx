@@ -5,7 +5,6 @@ import { useLogin } from "./useLogin";
 import { authService } from "@/services/authService";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
-import { toast } from "sonner";
 import type { User } from "@/types";
 import type { ReactNode } from "react";
 import { businessesService } from "@/services/businessesService";
@@ -23,7 +22,6 @@ vi.mock("@/services/businessesService", () => ({
 }));
 
 const mockLogin = vi.mocked(authService.login);
-const mockToastError = vi.mocked(toast.error);
 
 const mockNavigate = vi.fn();
 vi.mock("@tanstack/react-router", () => ({
@@ -89,7 +87,44 @@ describe("useLogin", () => {
     expect(mockNavigate).toHaveBeenCalledWith({ to: "/dashboard" });
   });
 
-  it("en credenciales incorrectas: muestra toast de error y NO navega", async () => {
+  it("con redirect seguro: vuelve a la ruta original y recuerda el correo", async () => {
+    mockLogin.mockResolvedValueOnce({ success: true, user: fakeUser });
+
+    const { result } = renderHook(() => useLogin("/inventory?status=low_stock"), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.mutate({ email: " Test@Test.com ", password: "pass123" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith({ href: "/inventory?status=low_stock" });
+    expect(localStorage.getItem("last-login-email")).toBe("test@test.com");
+  });
+
+  it("ignora redirects externos y navega a /dashboard", async () => {
+    mockLogin.mockResolvedValueOnce({ success: true, user: fakeUser });
+
+    const { result } = renderHook(() => useLogin("//evil.com"), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.mutate({ email: "test@test.com", password: "pass123" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith({ to: "/dashboard" });
+  });
+
+  it("en credenciales incorrectas: expone el error y NO navega", async () => {
     mockLogin.mockResolvedValueOnce({
       success: false,
       error: "Credenciales incorrectas",
@@ -109,12 +144,12 @@ describe("useLogin", () => {
 
     expect(useAuthStore.getState().user).toBeNull();
 
-    expect(mockToastError).toHaveBeenCalledWith("Credenciales incorrectas");
+    expect(result.current.error?.message).toBe("Credenciales incorrectas");
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("en error de red: muestra toast de error y NO navega", async () => {
+  it("en error de red: expone el error y NO navega", async () => {
     mockLogin.mockRejectedValueOnce(new Error("Failed to fetch"));
 
     const { result } = renderHook(() => useLogin(), {
@@ -131,7 +166,7 @@ describe("useLogin", () => {
 
     expect(useAuthStore.getState().user).toBeNull();
 
-    expect(mockToastError).toHaveBeenCalledWith("Failed to fetch");
+    expect(result.current.error?.message).toBe("Failed to fetch");
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
