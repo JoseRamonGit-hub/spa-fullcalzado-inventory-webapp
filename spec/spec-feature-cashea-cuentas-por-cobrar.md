@@ -70,7 +70,7 @@ depósitos que Cashea hace (en bolívares y netos de comisiones).
 | D-11 | Fuera de alcance: ligar las devoluciones a la venta original (el reembolso de una Venta Cashea se compensa anulando su orden con el motivo «Devolución del cliente», D-14), método de pago del cliente, conciliación bancaria automática, exportaciones PDF o Excel, comparaciones entre negocios. |
 | D-12 | Los importes de un cierre de caja no cambian nunca (D-06), pero la tabla de cierres muestra además un **indicador Cashea por día** que sí es estado vivo: cambia cuando se registran depósitos, anulaciones o ajustes. Ver REQ-010. |
 | D-13 | **Tasa.** Cashea opera con la tasa BCV; el negocio fija su propia tasa cada día, que coincide o casi con la BCV. Se asume que un dólar de Cashea equivale a un dólar de la tienda. Los equivalentes en Bs. de lo financiado usan la **tasa de la venta**, nunca la tasa del día en que se consulta. No se requiere una tasa BCV automática: en el depósito, el Administrador escribe los bolívares recibidos y el sistema calcula la tasa implícita (D-08). |
-| D-14 | **Anulación con motivo.** Toda anulación indica «Devolución del cliente» o «Error de registro». Si la devolución ocurre en un día posterior al de la venta, el cierre del día de la anulación suma lo financiado como «Cashea anulado por devolución»: la devolución resta el crédito completo, pero de caja solo sale lo cobrado hoy. Ver REQ-007. |
+| D-14 | **Anulación con motivo.** Toda anulación indica «Devolución del cliente» o «Error de registro». Si la devolución ocurre en un día posterior al de la venta, el cierre del día de la anulación suma lo financiado como «Cashea anulado por devolución»: la devolución resta el crédito completo, pero de caja solo sale lo cobrado hoy. Cashea no admite devoluciones parciales, así que la devolución siempre anula la orden completa. Ver REQ-007. |
 | D-15 | **Una sola entrega.** No hay etapas de despliegue: el esquema se crea completo desde la primera migración y el trabajo se ordena en rebanadas verticales verificables (sección 8). |
 
 ## 3. Estado de la evidencia
@@ -484,7 +484,7 @@ que el frontend ya desplegado sigue funcionando entre un paso y otro.
 Ninguno de estos pasos bloquea el inicio; reducen retrabajo.
 
 1. **Pedir al cliente una muestra real.** El texto copiado del resumen «Debe pagar» de una orden y, si existe, el detalle de un depósito ya recibido (Q-01 a Q-03). Hoy el parser y la fórmula de comisiones se apoyan en un tutorial de 2024. Si la muestra no llega a tiempo, se construye igual: el ingreso manual no depende del parser y los porcentajes son editables.
-2. **Confirmar con el cliente:** Q-04 (¿ambos negocios?), Q-07 (cómo opera hoy el reembolso de una compra Cashea) y Q-14 (su tasa diaria coincide con la BCV).
+2. **Confirmar con el cliente:** Q-04 (¿ambos negocios?).
 3. **Dejar escrito el lenguaje:** actualizar `CONTEXT.md` y crear el ADR 0002 (sección 5) antes del primer código, para que nombres de tablas, textos de interfaz y pruebas usen los mismos términos.
 
 ## 9. Pruebas
@@ -518,14 +518,14 @@ Ninguno de estos pasos bloquea el inicio; reducen retrabajo.
 | Q-04 | ¿Cashea aplica a ambos negocios o a uno solo? | Si es a uno, valorar una bandera por negocio que oculte la interfaz Cashea en el otro |
 | Q-05 | ¿Los porcentajes difieren entre negocios? | El diseño ya es por negocio |
 | Q-06 | Políticas RLS y permisos actuales de `app_settings` | **Resuelta** (7.1): lectura para todo usuario con acceso al negocio; las columnas nuevas no son actualizables desde el cliente |
-| Q-07 | Devoluciones de ventas Cashea | Ligar devoluciones a la venta original sigue fuera de alcance. El reembolso completo queda cubierto: el Administrador registra la devolución y anula la orden con motivo «Devolución del cliente» (D-14, REQ-007). Riesgos que quedan: depende de que el Administrador haga los dos pasos; una devolución parcial se corrige con un ajuste, que no compensa el cierre de un día posterior. Confirmar con el cliente cómo opera hoy un reembolso de una compra Cashea |
+| Q-07 | Devoluciones de ventas Cashea | **Resuelta.** Confirmado por Anderson: Cashea no admite devoluciones parciales, y el reembolso opera como asume este documento (se cancela la orden en Cashea y se devuelve al cliente lo cobrado hoy). El Administrador registra la devolución y anula la orden con motivo «Devolución del cliente» (D-14, REQ-007). Ligar devoluciones a la venta original sigue fuera de alcance. Riesgo que queda: depende de que el Administrador haga los dos pasos |
 | Q-08 | Si el depósito pudiera llegar en dólares | Hoy se asume siempre en bolívares |
 | Q-09 | Corte semanal (qué órdenes entran en cada depósito) | El Administrador las selecciona a mano; un reporte de Cashea con los números de orden simplificaría la conciliación |
 | Q-10 | Uso del logo de Cashea (marca de un tercero) dentro de la interfaz interna | Se asume uso interno para identificar el método de venta; confirmar si Cashea publica lineamientos de marca antes de producción |
 | Q-11 | Venta registrada sin marcar «Pago con Cashea» (olvido del cajero) | **Resuelta:** dentro del alcance como REQ-011 (`attach_cashea_order`). El empleado asocia la orden a una venta de hoy; el Administrador, a una de cualquier fecha |
 | Q-12 | Orden anulada o ajustada después de que su día fue cerrado | El cierre guardado no cambia (D-06) y queda con el Por cobrar Cashea original; el resumen en vivo y el indicador muestran el estado actual (REQ-007). Se acepta la diferencia; la nota obligatoria la explica. Lo mismo aplica al asociar una orden a una venta de un día cerrado (REQ-011). Excepción: la anulación por «Devolución del cliente» en un día posterior no altera el resumen del día de la venta; se compensa el día de la anulación (D-14) |
 | Q-13 | Base de datos de producción | Este diseño se verificó contra las migraciones del repositorio y `src/types/supabase.ts`, que coinciden entre sí. No se verificó contra la base remota: antes de aplicar, confirmar que no tiene cambios fuera de las migraciones (`npx supabase db diff --linked`) |
-| Q-14 | La tasa diaria del negocio frente a la BCV (D-13) | Se asume que coinciden o casi. Si se separan de forma apreciable, el total de la orden Cashea dejará de coincidir con el total de la venta (la advertencia de REQ-001 saltaría en cada venta) y el Por cobrar Cashea en Bs. se desviaría. Confirmar con el cliente; no requiere cambios mientras el supuesto se cumpla |
+| Q-14 | La tasa diaria del negocio frente a la BCV (D-13) | **Resuelta.** Confirmado por Anderson: coinciden o casi. Si llegaran a separarse de forma apreciable, el total de la orden Cashea dejaría de coincidir con el total de la venta (la advertencia de REQ-001 saltaría en cada venta) y el Por cobrar Cashea en Bs. se desviaría; no requiere cambios mientras el supuesto se cumpla |
 
 ## 11. Alcance acordado con el cliente (resumen)
 
