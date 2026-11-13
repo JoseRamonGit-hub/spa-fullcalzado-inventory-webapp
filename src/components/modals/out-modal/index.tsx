@@ -12,7 +12,7 @@ import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-
 import { PendingSaleLinesPanel } from "./components/pending-sale-lines-panel";
 import { SalesSummaryBlock } from "./components/sales-summary-block";
 import { CasheaPaymentSection } from "./components/cashea-payment-section";
-import { EMPTY_CASHEA_ORDER_DRAFT, evaluateCasheaOrderDraft } from "@/features/cashea/cashea-order-draft";
+import { useCasheaPayment } from "./hooks/use-cashea-payment";
 
 type OutModalProps = {
   isOpen: boolean;
@@ -24,8 +24,6 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
   const exchangeRate = useModalExchangeRate();
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [isCasheaPayment, setIsCasheaPayment] = useState(false);
-  const [casheaDraft, setCasheaDraft] = useState(EMPTY_CASHEA_ORDER_DRAFT);
 
   const {
     pendingSaleLines,
@@ -36,16 +34,14 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     totalAmountVes,
   } = usePendingSaleLines();
 
-  const casheaEvaluation = evaluateCasheaOrderDraft(casheaDraft, totalAmountUsd);
-  const casheaOrder = isCasheaPayment ? casheaEvaluation.order : null;
-  const isCasheaIncomplete = isCasheaPayment && casheaOrder === null;
+  const casheaPayment = useCasheaPayment(totalAmountUsd);
+  const { casheaOrder, isCasheaIncomplete } = casheaPayment;
   const canOpenConfirmDialog = pendingSaleLines.length > 0 && exchangeRate.isReady && !isCasheaIncomplete;
 
   // Los datos Cashea se limpian junto con los Renglones pendientes.
   const clearSale = () => {
     clearPendingSaleLines();
-    setIsCasheaPayment(false);
-    setCasheaDraft(EMPTY_CASHEA_ORDER_DRAFT);
+    casheaPayment.clearCasheaPayment();
   };
 
   const handleSubmissionSuccess = () => {
@@ -121,11 +117,11 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
           </div>
 
           <CasheaPaymentSection
-            isCasheaPayment={isCasheaPayment}
-            onCasheaPaymentChange={setIsCasheaPayment}
-            draft={casheaDraft}
-            evaluation={casheaEvaluation}
-            onDraftChange={setCasheaDraft}
+            isCasheaPayment={casheaPayment.isCasheaPayment}
+            onCasheaPaymentChange={casheaPayment.setIsCasheaPayment}
+            draft={casheaPayment.draft}
+            evaluation={casheaPayment.evaluation}
+            onDraftChange={casheaPayment.setDraft}
             disabled={isSubmissionPending}
           />
         </section>
@@ -139,7 +135,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         totalAmountUsd={totalAmountUsd}
         totalAmountVes={totalAmountVes}
         casheaOrder={casheaOrder}
-        casheaSaleTotalMismatch={casheaEvaluation.saleTotalMismatch}
+        casheaSaleTotalMismatch={casheaPayment.evaluation.saleTotalMismatch}
         isSubmissionPending={isSubmissionPending}
         onConfirmSubmit={submitSale}
       />

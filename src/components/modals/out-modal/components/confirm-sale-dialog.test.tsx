@@ -182,7 +182,7 @@ describe("ConfirmSaleDialog", () => {
       expect(screen.getByText(/difiere del total de la venta/)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Registrar venta" })).toBeDisabled();
 
-      fireEvent.click(screen.getByRole("checkbox", { name: /Confirmo el total de la orden Cashea/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: /Confirmo el total de la Orden Cashea/ }));
 
       expect(screen.getByRole("button", { name: "Registrar venta" })).toBeEnabled();
     });

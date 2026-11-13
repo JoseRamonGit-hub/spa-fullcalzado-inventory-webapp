@@ -53,8 +53,8 @@ export function ConfirmSaleDialog({
     if (isOpen) setIsOrderTotalConfirmed(false);
   }
 
-  const requiresOrderTotalConfirmation = casheaOrder !== null && casheaSaleTotalMismatch;
-  const isOrderTotalPending = requiresOrderTotalConfirmation && !isOrderTotalConfirmed;
+  const orderToConfirmTotal = casheaSaleTotalMismatch ? casheaOrder : null;
+  const isOrderTotalPending = orderToConfirmTotal !== null && !isOrderTotalConfirmed;
 
   return (
     <ModalConfirmDialog
@@ -159,11 +159,11 @@ export function ConfirmSaleDialog({
         </ConfirmDialogSummarySection>
       )}
 
-      {casheaOrder && casheaSaleTotalMismatch && (
+      {orderToConfirmTotal && (
         <section className="border-warning/40 bg-warning/8 flex flex-col gap-2 rounded-md border px-3 py-2 text-xs">
           <p className="text-warning-foreground font-medium">
-            El total de la orden Cashea ({formatCurrencyUSD(casheaOrder.total_usd)}) difiere del total de la venta (
-            {formatCurrencyUSD(totalAmountUsd)}).
+            El total de la Orden Cashea ({formatCurrencyUSD(orderToConfirmTotal.total_usd)}) difiere del total de la
+            venta ({formatCurrencyUSD(totalAmountUsd)}).
           </p>
           <div className="flex items-center gap-2">
             <Checkbox
@@ -172,7 +172,7 @@ export function ConfirmSaleDialog({
               onCheckedChange={(checked) => setIsOrderTotalConfirmed(checked === true)}
             />
             <Label htmlFor="cashea-order-total-confirmation" className="text-xs font-medium">
-              Confirmo el total de la orden Cashea
+              Confirmo el total de la Orden Cashea
             </Label>
           </div>
         </section>

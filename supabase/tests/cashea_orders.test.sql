@@ -6,7 +6,7 @@
 
 BEGIN;
 
-SELECT plan(39);
+SELECT plan(40);
 SELECT set_config('app.suppress_log_entry', 'true', true);
 
 INSERT INTO public.products (id, business_id, code, description, stock, price_usd, active)
@@ -415,6 +415,20 @@ SELECT throws_ok(
   'P0001',
   'El número de factura es requerido y admite como máximo 40 caracteres',
   'Se rechaza un número de factura de más de 40 caracteres'
+);
+
+SELECT throws_ok(
+  $$
+    SELECT public.create_cashea_sale(
+      '10000000-0000-0000-0000-000000000001',
+      '[{"product_id":"39000000-0000-0000-0000-000000000002","quantity":1,"price_usd":30,"price_ves":2700}]'::jsonb,
+      90,
+      '{"order_number":"7114","invoice_number":"551-0114","total_usd":10000000000,"paid_today_usd":9999999990,"financed_usd":10}'::jsonb
+    )
+  $$,
+  'P0001',
+  'Los montos de la Orden Cashea exceden el máximo permitido',
+  'Se rechaza un monto que no cabe en la columna con un mensaje propio'
 );
 
 -- ─── Atomicidad ─────────────────────────────────────────────────────────────

@@ -262,6 +262,14 @@ begin
     raise exception 'Los montos de la Orden Cashea admiten como máximo dos decimales';
   end if;
 
+  -- Los montos se guardan en numeric(12,2).
+  if v_total_usd >= 10000000000
+    or v_paid_today_usd >= 10000000000
+    or v_financed_usd >= 10000000000
+  then
+    raise exception 'Los montos de la Orden Cashea exceden el máximo permitido';
+  end if;
+
   if v_total_usd <= 0 then
     raise exception 'El total de la Orden Cashea debe ser mayor a 0';
   end if;
