@@ -1,3 +1,7 @@
+import { useId } from "react";
+import { COMPACT_FIELD_LABEL_CLASS_NAME } from "@/components/forms/field-wrapper";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { CasheaOrderFormApi } from "../hooks/use-cashea-order-form";
@@ -17,11 +21,32 @@ const AMOUNT_INPUT_PROPS = {
 
 /** Los cinco datos de una Orden Cashea con la verificación de la suma contra el total. */
 export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFieldsProps) {
-  const { form, evaluation, fieldOptions } = orderForm;
+  const { form, evaluation, fieldOptions, fillFromSummary } = orderForm;
   const { orderTotalUsd, sumUsd, sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
+  const pasteAreaId = useId();
 
   return (
     <div className="flex flex-col gap-3">
+      <Field>
+        <FieldLabel htmlFor={pasteAreaId} className={COMPACT_FIELD_LABEL_CLASS_NAME}>
+          Pegar resumen de Cashea
+        </FieldLabel>
+        {/* Siempre vacía: el texto se analiza al pegarlo y no queda en el estado del formulario. */}
+        <Textarea
+          id={pasteAreaId}
+          value=""
+          rows={1}
+          disabled={disabled}
+          placeholder="Pega aquí el resumen copiado del panel de Cashea"
+          className="min-h-9 resize-none text-sm"
+          onPaste={(event) => {
+            event.preventDefault();
+            fillFromSummary(event.clipboardData.getData("text"));
+          }}
+          onChange={(event) => fillFromSummary(event.target.value)}
+        />
+      </Field>
+
       <fieldset disabled={disabled} className="grid min-w-0 grid-cols-2 items-start gap-3 md:grid-cols-5">
         <form.AppField {...fieldOptions("orderNumber")}>
           {(field) => <field.TextField label="N° de orden" compact autoComplete="off" placeholder="6400685" />}

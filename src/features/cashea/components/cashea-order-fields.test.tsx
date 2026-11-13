@@ -9,6 +9,12 @@ function CasheaOrderFieldsHarness({ saleTotalUsd = 100 }: { saleTotalUsd?: numbe
   return <CasheaOrderFields orderForm={orderForm} />;
 }
 
+const DEBE_PAGAR = "# Orden\n6400685\nTotal\n$ 185.6\nCobrar hoy\n$ 92.80\nFinanciado\n$ 92.80\nID\n551-000738";
+
+function pasteSummary(pasteArea: HTMLElement, text: string) {
+  fireEvent.paste(pasteArea, { clipboardData: { getData: () => text } });
+}
+
 describe("CasheaOrderFields", () => {
   it("captura los cinco datos de la Orden Cashea", () => {
     render(<CasheaOrderFieldsHarness />);
@@ -113,6 +119,48 @@ describe("CasheaOrderFields", () => {
     fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "92.805" } });
 
     expect(await screen.findByText("Máximo dos decimales")).toBeInTheDocument();
+  });
+
+  it("rellena los campos reconocidos al pegar el resumen y vacía el área de pegado", () => {
+    render(<CasheaOrderFieldsHarness saleTotalUsd={185.6} />);
+
+    const pasteArea = screen.getByLabelText("Pegar resumen de Cashea");
+    pasteSummary(pasteArea, DEBE_PAGAR);
+
+    expect(screen.getByLabelText("N° de orden")).toHaveValue("6400685");
+    expect(screen.getByLabelText("N° de factura")).toHaveValue("551-000738");
+    expect(screen.getByLabelText("Total de la orden")).toHaveValue("185.60");
+    expect(screen.getByLabelText("Cobrado hoy")).toHaveValue("92.80");
+    expect(screen.getByLabelText("Monto financiado")).toHaveValue("92.80");
+    expect(pasteArea).toHaveValue("");
+  });
+
+  it("un segundo pegado solo reemplaza los campos que reconoce", () => {
+    render(<CasheaOrderFieldsHarness saleTotalUsd={185.6} />);
+
+    const pasteArea = screen.getByLabelText("Pegar resumen de Cashea");
+    pasteSummary(pasteArea, "Total $ 185.6 Cobrar hoy $ 92.80 Financiado $ 92.80");
+    fireEvent.change(screen.getByLabelText("N° de orden"), { target: { value: "6400685" } });
+    fireEvent.change(screen.getByLabelText("N° de factura"), { target: { value: "551-000738" } });
+
+    pasteSummary(pasteArea, "# Orden 6400700 Total $ 120");
+
+    expect(screen.getByLabelText("N° de orden")).toHaveValue("6400700");
+    expect(screen.getByLabelText("N° de factura")).toHaveValue("551-000738");
+    expect(screen.getByLabelText("Total de la orden")).toHaveValue("120.00");
+    expect(screen.getByLabelText("Cobrado hoy")).toHaveValue("92.80");
+    expect(screen.getByLabelText("Monto financiado")).toHaveValue("92.80");
+  });
+
+  it("un texto irreconocible no cambia ni marca con error ningún campo", () => {
+    render(<CasheaOrderFieldsHarness />);
+
+    fireEvent.change(screen.getByLabelText("N° de orden"), { target: { value: "6400685" } });
+    pasteSummary(screen.getByLabelText("Pegar resumen de Cashea"), "hola");
+
+    expect(screen.getByLabelText("N° de orden")).toHaveValue("6400685");
+    expect(screen.getByLabelText("Total de la orden")).toHaveValue("");
+    expect(screen.queryByText("Campo obligatorio")).not.toBeInTheDocument();
   });
 
   it("avisa que el total de la orden difiere del total de la venta", () => {

@@ -8,6 +8,7 @@ import {
   type CasheaOrderDraft,
   type CasheaOrderDraftField,
 } from "../cashea-order-draft";
+import { parseCasheaSummary } from "../parse-cashea-summary";
 
 /** Campos de los que se deriva el Monto financiado. */
 const FINANCED_INPUT_FIELDS = new Set<CasheaOrderDraftField>(["totalUsd", "paidTodayUsd"]);
@@ -46,13 +47,34 @@ export function useCasheaOrderForm(saleTotalUsd: number) {
     if (financedUsd !== null) form.setFieldValue("financedUsd", financedUsd);
   }
 
+  /**
+   * Rellena los campos que reconoce en el resumen pegado del panel de Cashea; los demás conservan lo que el cajero
+   * escribió, sin recalcular el Monto financiado (el parser ya lo deriva cuando puede). Nada se envía: el cajero revisa
+   * y confirma. El texto solo se analiza, no se guarda.
+   */
+  function fillFromSummary(text: string) {
+    const summary = parseCasheaSummary(text);
+    const recognized: Record<CasheaOrderDraftField, string | null> = {
+      orderNumber: summary.orderNumber,
+      invoiceNumber: summary.invoiceNumber,
+      totalUsd: formatAmount(summary.totalUsd),
+      paidTodayUsd: formatAmount(summary.paidTodayUsd),
+      financedUsd: formatAmount(summary.financedUsd),
+    };
+    for (const [name, value] of Object.entries(recognized) as [CasheaOrderDraftField, string | null][]) {
+      if (value !== null) form.setFieldValue(name, value, { dontRunListeners: true });
+    }
+  }
+
   // El tope del Monto financiado depende del total de la venta, que cambia al agregar o quitar Renglones.
   useEffect(() => {
     if (form.getFieldMeta("financedUsd")?.isTouched) void form.validateField("financedUsd", "change");
   }, [form, saleTotalUsd]);
 
-  return { form, evaluation, fieldOptions };
+  return { form, evaluation, fieldOptions, fillFromSummary };
 }
+
+const formatAmount = (usd: number | null) => (usd === null ? null : usd.toFixed(2));
 
 /** Lo que devuelve `useCasheaOrderForm`; se entrega completo a `CasheaOrderFields`. */
 export type CasheaOrderFormApi = ReturnType<typeof useCasheaOrderForm>;
