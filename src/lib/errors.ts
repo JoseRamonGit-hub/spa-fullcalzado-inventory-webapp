@@ -1,5 +1,5 @@
 /** Código que PostgREST entrega para un `raise exception` simple: una regla de negocio de una RPC. */
-export const BUSINESS_RULE_ERROR_CODE = "P0001";
+const BUSINESS_RULE_ERROR_CODE = "P0001";
 
 /** Error relanzado por un servicio que conserva el código del error de Supabase. */
 export class ServiceError extends Error {

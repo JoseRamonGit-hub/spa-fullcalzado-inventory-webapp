@@ -2,12 +2,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateSale } from "@/features/transactions/hooks/useTransactionMutations";
 import type { PendingSaleLine } from "../types";
-import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
-import { getBusinessRuleErrorMessage } from "@/lib/errors";
-
-export function getSaleSubmissionErrorMessage(error: unknown): string {
-  return getBusinessRuleErrorMessage(error, MODAL_SUBMISSION_ERROR_MESSAGES.sale);
-}
+import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 
 type SubmitSaleOptions = {
   pendingSaleLines: PendingSaleLine[];

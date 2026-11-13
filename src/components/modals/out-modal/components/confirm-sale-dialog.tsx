@@ -1,7 +1,7 @@
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { TableHead } from "@/components/ui/table";
 import type { PendingSaleLine } from "../types";
-import { getSaleSubmissionErrorMessage } from "../hooks/use-submit-sale";
+import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 import {
   ConfirmDialogLineRow,
   ConfirmDialogLineTable,
