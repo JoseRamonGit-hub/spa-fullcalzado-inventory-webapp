@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type {
   InventoryMovementWithRelations,
   InventoryMovementCreateInput,
@@ -23,7 +24,7 @@ export const inventoryMovementsService = {
       p_show_all: range.showAll,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -45,7 +46,7 @@ export const inventoryMovementsService = {
 
     const { data, error } = await query;
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -58,7 +59,7 @@ export const inventoryMovementsService = {
       .insert(payloads.map((movement) => ({ ...movement, business_id: businessId })))
       .select(MOVEMENT_SELECT);
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 };

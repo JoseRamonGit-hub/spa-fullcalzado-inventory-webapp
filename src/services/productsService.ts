@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type {
   Product,
   ProductCreateInput,
@@ -25,7 +26,7 @@ export const productsService = {
         p_created_date: date,
       });
 
-      if (error) throw new Error(error.message);
+      if (error) throw toServiceError(error);
       return data.map((product) => ({
         id: product.product_id,
         business_id: product.business_id,
@@ -53,7 +54,7 @@ export const productsService = {
 
     const { data, error } = await query;
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data.map((product) => ({ ...product, stagnantSince: null, stagnantDays: null }));
   },
 
@@ -65,7 +66,7 @@ export const productsService = {
       .eq("id", productId)
       .maybeSingle();
 
-    if (productError) throw new Error(productError.message);
+    if (productError) throw toServiceError(productError);
     if (!product) return null;
 
     const [activityResult, saleResult, stagnationResult] = await Promise.all([
@@ -92,9 +93,9 @@ export const productsService = {
       supabase.rpc("get_product_stagnation", { p_business_id: businessId, p_product_id: productId }).maybeSingle(),
     ]);
 
-    if (activityResult.error) throw new Error(activityResult.error.message);
-    if (saleResult.error) throw new Error(saleResult.error.message);
-    if (stagnationResult.error) throw new Error(stagnationResult.error.message);
+    if (activityResult.error) throw toServiceError(activityResult.error);
+    if (saleResult.error) throw toServiceError(saleResult.error);
+    if (stagnationResult.error) throw toServiceError(stagnationResult.error);
     return {
       product,
       lastActivity: activityResult.data,
@@ -110,7 +111,7 @@ export const productsService = {
       .insert(payload.map((product) => ({ ...product, business_id: businessId })))
       .select();
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -119,7 +120,7 @@ export const productsService = {
       p_business_id: businessId,
       ...payload,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
   },
 
   adjustStock: async (businessId: string, payload: AdjustProductStockPayload): Promise<void> => {
@@ -127,7 +128,7 @@ export const productsService = {
       p_business_id: businessId,
       ...payload,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
   },
 
   toggleActive: async (businessId: string, id: string, active: boolean): Promise<void> => {
@@ -136,6 +137,6 @@ export const productsService = {
       p_product_id: id,
       p_active: active,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
   },
 };

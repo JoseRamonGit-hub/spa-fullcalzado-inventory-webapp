@@ -3,6 +3,11 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateSale } from "@/features/transactions/hooks/useTransactionMutations";
 import type { PendingSaleLine } from "../types";
 import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
+import { getBusinessRuleErrorMessage } from "@/lib/errors";
+
+export function getSaleSubmissionErrorMessage(error: unknown): string {
+  return getBusinessRuleErrorMessage(error, MODAL_SUBMISSION_ERROR_MESSAGES.sale);
+}
 
 type SubmitSaleOptions = {
   pendingSaleLines: PendingSaleLine[];
@@ -42,7 +47,7 @@ export function useSubmitSale({
     toast.promise(salePromise, {
       loading: `Registrando venta con ${lineLabel}...`,
       success: "Venta registrada correctamente",
-      error: MODAL_SUBMISSION_ERROR_MESSAGES.sale,
+      error: getSaleSubmissionErrorMessage,
     });
 
     await salePromise;

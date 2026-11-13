@@ -1,7 +1,7 @@
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { TableHead } from "@/components/ui/table";
 import type { PendingSaleLine } from "../types";
-import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
+import { getSaleSubmissionErrorMessage } from "../hooks/use-submit-sale";
 import {
   ConfirmDialogLineRow,
   ConfirmDialogLineTable,
@@ -50,7 +50,7 @@ export function ConfirmSaleDialog({
       }
       confirmLabel="Registrar venta"
       pendingLabel="Registrando..."
-      submissionErrorMessage={MODAL_SUBMISSION_ERROR_MESSAGES.sale}
+      submissionErrorMessage={getSaleSubmissionErrorMessage}
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!exchangeRate.isReady}

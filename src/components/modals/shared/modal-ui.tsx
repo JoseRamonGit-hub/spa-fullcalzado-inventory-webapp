@@ -22,7 +22,8 @@ type ModalConfirmDialogProps = {
   confirmLabel: string;
   cancelLabel?: string;
   pendingLabel: string;
-  submissionErrorMessage: string;
+  /** Mensaje fijo o función que lo deriva del error rechazado. */
+  submissionErrorMessage: string | ((error: unknown) => string);
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
   contentClassName?: string;
@@ -91,8 +92,10 @@ export function ModalConfirmDialog({
 
     try {
       await onConfirmSubmit();
-    } catch {
-      setVisibleSubmissionError(submissionErrorMessage);
+    } catch (error) {
+      setVisibleSubmissionError(
+        typeof submissionErrorMessage === "function" ? submissionErrorMessage(error) : submissionErrorMessage,
+      );
     } finally {
       submissionLockRef.current = false;
     }

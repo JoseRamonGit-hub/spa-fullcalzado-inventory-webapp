@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type { ProcessReturnPayload, Return, ReturnWithRelations } from "@/types/index";
 import type { Json } from "@/types/supabase";
 import { formatDateForBackend } from "@/utils/formatters";
@@ -16,7 +17,7 @@ export const returnsService = {
       .eq("date", today)
       .order("created_at", { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -38,7 +39,7 @@ export const returnsService = {
 
     const { data, error } = await query;
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data as ReturnWithRelations[];
   },
 
@@ -52,6 +53,6 @@ export const returnsService = {
       p_notes: payload.p_notes ?? undefined,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
   },
 };

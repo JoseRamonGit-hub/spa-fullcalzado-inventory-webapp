@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type { Business } from "@/types";
 
 export const businessesService = {
@@ -8,7 +9,7 @@ export const businessesService = {
 
     const { data, error } = await query;
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 };

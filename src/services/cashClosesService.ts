@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type { CashClose, CashCloseSummary, CashCloseWithRelations } from "@/types/index";
 
 const CASH_CLOSE_SELECT = "*, users(fullname)" as const;
@@ -15,7 +16,7 @@ export const cashClosesService = {
 
     const { data, error } = await query;
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -25,7 +26,7 @@ export const cashClosesService = {
       p_date: date,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
 
     const summary = data?.[0];
     if (!summary) throw new Error("No se pudo obtener el resumen del Cierre de Caja");
@@ -48,7 +49,7 @@ export const cashClosesService = {
       p_business_id: businessId,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 };

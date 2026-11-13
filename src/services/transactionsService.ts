@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type { ProcessSalePayload, TransactionWithRelations } from "@/types/index";
 import type { Json } from "@/types/supabase";
 import { formatDateForBackend } from "@/utils/formatters";
@@ -24,7 +25,7 @@ export const transactionsService = {
 
     const { data, error } = await query;
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -38,7 +39,7 @@ export const transactionsService = {
       .eq("date", today)
       .order("time", { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -49,6 +50,6 @@ export const transactionsService = {
       p_exchange_rate: payload.p_exchange_rate,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
   },
 };

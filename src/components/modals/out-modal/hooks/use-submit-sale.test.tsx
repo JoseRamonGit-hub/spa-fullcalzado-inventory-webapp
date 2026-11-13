@@ -7,6 +7,8 @@ import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { PendingSaleLine } from "../types";
 import type { ReactNode } from "react";
 import type { User } from "@/types";
+import { toast } from "sonner";
+import { ServiceError } from "@/lib/errors";
 
 vi.mock("sonner", () => ({
   toast: { promise: vi.fn() },
@@ -131,5 +133,39 @@ describe("useSubmitSale", () => {
         ]),
       }),
     );
+  });
+
+  describe("mensaje de error de la venta", () => {
+    async function submitRejectedSale(rejection: unknown) {
+      mockCreateSale.mockRejectedValue(rejection);
+      const { result } = renderSubmitSale([makeSaleLine()]);
+
+      await act(() => result.current.submitSale().catch(() => {}));
+
+      const toastOptions = vi.mocked(toast.promise).mock.calls[0][1];
+      const errorOption = toastOptions?.error;
+      return typeof errorOption === "function" ? errorOption(rejection) : errorOption;
+    }
+
+    it("muestra el mensaje del servidor cuando una regla de negocio rechaza la venta", async () => {
+      const message = await submitRejectedSale(
+        new ServiceError("Existencia insuficiente para el producto SHO-01", "P0001"),
+      );
+
+      expect(message).toBe("Existencia insuficiente para el producto SHO-01");
+      expect(clearPendingSaleLines).not.toHaveBeenCalled();
+    });
+
+    it("muestra el mensaje genérico cuando el error tiene otro código", async () => {
+      const message = await submitRejectedSale(new ServiceError("duplicate key value", "23505"));
+
+      expect(message).toBe("No se pudo registrar la venta. Revisa la conexión e intenta de nuevo.");
+    });
+
+    it("muestra el mensaje genérico ante un fallo de red", async () => {
+      const message = await submitRejectedSale(new TypeError("Failed to fetch"));
+
+      expect(message).toBe("No se pudo registrar la venta. Revisa la conexión e intenta de nuevo.");
+    });
   });
 });
