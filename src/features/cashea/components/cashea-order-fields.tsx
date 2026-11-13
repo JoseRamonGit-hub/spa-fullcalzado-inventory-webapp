@@ -1,43 +1,46 @@
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
-import type { CasheaOrderEvaluation } from "../cashea-order-draft";
-import type { CasheaOrderForm } from "../hooks/use-cashea-order-form";
+import type { CasheaOrderFormApi } from "../hooks/use-cashea-order-form";
 
 type CasheaOrderFieldsProps = {
-  /** Formulario creado con `useCasheaOrderForm`; su dueño lo limpia con `form.reset()`. */
-  form: CasheaOrderForm;
-  /** Evaluación de `useCasheaOrderForm`: suma, diferencia y advertencia de total distinto. */
-  evaluation: CasheaOrderEvaluation;
+  /** Lo que devuelve `useCasheaOrderForm`; su dueño lo limpia con `orderForm.form.reset()`. */
+  orderForm: CasheaOrderFormApi;
   disabled?: boolean;
 };
 
-const AMOUNT_INPUT_PROPS = { inputMode: "decimal", autoComplete: "off", placeholder: "0.00" } as const;
+const AMOUNT_INPUT_PROPS = {
+  inputMode: "decimal",
+  autoComplete: "off",
+  placeholder: "0.00",
+  className: "tabular-nums",
+} as const;
 
 /** Los cinco datos de una Orden Cashea con la verificación de la suma contra el total. */
-export function CasheaOrderFields({ form, evaluation, disabled = false }: CasheaOrderFieldsProps) {
+export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFieldsProps) {
+  const { form, evaluation, fieldOptions } = orderForm;
   const { orderTotalUsd, sumUsd, sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
 
   return (
     <div className="flex flex-col gap-3">
-      <fieldset disabled={disabled} className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-5">
-        <form.AppField name="orderNumber">
+      <fieldset disabled={disabled} className="grid min-w-0 grid-cols-2 items-start gap-3 md:grid-cols-5">
+        <form.AppField {...fieldOptions("orderNumber")}>
           {(field) => <field.TextField label="N° de orden" compact autoComplete="off" placeholder="6400685" />}
         </form.AppField>
 
-        <form.AppField name="invoiceNumber">
+        <form.AppField {...fieldOptions("invoiceNumber")}>
           {(field) => <field.TextField label="N° de factura" compact autoComplete="off" placeholder="551-000738" />}
         </form.AppField>
 
-        <form.AppField name="totalUsd">
+        <form.AppField {...fieldOptions("totalUsd")}>
           {(field) => <field.TextFieldGroup label="Total de la orden" compact leftAddon="$" {...AMOUNT_INPUT_PROPS} />}
         </form.AppField>
 
-        <form.AppField name="paidTodayUsd">
+        <form.AppField {...fieldOptions("paidTodayUsd")}>
           {(field) => <field.TextFieldGroup label="Cobrado hoy" compact leftAddon="$" {...AMOUNT_INPUT_PROPS} />}
         </form.AppField>
 
         <div className="col-span-2 min-w-0 md:col-span-1">
-          <form.AppField name="financedUsd">
+          <form.AppField {...fieldOptions("financedUsd")}>
             {(field) => <field.TextFieldGroup label="Monto financiado" compact leftAddon="$" {...AMOUNT_INPUT_PROPS} />}
           </form.AppField>
         </div>

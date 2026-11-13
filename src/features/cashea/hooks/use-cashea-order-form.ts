@@ -5,44 +5,42 @@ import {
   EMPTY_CASHEA_ORDER_DRAFT,
   evaluateCasheaOrderDraft,
   type CasheaOrderDraft,
-  type CasheaOrderEvaluation,
+  type CasheaOrderDraftField,
 } from "../cashea-order-draft";
-
-/** Errores de la evaluación en el formato de un validador de formulario de TanStack Form. */
-function toFormValidationErrors({ fieldErrors, sumError }: CasheaOrderEvaluation) {
-  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
-  if (!hasFieldErrors && !sumError) return undefined;
-  return { form: sumError ?? undefined, fields: fieldErrors };
-}
 
 /**
  * Formulario de los cinco datos de una Orden Cashea, validado con las reglas de REQ-001 contra el total de la venta.
+ * Cada campo se valida por separado: su error aparece al escribir en él o al salir de él, sin tocar los demás.
  * Lo usan «Registrar Venta» y los diálogos que capturan una Orden Cashea; `evaluation.order` dice si se puede confirmar.
  */
 export function useCasheaOrderForm(saleTotalUsd: number) {
-  const form = useAppForm({
-    defaultValues: EMPTY_CASHEA_ORDER_DRAFT,
-    validators: {
-      onChange: ({ value }: { value: CasheaOrderDraft }) =>
-        toFormValidationErrors(evaluateCasheaOrderDraft(value, saleTotalUsd)),
-    },
-    listeners: {
-      // Un campo obligatorio que se deja vacío muestra su error al salir de él.
-      onBlur: ({ formApi }) => {
-        void formApi.validate("change");
-      },
-    },
-  });
+  const form = useAppForm({ defaultValues: EMPTY_CASHEA_ORDER_DRAFT });
 
   const draft = useStore(form.store, (state) => state.values);
   const evaluation = evaluateCasheaOrderDraft(draft, saleTotalUsd);
 
+  /** Props de `form.AppField` para un campo: su validador y la validación al salir de él. */
+  const fieldOptions = <TName extends CasheaOrderDraftField>(name: TName) => ({
+    name,
+    validators: {
+      onChange: ({ value }: { value: CasheaOrderDraft[TName] }) =>
+        evaluateCasheaOrderDraft({ ...form.state.values, [name]: value }, saleTotalUsd).fieldErrors[name],
+    },
+    listeners: {
+      // Un campo obligatorio que se deja vacío muestra su error al salir de él.
+      onBlur: ({ fieldApi }: { fieldApi: { validate: (cause: "change") => unknown } }) => {
+        fieldApi.validate("change");
+      },
+    },
+  });
+
   // El tope del Monto financiado depende del total de la venta, que cambia al agregar o quitar Renglones.
   useEffect(() => {
-    void form.validate("change");
+    if (form.getFieldMeta("financedUsd")?.isTouched) void form.validateField("financedUsd", "change");
   }, [form, saleTotalUsd]);
 
-  return { form, evaluation };
+  return { form, evaluation, fieldOptions };
 }
 
-export type CasheaOrderForm = ReturnType<typeof useCasheaOrderForm>["form"];
+/** Lo que devuelve `useCasheaOrderForm`; se entrega completo a `CasheaOrderFields`. */
+export type CasheaOrderFormApi = ReturnType<typeof useCasheaOrderForm>;

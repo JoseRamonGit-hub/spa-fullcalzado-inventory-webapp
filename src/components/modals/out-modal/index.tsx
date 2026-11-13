@@ -119,8 +119,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
           <CasheaPaymentSection
             isCasheaPayment={casheaPayment.isCasheaPayment}
             onCasheaPaymentChange={casheaPayment.setIsCasheaPayment}
-            form={casheaPayment.form}
-            evaluation={casheaPayment.evaluation}
+            orderForm={casheaPayment.orderForm}
             disabled={isSubmissionPending}
           />
         </section>
@@ -134,7 +133,7 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         totalAmountUsd={totalAmountUsd}
         totalAmountVes={totalAmountVes}
         casheaOrder={casheaOrder}
-        casheaSaleTotalMismatch={casheaPayment.evaluation.saleTotalMismatch}
+        casheaSaleTotalMismatch={casheaPayment.orderForm.evaluation.saleTotalMismatch}
         isSubmissionPending={isSubmissionPending}
         onConfirmSubmit={submitSale}
       />

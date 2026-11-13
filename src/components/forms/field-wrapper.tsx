@@ -31,7 +31,12 @@ export function FieldWrapper({
 
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-  const errorElement = !hideErrorMessage && isInvalid && <FieldError errors={field.state.meta.errors} />;
+  const errorElement = !hideErrorMessage && isInvalid && (
+    <FieldError errors={field.state.meta.errors} className={compact ? "text-xs" : undefined} />
+  );
+
+  // Sin descripción no se renderiza el <p> vacío: su margen depende de su posición y movía el control al aparecer el error.
+  const descriptionElement = description && <FieldDescription>{description}</FieldDescription>;
 
   const labelElement = (
     <FieldLabel htmlFor={field.name} className={compact ? COMPACT_FIELD_LABEL_CLASS_NAME : undefined}>
@@ -47,13 +52,13 @@ export function FieldWrapper({
             {labelElement}
             {children}
             {errorElement}
-            <FieldDescription>{description}</FieldDescription>
+            {descriptionElement}
             {action}
           </>
         ) : (
           <>
             {labelElement}
-            <FieldDescription>{description}</FieldDescription>
+            {descriptionElement}
             {children}
             {errorElement}
             {action}

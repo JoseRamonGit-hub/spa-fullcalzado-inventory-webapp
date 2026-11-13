@@ -5,8 +5,8 @@ import { useCasheaOrderForm } from "../hooks/use-cashea-order-form";
 import { CasheaOrderFields } from "./cashea-order-fields";
 
 function CasheaOrderFieldsHarness({ saleTotalUsd = 100 }: { saleTotalUsd?: number }) {
-  const { form, evaluation } = useCasheaOrderForm(saleTotalUsd);
-  return <CasheaOrderFields form={form} evaluation={evaluation} />;
+  const orderForm = useCasheaOrderForm(saleTotalUsd);
+  return <CasheaOrderFields orderForm={orderForm} />;
 }
 
 describe("CasheaOrderFields", () => {
@@ -51,6 +51,39 @@ describe("CasheaOrderFields", () => {
 
     expect(await screen.findByText("Campo obligatorio")).toBeInTheDocument();
     expect(orderNumberInput).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("salir de un campo vacío no marca con error a los demás", async () => {
+    render(<CasheaOrderFieldsHarness />);
+
+    fireEvent.blur(screen.getByLabelText("N° de orden"));
+
+    expect(await screen.findAllByText("Campo obligatorio")).toHaveLength(1);
+    expect(screen.getByLabelText("N° de factura")).toHaveAttribute("aria-invalid", "false");
+    expect(screen.getByLabelText("Monto financiado")).toHaveAttribute("aria-invalid", "false");
+  });
+
+  it("el error de un campo desaparece al corregirlo", async () => {
+    render(<CasheaOrderFieldsHarness />);
+
+    const orderNumberInput = screen.getByLabelText("N° de orden");
+    fireEvent.blur(orderNumberInput);
+    expect(await screen.findByText("Campo obligatorio")).toBeInTheDocument();
+
+    fireEvent.change(orderNumberInput, { target: { value: "6400685" } });
+
+    expect(screen.queryByText("Campo obligatorio")).not.toBeInTheDocument();
+  });
+
+  it("revalida el Monto financiado ya escrito cuando baja el total de la venta", async () => {
+    const { rerender } = render(<CasheaOrderFieldsHarness saleTotalUsd={120} />);
+
+    fireEvent.change(screen.getByLabelText("Monto financiado"), { target: { value: "60" } });
+    expect(screen.queryByText("No puede superar el total de la venta")).not.toBeInTheDocument();
+
+    rerender(<CasheaOrderFieldsHarness saleTotalUsd={50} />);
+
+    expect(await screen.findByText("No puede superar el total de la venta")).toBeInTheDocument();
   });
 
   it("muestra el error de un monto mientras se escribe", async () => {

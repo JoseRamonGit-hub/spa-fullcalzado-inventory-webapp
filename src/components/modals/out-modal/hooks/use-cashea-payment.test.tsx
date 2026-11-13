@@ -15,7 +15,7 @@ type CasheaPayment = ReturnType<typeof useCasheaPayment>;
 
 function fillOrder(casheaPayment: CasheaPayment, draft: CasheaOrderDraft) {
   for (const [name, value] of Object.entries(draft) as [keyof CasheaOrderDraft, string][]) {
-    casheaPayment.form.setFieldValue(name, value);
+    casheaPayment.orderForm.form.setFieldValue(name, value);
   }
 }
 
@@ -73,7 +73,7 @@ describe("useCasheaPayment", () => {
     act(() => result.current.clearCasheaPayment());
 
     expect(result.current.isCasheaPayment).toBe(false);
-    expect(result.current.form.state.values).toEqual({
+    expect(result.current.orderForm.form.state.values).toEqual({
       orderNumber: "",
       invoiceNumber: "",
       totalUsd: "",
@@ -91,7 +91,7 @@ describe("useCasheaPayment", () => {
     act(() => fillOrder(result.current, COMPLETE_DRAFT));
     rerender({ saleTotalUsd: 50 });
 
-    expect(result.current.evaluation.fieldErrors.financedUsd).toBe("No puede superar el total de la venta");
+    expect(result.current.orderForm.evaluation.fieldErrors.financedUsd).toBe("No puede superar el total de la venta");
     expect(result.current.isCasheaIncomplete).toBe(true);
   });
 });
