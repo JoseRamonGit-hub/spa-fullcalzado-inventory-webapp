@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { toServiceError } from "@/lib/errors";
-import type { CasheaOrder, CasheaOrdersFilter } from "@/types";
+import type { CasheaOrder, CasheaOrderInput, CasheaOrdersFilter } from "@/types";
 
 export const casheaService = {
   /** Órdenes Cashea del negocio, de la venta más reciente a la más antigua. */
@@ -17,6 +17,17 @@ export const casheaService = {
     if (filter.to) query = query.lte("sale_date", filter.to);
 
     const { data, error } = await query;
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
+  attachOrder: async (businessId: string, saleId: string, order: CasheaOrderInput): Promise<string> => {
+    const { data, error } = await supabase.rpc("attach_cashea_order", {
+      p_business_id: businessId,
+      p_sale_id: saleId,
+      p_cashea: order,
+    });
 
     if (error) throw toServiceError(error);
     return data;

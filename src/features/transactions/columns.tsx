@@ -7,9 +7,15 @@ import { formatCurrencyUSD, formatCurrencyVES, formatDateForBackend, formatDateT
 import { useNavigate } from "@tanstack/react-router";
 import { IterationCcw } from "lucide-react";
 import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
+import { Button } from "@/components/ui/button";
 import { getActiveCasheaOrder } from "./sales-display";
 
 const columnHelper = createColumnHelper<TransactionWithRelations>();
+
+export type TransactionsTableMeta = {
+  canAttachCasheaOrder: (transaction: TransactionWithRelations) => boolean;
+  onAttachCasheaOrder: (saleId: string) => void;
+};
 
 export const columns = [
   columnHelper.accessor("created_at", {
@@ -86,6 +92,18 @@ export const columns = [
       </OverflowTooltip>
     ),
   }),
+  columnHelper.display({
+    id: "actions",
+    header: () => <span className="sr-only">Acciones</span>,
+    meta: { className: "w-10" },
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as TransactionsTableMeta | undefined;
+      const { sale_id: saleId } = row.original;
+      if (!meta || !saleId || !meta.canAttachCasheaOrder(row.original)) return null;
+
+      return <AttachCasheaOrderButton onClick={() => meta.onAttachCasheaOrder(saleId)} />;
+    },
+  }),
 ] as ColumnDef<TransactionWithRelations>[];
 
 // ── Internal component: navigable exchange badge ────────────
@@ -119,5 +137,25 @@ function CasheaBadge({ orderNumber }: { orderNumber: string }) {
       <img src={casheaLogo} alt="" aria-hidden="true" className="size-3 rounded-[3px]" />
       <span aria-hidden="true">Cashea</span>
     </Badge>
+  );
+}
+
+// ── Internal component: «Asociar orden Cashea» action ───────
+function AttachCasheaOrderButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      className="opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0 focus-visible:opacity-100 focus-visible:grayscale-0"
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      aria-label="Asociar orden Cashea"
+      title="Asociar orden Cashea"
+    >
+      <img src={casheaLogo} alt="" aria-hidden="true" className="size-4 rounded-[3px]" />
+    </Button>
   );
 }

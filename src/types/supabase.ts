@@ -992,6 +992,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      attach_cashea_order: {
+        Args: { p_business_id: string; p_cashea: Json; p_sale_id: string };
+        Returns: string;
+      };
       create_cashea_sale: {
         Args: {
           p_business_id: string;

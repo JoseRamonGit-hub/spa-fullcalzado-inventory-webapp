@@ -5,6 +5,21 @@ export function getActiveCasheaOrder(transaction: Pick<TransactionWithRelations,
   return transaction.sales?.cashea_orders.find((order) => order.status !== "voided") ?? null;
 }
 
+type AttachCasheaOrderSource = Pick<TransactionWithRelations, "sale_id" | "return_id" | "date" | "sales">;
+
+/**
+ * «Asociar orden Cashea» se ofrece en los Renglones de una Venta sin Orden Cashea vigente: al empleado solo si la
+ * venta es de hoy; al Administrador, de cualquier fecha. La base de datos aplica la misma regla.
+ */
+export function canAttachCasheaOrder(
+  transaction: AttachCasheaOrderSource,
+  { isAdmin, today }: { isAdmin: boolean; today: string },
+) {
+  if (transaction.sale_id === null || transaction.return_id !== null) return false;
+  if (getActiveCasheaOrder(transaction)) return false;
+  return isAdmin || transaction.date === today;
+}
+
 export type SaleSummarySource = Pick<
   TransactionWithRelations,
   "sale_id" | "return_id" | "quantity" | "price_usd" | "price_ves"

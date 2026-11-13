@@ -8,6 +8,12 @@ import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { SalesSummary } from "./components/sales-summary";
 import { Route } from "@/routes/_app/transactions";
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { AttachCasheaOrderDialog } from "@/features/cashea/components/attach-cashea-order-dialog";
+import { formatDateForBackend } from "@/utils/formatters";
+import type { TransactionsTableMeta } from "./columns";
+import { canAttachCasheaOrder } from "./sales-display";
 
 export function TransactionsPage() {
   // Date filter lives in the URL search params (enables deep-linking from cash-closes)
@@ -31,6 +37,22 @@ export function TransactionsPage() {
     isLoading: isTodayCashCloseSummaryLoading,
     isError: isTodayCashCloseSummaryError,
   } = useCashCloseSummary();
+
+  const isAdmin = useAuthStore((state) => state.user?.role === "admin");
+  const [attachSaleId, setAttachSaleId] = useState<string | null>(null);
+  const [isAttachDialogOpen, setIsAttachDialogOpen] = useState(false);
+  const [attachDialogKey, setAttachDialogKey] = useState(0);
+  const attachSaleLines = (transactions ?? []).filter((transaction) => transaction.sale_id === attachSaleId);
+
+  const today = formatDateForBackend(new Date());
+  const tableMeta: TransactionsTableMeta = {
+    canAttachCasheaOrder: (transaction) => canAttachCasheaOrder(transaction, { isAdmin, today }),
+    onAttachCasheaOrder: (saleId) => {
+      setAttachSaleId(saleId);
+      setAttachDialogKey((key) => key + 1);
+      setIsAttachDialogOpen(true);
+    },
+  };
 
   const isSummaryLoading = isTodayTransactionsLoading || isTodayReturnsLoading || isTodayCashCloseSummaryLoading;
   const isSummaryError =
@@ -79,6 +101,7 @@ export function TransactionsPage() {
               : undefined
           }
           getRowId={(row) => row.id}
+          meta={tableMeta}
           emptyMessage={date ? "No hay ventas registradas para esta fecha." : "No hay ventas en los últimos 30 días."}
           scrollAreaLabel="Ventas"
         />
@@ -91,6 +114,15 @@ export function TransactionsPage() {
       <Topbar {...topbarProps} />
       {renderMetrics()}
       {renderContent()}
+      {attachSaleId && (
+        <AttachCasheaOrderDialog
+          key={attachDialogKey}
+          isOpen={isAttachDialogOpen}
+          onOpenChange={setIsAttachDialogOpen}
+          saleId={attachSaleId}
+          saleLines={attachSaleLines}
+        />
+      )}
     </section>
   );
 }
