@@ -19,17 +19,11 @@ export function CasheaPaymentSection({
   disabled = false,
 }: CasheaPaymentSectionProps) {
   return (
-    <section className="bg-card flex flex-col gap-3 rounded-md border p-3">
-      <div className="flex items-center gap-3">
-        <Switch
-          id="out-modal-cashea-payment"
-          checked={isCasheaPayment}
-          onCheckedChange={onCasheaPaymentChange}
-          disabled={disabled}
-        />
+    <section className="bg-card rounded-md border">
+      <div className="flex items-center gap-3 p-3">
+        <img src={casheaLogo} alt="" aria-hidden="true" className="size-9 shrink-0 rounded-lg" />
         <div className="min-w-0 flex-1">
-          <Label htmlFor="out-modal-cashea-payment" className="gap-1.5 text-sm font-semibold">
-            <img src={casheaLogo} alt="" aria-hidden="true" className="size-4 rounded-[4px]" />
+          <Label htmlFor="out-modal-cashea-payment" className="text-sm font-semibold">
             Pago con Cashea
           </Label>
           <p className="text-muted-foreground text-xs">
@@ -39,9 +33,19 @@ export function CasheaPaymentSection({
           </p>
         </div>
         {isCasheaPayment && <PasteCasheaSummaryButton orderForm={orderForm} disabled={disabled} />}
+        <Switch
+          id="out-modal-cashea-payment"
+          checked={isCasheaPayment}
+          onCheckedChange={onCasheaPaymentChange}
+          disabled={disabled}
+        />
       </div>
 
-      {isCasheaPayment && <CasheaOrderFields orderForm={orderForm} disabled={disabled} />}
+      {isCasheaPayment && (
+        <div className="border-t p-3">
+          <CasheaOrderFields orderForm={orderForm} disabled={disabled} />
+        </div>
+      )}
     </section>
   );
 }

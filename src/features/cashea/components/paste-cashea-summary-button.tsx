@@ -26,8 +26,9 @@ export function PasteCasheaSummaryButton({ orderForm, disabled = false }: PasteC
 
   return (
     <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={pasteSummary}>
-      <ClipboardPaste />
-      Pegar resumen
+      <ClipboardPaste aria-hidden="true" />
+      {/* En móvil queda solo el icono para que el encabezado no se parta; el nombre accesible no cambia. */}
+      <span className="sr-only sm:not-sr-only">Pegar resumen</span>
     </Button>
   );
 }
