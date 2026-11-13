@@ -154,11 +154,11 @@ describe("ConfirmSaleDialog", () => {
       );
     }
 
-    it("muestra por separado lo que entra a caja hoy y lo que queda por cobrar a Cashea", () => {
+    it("muestra por separado lo cobrado hoy y el monto financiado por Cashea", () => {
       renderCasheaDialog();
 
-      const cashToday = screen.getByText("Entra a caja hoy").closest("div");
-      const receivable = screen.getByText("Por cobrar a Cashea").closest("div");
+      const cashToday = screen.getByText("Cobrado hoy").closest("div");
+      const receivable = screen.getByText("Monto financiado").closest("div");
 
       expect(within(cashToday!).getByText(formatCurrencyUSD(25))).toBeInTheDocument();
       expect(within(receivable!).getByText(formatCurrencyUSD(50))).toBeInTheDocument();

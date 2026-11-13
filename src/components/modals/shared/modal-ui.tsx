@@ -18,11 +18,10 @@ type ModalConfirmDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   title: string;
-  description: ReactNode;
+  description?: ReactNode;
   confirmLabel: string;
   cancelLabel?: string;
   pendingLabel: string;
-  /** Mensaje fijo o función que lo deriva del error rechazado. */
   submissionErrorMessage: string | ((error: unknown) => string);
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
@@ -105,11 +104,14 @@ export function ModalConfirmDialog({
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent
         className={cn("max-h-[calc(100dvh-2rem)] gap-3 overflow-y-auto p-4 sm:gap-4 sm:p-5", contentClassName)}
+        {...(description ? {} : { "aria-describedby": undefined })}
       >
         <AlertDialogHeader className="flex flex-col items-stretch gap-0 text-left sm:place-items-start sm:text-left">
           <AlertDialogTitle className="text-base leading-tight">{title}</AlertDialogTitle>
           <ActiveBusinessContext className="mt-1" />
-          <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
+          {description && (
+            <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
+          )}
         </AlertDialogHeader>
 
         {visibleSubmissionError && (
