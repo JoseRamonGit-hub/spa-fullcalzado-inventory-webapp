@@ -1,23 +1,22 @@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { CasheaOrderFields } from "@/features/cashea/components/cashea-order-fields";
-import type { CasheaOrderDraft, CasheaOrderEvaluation } from "@/features/cashea/cashea-order-draft";
+import type { CasheaOrderEvaluation } from "@/features/cashea/cashea-order-draft";
+import type { CasheaOrderForm } from "@/features/cashea/hooks/use-cashea-order-form";
 
 type CasheaPaymentSectionProps = {
   isCasheaPayment: boolean;
   onCasheaPaymentChange: (isCasheaPayment: boolean) => void;
-  draft: CasheaOrderDraft;
+  form: CasheaOrderForm;
   evaluation: CasheaOrderEvaluation;
-  onDraftChange: (draft: CasheaOrderDraft) => void;
   disabled?: boolean;
 };
 
 export function CasheaPaymentSection({
   isCasheaPayment,
   onCasheaPaymentChange,
-  draft,
+  form,
   evaluation,
-  onDraftChange,
   disabled = false,
 }: CasheaPaymentSectionProps) {
   return (
@@ -41,15 +40,7 @@ export function CasheaPaymentSection({
         />
       </div>
 
-      {isCasheaPayment && (
-        <CasheaOrderFields
-          draft={draft}
-          evaluation={evaluation}
-          onDraftChange={onDraftChange}
-          disabled={disabled}
-          idPrefix="out-modal-cashea"
-        />
-      )}
+      {isCasheaPayment && <CasheaOrderFields form={form} evaluation={evaluation} disabled={disabled} />}
     </section>
   );
 }

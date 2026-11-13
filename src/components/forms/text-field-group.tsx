@@ -20,6 +20,8 @@ export function TextFieldGroup({
   rightAddon,
   action,
   descriptionBelow,
+  compact,
+  hideErrorMessage,
   passwordEye,
   groupClassName,
   ...props
@@ -30,7 +32,14 @@ export function TextFieldGroup({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <FieldWrapper label={label} description={description} action={action} descriptionBelow={descriptionBelow}>
+    <FieldWrapper
+      label={label}
+      description={description}
+      action={action}
+      descriptionBelow={descriptionBelow}
+      compact={compact}
+      hideErrorMessage={hideErrorMessage}
+    >
       <InputGroup className={groupClassName}>
         <InputGroupInput
           {...props}

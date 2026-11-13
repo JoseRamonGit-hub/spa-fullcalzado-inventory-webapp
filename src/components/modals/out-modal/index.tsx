@@ -119,9 +119,8 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
           <CasheaPaymentSection
             isCasheaPayment={casheaPayment.isCasheaPayment}
             onCasheaPaymentChange={casheaPayment.setIsCasheaPayment}
-            draft={casheaPayment.draft}
+            form={casheaPayment.form}
             evaluation={casheaPayment.evaluation}
-            onDraftChange={casheaPayment.setDraft}
             disabled={isSubmissionPending}
           />
         </section>

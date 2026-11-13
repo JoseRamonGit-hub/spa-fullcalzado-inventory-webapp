@@ -1,24 +1,22 @@
 import { useState } from "react";
-import { EMPTY_CASHEA_ORDER_DRAFT, evaluateCasheaOrderDraft } from "@/features/cashea/cashea-order-draft";
+import { useCasheaOrderForm } from "@/features/cashea/hooks/use-cashea-order-form";
 
-/** Estado de «Pago con Cashea» en «Registrar Venta»: los datos de la Orden Cashea y si permiten confirmar. */
+/** Estado de «Pago con Cashea» en «Registrar Venta»: el formulario de la Orden Cashea y si permite confirmar. */
 export function useCasheaPayment(saleTotalUsd: number) {
   const [isCasheaPayment, setIsCasheaPayment] = useState(false);
-  const [draft, setDraft] = useState(EMPTY_CASHEA_ORDER_DRAFT);
+  const { form, evaluation } = useCasheaOrderForm(saleTotalUsd);
 
-  const evaluation = evaluateCasheaOrderDraft(draft, saleTotalUsd);
   const casheaOrder = isCasheaPayment ? evaluation.order : null;
 
   const clearCasheaPayment = () => {
     setIsCasheaPayment(false);
-    setDraft(EMPTY_CASHEA_ORDER_DRAFT);
+    form.reset();
   };
 
   return {
     isCasheaPayment,
     setIsCasheaPayment,
-    draft,
-    setDraft,
+    form,
     evaluation,
     /** Orden Cashea lista para enviar; `null` en una venta sin Cashea o con datos incompletos. */
     casheaOrder,

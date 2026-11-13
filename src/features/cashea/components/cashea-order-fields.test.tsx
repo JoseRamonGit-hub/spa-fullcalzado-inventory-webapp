@@ -1,25 +1,12 @@
-import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { formatCurrencyUSD } from "@/utils/formatters";
-import { EMPTY_CASHEA_ORDER_DRAFT, evaluateCasheaOrderDraft, type CasheaOrderDraft } from "../cashea-order-draft";
+import { useCasheaOrderForm } from "../hooks/use-cashea-order-form";
 import { CasheaOrderFields } from "./cashea-order-fields";
 
-function CasheaOrderFieldsHarness({
-  initialDraft = EMPTY_CASHEA_ORDER_DRAFT,
-  saleTotalUsd = 100,
-}: {
-  initialDraft?: CasheaOrderDraft;
-  saleTotalUsd?: number;
-}) {
-  const [draft, setDraft] = useState(initialDraft);
-  return (
-    <CasheaOrderFields
-      draft={draft}
-      evaluation={evaluateCasheaOrderDraft(draft, saleTotalUsd)}
-      onDraftChange={setDraft}
-    />
-  );
+function CasheaOrderFieldsHarness({ saleTotalUsd = 100 }: { saleTotalUsd?: number }) {
+  const { form, evaluation } = useCasheaOrderForm(saleTotalUsd);
+  return <CasheaOrderFields form={form} evaluation={evaluation} />;
 }
 
 describe("CasheaOrderFields", () => {
@@ -54,7 +41,7 @@ describe("CasheaOrderFields", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(formatCurrencyUSD(10));
   });
 
-  it("muestra el error de un campo después de salir de él", () => {
+  it("muestra el error de un campo después de salir de él", async () => {
     render(<CasheaOrderFieldsHarness />);
 
     const orderNumberInput = screen.getByLabelText("N° de orden");
@@ -62,8 +49,16 @@ describe("CasheaOrderFields", () => {
 
     fireEvent.blur(orderNumberInput);
 
-    expect(screen.getByText("Campo obligatorio")).toBeInTheDocument();
+    expect(await screen.findByText("Campo obligatorio")).toBeInTheDocument();
     expect(orderNumberInput).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("muestra el error de un monto mientras se escribe", async () => {
+    render(<CasheaOrderFieldsHarness />);
+
+    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "92.805" } });
+
+    expect(await screen.findByText("Máximo dos decimales")).toBeInTheDocument();
   });
 
   it("avisa que el total de la orden difiere del total de la venta", () => {

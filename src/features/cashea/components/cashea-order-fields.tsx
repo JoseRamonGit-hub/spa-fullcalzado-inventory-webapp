@@ -1,89 +1,47 @@
-import { useState } from "react";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { COMPACT_FIELD_LABEL_CLASS_NAME } from "@/components/forms/field-wrapper";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
-import type { CasheaOrderDraft, CasheaOrderDraftField, CasheaOrderEvaluation } from "../cashea-order-draft";
+import type { CasheaOrderEvaluation } from "../cashea-order-draft";
+import type { CasheaOrderForm } from "../hooks/use-cashea-order-form";
 
 type CasheaOrderFieldsProps = {
-  draft: CasheaOrderDraft;
-  /** Resultado de `evaluateCasheaOrderDraft` para `draft`; lo calcula el dueño del estado para decidir si se puede confirmar. */
+  /** Formulario creado con `useCasheaOrderForm`; su dueño lo limpia con `form.reset()`. */
+  form: CasheaOrderForm;
+  /** Evaluación de `useCasheaOrderForm`: suma, diferencia y advertencia de total distinto. */
   evaluation: CasheaOrderEvaluation;
-  onDraftChange: (draft: CasheaOrderDraft) => void;
   disabled?: boolean;
-  /** Prefijo de los `id` de los campos, para usar el componente en varios diálogos a la vez. */
-  idPrefix?: string;
 };
 
-type FieldConfig = {
-  name: CasheaOrderDraftField;
-  label: string;
-  isAmount: boolean;
-  placeholder: string;
-};
+const AMOUNT_INPUT_PROPS = { inputMode: "decimal", autoComplete: "off", placeholder: "0.00" } as const;
 
-const FIELDS: FieldConfig[] = [
-  { name: "orderNumber", label: "N° de orden", isAmount: false, placeholder: "6400685" },
-  { name: "invoiceNumber", label: "N° de factura", isAmount: false, placeholder: "551-000738" },
-  { name: "totalUsd", label: "Total de la orden", isAmount: true, placeholder: "0.00" },
-  { name: "paidTodayUsd", label: "Cobrado hoy", isAmount: true, placeholder: "0.00" },
-  { name: "financedUsd", label: "Monto financiado", isAmount: true, placeholder: "0.00" },
-];
-
-/**
- * Los cinco datos de una Orden Cashea con la verificación de la suma. Componente controlado: el dueño del estado
- * guarda el borrador y lo limpia, y decide si se puede confirmar con `evaluation.order`.
- */
-export function CasheaOrderFields({
-  draft,
-  evaluation,
-  onDraftChange,
-  disabled = false,
-  idPrefix = "cashea",
-}: CasheaOrderFieldsProps) {
-  const [touchedFields, setTouchedFields] = useState<Partial<Record<CasheaOrderDraftField, boolean>>>({});
-
-  const { fieldErrors, orderTotalUsd, sumUsd, sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
+/** Los cinco datos de una Orden Cashea con la verificación de la suma contra el total. */
+export function CasheaOrderFields({ form, evaluation, disabled = false }: CasheaOrderFieldsProps) {
+  const { orderTotalUsd, sumUsd, sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {FIELDS.map((field) => {
-          const inputId = `${idPrefix}-${field.name}`;
-          const errorMessage = touchedFields[field.name] ? fieldErrors[field.name] : undefined;
-          const isInvalid = Boolean(errorMessage);
+      <fieldset disabled={disabled} className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-5">
+        <form.AppField name="orderNumber">
+          {(field) => <field.TextField label="N° de orden" compact autoComplete="off" placeholder="6400685" />}
+        </form.AppField>
 
-          return (
-            <Field
-              key={field.name}
-              data-invalid={isInvalid}
-              className={cn("min-w-0 gap-1.5", field.name === "financedUsd" && "col-span-2 md:col-span-1")}
-            >
-              <FieldLabel htmlFor={inputId} className={COMPACT_FIELD_LABEL_CLASS_NAME}>
-                {field.label}
-              </FieldLabel>
-              <InputGroup>
-                {field.isAmount && <InputGroupAddon align="inline-start">$</InputGroupAddon>}
-                <InputGroupInput
-                  id={inputId}
-                  name={field.name}
-                  value={draft[field.name]}
-                  placeholder={field.placeholder}
-                  inputMode={field.isAmount ? "decimal" : "text"}
-                  autoComplete="off"
-                  disabled={disabled}
-                  aria-invalid={isInvalid}
-                  className={field.isAmount ? "tabular-nums" : undefined}
-                  onChange={(event) => onDraftChange({ ...draft, [field.name]: event.target.value })}
-                  onBlur={() => setTouchedFields((current) => ({ ...current, [field.name]: true }))}
-                />
-              </InputGroup>
-              {errorMessage && <FieldError className="text-xs">{errorMessage}</FieldError>}
-            </Field>
-          );
-        })}
-      </div>
+        <form.AppField name="invoiceNumber">
+          {(field) => <field.TextField label="N° de factura" compact autoComplete="off" placeholder="551-000738" />}
+        </form.AppField>
+
+        <form.AppField name="totalUsd">
+          {(field) => <field.TextFieldGroup label="Total de la orden" compact leftAddon="$" {...AMOUNT_INPUT_PROPS} />}
+        </form.AppField>
+
+        <form.AppField name="paidTodayUsd">
+          {(field) => <field.TextFieldGroup label="Cobrado hoy" compact leftAddon="$" {...AMOUNT_INPUT_PROPS} />}
+        </form.AppField>
+
+        <div className="col-span-2 min-w-0 md:col-span-1">
+          <form.AppField name="financedUsd">
+            {(field) => <field.TextFieldGroup label="Monto financiado" compact leftAddon="$" {...AMOUNT_INPUT_PROPS} />}
+          </form.AppField>
+        </div>
+      </fieldset>
 
       <div
         className={cn(
