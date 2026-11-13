@@ -11,8 +11,7 @@ export type FormFieldProps = {
   hideErrorMessage?: boolean;
 };
 
-export const COMPACT_FIELD_LABEL_CLASS_NAME =
-  "text-muted-foreground text-[11px] font-medium tracking-wider uppercase";
+export const COMPACT_FIELD_LABEL_CLASS_NAME = "text-muted-foreground text-[11px] font-medium tracking-wider uppercase";
 
 type FieldWrapperProps = FormFieldProps & {
   children: React.ReactNode;
