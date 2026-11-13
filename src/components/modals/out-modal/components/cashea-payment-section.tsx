@@ -1,3 +1,4 @@
+import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { CasheaOrderFields } from "@/features/cashea/components/cashea-order-fields";
@@ -27,7 +28,8 @@ export function CasheaPaymentSection({
           disabled={disabled}
         />
         <div className="min-w-0 flex-1">
-          <Label htmlFor="out-modal-cashea-payment" className="text-sm font-semibold">
+          <Label htmlFor="out-modal-cashea-payment" className="gap-1.5 text-sm font-semibold">
+            <img src={casheaLogo} alt="" aria-hidden="true" className="size-4 rounded-[4px]" />
             Pago con Cashea
           </Label>
           <p className="text-muted-foreground text-xs">
