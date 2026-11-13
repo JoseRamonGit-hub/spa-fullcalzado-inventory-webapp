@@ -2,11 +2,15 @@ import { useEffect } from "react";
 import { useStore } from "@tanstack/react-form";
 import { useAppForm } from "@/hooks/form";
 import {
+  calculateFinancedUsd,
   EMPTY_CASHEA_ORDER_DRAFT,
   evaluateCasheaOrderDraft,
   type CasheaOrderDraft,
   type CasheaOrderDraftField,
 } from "../cashea-order-draft";
+
+/** Campos de los que se deriva el Monto financiado. */
+const FINANCED_INPUT_FIELDS = new Set<CasheaOrderDraftField>(["totalUsd", "paidTodayUsd"]);
 
 /**
  * Formulario de los cinco datos de una Orden Cashea, validado con las reglas de REQ-001 contra el total de la venta.
@@ -31,8 +35,16 @@ export function useCasheaOrderForm(saleTotalUsd: number) {
       onBlur: ({ fieldApi }: { fieldApi: { validate: (cause: "change") => unknown } }) => {
         fieldApi.validate("change");
       },
+      onChange: FINANCED_INPUT_FIELDS.has(name) ? fillFinancedUsd : undefined,
     },
   });
+
+  // El Monto financiado se calcula como total menos Cobrado hoy; el cajero puede corregirlo después.
+  function fillFinancedUsd() {
+    const { totalUsd, paidTodayUsd } = form.state.values;
+    const financedUsd = calculateFinancedUsd(totalUsd, paidTodayUsd);
+    if (financedUsd !== null) form.setFieldValue("financedUsd", financedUsd);
+  }
 
   // El tope del Monto financiado depende del total de la venta, que cambia al agregar o quitar Renglones.
   useEffect(() => {

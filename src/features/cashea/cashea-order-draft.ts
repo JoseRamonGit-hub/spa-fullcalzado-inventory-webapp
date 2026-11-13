@@ -77,6 +77,19 @@ const toCents = (usd: number) => Math.round(usd * 100);
 const fromCents = (cents: number) => cents / 100;
 
 /**
+ * Monto financiado que corresponde a un total de la orden y un Cobrado hoy: la diferencia, con dos decimales.
+ * `null` mientras alguno de los dos no sea un monto válido o lo Cobrado hoy supere el total.
+ */
+export function calculateFinancedUsd(totalUsd: string, paidTodayUsd: string): string | null {
+  const total = parseAmount(totalUsd);
+  const paidToday = parseAmount(paidTodayUsd);
+  if (!("cents" in total) || !("cents" in paidToday) || paidToday.cents < 0) return null;
+
+  const financedCents = total.cents - paidToday.cents;
+  return financedCents < 0 ? null : fromCents(financedCents).toFixed(2);
+}
+
+/**
  * Aplica las reglas de REQ-001 a los datos que escribe el cajero. La RPC repite estas reglas:
  * el formulario no es la autoridad.
  */

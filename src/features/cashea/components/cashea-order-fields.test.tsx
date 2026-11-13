@@ -26,6 +26,27 @@ describe("CasheaOrderFields", () => {
     expect(screen.getByLabelText("Total de la orden")).toHaveValue("");
   });
 
+  it("calcula el Monto financiado al escribir el total y lo Cobrado hoy", () => {
+    render(<CasheaOrderFieldsHarness saleTotalUsd={185.6} />);
+
+    fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "185.60" } });
+    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "92.8" } });
+    expect(screen.getByLabelText("Monto financiado")).toHaveValue("92.80");
+
+    fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "150" } });
+    expect(screen.getByLabelText("Monto financiado")).toHaveValue("57.20");
+  });
+
+  it("el Monto financiado calculado se puede corregir a mano", () => {
+    render(<CasheaOrderFieldsHarness />);
+
+    fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
+    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "40" } });
+    fireEvent.change(screen.getByLabelText("Monto financiado"), { target: { value: "59.99" } });
+
+    expect(screen.getByLabelText("Monto financiado")).toHaveValue("59.99");
+  });
+
   it("muestra Cobrado hoy + Monto financiado junto al total y la diferencia cuando no cuadran", () => {
     render(<CasheaOrderFieldsHarness />);
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_CASHEA_ORDER_DRAFT, evaluateCasheaOrderDraft, type CasheaOrderDraft } from "./cashea-order-draft";
+import {
+  calculateFinancedUsd,
+  EMPTY_CASHEA_ORDER_DRAFT,
+  evaluateCasheaOrderDraft,
+  type CasheaOrderDraft,
+} from "./cashea-order-draft";
 
 const VALID_DRAFT: CasheaOrderDraft = {
   orderNumber: "6400685",
@@ -120,5 +125,22 @@ describe("evaluateCasheaOrderDraft", () => {
 
   it("no advierte cuando el total de la orden coincide con el total de la venta dentro de $0.01", () => {
     expect(evaluate({ totalUsd: "185.61", paidTodayUsd: "92.81" }).saleTotalMismatch).toBe(false);
+  });
+});
+
+describe("calculateFinancedUsd", () => {
+  it("el Monto financiado es el total de la orden menos lo Cobrado hoy, con dos decimales", () => {
+    expect(calculateFinancedUsd("92.80", "46.4")).toBe("46.40");
+    expect(calculateFinancedUsd("185,60", "0")).toBe("185.60");
+  });
+
+  it("no calcula mientras falte un monto válido", () => {
+    expect(calculateFinancedUsd("", "46.40")).toBeNull();
+    expect(calculateFinancedUsd("92.80", "4x")).toBeNull();
+    expect(calculateFinancedUsd("92.80", "46.405")).toBeNull();
+  });
+
+  it("no calcula si lo Cobrado hoy supera el total de la orden", () => {
+    expect(calculateFinancedUsd("92.80", "100")).toBeNull();
   });
 });
