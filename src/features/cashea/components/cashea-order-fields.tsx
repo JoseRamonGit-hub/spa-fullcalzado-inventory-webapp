@@ -1,7 +1,6 @@
-import { useId } from "react";
-import { COMPACT_FIELD_LABEL_CLASS_NAME } from "@/components/forms/field-wrapper";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
+import { ClipboardPaste } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { CasheaOrderFormApi } from "../hooks/use-cashea-order-form";
@@ -19,33 +18,35 @@ const AMOUNT_INPUT_PROPS = {
   className: "tabular-nums",
 } as const;
 
+const CLIPBOARD_ERROR_MESSAGE = "No se pudo leer el portapapeles. Permite el acceso o escribe los datos a mano.";
+
 /** Los cinco datos de una Orden Cashea con la verificación de la suma contra el total. */
 export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFieldsProps) {
   const { form, evaluation, fieldOptions, fillFromSummary } = orderForm;
   const { orderTotalUsd, sumUsd, sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
-  const pasteAreaId = useId();
+
+  // El texto del portapapeles solo se analiza: no se guarda en ningún estado.
+  async function pasteSummary() {
+    try {
+      fillFromSummary(await navigator.clipboard.readText());
+    } catch {
+      toast.error(CLIPBOARD_ERROR_MESSAGE);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3">
-      <Field>
-        <FieldLabel htmlFor={pasteAreaId} className={COMPACT_FIELD_LABEL_CLASS_NAME}>
-          Pegar resumen de Cashea
-        </FieldLabel>
-        {/* Siempre vacía: el texto se analiza al pegarlo y no queda en el estado del formulario. */}
-        <Textarea
-          id={pasteAreaId}
-          value=""
-          rows={1}
-          disabled={disabled}
-          placeholder="Pega aquí el resumen copiado del panel de Cashea"
-          className="min-h-9 resize-none text-sm"
-          onPaste={(event) => {
-            event.preventDefault();
-            fillFromSummary(event.clipboardData.getData("text"));
-          }}
-          onChange={(event) => fillFromSummary(event.target.value)}
-        />
-      </Field>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="self-start"
+        disabled={disabled}
+        onClick={pasteSummary}
+      >
+        <ClipboardPaste />
+        Pegar resumen
+      </Button>
 
       <fieldset disabled={disabled} className="grid min-w-0 grid-cols-2 items-start gap-3 md:grid-cols-5">
         <form.AppField {...fieldOptions("orderNumber")}>

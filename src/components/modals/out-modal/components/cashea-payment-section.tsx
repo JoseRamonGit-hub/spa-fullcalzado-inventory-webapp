@@ -25,7 +25,7 @@ export function CasheaPaymentSection({
           </Label>
           <p className="text-muted-foreground mt-0.5 text-xs">
             {isCasheaPayment
-              ? "Pega el resumen «Debe pagar» de la orden en Cashea y revisa los datos, o escríbelos a mano."
+              ? "Pega el resumen «Debe pagar» de la orden y revisa los datos, o escríbelos a mano."
               : "Actívalo si el cliente financia parte de la compra con Cashea."}
           </p>
         </div>
