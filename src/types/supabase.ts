@@ -1049,6 +1049,10 @@ export type Database = {
         Args: { p_business_id: string; p_date?: string };
         Returns: {
           billed_operations: number;
+          cashea_receivable_usd: number;
+          cashea_receivable_ves: number;
+          cashea_voided_return_usd: number;
+          cashea_voided_return_ves: number;
           net_usd: number;
           net_ves: number;
           total_returns: number;

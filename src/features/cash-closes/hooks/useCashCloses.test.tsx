@@ -90,6 +90,10 @@ describe("useCashCloses Hook", () => {
       returnsCreditVes: 1800,
       netUsd: 80,
       netVes: 7200,
+      casheaReceivableUsd: 0,
+      casheaReceivableVes: 0,
+      casheaVoidedReturnUsd: 0,
+      casheaVoidedReturnVes: 0,
     };
     vi.mocked(cashClosesService.getSummary).mockResolvedValueOnce(summary);
 

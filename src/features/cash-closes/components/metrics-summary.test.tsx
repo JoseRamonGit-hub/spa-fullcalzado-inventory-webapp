@@ -20,6 +20,10 @@ describe("MetricsSummary", () => {
           returnsCreditVes: 1800,
           netUsd: 80,
           netVes: 7200,
+          casheaReceivableUsd: 0,
+          casheaReceivableVes: 0,
+          casheaVoidedReturnUsd: 0,
+          casheaVoidedReturnVes: 0,
         }}
         label="Resumen del Día"
         isFiltered={false}

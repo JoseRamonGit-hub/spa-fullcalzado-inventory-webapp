@@ -1,5 +1,6 @@
 import { useTransactions, useTodayTransactions } from "./hooks/useTransactionQueries";
 import { useTodayReturns } from "@/features/returns/hooks/useReturnQueries";
+import { useCashCloseSummary } from "@/features/cash-closes/hooks/useCashCloseQueries";
 import { Topbar } from "./components/topbar";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
@@ -24,9 +25,16 @@ export function TransactionsPage() {
     isError: isTodayTransactionsError,
   } = useTodayTransactions();
   const { data: todayReturns, isLoading: isTodayReturnsLoading, isError: isTodayReturnsError } = useTodayReturns();
+  // El Por cobrar Cashea y el Cashea anulado por devolución vienen del resumen del cierre de hoy.
+  const {
+    data: todayCashCloseSummary,
+    isLoading: isTodayCashCloseSummaryLoading,
+    isError: isTodayCashCloseSummaryError,
+  } = useCashCloseSummary();
 
-  const isSummaryLoading = isTodayTransactionsLoading || isTodayReturnsLoading;
-  const isSummaryError = isTodayTransactionsError || isTodayReturnsError;
+  const isSummaryLoading = isTodayTransactionsLoading || isTodayReturnsLoading || isTodayCashCloseSummaryLoading;
+  const isSummaryError =
+    isTodayTransactionsError || isTodayReturnsError || (isTodayCashCloseSummaryError && !todayCashCloseSummary);
 
   const topbarProps = { date, onDateChange: setDate };
 
@@ -45,7 +53,17 @@ export function TransactionsPage() {
       );
     }
 
-    return <SalesSummary transactions={todayTransactions || []} returns={todayReturns || []} />;
+    if (!todayCashCloseSummary) {
+      return <MetricsSkeleton count={3} />;
+    }
+
+    return (
+      <SalesSummary
+        transactions={todayTransactions || []}
+        returns={todayReturns || []}
+        cashea={todayCashCloseSummary}
+      />
+    );
   }
 
   function renderContent() {

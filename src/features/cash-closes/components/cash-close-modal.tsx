@@ -14,6 +14,9 @@ type CashCloseModalProps = {
 
 export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today, metrics }: CashCloseModalProps) {
   const hasReturns = metrics.returnsCount > 0;
+  const hasCasheaReceivable = metrics.casheaReceivableUsd > 0;
+  const hasCasheaVoidedReturn = metrics.casheaVoidedReturnUsd > 0;
+  const hasAdjustments = hasReturns || hasCasheaReceivable || hasCasheaVoidedReturn;
 
   return (
     <ResponsiveAlertModal
@@ -71,31 +74,81 @@ export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today
           </div>
         </div>
 
-        {hasReturns && (
+        {hasAdjustments && (
           <>
-            <div className="border-refund/25 bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
-              <div className="bg-card col-span-2 flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-refund flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
-                  <IterationCcw className="h-3 w-3" aria-hidden="true" /> Devoluciones ({metrics.returnsCount})
-                </span>
+            {hasReturns && (
+              <div className="border-refund/25 bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
+                <div className="bg-card col-span-2 flex flex-col gap-0.5 px-3 py-2.5">
+                  <span className="text-refund flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
+                    <IterationCcw className="h-3 w-3" aria-hidden="true" /> Devoluciones ({metrics.returnsCount})
+                  </span>
+                </div>
+                <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+                  <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
+                    <DollarSign className="h-3 w-3" aria-hidden="true" /> Crédito USD
+                  </span>
+                  <span className="text-refund text-sm font-bold tabular-nums">
+                    {formatCurrencyUSD(metrics.returnsCreditUsd)}
+                  </span>
+                </div>
+                <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+                  <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
+                    <Banknote className="h-3 w-3" aria-hidden="true" /> Crédito Bs.
+                  </span>
+                  <span className="text-refund text-sm font-bold tabular-nums">
+                    {formatCurrencyVES(metrics.returnsCreditVes)}
+                  </span>
+                </div>
               </div>
-              <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-                  <DollarSign className="h-3 w-3" aria-hidden="true" /> Crédito USD
-                </span>
-                <span className="text-refund text-sm font-bold tabular-nums">
-                  {formatCurrencyUSD(metrics.returnsCreditUsd)}
-                </span>
+            )}
+
+            {(hasCasheaReceivable || hasCasheaVoidedReturn) && (
+              <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
+                <div className="bg-card col-span-2 flex flex-col gap-0.5 px-3 py-2.5">
+                  <span className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">Cashea</span>
+                </div>
+                {hasCasheaReceivable && (
+                  <>
+                    <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+                      <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
+                        <DollarSign className="h-3 w-3" aria-hidden="true" /> Por cobrar Cashea USD
+                      </span>
+                      <span className="text-foreground text-sm font-bold tabular-nums">
+                        {formatCurrencyUSD(metrics.casheaReceivableUsd)}
+                      </span>
+                    </div>
+                    <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+                      <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
+                        <Banknote className="h-3 w-3" aria-hidden="true" /> Por cobrar Cashea Bs.
+                      </span>
+                      <span className="text-foreground text-sm font-bold tabular-nums">
+                        {formatCurrencyVES(metrics.casheaReceivableVes)}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {hasCasheaVoidedReturn && (
+                  <>
+                    <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+                      <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
+                        <DollarSign className="h-3 w-3" aria-hidden="true" /> Cashea anulado por devolución USD
+                      </span>
+                      <span className="text-foreground text-sm font-bold tabular-nums">
+                        {formatCurrencyUSD(metrics.casheaVoidedReturnUsd)}
+                      </span>
+                    </div>
+                    <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
+                      <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
+                        <Banknote className="h-3 w-3" aria-hidden="true" /> Cashea anulado por devolución Bs.
+                      </span>
+                      <span className="text-foreground text-sm font-bold tabular-nums">
+                        {formatCurrencyVES(metrics.casheaVoidedReturnVes)}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-                  <Banknote className="h-3 w-3" aria-hidden="true" /> Crédito Bs.
-                </span>
-                <span className="text-refund text-sm font-bold tabular-nums">
-                  {formatCurrencyVES(metrics.returnsCreditVes)}
-                </span>
-              </div>
-            </div>
+            )}
 
             <div className="bg-primary/8 border-primary/20 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
               <div className="flex flex-col gap-0.5 px-3 py-2.5">

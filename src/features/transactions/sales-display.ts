@@ -1,4 +1,4 @@
-import type { ReturnWithRelations, TransactionWithRelations } from "@/types";
+import type { CashCloseSummary, ReturnWithRelations, TransactionWithRelations } from "@/types";
 
 /** La Orden Cashea vigente (no anulada) de la Venta del Renglón; `null` si no es una Venta Cashea. */
 export function getActiveCasheaOrder(transaction: Pick<TransactionWithRelations, "sales">) {
@@ -10,8 +10,24 @@ export type SaleSummarySource = Pick<
   "sale_id" | "return_id" | "quantity" | "price_usd" | "price_ves"
 >;
 export type ReturnSummarySource = Pick<ReturnWithRelations, "credit_usd" | "credit_ves">;
+/** Importes Cashea del resumen del cierre del día; no se recalculan en el cliente. */
+export type CasheaSummarySource = Pick<
+  CashCloseSummary,
+  "casheaReceivableUsd" | "casheaReceivableVes" | "casheaVoidedReturnUsd" | "casheaVoidedReturnVes"
+>;
 
-export function getSalesSummary(transactions: readonly SaleSummarySource[], returns: readonly ReturnSummarySource[]) {
+const NO_CASHEA: CasheaSummarySource = {
+  casheaReceivableUsd: 0,
+  casheaReceivableVes: 0,
+  casheaVoidedReturnUsd: 0,
+  casheaVoidedReturnVes: 0,
+};
+
+export function getSalesSummary(
+  transactions: readonly SaleSummarySource[],
+  returns: readonly ReturnSummarySource[],
+  cashea: CasheaSummarySource = NO_CASHEA,
+) {
   const countedSaleIds = new Set<string>();
   const sales = transactions.reduce(
     (summary, transaction) => {
@@ -43,7 +59,7 @@ export function getSalesSummary(transactions: readonly SaleSummarySource[], retu
     returnsCount: returnCredits.count,
     returnsCreditUsd: returnCredits.usd,
     returnsCreditVes: returnCredits.ves,
-    netUsd: sales.grossUsd - returnCredits.usd,
-    netVes: sales.grossVes - returnCredits.ves,
+    netUsd: sales.grossUsd - returnCredits.usd - cashea.casheaReceivableUsd + cashea.casheaVoidedReturnUsd,
+    netVes: sales.grossVes - returnCredits.ves - cashea.casheaReceivableVes + cashea.casheaVoidedReturnVes,
   };
 }

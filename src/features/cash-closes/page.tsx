@@ -24,6 +24,10 @@ const EMPTY_CASH_CLOSE_SUMMARY: CashCloseSummary = {
   returnsCreditVes: 0,
   netUsd: 0,
   netVes: 0,
+  casheaReceivableUsd: 0,
+  casheaReceivableVes: 0,
+  casheaVoidedReturnUsd: 0,
+  casheaVoidedReturnVes: 0,
 };
 
 export function CashClosesPage() {

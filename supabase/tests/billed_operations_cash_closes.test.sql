@@ -39,6 +39,13 @@ WHERE business_id IN (
 )
   AND date = (now() AT TIME ZONE 'America/Caracas')::date;
 
+DELETE FROM public.cashea_orders
+WHERE business_id IN (
+  '10000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002'
+)
+  AND sale_date = (now() AT TIME ZONE 'America/Caracas')::date;
+
 DELETE FROM public.sales
 WHERE business_id IN (
   '10000000-0000-0000-0000-000000000001',

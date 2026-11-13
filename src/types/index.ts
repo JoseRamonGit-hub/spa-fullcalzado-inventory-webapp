@@ -126,8 +126,13 @@ export type CashCloseSummary = {
   returnsCount: number;
   returnsCreditUsd: number;
   returnsCreditVes: number;
+  /** Total producido: facturado menos devoluciones y Por cobrar Cashea, más Cashea anulado por devolución. */
   netUsd: number;
   netVes: number;
+  casheaReceivableUsd: number;
+  casheaReceivableVes: number;
+  casheaVoidedReturnUsd: number;
+  casheaVoidedReturnVes: number;
 };
 
 export type TransactionWithRelations = Transaction & {

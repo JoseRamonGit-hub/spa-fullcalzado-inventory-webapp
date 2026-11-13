@@ -41,6 +41,10 @@ export const cashClosesService = {
       returnsCreditVes: summary.total_returns_ves,
       netUsd: summary.net_usd,
       netVes: summary.net_ves,
+      casheaReceivableUsd: summary.cashea_receivable_usd,
+      casheaReceivableVes: summary.cashea_receivable_ves,
+      casheaVoidedReturnUsd: summary.cashea_voided_return_usd,
+      casheaVoidedReturnVes: summary.cashea_voided_return_ves,
     };
   },
 

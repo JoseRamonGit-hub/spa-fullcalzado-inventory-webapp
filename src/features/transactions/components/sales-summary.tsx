@@ -1,15 +1,21 @@
 import { Banknote, DollarSign, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import { getSalesSummary, type ReturnSummarySource, type SaleSummarySource } from "../sales-display";
+import {
+  getSalesSummary,
+  type CasheaSummarySource,
+  type ReturnSummarySource,
+  type SaleSummarySource,
+} from "../sales-display";
 
 type SalesSummaryProps = {
   transactions: readonly SaleSummarySource[];
   returns: readonly ReturnSummarySource[];
+  cashea: CasheaSummarySource;
 };
 
-export function SalesSummary({ transactions, returns }: SalesSummaryProps) {
-  const summary = getSalesSummary(transactions, returns);
+export function SalesSummary({ transactions, returns, cashea }: SalesSummaryProps) {
+  const summary = getSalesSummary(transactions, returns, cashea);
   const metrics = [
     { label: "Ventas", value: String(summary.salesCount), icon: ShoppingCart },
     { label: "Total producido USD", value: formatCurrencyUSD(summary.netUsd), icon: DollarSign },

@@ -28,8 +28,49 @@ type MetricsSummaryProps = {
   hasUser: boolean;
 };
 
+type AdjustmentItem = { label: string; value: string; icon: typeof DollarSign };
+
+/** Por cobrar Cashea (se descuenta) y Cashea anulado por devolución (se suma) del Total producido. */
+function getCasheaAdjustments(metrics: CashCloseMetrics): AdjustmentItem[] {
+  const items: AdjustmentItem[] = [];
+
+  if (metrics.casheaReceivableUsd > 0) {
+    items.push(
+      {
+        label: "Por cobrar Cashea USD",
+        value: formatCurrencyUSD(metrics.casheaReceivableUsd),
+        icon: DollarSign,
+      },
+      {
+        label: "Por cobrar Cashea Bs.",
+        value: formatCurrencyVES(metrics.casheaReceivableVes),
+        icon: Banknote,
+      },
+    );
+  }
+
+  if (metrics.casheaVoidedReturnUsd > 0) {
+    items.push(
+      {
+        label: "Cashea anulado por devolución USD",
+        value: formatCurrencyUSD(metrics.casheaVoidedReturnUsd),
+        icon: DollarSign,
+      },
+      {
+        label: "Cashea anulado por devolución Bs.",
+        value: formatCurrencyVES(metrics.casheaVoidedReturnVes),
+        icon: Banknote,
+      },
+    );
+  }
+
+  return items;
+}
+
 export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPending, hasUser }: MetricsSummaryProps) {
   const hasReturns = metrics.returnsCount > 0;
+  const casheaAdjustments = getCasheaAdjustments(metrics);
+  const hasAdjustments = hasReturns || casheaAdjustments.length > 0;
 
   const summaryItems = [
     { label: "Operaciones facturadas", value: String(metrics.billedOperations), icon: Hash },
@@ -73,32 +114,55 @@ export function MetricsSummary({ metrics, label, isFiltered, onOpenConfirm, isPe
         ))}
       </ul>
 
-      {/* Returns + Net row */}
-      {hasReturns && (
+      {/* Returns + Cashea + Net rows */}
+      {hasAdjustments && (
         <div className="border-border/40 flex flex-col gap-3 border-t pt-3">
-          <ul className="grid grid-cols-3 gap-y-4">
-            <li className="flex min-w-0 flex-col gap-1.5 pl-0">
-              <div className="text-muted-foreground flex items-center gap-1.5">
-                <IterationCcw className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
-                <MetricLabel>Devoluciones</MetricLabel>
-              </div>
-              <MetricValue className="text-orange-500">{metrics.returnsCount}</MetricValue>
-            </li>
-            <li className="border-border/50 flex min-w-0 flex-col gap-1.5 border-l px-2 sm:px-4">
-              <div className="text-muted-foreground flex items-center gap-1.5">
-                <DollarSign className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
-                <MetricLabel>Crédito Devolución</MetricLabel>
-              </div>
-              <MetricValue className="text-orange-500">{formatCurrencyUSD(metrics.returnsCreditUsd)}</MetricValue>
-            </li>
-            <li className="border-border/50 flex min-w-0 flex-col gap-1.5 border-l px-2 pr-0 sm:px-4 sm:pr-0">
-              <div className="text-muted-foreground flex items-center gap-1.5">
-                <Banknote className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
-                <MetricLabel>Crédito Bs.</MetricLabel>
-              </div>
-              <MetricValue className="text-orange-500">{formatCurrencyVES(metrics.returnsCreditVes)}</MetricValue>
-            </li>
-          </ul>
+          {hasReturns && (
+            <ul className="grid grid-cols-3 gap-y-4">
+              <li className="flex min-w-0 flex-col gap-1.5 pl-0">
+                <div className="text-muted-foreground flex items-center gap-1.5">
+                  <IterationCcw className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
+                  <MetricLabel>Devoluciones</MetricLabel>
+                </div>
+                <MetricValue className="text-orange-500">{metrics.returnsCount}</MetricValue>
+              </li>
+              <li className="border-border/50 flex min-w-0 flex-col gap-1.5 border-l px-2 sm:px-4">
+                <div className="text-muted-foreground flex items-center gap-1.5">
+                  <DollarSign className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
+                  <MetricLabel>Crédito Devolución</MetricLabel>
+                </div>
+                <MetricValue className="text-orange-500">{formatCurrencyUSD(metrics.returnsCreditUsd)}</MetricValue>
+              </li>
+              <li className="border-border/50 flex min-w-0 flex-col gap-1.5 border-l px-2 pr-0 sm:px-4 sm:pr-0">
+                <div className="text-muted-foreground flex items-center gap-1.5">
+                  <Banknote className="h-3.5 w-3.5 shrink-0 text-orange-500" aria-hidden="true" />
+                  <MetricLabel>Crédito Bs.</MetricLabel>
+                </div>
+                <MetricValue className="text-orange-500">{formatCurrencyVES(metrics.returnsCreditVes)}</MetricValue>
+              </li>
+            </ul>
+          )}
+
+          {casheaAdjustments.length > 0 && (
+            <ul className="grid grid-cols-2 gap-y-4 md:grid-cols-4">
+              {casheaAdjustments.map((item, i) => (
+                <li
+                  key={item.label}
+                  className={cn(
+                    "border-border/50 flex min-w-0 flex-col gap-1.5 px-2 sm:px-4",
+                    i % 2 === 0 ? "pl-0 sm:pl-0" : "border-l",
+                    i === 2 && "md:border-l md:pl-4",
+                  )}
+                >
+                  <div className="text-muted-foreground flex items-center gap-1.5">
+                    <item.icon className="text-muted-foreground h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <MetricLabel>{item.label}</MetricLabel>
+                  </div>
+                  <MetricValue>{item.value}</MetricValue>
+                </li>
+              ))}
+            </ul>
+          )}
 
           <div className="bg-primary/8 -mx-3 px-3 py-2.5 md:-mx-4 md:px-4">
             <ul className="grid grid-cols-2">
