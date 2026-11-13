@@ -13,6 +13,7 @@ import {
 import {
   ReceiptText,
   ArrowLeftRight,
+  HandCoins,
   LayoutDashboard,
   IterationCcw,
   LogOut,
@@ -57,6 +58,11 @@ const NAV_ITEMS = [
     title: "Cierres de Caja",
     url: "/cash-closes",
     icon: ReceiptText,
+  },
+  {
+    title: "Cashea",
+    url: "/cashea",
+    icon: HandCoins,
   },
 ];
 

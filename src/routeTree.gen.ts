@@ -20,6 +20,7 @@ import { Route as AppReturnsRouteImport } from './routes/_app/returns'
 import { Route as AppMovementsRouteImport } from './routes/_app/movements'
 import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppCasheaRouteImport } from './routes/_app/cashea'
 import { Route as AppCashClosesRouteImport } from './routes/_app/cash-closes'
 import { Route as AppInventoryProductIdRouteImport } from './routes/_app/inventory_.$productId'
 
@@ -76,6 +77,11 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCasheaRoute = AppCasheaRouteImport.update({
+  id: '/cashea',
+  path: '/cashea',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCashClosesRoute = AppCashClosesRouteImport.update({
   id: '/cash-closes',
   path: '/cash-closes',
@@ -90,6 +96,7 @@ const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cash-closes': typeof AppCashClosesRoute
+  '/cashea': typeof AppCasheaRoute
   '/dashboard': typeof AppDashboardRoute
   '/inventory': typeof AppInventoryRoute
   '/movements': typeof AppMovementsRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cash-closes': typeof AppCashClosesRoute
+  '/cashea': typeof AppCasheaRoute
   '/dashboard': typeof AppDashboardRoute
   '/inventory': typeof AppInventoryRoute
   '/movements': typeof AppMovementsRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/_app/cash-closes': typeof AppCashClosesRoute
+  '/_app/cashea': typeof AppCasheaRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/inventory': typeof AppInventoryRoute
   '/_app/movements': typeof AppMovementsRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cash-closes'
+    | '/cashea'
     | '/dashboard'
     | '/inventory'
     | '/movements'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cash-closes'
+    | '/cashea'
     | '/dashboard'
     | '/inventory'
     | '/movements'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/_app/cash-closes'
+    | '/_app/cashea'
     | '/_app/dashboard'
     | '/_app/inventory'
     | '/_app/movements'
@@ -258,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/cashea': {
+      id: '/_app/cashea'
+      path: '/cashea'
+      fullPath: '/cashea'
+      preLoaderRoute: typeof AppCasheaRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/cash-closes': {
       id: '/_app/cash-closes'
       path: '/cash-closes'
@@ -277,6 +296,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppCashClosesRoute: typeof AppCashClosesRoute
+  AppCasheaRoute: typeof AppCasheaRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppInventoryRoute: typeof AppInventoryRoute
   AppMovementsRoute: typeof AppMovementsRoute
@@ -289,6 +309,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCashClosesRoute: AppCashClosesRoute,
+  AppCasheaRoute: AppCasheaRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppInventoryRoute: AppInventoryRoute,
   AppMovementsRoute: AppMovementsRoute,

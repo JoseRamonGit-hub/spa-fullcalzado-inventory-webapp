@@ -22,6 +22,17 @@ export type CasheaDeposit = Tables<"cashea_deposits">;
 export type CasheaOrderStatus = Database["public"]["Enums"]["cashea_order_status"];
 export type CasheaVoidReason = Database["public"]["Enums"]["cashea_void_reason"];
 
+/** Rango de fechas de calendario (`YYYY-MM-DD`); cualquiera de los extremos puede faltar. */
+export type CalendarDateRange = {
+  from?: string;
+  to?: string;
+};
+
+/** Consulta de Órdenes Cashea: `status: null` trae todos los estados; el rango es sobre la fecha de la venta. */
+export type CasheaOrdersFilter = CalendarDateRange & {
+  status: CasheaOrderStatus | null;
+};
+
 type DashboardDailyMetricsRow = Database["public"]["Functions"]["get_dashboard_daily_metrics"]["Returns"][number];
 
 export type DashboardDailyMetrics = Omit<
