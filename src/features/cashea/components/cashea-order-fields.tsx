@@ -1,6 +1,3 @@
-import { ClipboardPaste } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { CasheaOrderFormApi } from "../hooks/use-cashea-order-form";
@@ -18,36 +15,13 @@ const AMOUNT_INPUT_PROPS = {
   className: "tabular-nums",
 } as const;
 
-const CLIPBOARD_ERROR_MESSAGE = "No se pudo leer el portapapeles. Permite el acceso o escribe los datos a mano.";
-
 /** Los cinco datos de una Orden Cashea con la verificación de la suma contra el total. */
 export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFieldsProps) {
-  const { form, evaluation, fieldOptions, fillFromSummary } = orderForm;
+  const { form, evaluation, fieldOptions } = orderForm;
   const { orderTotalUsd, sumUsd, sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
-
-  // El texto del portapapeles solo se analiza: no se guarda en ningún estado.
-  async function pasteSummary() {
-    try {
-      fillFromSummary(await navigator.clipboard.readText());
-    } catch {
-      toast.error(CLIPBOARD_ERROR_MESSAGE);
-    }
-  }
 
   return (
     <div className="flex flex-col gap-3">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="self-start"
-        disabled={disabled}
-        onClick={pasteSummary}
-      >
-        <ClipboardPaste />
-        Pegar resumen
-      </Button>
-
       <fieldset disabled={disabled} className="grid min-w-0 grid-cols-2 items-start gap-3 md:grid-cols-5">
         <form.AppField {...fieldOptions("orderNumber")}>
           {(field) => <field.TextField label="N° de orden" compact autoComplete="off" placeholder="6400685" />}
@@ -74,8 +48,8 @@ export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFi
 
       <div
         className={cn(
-          "bg-muted/40 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border px-3 py-2 text-xs",
-          sumError && "border-destructive/30 bg-destructive/8",
+          "bg-muted/50 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md px-3 py-1.5 text-xs",
+          sumError && "bg-destructive/8",
         )}
       >
         <p className="text-muted-foreground">
