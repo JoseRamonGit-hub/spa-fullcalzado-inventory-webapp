@@ -43,7 +43,7 @@ Por eso, lo financiado es una **cuenta por cobrar a Cashea**, no dinero en caja.
   (`supabase/migrations/20260808052019_create_atomic_multi_line_sales.sql`).
 - El cierre de caja trata todo lo facturado como dinero en caja
   (`private.get_cash_close_summary`, migración `20260808062414_count_billed_operations_in_cash_closes.sql`), y
-  `CONTEXT.md` define **Total producido** como la cifra real resultante en caja. Con ventas Cashea, el Total producido
+  `GLOSSARY.md` define **Total producido** como la cifra real resultante en caja. Con ventas Cashea, el Total producido
   incluiría lo financiado, que aún no está en caja: el cuadre fallaría cada día con ventas financiadas.
 - Las devoluciones (`private.process_return`) no están ligadas a la venta original, así que el sistema no puede saber si
   lo devuelto fue una compra Cashea.
@@ -114,9 +114,9 @@ Otras vistas (información dispersa):
 - **Órdenes:** tabla con canal, # de orden, sucursal, caja, # de factura, fecha, total y estado; filtros por rango de fechas, # de factura, # de orden, # de cédula y caja. No muestra cobrar hoy ni financiado.
 - **Detalle de orden (modal):** sucursal, fechas de creación y facturación, # de factura editable, estado de la entrega, estado de la orden («En Progreso»), monto total, «Información del usuario» (colapsable) e historial de cuotas (pago inicial con método y estado, luego cuotas «A pagar» cada 14 días). Botones: Hacer un cambio, Cancelar orden, Guardar. Ejemplo: total $92.80 = inicial $46.40 + 3 cuotas de $15.47 (el financiado equivale a total menos pago inicial; las cuotas pueden redondear centavos).
 
-## 5. Glosario propuesto (para `CONTEXT.md`)
+## 5. Glosario propuesto (para `GLOSSARY.md`)
 
-Usar estos términos en UI, código y pruebas. Añadirlos a `CONTEXT.md` al implementar (ver `docs/agents/domain.md`).
+Usar estos términos en UI, código y pruebas. Añadirlos a `GLOSSARY.md` al implementar (ver `docs/agents/domain.md`).
 
 **Venta Cashea**:
 Venta cuyo importe se paga en parte en la tienda y en parte mediante financiamiento de Cashea. Tiene una Orden Cashea asociada.
@@ -154,11 +154,11 @@ Monto financiado menos la Comisión Cashea de una orden, en dólares.
 **Tasa implícita**:
 Bolívares recibidos en un Depósito Cashea entre el Neto esperado de sus órdenes. Sirve para descubrir qué tasa aplica Cashea.
 
-**Total producido** (ya existe en `CONTEXT.md`; se ajusta su definición):
+**Total producido** (ya existe en `GLOSSARY.md`; se ajusta su definición):
 Cifra real resultante en caja durante un período, después de aplicar al Total facturado los créditos de devoluciones, las diferencias generadas por Cambios, lo que quedó Por cobrar Cashea y el Cashea anulado por devolución.
 _Avoid_: Total facturado, ganancia
 
-> `CONTEXT.md` ya define **Total producido** como «cifra real resultante en caja»: al implementar solo hay que añadir «lo que quedó Por cobrar Cashea y el Cashea anulado por devolución» a esa definición. No se introduce un término nuevo para el dinero en caja.
+> `GLOSSARY.md` ya define **Total producido** como «cifra real resultante en caja»: al implementar solo hay que añadir «lo que quedó Por cobrar Cashea y el Cashea anulado por devolución» a esa definición. No se introduce un término nuevo para el dinero en caja.
 
 ### 5.1 ADR sugerido
 
@@ -381,7 +381,7 @@ Respetar `AGENTS.md`: servicios como única vía a Supabase, hooks de React Quer
 | Ventas | `src/features/transactions/` (`sales-display.ts`, `components/sales-summary.tsx`, `columns.tsx`, `page.tsx`) y `src/services/transactionsService.ts` | La tabla lista renglones, no ventas: la marca Cashea es una insignia junto al código en cada renglón de la venta, como `ExchangeBadge`, con el número de orden en `title`. Los datos llegan en la misma consulta, ampliando `TRANSACTION_SELECT` con el embebido `sales(cashea_orders(order_number, status))` y el tipo `TransactionWithRelations`. Como la unicidad por venta es parcial, PostgREST devuelve `cashea_orders` como arreglo: la orden vigente es la no anulada (confirmar con los tipos generados). **Acción «Asociar orden Cashea» (REQ-011):** columna angosta de acciones en `columns.tsx`, visible en renglones con `sale_id`, sin `return_id` y sin orden vigente, para el empleado si la venta es de hoy y para el Administrador siempre; abre `src/features/cashea/components/attach-cashea-order-dialog.tsx` (nuevo). El resumen de la página es siempre «Ventas de hoy» (`useTodayTransactions`), no el de la fecha filtrada: `SalesSummary` toma el Por cobrar Cashea y el Cashea anulado por devolución del resumen del cierre de hoy (`useCashCloseSummary()` sin fecha, que estas mutaciones ya invalidan) y `getSalesSummary` los aplica como tercer argumento. No se recalculan en el cliente: el Cashea anulado por devolución viene de órdenes de ventas de días anteriores, que no están entre los renglones de hoy |
 | Dashboard | `src/features/dashboard/page.tsx`, `components/dashboard-metric-card.tsx`, `src/services/dashboardService.ts` | Tarjeta de saldo por cobrar. La tarjeta «Total producido» no cambia: `get_dashboard_daily_metrics` toma `net_usd` del resumen del cierre y ya llega descontada |
 | Datos de prueba | `supabase/seed.sql` | Algunas órdenes Cashea (pendientes y cobradas) en ambos negocios |
-| Dominio | `CONTEXT.md`, `docs/adr/` | Sección 5 |
+| Dominio | `GLOSSARY.md`, `docs/adr/` | Sección 5 |
 
 ### 7.4 Parser de «Pegar resumen»
 
@@ -485,7 +485,7 @@ Ninguno de estos pasos bloquea el inicio; reducen retrabajo.
 
 1. **Pedir al cliente una muestra real.** El texto copiado del resumen «Debe pagar» de una orden y, si existe, el detalle de un depósito ya recibido (Q-01 a Q-03). Hoy el parser y la fórmula de comisiones se apoyan en un tutorial de 2024. Si la muestra no llega a tiempo, se construye igual: el ingreso manual no depende del parser y los porcentajes son editables.
 2. **Confirmar con el cliente:** Q-04 (¿ambos negocios?).
-3. **Dejar escrito el lenguaje:** actualizar `CONTEXT.md` y crear el ADR 0002 (sección 5) antes del primer código, para que nombres de tablas, textos de interfaz y pruebas usen los mismos términos.
+3. **Dejar escrito el lenguaje:** actualizar `GLOSSARY.md` y crear el ADR 0002 (sección 5) antes del primer código, para que nombres de tablas, textos de interfaz y pruebas usen los mismos términos.
 
 ## 9. Pruebas
 
@@ -542,7 +542,7 @@ lo descrito, los ajustes se tratan aparte.
 
 ## 12. Referencias en el repositorio
 
-- `CONTEXT.md` (glosario), `PRODUCT.md`, `AGENTS.md`, `docs/adr/0001-ventas-con-identidad-sin-reconstruir-el-historico.md`.
+- `GLOSSARY.md` (glosario), `PRODUCT.md`, `AGENTS.md`, `docs/adr/0001-ventas-con-identidad-sin-reconstruir-el-historico.md`.
 - `supabase/migrations/20260808052019_create_atomic_multi_line_sales.sql` (tabla `sales`, `create_sale`, RLS y grants).
 - `supabase/migrations/20260808062414_count_billed_operations_in_cash_closes.sql` (resumen y generación del cierre).
 - `supabase/migrations/20260809213059_dashboard_daily_produced_metrics.sql` (el dashboard diario toma el Total producido del resumen del cierre).

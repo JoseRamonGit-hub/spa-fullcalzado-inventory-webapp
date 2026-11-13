@@ -50,12 +50,12 @@ Una misma operación integrada para varias zapaterías, con el negocio activo co
 - **Full Calzado** es el nombre principal visible en el acceso y Full Calzado C.A. es uno de los negocios operados.
 - **Zapatería Estilos C.A.** es el segundo negocio actualmente confirmado.
 - La voz del producto es directa, operativa y profesional, con terminología específica del dominio en español.
-- El vocabulario canónico del negocio está definido en `CONTEXT.md`; futuras interfaces deben preferir esos términos y evitar los sinónimos allí desaconsejados.
+- El vocabulario canónico del negocio está definido en `GLOSSARY.md`; futuras interfaces deben preferir esos términos y evitar los sinónimos allí desaconsejados.
 
 ## Evidence on Hand
 
 - Aplicación funcional y pruebas del producto en `src/` y `supabase/tests/`.
-- Modelo y vocabulario del dominio en `CONTEXT.md`.
+- Modelo y vocabulario del dominio en `GLOSSARY.md`.
 - Decisiones de arquitectura y operación multi-negocio en `spec/` y `docs/adr/`.
 - Fotografía de calzado utilizada en el acceso en `src/assets/calzado.jpg`.
 - Iconos y manifiesto de aplicación web en `public/`.
