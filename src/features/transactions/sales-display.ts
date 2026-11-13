@@ -1,5 +1,10 @@
 import type { ReturnWithRelations, TransactionWithRelations } from "@/types";
 
+/** La Orden Cashea vigente (no anulada) de la Venta del Renglón; `null` si no es una Venta Cashea. */
+export function getActiveCasheaOrder(transaction: Pick<TransactionWithRelations, "sales">) {
+  return transaction.sales?.cashea_orders.find((order) => order.status !== "voided") ?? null;
+}
+
 export type SaleSummarySource = Pick<
   TransactionWithRelations,
   "sale_id" | "return_id" | "quantity" | "price_usd" | "price_ves"

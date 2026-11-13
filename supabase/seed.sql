@@ -52,6 +52,24 @@ INSERT INTO seed_actor_ids (id) VALUES
   ('a0000000-0000-0000-0000-000000000003'),
   ('a0000000-0000-0000-0000-000000000004');
 
+DELETE FROM public.cashea_order_adjustments
+WHERE business_id IN (
+  '10000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002'
+);
+
+DELETE FROM public.cashea_orders
+WHERE business_id IN (
+  '10000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002'
+);
+
+DELETE FROM public.cashea_deposits
+WHERE business_id IN (
+  '10000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002'
+);
+
 DELETE FROM public.inventory_movements
 WHERE product_id IN (
   'b0000000-0000-0000-0000-000000000001',
@@ -1017,6 +1035,195 @@ $$;
 
 SELECT public.generate_daily_cash_close(
   p_business_id := '10000000-0000-0000-0000-000000000002'::uuid
+);
+
+-- ─── 10. Ventas Cashea ──────────────────────────────────────────────────────
+-- Cada negocio tiene una Orden Cashea Pendiente y otra Cobrada por un Depósito
+-- Cashea. Las Ventas se crean con create_cashea_sale y después se mueven a su
+-- fecha, igual que las Ventas anteriores.
+
+CREATE FUNCTION pg_temp.seed_cashea_sale(
+  p_business_id uuid,
+  p_actor_id uuid,
+  p_items jsonb,
+  p_exchange_rate numeric,
+  p_cashea jsonb,
+  p_date date,
+  p_time time
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_sale_id uuid;
+  v_created_date date;
+  v_created_time time;
+  v_created_at timestamptz := (p_date::timestamp + p_time) AT TIME ZONE 'America/Caracas';
+BEGIN
+  PERFORM set_config('request.jwt.claim.sub', p_actor_id::text, true);
+  PERFORM set_config(
+    'request.jwt.claims',
+    jsonb_build_object('sub', p_actor_id, 'role', 'authenticated')::text,
+    true
+  );
+
+  v_sale_id := public.create_cashea_sale(p_business_id, p_items, p_exchange_rate, p_cashea);
+
+  SELECT date, time
+  INTO v_created_date, v_created_time
+  FROM public.sales
+  WHERE business_id = p_business_id
+    AND id = v_sale_id;
+
+  UPDATE public.inventory_movements
+  SET date = p_date, time = p_time, created_at = v_created_at
+  WHERE business_id = p_business_id
+    AND type = 'exit'
+    AND date = v_created_date
+    AND time = v_created_time
+    AND product_id IN (
+      SELECT product_id
+      FROM public.transactions
+      WHERE business_id = p_business_id
+        AND sale_id = v_sale_id
+    );
+
+  UPDATE public.sales
+  SET date = p_date, time = p_time, created_at = v_created_at
+  WHERE business_id = p_business_id
+    AND id = v_sale_id;
+
+  UPDATE public.transactions
+  SET date = p_date, time = p_time, created_at = v_created_at
+  WHERE business_id = p_business_id
+    AND sale_id = v_sale_id;
+
+  UPDATE public.cashea_orders
+  SET sale_date = p_date, created_at = v_created_at
+  WHERE business_id = p_business_id
+    AND sale_id = v_sale_id;
+
+  RETURN v_sale_id;
+END
+$$;
+
+CREATE FUNCTION pg_temp.seed_cashea_deposit(
+  p_business_id uuid,
+  p_order_number text,
+  p_received_ves numeric,
+  p_applied_rate numeric,
+  p_deposit_date date,
+  p_reference text
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_order public.cashea_orders%ROWTYPE;
+  v_deposit_id uuid;
+  v_collected_at timestamptz := (p_deposit_date::timestamp + time '17:00:00') AT TIME ZONE 'America/Caracas';
+BEGIN
+  SELECT *
+  INTO v_order
+  FROM public.cashea_orders
+  WHERE business_id = p_business_id
+    AND order_number = p_order_number
+    AND status = 'pending';
+
+  INSERT INTO public.cashea_deposits (
+    business_id,
+    deposit_date,
+    received_ves,
+    applied_rate,
+    expected_net_usd,
+    implied_rate,
+    difference_usd,
+    reference,
+    created_by,
+    created_at
+  )
+  VALUES (
+    p_business_id,
+    p_deposit_date,
+    p_received_ves,
+    p_applied_rate,
+    v_order.expected_net_usd,
+    CASE WHEN v_order.expected_net_usd > 0 THEN round(p_received_ves / v_order.expected_net_usd, 4) END,
+    v_order.expected_net_usd - round(p_received_ves / p_applied_rate, 2),
+    p_reference,
+    'a0000000-0000-0000-0000-000000000001',
+    v_collected_at
+  )
+  RETURNING id INTO v_deposit_id;
+
+  UPDATE public.cashea_orders
+  SET status = 'collected',
+      deposit_id = v_deposit_id,
+      collected_at = v_collected_at
+  WHERE business_id = p_business_id
+    AND id = v_order.id;
+END
+$$;
+
+-- Full Calzado: Cobrada (venta de hace 4 días) y Pendiente (venta de hoy).
+SELECT pg_temp.seed_cashea_sale(
+  '10000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000003',
+  '[{"product_id":"b0000000-0000-0000-0000-000000000006","quantity":2,"price_usd":37.00,"price_ves":3111.70}]'::jsonb,
+  84.10,
+  '{"order_number":"6400612","invoice_number":"551-000701","total_usd":74.00,"paid_today_usd":37.00,"financed_usd":37.00}'::jsonb,
+  CURRENT_DATE - 4,
+  '11:20:00'
+);
+
+SELECT pg_temp.seed_cashea_deposit(
+  '10000000-0000-0000-0000-000000000001',
+  '6400612',
+  2800.00,
+  87.75,
+  CURRENT_DATE - 1,
+  'DEP-CASHEA-0001'
+);
+
+SELECT pg_temp.seed_cashea_sale(
+  '10000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000003',
+  '[{"product_id":"b0000000-0000-0000-0000-000000000004","quantity":1,"price_usd":43.00,"price_ves":3773.25}]'::jsonb,
+  87.75,
+  '{"order_number":"6400685","invoice_number":"551-000738","total_usd":43.00,"paid_today_usd":21.50,"financed_usd":21.50}'::jsonb,
+  CURRENT_DATE,
+  '12:15:00'
+);
+
+-- Zapatería Estilos: Cobrada (hace 3 días) y Pendiente (hace 2 días). Hoy
+-- conserva su estado vacío.
+SELECT pg_temp.seed_cashea_sale(
+  '10000000-0000-0000-0000-000000000002',
+  'a0000000-0000-0000-0000-000000000004',
+  '[{"product_id":"b1000000-0000-0000-0000-000000000002","quantity":1,"price_usd":42.00,"price_ves":3706.50}]'::jsonb,
+  88.25,
+  '{"order_number":"7300114","invoice_number":"EST-000114","total_usd":42.00,"paid_today_usd":12.00,"financed_usd":30.00}'::jsonb,
+  CURRENT_DATE - 3,
+  '10:45:00'
+);
+
+SELECT pg_temp.seed_cashea_deposit(
+  '10000000-0000-0000-0000-000000000002',
+  '7300114',
+  2350.00,
+  88.25,
+  CURRENT_DATE - 1,
+  'DEP-CASHEA-0002'
+);
+
+SELECT pg_temp.seed_cashea_sale(
+  '10000000-0000-0000-0000-000000000002',
+  'a0000000-0000-0000-0000-000000000004',
+  '[{"product_id":"b1000000-0000-0000-0000-000000000001","quantity":1,"price_usd":47.00,"price_ves":4147.75}]'::jsonb,
+  88.25,
+  '{"order_number":"7300131","invoice_number":"EST-000131","total_usd":47.00,"paid_today_usd":17.00,"financed_usd":30.00}'::jsonb,
+  CURRENT_DATE - 2,
+  '15:30:00'
 );
 
 -- Restore the production contract: every application write must provide its

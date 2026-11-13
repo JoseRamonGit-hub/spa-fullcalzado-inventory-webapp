@@ -6,6 +6,8 @@ import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateForBackend, formatDateTime } from "@/utils/formatters";
 import { useNavigate } from "@tanstack/react-router";
 import { IterationCcw } from "lucide-react";
+import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
+import { getActiveCasheaOrder } from "./sales-display";
 
 const columnHelper = createColumnHelper<TransactionWithRelations>();
 
@@ -24,11 +26,13 @@ export const columns = [
       const isExchange = !!row.original.return_id;
       const exchangeDate = formatDateForBackend(row.original.created_at);
       const returnId = row.original.return_id;
+      const casheaOrder = getActiveCasheaOrder(row.original);
 
       return (
         <span className="flex items-center gap-1.5">
           <span className="product-code uppercase">{getValue() || "—"}</span>
           {isExchange && returnId && <ExchangeBadge date={exchangeDate} returnId={returnId} />}
+          {casheaOrder && <CasheaBadge orderNumber={casheaOrder.order_number} />}
         </span>
       );
     },
@@ -102,6 +106,18 @@ function ExchangeBadge({ date, returnId }: { date: string; returnId: string }) {
         <IterationCcw aria-hidden="true" />
         Devolución
       </button>
+    </Badge>
+  );
+}
+
+// ── Internal component: Venta Cashea badge ──────────────────
+function CasheaBadge({ orderNumber }: { orderNumber: string }) {
+  const label = `Venta Cashea · Orden ${orderNumber}`;
+
+  return (
+    <Badge variant="outline" className="px-1.5 py-0 text-[11px]" title={label} aria-label={label}>
+      <img src={casheaLogo} alt="" aria-hidden="true" className="size-3 rounded-[3px]" />
+      <span aria-hidden="true">Cashea</span>
     </Badge>
   );
 }

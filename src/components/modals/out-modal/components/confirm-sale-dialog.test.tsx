@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
-import type { Business, User } from "@/types";
+import type { Business, CasheaOrderInput, User } from "@/types";
+import { formatCurrencyUSD } from "@/utils/formatters";
+import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 import { businessKeys } from "@/features/business/hooks/useBusinessQueries";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
@@ -59,6 +61,23 @@ const saleLines: PendingSaleLine[] = [
   },
 ];
 
+const exchangeRate: ModalExchangeRate = {
+  value: 90,
+  isReady: true,
+  isLoading: false,
+  displayValue: "Bs. 90,00",
+  statusTitle: "",
+  statusMessage: "",
+};
+
+const casheaOrder: CasheaOrderInput = {
+  order_number: "6400685",
+  invoice_number: "551-000738",
+  total_usd: 75,
+  paid_today_usd: 25,
+  financed_usd: 50,
+};
+
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   queryClient.setQueryData(businessKeys.accessible(USER_ID), [business]);
@@ -114,5 +133,58 @@ describe("ConfirmSaleDialog", () => {
     expect(screen.getByRole("heading", { name: "Confirmar venta" })).toBeInTheDocument();
     expect(screen.getByText("2 renglones de venta")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Registrar venta" })).toBeInTheDocument();
+  });
+
+  describe("Venta Cashea", () => {
+    function renderCasheaDialog(options: { casheaSaleTotalMismatch?: boolean; order?: CasheaOrderInput } = {}) {
+      render(
+        <ConfirmSaleDialog
+          isOpen
+          onOpenChange={vi.fn()}
+          pendingSaleLines={saleLines}
+          exchangeRate={exchangeRate}
+          totalAmountUsd={75}
+          totalAmountVes={6_750}
+          casheaOrder={options.order ?? casheaOrder}
+          casheaSaleTotalMismatch={options.casheaSaleTotalMismatch ?? false}
+          isSubmissionPending={false}
+          onConfirmSubmit={vi.fn()}
+        />,
+        { wrapper: createWrapper() },
+      );
+    }
+
+    it("muestra por separado lo que entra a caja hoy y lo que queda por cobrar a Cashea", () => {
+      renderCasheaDialog();
+
+      const cashToday = screen.getByText("Entra a caja hoy").closest("div");
+      const receivable = screen.getByText("Por cobrar a Cashea").closest("div");
+
+      expect(within(cashToday!).getByText(formatCurrencyUSD(25))).toBeInTheDocument();
+      expect(within(receivable!).getByText(formatCurrencyUSD(50))).toBeInTheDocument();
+      expect(screen.getByText("6400685")).toBeInTheDocument();
+      expect(screen.getByText("551-000738")).toBeInTheDocument();
+    });
+
+    it("permite registrar sin confirmación extra cuando el total de la orden coincide con la venta", () => {
+      renderCasheaDialog();
+
+      expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Registrar venta" })).toBeEnabled();
+    });
+
+    it("exige confirmar la advertencia cuando el total de la orden difiere del total de la venta", () => {
+      renderCasheaDialog({
+        casheaSaleTotalMismatch: true,
+        order: { ...casheaOrder, total_usd: 80, paid_today_usd: 30 },
+      });
+
+      expect(screen.getByText(/difiere del total de la venta/)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Registrar venta" })).toBeDisabled();
+
+      fireEvent.click(screen.getByRole("checkbox", { name: /Confirmo el total de la orden Cashea/ }));
+
+      expect(screen.getByRole("button", { name: "Registrar venta" })).toBeEnabled();
+    });
   });
 });

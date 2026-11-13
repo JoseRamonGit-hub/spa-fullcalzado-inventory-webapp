@@ -30,6 +30,10 @@ const fakeCashClose = {
   total_returns: 0,
   total_returns_usd: 0,
   total_returns_ves: 0,
+  cashea_receivable_usd: null,
+  cashea_receivable_ves: null,
+  cashea_voided_return_usd: null,
+  cashea_voided_return_ves: null,
   users: { fullname: "Admin User" },
 } satisfies CashCloseWithRelations;
 

@@ -17,6 +17,10 @@ export type AppSettings = Tables<"app_settings">;
 export type Return = Tables<"returns">;
 export type ReturnItem = Tables<"return_items">;
 export type Sale = Tables<"sales">;
+export type CasheaOrder = Tables<"cashea_orders">;
+export type CasheaDeposit = Tables<"cashea_deposits">;
+export type CasheaOrderStatus = Database["public"]["Enums"]["cashea_order_status"];
+export type CasheaVoidReason = Database["public"]["Enums"]["cashea_void_reason"];
 
 type DashboardDailyMetricsRow = Database["public"]["Functions"]["get_dashboard_daily_metrics"]["Returns"][number];
 
@@ -129,6 +133,8 @@ export type CashCloseSummary = {
 export type TransactionWithRelations = Transaction & {
   products: Pick<Product, "code" | "description">;
   users: Pick<User, "fullname">;
+  /** Venta del Renglón con sus Órdenes Cashea; `null` en Renglones sin Venta (históricos o de un Cambio). */
+  sales: { cashea_orders: Pick<CasheaOrder, "order_number" | "status">[] } | null;
 };
 
 export type InventoryMovementWithRelations = InventoryMovement & {
@@ -201,9 +207,20 @@ export type ProcessReturnPayload = {
   p_notes?: string;
 };
 
+/** Los cinco datos de una Orden Cashea, tal como los recibe la RPC. */
+export type CasheaOrderInput = {
+  order_number: string;
+  invoice_number: string;
+  total_usd: number;
+  paid_today_usd: number;
+  financed_usd: number;
+};
+
 export type ProcessSalePayload = {
   p_items: PricedProductLineInput[];
   p_exchange_rate: number;
+  /** Presente solo en una Venta Cashea. */
+  p_cashea?: CasheaOrderInput;
 };
 
 export type UserRole = User["role"];

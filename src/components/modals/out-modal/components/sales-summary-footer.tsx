@@ -7,6 +7,8 @@ type SalesSummaryFooterProps = {
   pendingSaleLines: PendingSaleLine[];
   exchangeRate: ModalExchangeRate;
   isSubmissionPending: boolean;
+  /** «Pago con Cashea» está activo y algún dato de la Orden Cashea falta o es inválido. */
+  isCasheaIncomplete: boolean;
   onOpenConfirmDialog: () => void;
 };
 
@@ -14,11 +16,12 @@ export function SalesSummaryFooter({
   pendingSaleLines,
   exchangeRate,
   isSubmissionPending,
+  isCasheaIncomplete,
   onOpenConfirmDialog,
 }: SalesSummaryFooterProps) {
   const pendingSaleLineCount = pendingSaleLines.length;
   const hasPendingSaleLines = pendingSaleLineCount > 0;
-  const canSubmit = hasPendingSaleLines && !isSubmissionPending && exchangeRate.isReady;
+  const canSubmit = hasPendingSaleLines && !isSubmissionPending && exchangeRate.isReady && !isCasheaIncomplete;
   const pendingProductLabel = `${pendingSaleLineCount} producto${pendingSaleLineCount === 1 ? "" : "s"} listo${
     pendingSaleLineCount === 1 ? "" : "s"
   } para confirmar`;
@@ -34,7 +37,13 @@ export function SalesSummaryFooter({
 
       <ModalFooterActionRow
         message={
-          <span className="tabular-nums">{hasPendingSaleLines ? pendingProductLabel : "Sin productos pendientes"}</span>
+          <span className="tabular-nums">
+            {!hasPendingSaleLines
+              ? "Sin productos pendientes"
+              : isCasheaIncomplete
+                ? "Completa los datos de la Orden Cashea"
+                : pendingProductLabel}
+          </span>
         }
       >
         <ModalShortcutActionButton

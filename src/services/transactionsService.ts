@@ -4,7 +4,8 @@ import type { ProcessSalePayload, TransactionWithRelations } from "@/types/index
 import type { Json } from "@/types/supabase";
 import { formatDateForBackend } from "@/utils/formatters";
 
-const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as const;
+const TRANSACTION_SELECT =
+  "*, products(code, description), users(fullname), sales(cashea_orders(order_number, status))" as const;
 
 export const transactionsService = {
   getAll: async (businessId: string, date?: string): Promise<TransactionWithRelations[]> => {
@@ -43,12 +44,17 @@ export const transactionsService = {
     return data;
   },
 
+  /** Registra la Venta; con `p_cashea` la registra como Venta Cashea junto con su Orden Cashea. */
   createSale: async (businessId: string, payload: ProcessSalePayload): Promise<void> => {
-    const { error } = await supabase.rpc("create_sale", {
+    const saleArgs = {
       p_business_id: businessId,
       p_items: payload.p_items as Json,
       p_exchange_rate: payload.p_exchange_rate,
-    });
+    };
+
+    const { error } = payload.p_cashea
+      ? await supabase.rpc("create_cashea_sale", { ...saleArgs, p_cashea: payload.p_cashea as Json })
+      : await supabase.rpc("create_sale", saleArgs);
 
     if (error) throw toServiceError(error);
   },

@@ -1,10 +1,19 @@
 import { render, screen, within } from "@testing-library/react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { DataTable } from "@/components/ui/data-table";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import type { CashCloseWithRelations } from "@/types";
 import { columns } from "./columns";
 
 beforeAll(() => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
   Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: vi.fn().mockImplementation(() => ({
@@ -28,6 +37,10 @@ const baseCashClose = {
   total_units_sold: 9,
   total_usd: 180,
   total_ves: 16200,
+  cashea_receivable_usd: null,
+  cashea_receivable_ves: null,
+  cashea_voided_return_usd: null,
+  cashea_voided_return_ves: null,
   users: { fullname: "María" },
 } satisfies Omit<CashCloseWithRelations, "id" | "total_billed_operations">;
 
@@ -38,7 +51,11 @@ describe("columnas de Cierres de Caja", () => {
       { ...baseCashClose, id: "historical-close", total_billed_operations: null },
     ];
 
-    render(<DataTable columns={columns} data={data} hidePagination />);
+    render(
+      <TooltipProvider>
+        <DataTable columns={columns} data={data} hidePagination />
+      </TooltipProvider>,
+    );
 
     expect(screen.getByRole("button", { name: /Operaciones facturadas/i })).toBeInTheDocument();
     const rows = screen.getAllByRole("row").slice(1);

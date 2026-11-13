@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import { TableHead } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import type { PendingSaleLine } from "../types";
+import type { CasheaOrderInput } from "@/types";
 import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 import {
   ConfirmDialogLineRow,
@@ -19,6 +23,10 @@ type ConfirmSaleDialogProps = {
   exchangeRate: ModalExchangeRate;
   totalAmountUsd: number;
   totalAmountVes: number;
+  /** Orden Cashea validada; `null` o ausente en una venta sin Cashea. */
+  casheaOrder?: CasheaOrderInput | null;
+  /** El total de la orden difiere del total de la venta: el cajero debe confirmarlo antes de registrar. */
+  casheaSaleTotalMismatch?: boolean;
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
 };
@@ -30,15 +38,29 @@ export function ConfirmSaleDialog({
   exchangeRate,
   totalAmountUsd,
   totalAmountVes,
+  casheaOrder = null,
+  casheaSaleTotalMismatch = false,
   isSubmissionPending,
   onConfirmSubmit,
 }: ConfirmSaleDialogProps) {
   const lineCount = pendingSaleLines.length;
+
+  // La confirmación del total distinto se pide de nuevo cada vez que se abre el diálogo.
+  const [isOrderTotalConfirmed, setIsOrderTotalConfirmed] = useState(false);
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setIsOrderTotalConfirmed(false);
+  }
+
+  const requiresOrderTotalConfirmation = casheaOrder !== null && casheaSaleTotalMismatch;
+  const isOrderTotalPending = requiresOrderTotalConfirmation && !isOrderTotalConfirmed;
+
   return (
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="Confirmar venta"
+      title={casheaOrder ? "Confirmar Venta Cashea" : "Confirmar venta"}
       description={
         <>
           Se registrará{lineCount === 1 ? "" : "n"}{" "}
@@ -53,7 +75,7 @@ export function ConfirmSaleDialog({
       submissionErrorMessage={getSaleSubmissionErrorMessage}
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
-      confirmDisabled={!exchangeRate.isReady}
+      confirmDisabled={!exchangeRate.isReady || isOrderTotalPending}
     >
       <ConfirmDialogTableSection className="bg-card border-border/80 max-h-48">
         <ConfirmDialogLineTable
@@ -110,6 +132,51 @@ export function ConfirmSaleDialog({
           <p className="data-value font-medium whitespace-nowrap">{exchangeRate.displayValue}</p>
         </div>
       </ConfirmDialogSummarySection>
+
+      {casheaOrder && (
+        <ConfirmDialogSummarySection className="gap-0 overflow-hidden p-0">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b px-3 py-2">
+            <p className="text-muted-foreground text-[11px] font-semibold uppercase">Pago con Cashea</p>
+            <p className="text-muted-foreground text-xs">
+              Orden <span className="data-value text-foreground font-semibold">{casheaOrder.order_number}</span> ·
+              Factura <span className="data-value text-foreground font-semibold">{casheaOrder.invoice_number}</span>
+            </p>
+          </div>
+          <div className="grid grid-cols-2 divide-x">
+            <div className="min-w-0 p-3">
+              <p className="text-muted-foreground text-[11px] font-semibold uppercase">Entra a caja hoy</p>
+              <p className="data-value mt-1 text-base leading-tight font-bold whitespace-nowrap">
+                {formatCurrencyUSD(casheaOrder.paid_today_usd)}
+              </p>
+            </div>
+            <div className="min-w-0 p-3 text-right">
+              <p className="text-muted-foreground text-[11px] font-semibold uppercase">Por cobrar a Cashea</p>
+              <p className="data-value mt-1 text-base leading-tight font-bold whitespace-nowrap">
+                {formatCurrencyUSD(casheaOrder.financed_usd)}
+              </p>
+            </div>
+          </div>
+        </ConfirmDialogSummarySection>
+      )}
+
+      {casheaOrder && casheaSaleTotalMismatch && (
+        <section className="border-warning/40 bg-warning/8 flex flex-col gap-2 rounded-md border px-3 py-2 text-xs">
+          <p className="text-warning-foreground font-medium">
+            El total de la orden Cashea ({formatCurrencyUSD(casheaOrder.total_usd)}) difiere del total de la venta (
+            {formatCurrencyUSD(totalAmountUsd)}).
+          </p>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="cashea-order-total-confirmation"
+              checked={isOrderTotalConfirmed}
+              onCheckedChange={(checked) => setIsOrderTotalConfirmed(checked === true)}
+            />
+            <Label htmlFor="cashea-order-total-confirmation" className="text-xs font-medium">
+              Confirmo el total de la orden Cashea
+            </Label>
+          </div>
+        </section>
+      )}
     </ModalConfirmDialog>
   );
 }

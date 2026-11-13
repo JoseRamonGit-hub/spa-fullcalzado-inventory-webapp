@@ -2,11 +2,14 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCreateSale } from "@/features/transactions/hooks/useTransactionMutations";
 import type { PendingSaleLine } from "../types";
+import type { CasheaOrderInput } from "@/types";
 import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 
 type SubmitSaleOptions = {
   pendingSaleLines: PendingSaleLine[];
   currentExchangeRate: number;
+  /** Orden Cashea validada; `null` en una venta sin Cashea. */
+  casheaOrder: CasheaOrderInput | null;
   clearPendingSaleLines: () => void;
   onSuccess: () => void;
 };
@@ -14,6 +17,7 @@ type SubmitSaleOptions = {
 export function useSubmitSale({
   pendingSaleLines,
   currentExchangeRate,
+  casheaOrder,
   clearPendingSaleLines,
   onSuccess,
 }: SubmitSaleOptions) {
@@ -34,14 +38,17 @@ export function useSubmitSale({
         price_ves: saleLine.priceVes,
       })),
       p_exchange_rate: currentExchangeRate,
+      ...(casheaOrder && { p_cashea: casheaOrder }),
     });
 
     const lineCount = pendingSaleLines.length;
     const lineLabel = lineCount === 1 ? "1 renglón" : `${lineCount} renglones`;
 
+    const saleLabel = casheaOrder ? "Venta Cashea" : "venta";
+
     toast.promise(salePromise, {
-      loading: `Registrando venta con ${lineLabel}...`,
-      success: "Venta registrada correctamente",
+      loading: `Registrando ${saleLabel} con ${lineLabel}...`,
+      success: casheaOrder ? "Venta Cashea registrada correctamente" : "Venta registrada correctamente",
       error: getSaleSubmissionErrorMessage,
     });
 
