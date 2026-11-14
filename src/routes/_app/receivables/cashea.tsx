@@ -11,7 +11,7 @@ const searchSchema = z.object({
   to: calendarDate,
 });
 
-export const Route = createFileRoute("/_app/cashea")({
+export const Route = createFileRoute("/_app/receivables/cashea")({
   validateSearch: searchSchema,
   component: CasheaPage,
 });

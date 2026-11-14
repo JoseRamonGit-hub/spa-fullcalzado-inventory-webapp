@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { DataTable } from "@/components/ui/data-table";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
-import { Route } from "@/routes/_app/cashea";
+import { Route } from "@/routes/_app/receivables/cashea";
 import { formatCalendarDateString } from "@/utils/formatters";
 import type { CalendarDateRange, CasheaOrdersFilter } from "@/types";
 import { columns } from "./columns";
@@ -27,7 +27,7 @@ function getEmptyMessage(filter: CasheaOrdersFilter, hasRange: boolean) {
 
 export function CasheaPage() {
   const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/cashea" });
+  const navigate = useNavigate({ from: "/receivables/cashea" });
   const status = search.status ?? DEFAULT_CASHEA_STATUS_FILTER;
   const filter = resolveCasheaOrdersFilter(search);
   const hasRange = Boolean(search.from || search.to);

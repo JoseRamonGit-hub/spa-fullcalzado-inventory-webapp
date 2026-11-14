@@ -9,10 +9,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   ReceiptText,
   ArrowLeftRight,
+  ChevronRight,
   HandCoins,
   LayoutDashboard,
   IterationCcw,
@@ -22,11 +28,13 @@ import {
   ShoppingCart,
   Users,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { BusinessSwitcher } from "@/features/business/components/business-switcher";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
+import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
+import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   {
@@ -59,12 +67,72 @@ const NAV_ITEMS = [
     url: "/cash-closes",
     icon: ReceiptText,
   },
+];
+
+const ACTIVE_LINK_CLASS_NAME = "bg-sidebar-accent text-sidebar-primary font-medium";
+
+const RECEIVABLES_ITEMS = [
   {
     title: "Cashea",
-    url: "/cashea",
-    icon: HandCoins,
+    url: "/receivables/cashea",
+    icon: CasheaLogoIcon,
   },
-];
+] as const;
+
+/** Módulo «Cuentas por cobrar»: se despliega con sus subrutas; con la barra contraída lleva a la primera. */
+function ReceivablesNavItem() {
+  const { state } = useSidebar();
+  const isActive = useRouterState({
+    select: (routerState) => routerState.location.pathname.startsWith("/receivables"),
+  });
+
+  if (state === "collapsed") {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild tooltip="Cuentas por cobrar">
+          <Link to={RECEIVABLES_ITEMS[0].url} className={cn(isActive && ACTIVE_LINK_CLASS_NAME)}>
+            <HandCoins className="size-4" />
+            <span>Cuentas por cobrar</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
+
+  return (
+    <Collapsible asChild defaultOpen className="group/collapsible">
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton
+            tooltip="Cuentas por cobrar"
+            className={cn(isActive && "text-sidebar-primary font-medium")}
+          >
+            <HandCoins className="size-4" />
+            <span>Cuentas por cobrar</span>
+            <ChevronRight
+              aria-hidden="true"
+              className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+            />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {RECEIVABLES_ITEMS.map((item) => (
+              <SidebarMenuSubItem key={item.url}>
+                <SidebarMenuSubButton asChild>
+                  <Link to={item.url} activeProps={{ className: ACTIVE_LINK_CLASS_NAME }}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  );
+}
 
 export function AppSidebar() {
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
@@ -102,6 +170,7 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <ReceivablesNavItem />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
