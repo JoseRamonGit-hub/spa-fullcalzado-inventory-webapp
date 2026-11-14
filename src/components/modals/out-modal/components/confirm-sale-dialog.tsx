@@ -9,7 +9,7 @@ import type { PendingSaleLine } from "../types";
 import type { CasheaOrderInput } from "@/types";
 import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
+import { SaleLinesSection, SaleTotalSection } from "@/components/modals/shared/sale-summary";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmSaleDialogProps = {
@@ -37,8 +37,6 @@ export function ConfirmSaleDialog({
   isSubmissionPending,
   onConfirmSubmit,
 }: ConfirmSaleDialogProps) {
-  const lineCount = pendingSaleLines.length;
-
   const [isOrderTotalConfirmed, setIsOrderTotalConfirmed] = useState(false);
   const [wasOpen, setWasOpen] = useState(isOpen);
   if (wasOpen !== isOpen) {
@@ -62,45 +60,22 @@ export function ConfirmSaleDialog({
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!exchangeRate.isReady || isOrderTotalPending}
     >
-      <section aria-labelledby="confirm-sale-products" className="bg-card overflow-hidden rounded-lg border">
-        <header className="bg-muted/30 text-muted-foreground flex items-baseline justify-between gap-3 border-b px-3 py-1.5 text-xs">
-          <h3 id="confirm-sale-products" className="font-semibold">
-            Productos
-          </h3>
-          <span>
-            {lineCount} {lineCount === 1 ? "renglón" : "renglones"} de venta
-          </span>
-        </header>
-        <ul className="custom-scrollbar divide-border/60 max-h-48 divide-y overflow-y-auto">
-          {pendingSaleLines.map((saleLine) => (
-            <li key={saleLine.tempId} className="flex items-center justify-between gap-3 px-3 py-2">
-              <div className="min-w-0 flex-1">
-                <OverflowTooltip className="text-sm leading-snug font-medium">{saleLine.description}</OverflowTooltip>
-                <p className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
-                  <span className="product-code text-xs uppercase">{saleLine.code}</span>
-                  <span aria-hidden="true">·</span>
-                  <span className="tabular-value">
-                    {saleLine.quantity} × {formatCurrencyUSD(saleLine.priceUsd)}
-                  </span>
-                </p>
-              </div>
-              <p className="data-value shrink-0 text-sm font-semibold whitespace-nowrap">
-                {formatCurrencyUSD(saleLine.totalUsd)}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <SaleLinesSection
+        lines={pendingSaleLines.map((saleLine) => ({
+          key: saleLine.tempId,
+          code: saleLine.code,
+          description: saleLine.description,
+          quantity: saleLine.quantity,
+          priceUsd: saleLine.priceUsd,
+          totalUsd: saleLine.totalUsd,
+        }))}
+      />
 
-      <section
-        aria-labelledby="confirm-sale-total"
-        className="border-primary/20 bg-primary/5 flex items-center justify-between gap-4 rounded-lg border px-3 py-3"
-      >
-        <div className="min-w-0">
-          <h3 id="confirm-sale-total" className="text-sm font-semibold">
-            Total de la venta
-          </h3>
-          {exchangeRate.isReady ? (
+      <SaleTotalSection
+        totalUsd={totalAmountUsd}
+        totalVes={exchangeRate.isReady ? formatCurrencyVES(totalAmountVes) : "— Bs."}
+        detail={
+          exchangeRate.isReady ? (
             <p className="text-muted-foreground mt-0.5 text-xs">
               Tasa aplicada <span className="data-value text-foreground font-medium">{exchangeRate.displayValue}</span>
             </p>
@@ -109,17 +84,9 @@ export function ConfirmSaleDialog({
               <TriangleAlert className="text-warning mt-px size-3.5 shrink-0" aria-hidden="true" />
               {exchangeRate.statusMessage}
             </p>
-          )}
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="data-value text-2xl leading-none font-bold whitespace-nowrap">
-            {formatCurrencyUSD(totalAmountUsd)}
-          </p>
-          <p className="data-value text-muted-foreground mt-1 text-sm font-medium whitespace-nowrap">
-            {exchangeRate.isReady ? formatCurrencyVES(totalAmountVes) : "— Bs."}
-          </p>
-        </div>
-      </section>
+          )
+        }
+      />
 
       {casheaOrder && (
         <section aria-labelledby="confirm-sale-cashea" className="bg-card overflow-hidden rounded-lg border">

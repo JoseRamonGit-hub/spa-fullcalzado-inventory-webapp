@@ -22,6 +22,9 @@ const AMOUNT_INPUT_PROPS = {
   className: "text-sm tabular-nums",
 } as const;
 
+const TEXT_FIELD_CELL = "min-w-0 @md:col-span-3 @2xl:col-span-1";
+const AMOUNT_FIELD_CELL = "min-w-0 @md:col-span-2 @2xl:col-span-1";
+
 /** Los cinco datos de una Orden Cashea con la verificación de la suma contra el total. */
 export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFieldsProps) {
   const { form, evaluation, fieldOptions } = orderForm;
@@ -30,25 +33,36 @@ export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFi
   const sumMatches = sumUsd !== null && orderTotalUsd !== null && !sumError;
 
   return (
-    <div className="flex flex-col gap-3">
-      <fieldset disabled={disabled} className="grid min-w-0 grid-cols-2 items-start gap-3 md:grid-cols-5">
-        <form.AppField {...fieldOptions("orderNumber")}>
-          {(field) => <field.TextField label="N° de orden" placeholder="6400685" {...TEXT_INPUT_PROPS} />}
-        </form.AppField>
+    <div className="@container flex flex-col gap-3">
+      <fieldset
+        disabled={disabled}
+        className="grid min-w-0 grid-cols-2 items-start gap-3 @md:grid-cols-6 @2xl:grid-cols-5"
+      >
+        <div className={TEXT_FIELD_CELL}>
+          <form.AppField {...fieldOptions("orderNumber")}>
+            {(field) => <field.TextField label="N° de orden" placeholder="6400685" {...TEXT_INPUT_PROPS} />}
+          </form.AppField>
+        </div>
 
-        <form.AppField {...fieldOptions("invoiceNumber")}>
-          {(field) => <field.TextField label="N° de factura" placeholder="551-000738" {...TEXT_INPUT_PROPS} />}
-        </form.AppField>
+        <div className={TEXT_FIELD_CELL}>
+          <form.AppField {...fieldOptions("invoiceNumber")}>
+            {(field) => <field.TextField label="N° de factura" placeholder="551-000738" {...TEXT_INPUT_PROPS} />}
+          </form.AppField>
+        </div>
 
-        <form.AppField {...fieldOptions("totalUsd")}>
-          {(field) => <field.TextFieldGroup label="Total de la orden" {...AMOUNT_INPUT_PROPS} />}
-        </form.AppField>
+        <div className={AMOUNT_FIELD_CELL}>
+          <form.AppField {...fieldOptions("totalUsd")}>
+            {(field) => <field.TextFieldGroup label="Total de la orden" {...AMOUNT_INPUT_PROPS} />}
+          </form.AppField>
+        </div>
 
-        <form.AppField {...fieldOptions("paidTodayUsd")}>
-          {(field) => <field.TextFieldGroup label="Cobrado hoy" {...AMOUNT_INPUT_PROPS} />}
-        </form.AppField>
+        <div className={AMOUNT_FIELD_CELL}>
+          <form.AppField {...fieldOptions("paidTodayUsd")}>
+            {(field) => <field.TextFieldGroup label="Cobrado hoy" {...AMOUNT_INPUT_PROPS} />}
+          </form.AppField>
+        </div>
 
-        <div className="col-span-2 min-w-0 md:col-span-1">
+        <div className={cn(AMOUNT_FIELD_CELL, "col-span-2")}>
           <form.AppField {...fieldOptions("financedUsd")}>
             {(field) => <field.TextFieldGroup label="Monto financiado" {...AMOUNT_INPUT_PROPS} />}
           </form.AppField>
