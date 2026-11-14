@@ -9,7 +9,7 @@ import type { PendingSaleLine } from "../types";
 import type { CasheaOrderInput } from "@/types";
 import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { SaleSummaryCard } from "@/components/modals/shared/sale-summary";
+import { SaleSummaryTable } from "@/components/modals/shared/sale-summary";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmSaleDialogProps = {
@@ -60,14 +60,12 @@ export function ConfirmSaleDialog({
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!exchangeRate.isReady || isOrderTotalPending}
     >
-      <SaleSummaryCard
-        title="Productos"
+      <SaleSummaryTable
         lines={pendingSaleLines.map((saleLine) => ({
           key: saleLine.tempId,
           code: saleLine.code,
           description: saleLine.description,
           quantity: saleLine.quantity,
-          priceUsd: saleLine.priceUsd,
           totalUsd: saleLine.totalUsd,
         }))}
         totalUsd={totalAmountUsd}
@@ -75,7 +73,7 @@ export function ConfirmSaleDialog({
         exchangeRate={exchangeRate.isReady ? exchangeRate.displayValue : null}
         notice={
           !exchangeRate.isReady && (
-            <p className="text-warning-foreground dark:text-warning mt-2 flex items-start gap-1.5 text-xs font-medium">
+            <p className="text-warning-foreground dark:text-warning flex items-start gap-1.5 text-xs font-medium">
               <TriangleAlert className="text-warning mt-px size-3.5 shrink-0" aria-hidden="true" />
               {exchangeRate.statusMessage}
             </p>

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { SaleSummaryCard } from "@/components/modals/shared/sale-summary";
+import { SaleSummaryTable } from "@/components/modals/shared/sale-summary";
 import { getSalesSummary } from "@/features/transactions/sales-display";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { TransactionWithRelations } from "@/types";
@@ -43,6 +43,7 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       title="Asociar orden Cashea"
+      description={`Venta del ${formatCalendarDateString(saleDate)}.`}
       confirmLabel="Asociar orden"
       pendingLabel="Asociando..."
       submissionErrorMessage={(error) => getBusinessRuleErrorMessage(error, ATTACH_ERROR_MESSAGE)}
@@ -51,14 +52,12 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
       confirmDisabled={!order || (saleTotalMismatch && !isOrderTotalConfirmed)}
       contentClassName="data-[size=default]:sm:max-w-xl"
     >
-      <SaleSummaryCard
-        title={`Venta del ${formatCalendarDateString(saleDate)}`}
+      <SaleSummaryTable
         lines={saleLines.map((line) => ({
           key: line.id,
           code: line.products.code,
           description: line.products.description,
           quantity: line.quantity,
-          priceUsd: line.price_usd,
           totalUsd: line.price_usd * line.quantity,
         }))}
         totalUsd={saleTotalUsd}

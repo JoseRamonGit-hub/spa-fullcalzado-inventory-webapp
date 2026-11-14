@@ -42,7 +42,7 @@ export function useSubmitSale({
     });
 
     const lineCount = pendingSaleLines.length;
-    const lineLabel = lineCount === 1 ? "1 renglón" : `${lineCount} renglones`;
+    const lineLabel = lineCount === 1 ? "1 producto" : `${lineCount} productos`;
 
     const saleLabel = casheaOrder ? "Venta Cashea" : "venta";
 
