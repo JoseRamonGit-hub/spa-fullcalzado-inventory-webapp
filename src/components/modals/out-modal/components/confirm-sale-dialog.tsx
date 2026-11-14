@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TriangleAlert } from "lucide-react";
 import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
-import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
+import { formatCurrencyUSD } from "@/utils/formatters";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,7 @@ import type { PendingSaleLine } from "../types";
 import type { CasheaOrderInput } from "@/types";
 import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { SaleLinesSection, SaleTotalSection } from "@/components/modals/shared/sale-summary";
+import { SaleSummaryCard } from "@/components/modals/shared/sale-summary";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmSaleDialogProps = {
@@ -60,7 +60,8 @@ export function ConfirmSaleDialog({
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!exchangeRate.isReady || isOrderTotalPending}
     >
-      <SaleLinesSection
+      <SaleSummaryCard
+        title="Productos"
         lines={pendingSaleLines.map((saleLine) => ({
           key: saleLine.tempId,
           code: saleLine.code,
@@ -69,18 +70,12 @@ export function ConfirmSaleDialog({
           priceUsd: saleLine.priceUsd,
           totalUsd: saleLine.totalUsd,
         }))}
-      />
-
-      <SaleTotalSection
         totalUsd={totalAmountUsd}
-        totalVes={exchangeRate.isReady ? formatCurrencyVES(totalAmountVes) : "— Bs."}
-        detail={
-          exchangeRate.isReady ? (
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Tasa aplicada <span className="data-value text-foreground font-medium">{exchangeRate.displayValue}</span>
-            </p>
-          ) : (
-            <p className="text-warning-foreground dark:text-warning mt-0.5 flex items-start gap-1.5 text-xs font-medium">
+        totalVes={exchangeRate.isReady ? totalAmountVes : null}
+        exchangeRate={exchangeRate.isReady ? exchangeRate.displayValue : null}
+        notice={
+          !exchangeRate.isReady && (
+            <p className="text-warning-foreground dark:text-warning mt-2 flex items-start gap-1.5 text-xs font-medium">
               <TriangleAlert className="text-warning mt-px size-3.5 shrink-0" aria-hidden="true" />
               {exchangeRate.statusMessage}
             </p>

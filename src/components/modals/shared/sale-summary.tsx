@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from "react";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
-import { formatCurrencyUSD } from "@/utils/formatters";
+import { cn } from "@/lib/utils";
+import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 export type SaleSummaryLine = {
   key: string;
@@ -11,72 +12,81 @@ export type SaleSummaryLine = {
   totalUsd: number;
 };
 
-type SaleLinesSectionProps = {
+type SaleSummaryCardProps = {
+  title: string;
   lines: SaleSummaryLine[];
-  title?: string;
+  totalUsd: number;
+  totalVes: number | null;
+  exchangeRate: string | null;
+  notice?: ReactNode;
 };
 
-export function SaleLinesSection({ lines, title = "Productos" }: SaleLinesSectionProps) {
+const MAX_VISIBLE_LINES = 5;
+
+export function SaleSummaryCard({ title, lines, totalUsd, totalVes, exchangeRate, notice }: SaleSummaryCardProps) {
   const headingId = useId();
   const lineCount = lines.length;
+  const isSingleLine = lineCount === 1;
+  const isScrollable = lineCount > MAX_VISIBLE_LINES;
 
   return (
     <section aria-labelledby={headingId} className="bg-card overflow-hidden rounded-lg border">
-      <header className="bg-muted/30 text-muted-foreground flex items-baseline justify-between gap-3 border-b px-3 py-1.5 text-xs">
-        <h3 id={headingId} className="font-semibold">
+      <header className="flex items-baseline justify-between gap-3 border-b px-3 py-2">
+        <h3 id={headingId} className="text-sm font-semibold">
           {title}
         </h3>
-        <span>
-          {lineCount} {lineCount === 1 ? "renglón" : "renglones"} de venta
+        <span className="text-muted-foreground text-xs">
+          {lineCount} {isSingleLine ? "renglón" : "renglones"}
         </span>
       </header>
-      <ul className="custom-scrollbar divide-border/60 max-h-48 divide-y overflow-y-auto">
+
+      <ul
+        className={cn(
+          "divide-border/60 divide-y",
+          isScrollable && "custom-scrollbar max-h-70 [scrollbar-gutter:stable] overflow-y-auto",
+        )}
+      >
         {lines.map((line) => (
-          <li key={line.key} className="flex items-center justify-between gap-3 px-3 py-2">
+          <li key={line.key} className="flex h-14 items-center justify-between gap-3 px-3">
             <div className="min-w-0 flex-1">
               <OverflowTooltip className="text-sm leading-snug font-medium">{line.description}</OverflowTooltip>
               <p className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
                 <span className="product-code text-xs uppercase">{line.code}</span>
-                <span aria-hidden="true">·</span>
-                <span className="tabular-value">
-                  {line.quantity} × {formatCurrencyUSD(line.priceUsd)}
-                </span>
+                {line.quantity > 1 && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="tabular-value">
+                      {line.quantity} × {formatCurrencyUSD(line.priceUsd)}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
-            <p className="data-value shrink-0 text-sm font-semibold whitespace-nowrap">
-              {formatCurrencyUSD(line.totalUsd)}
-            </p>
+            {!isSingleLine && (
+              <p className="data-value shrink-0 text-sm font-semibold whitespace-nowrap">
+                {formatCurrencyUSD(line.totalUsd)}
+              </p>
+            )}
           </li>
         ))}
       </ul>
-    </section>
-  );
-}
 
-type SaleTotalSectionProps = {
-  totalUsd: number;
-  totalVes: string;
-  detail: ReactNode;
-};
-
-export function SaleTotalSection({ totalUsd, totalVes, detail }: SaleTotalSectionProps) {
-  const headingId = useId();
-
-  return (
-    <section
-      aria-labelledby={headingId}
-      className="border-primary/20 bg-primary/5 flex items-center justify-between gap-4 rounded-lg border px-3 py-3"
-    >
-      <div className="min-w-0">
-        <h3 id={headingId} className="text-sm font-semibold">
-          Total de la venta
-        </h3>
-        {detail}
-      </div>
-      <div className="shrink-0 text-right">
-        <p className="data-value text-2xl leading-none font-bold whitespace-nowrap">{formatCurrencyUSD(totalUsd)}</p>
-        <p className="data-value text-muted-foreground mt-1 text-sm font-medium whitespace-nowrap">{totalVes}</p>
-      </div>
+      <footer className={cn("bg-muted/30 border-t py-2.5 pl-3", isScrollable ? "pr-[calc(0.75rem+6px)]" : "pr-3")}>
+        <div className="flex items-baseline justify-between gap-4">
+          <p className="text-sm font-semibold">Total</p>
+          <p className="data-value text-xl leading-none font-bold whitespace-nowrap">{formatCurrencyUSD(totalUsd)}</p>
+        </div>
+        <p className="data-value text-muted-foreground mt-1 text-right text-xs whitespace-nowrap">
+          {totalVes === null ? "— Bs." : formatCurrencyVES(totalVes)}
+          {exchangeRate && (
+            <>
+              <span aria-hidden="true"> · </span>
+              Tasa <span className="text-foreground font-medium">{exchangeRate}</span>
+            </>
+          )}
+        </p>
+        {notice}
+      </footer>
     </section>
   );
 }

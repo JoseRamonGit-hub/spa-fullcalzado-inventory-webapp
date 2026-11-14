@@ -131,7 +131,7 @@ describe("ConfirmSaleDialog", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Confirmar venta" })).toBeInTheDocument();
-    expect(screen.getByText("2 renglones de venta")).toBeInTheDocument();
+    expect(screen.getByText("2 renglones")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Registrar venta" })).toBeInTheDocument();
   });
 

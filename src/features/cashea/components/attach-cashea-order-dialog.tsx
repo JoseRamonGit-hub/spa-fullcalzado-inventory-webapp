@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { SaleLinesSection, SaleTotalSection } from "@/components/modals/shared/sale-summary";
+import { SaleSummaryCard } from "@/components/modals/shared/sale-summary";
 import { getSalesSummary } from "@/features/transactions/sales-display";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { TransactionWithRelations } from "@/types";
@@ -51,7 +51,7 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
       confirmDisabled={!order || (saleTotalMismatch && !isOrderTotalConfirmed)}
       contentClassName="data-[size=default]:sm:max-w-xl"
     >
-      <SaleLinesSection
+      <SaleSummaryCard
         title={`Venta del ${formatCalendarDateString(saleDate)}`}
         lines={saleLines.map((line) => ({
           key: line.id,
@@ -61,19 +61,9 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
           priceUsd: line.price_usd,
           totalUsd: line.price_usd * line.quantity,
         }))}
-      />
-
-      <SaleTotalSection
         totalUsd={saleTotalUsd}
-        totalVes={formatCurrencyVES(saleTotalVes)}
-        detail={
-          exchangeRate !== undefined && (
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Tasa de la venta{" "}
-              <span className="data-value text-foreground font-medium">{formatCurrencyVES(exchangeRate)}</span>
-            </p>
-          )
-        }
+        totalVes={saleTotalVes}
+        exchangeRate={exchangeRate === undefined ? null : formatCurrencyVES(exchangeRate)}
       />
 
       <CasheaOrderSection
