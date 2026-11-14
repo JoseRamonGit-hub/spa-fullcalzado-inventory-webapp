@@ -9,7 +9,7 @@ import type { PendingSaleLine } from "../types";
 import type { CasheaOrderInput } from "@/types";
 import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { SaleSummary } from "@/components/modals/shared/sale-summary";
+import { SaleSummaryCard } from "@/components/modals/shared/sale-summary";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmSaleDialogProps = {
@@ -60,12 +60,15 @@ export function ConfirmSaleDialog({
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!exchangeRate.isReady || isOrderTotalPending}
     >
-      <SaleSummary
+      <SaleSummaryCard
+        title="Productos"
         lines={pendingSaleLines.map((saleLine) => ({
+          key: saleLine.tempId,
           code: saleLine.code,
           description: saleLine.description,
           quantity: saleLine.quantity,
           priceUsd: saleLine.priceUsd,
+          totalUsd: saleLine.totalUsd,
         }))}
         totalUsd={totalAmountUsd}
         totalVes={exchangeRate.isReady ? totalAmountVes : null}
@@ -108,7 +111,7 @@ export function ConfirmSaleDialog({
 
           {hasOrderTotalMismatch && (
             <div className="border-warning/40 bg-warning/10 flex flex-col gap-2 border-t px-3 py-2">
-              <p className="text-warning-foreground dark:text-warning mt-2 flex gap-2 text-xs leading-snug">
+              <p className="text-warning-foreground dark:text-warning flex gap-2 text-xs leading-snug">
                 <TriangleAlert className="text-warning mt-px size-4 shrink-0" aria-hidden="true" />
                 <span>
                   El total de la orden (<strong>{formatCurrencyUSD(casheaOrder.total_usd)}</strong>) difiere del total

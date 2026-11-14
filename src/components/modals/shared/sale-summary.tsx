@@ -1,16 +1,19 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 
 export type SaleSummaryLine = {
+  key: string;
   code: string;
   description: string;
   quantity: number;
   priceUsd: number;
+  totalUsd: number;
 };
 
-type SaleSummaryProps = {
+type SaleSummaryCardProps = {
+  title: string;
   lines: SaleSummaryLine[];
   totalUsd: number;
   totalVes: number | null;
@@ -18,67 +21,72 @@ type SaleSummaryProps = {
   notice?: ReactNode;
 };
 
-type SaleSummaryItem = SaleSummaryLine & { key: string; totalUsd: number };
+const MAX_VISIBLE_LINES = 5;
 
-function groupByProductAndPrice(lines: SaleSummaryLine[]): SaleSummaryItem[] {
-  const items = new Map<string, SaleSummaryItem>();
-  for (const line of lines) {
-    const key = `${line.code}:${line.priceUsd}`;
-    const item = items.get(key);
-    if (item) {
-      item.quantity += line.quantity;
-      item.totalUsd += line.priceUsd * line.quantity;
-    } else {
-      items.set(key, { ...line, key, totalUsd: line.priceUsd * line.quantity });
-    }
-  }
-  return [...items.values()];
-}
-
-export function SaleSummary({ lines, totalUsd, totalVes, exchangeRate, notice }: SaleSummaryProps) {
-  const items = groupByProductAndPrice(lines);
-  const isSingleItem = items.length === 1;
+export function SaleSummaryCard({ title, lines, totalUsd, totalVes, exchangeRate, notice }: SaleSummaryCardProps) {
+  const headingId = useId();
+  const lineCount = lines.length;
+  const isSingleLine = lineCount === 1;
+  const isScrollable = lineCount > MAX_VISIBLE_LINES;
 
   return (
-    <section aria-label="Productos de la venta" className="text-sm">
-      <ul className="divide-border/60 divide-y">
-        {items.map((item) => (
-          <li key={item.key} className="flex items-center gap-3 py-2">
-            <span className="product-code shrink-0 text-xs uppercase">{item.code}</span>
-            <OverflowTooltip className="min-w-0 flex-1">{item.description}</OverflowTooltip>
-            {item.quantity > 1 && (
-              <span className="tabular-value text-muted-foreground shrink-0 text-xs">× {item.quantity}</span>
+    <section aria-labelledby={headingId} className="bg-card overflow-hidden rounded-lg border">
+      <header className="flex items-baseline justify-between gap-3 border-b px-3 py-2">
+        <h3 id={headingId} className="text-sm font-semibold">
+          {title}
+        </h3>
+        <span className="text-muted-foreground text-xs">
+          {lineCount} {isSingleLine ? "producto" : "productos"}
+        </span>
+      </header>
+
+      <ul
+        className={cn(
+          "divide-border/60 divide-y",
+          isScrollable && "custom-scrollbar max-h-70 [scrollbar-gutter:stable] overflow-y-auto",
+        )}
+      >
+        {lines.map((line) => (
+          <li key={line.key} className="flex h-14 items-center justify-between gap-3 px-3">
+            <div className="min-w-0 flex-1">
+              <OverflowTooltip className="text-sm leading-snug font-medium">{line.description}</OverflowTooltip>
+              <p className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
+                <span className="product-code text-xs uppercase">{line.code}</span>
+                {line.quantity > 1 && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="tabular-value">
+                      {line.quantity} × {formatCurrencyUSD(line.priceUsd)}
+                    </span>
+                  </>
+                )}
+              </p>
+            </div>
+            {!isSingleLine && (
+              <p className="data-value shrink-0 text-sm font-semibold whitespace-nowrap">
+                {formatCurrencyUSD(line.totalUsd)}
+              </p>
             )}
-            <span
-              className={cn(
-                "data-value shrink-0 whitespace-nowrap",
-                isSingleItem ? "text-base font-semibold" : "font-medium",
-              )}
-            >
-              {formatCurrencyUSD(item.totalUsd)}
-            </span>
           </li>
         ))}
       </ul>
 
-      <div className={cn(!isSingleItem && "border-t pt-2")}>
-        {!isSingleItem && (
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="font-semibold">Total</span>
-            <span className="data-value text-base font-semibold whitespace-nowrap">{formatCurrencyUSD(totalUsd)}</span>
-          </div>
-        )}
-        <p className="text-muted-foreground mt-0.5 text-right text-xs whitespace-nowrap">
-          <span className="data-value">{totalVes === null ? "— Bs." : formatCurrencyVES(totalVes)}</span>
+      <footer className={cn("bg-muted/30 border-t py-2.5 pl-3", isScrollable ? "pr-[calc(0.75rem+6px)]" : "pr-3")}>
+        <div className="flex items-baseline justify-between gap-4">
+          <p className="text-sm font-semibold">Total</p>
+          <p className="data-value text-xl leading-none font-bold whitespace-nowrap">{formatCurrencyUSD(totalUsd)}</p>
+        </div>
+        <p className="data-value text-muted-foreground mt-1 text-right text-xs whitespace-nowrap">
+          {totalVes === null ? "— Bs." : formatCurrencyVES(totalVes)}
           {exchangeRate && (
             <>
               <span aria-hidden="true"> · </span>
-              Tasa <span className="data-value text-foreground font-medium">{exchangeRate}</span>
+              Tasa <span className="text-foreground font-medium">{exchangeRate}</span>
             </>
           )}
         </p>
         {notice}
-      </div>
+      </footer>
     </section>
   );
 }
