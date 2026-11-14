@@ -29,7 +29,7 @@ const MOBILE_SECTIONS: readonly NavSection[] = [
   },
 ];
 
-const sectionHeadingClassName = "text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase";
+const sectionHeadingClassName = "text-muted-foreground mb-2 text-xs font-semibold";
 
 const menuRowClassName = "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors";
 

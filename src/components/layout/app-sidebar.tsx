@@ -35,8 +35,7 @@ const ACTIVE_LINK_CLASS_NAME = "bg-sidebar-accent text-sidebar-primary font-medi
 
 const SECTION_GROUP_CLASS_NAME = "pt-3 pb-0";
 
-const GROUP_LABEL_CLASS_NAME =
-  "text-sidebar-foreground/40 h-6 text-[10px] tracking-widest uppercase group-data-[collapsible=icon]:-mt-6";
+const GROUP_LABEL_CLASS_NAME = "text-sidebar-foreground/50 h-6 text-xs group-data-[collapsible=icon]:-mt-6";
 
 function NavLinkItem({ item }: { item: NavItem }) {
   return (

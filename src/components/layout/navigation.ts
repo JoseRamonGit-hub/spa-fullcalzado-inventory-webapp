@@ -1,16 +1,8 @@
 import type { ComponentType } from "react";
-import {
-  ArrowLeftRight,
-  HandCoins,
-  IterationCcw,
-  Package,
-  ReceiptText,
-  Settings,
-  ShoppingCart,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowLeftRight, IterationCcw, Package, Settings, ShoppingCart, Users, type LucideIcon } from "lucide-react";
+import { CashRegister } from "@/components/icons/cash-register";
 import { DashboardPanel } from "@/components/icons/dashboard-panel";
+import { ReceivableInvoice } from "@/components/icons/receivable-invoice";
 import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
 
 export type NavItem = {
@@ -40,7 +32,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     items: [
       SALES,
       { title: "Devoluciones", url: "/returns", icon: IterationCcw },
-      { title: "Cierres de Caja", url: "/cash-closes", icon: ReceiptText },
+      { title: "Cierres de Caja", url: "/cash-closes", icon: CashRegister },
     ],
   },
 ];
@@ -49,7 +41,7 @@ export const RECEIVABLES_NAV = {
   sectionLabel: "Cobranzas",
   title: "Cuentas por cobrar",
   url: "/receivables",
-  icon: HandCoins,
+  icon: ReceivableInvoice,
   items: [{ title: "Cashea", url: "/receivables/cashea", icon: CasheaLogoIcon }] as readonly NavItem[],
 };
 
