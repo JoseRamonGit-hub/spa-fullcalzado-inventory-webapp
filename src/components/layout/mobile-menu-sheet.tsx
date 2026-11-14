@@ -3,21 +3,64 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useTheme } from "next-themes";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftRight, Settings, ReceiptText, IterationCcw, Moon, Sun, LogOut, Users } from "lucide-react";
+import { Moon, Sun, LogOut } from "lucide-react";
 import { BusinessSwitcher } from "@/features/business/components/business-switcher";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
-import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
+import {
+  MOBILE_PRIMARY_NAV,
+  NAV_SECTIONS,
+  RECEIVABLES_NAV,
+  SETTINGS_NAV_ITEM,
+  USERS_NAV_ITEM,
+  type NavSection,
+} from "./navigation";
 
-const SECONDARY_NAV = [
-  { title: "Movimientos", url: "/movements", icon: ArrowLeftRight },
-  { title: "Devoluciones", url: "/returns", icon: IterationCcw },
-  { title: "Cierres de Caja", url: "/cash-closes", icon: ReceiptText },
-  { title: "Cuentas por cobrar Cashea", url: "/receivables/cashea", icon: CasheaLogoIcon },
-  { title: "Ajustes", url: "/settings", icon: Settings },
+const primaryUrls = new Set(MOBILE_PRIMARY_NAV.map((item) => item.url));
+
+/** Secciones del menú móvil: las de la barra lateral sin los accesos que ya están en la barra inferior. */
+const MOBILE_SECTIONS: readonly NavSection[] = [
+  ...NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !primaryUrls.has(item.url)),
+  })).filter((section) => section.items.length > 0),
+  {
+    label: RECEIVABLES_NAV.sectionLabel,
+    items: RECEIVABLES_NAV.items.map((item) => ({ ...item, title: `${RECEIVABLES_NAV.title} ${item.title}` })),
+  },
 ];
 
-const ADMIN_NAV = [{ title: "Usuarios", url: "/users", icon: Users }];
+const sectionHeadingClassName = "text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase";
+
+const menuRowClassName = "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors";
+
+function MobileNavLink({
+  item,
+  currentPath,
+  onNavigate,
+}: {
+  item: NavSection["items"][number];
+  currentPath: string;
+  onNavigate: () => void;
+}) {
+  const isActive = currentPath.startsWith(item.url);
+
+  return (
+    <Link
+      to={item.url}
+      onClick={onNavigate}
+      className={cn(
+        menuRowClassName,
+        isActive
+          ? "bg-primary/10 text-primary font-semibold"
+          : "text-foreground hover:bg-accent hover:text-foreground font-medium",
+      )}
+    >
+      <item.icon className="size-5" />
+      <span className="text-sm">{item.title}</span>
+    </Link>
+  );
+}
 
 export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const user = useAuthStore((s) => s.user);
@@ -57,50 +100,49 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
             <BusinessSwitcher variant="mobile" onBusinessChanged={() => onOpenChange(false)} />
           </div>
 
-          <div className="px-4 py-2">
-            <h4 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">
-              Navegación
-            </h4>
-            <nav className="flex flex-col gap-1">
-              {[...(user?.role === "admin" ? ADMIN_NAV : []), ...SECONDARY_NAV].map((item) => {
-                const isActive = currentPath.startsWith(item.url);
-                return (
-                  <Link
-                    key={item.url}
-                    to={item.url}
-                    onClick={() => onOpenChange(false)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors",
-                      isActive
-                        ? "bg-primary/10 text-primary font-semibold"
-                        : "text-foreground hover:bg-accent hover:text-foreground font-medium",
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="text-sm">{item.title}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
+          <nav aria-label="Navegación">
+            {MOBILE_SECTIONS.map((section) => (
+              <div key={section.label} className="px-4 py-2">
+                <h4 className={sectionHeadingClassName}>{section.label}</h4>
+                <div className="flex flex-col gap-1">
+                  {section.items.map((item) => (
+                    <MobileNavLink
+                      key={item.url}
+                      item={item}
+                      currentPath={currentPath}
+                      onNavigate={() => onOpenChange(false)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
 
           <div className="mt-2 border-t px-4 pt-4 pb-2">
-            <h4 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">Sistema</h4>
+            <h4 className={sectionHeadingClassName}>Sistema</h4>
             <div className="flex flex-col gap-1">
+              {user?.role === "admin" ? (
+                <MobileNavLink item={USERS_NAV_ITEM} currentPath={currentPath} onNavigate={() => onOpenChange(false)} />
+              ) : null}
+              <MobileNavLink
+                item={SETTINGS_NAV_ITEM}
+                currentPath={currentPath}
+                onNavigate={() => onOpenChange(false)}
+              />
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="text-foreground hover:bg-accent flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left font-medium transition-colors"
+                className={cn(menuRowClassName, "text-foreground hover:bg-accent font-medium")}
               >
-                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
                 <span className="flex-1 text-sm">Modo {theme === "dark" ? "Claro" : "Oscuro"}</span>
               </button>
 
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="text-destructive hover:bg-destructive/10 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left font-medium transition-colors"
+                className={cn(menuRowClassName, "text-destructive hover:bg-destructive/10 font-medium")}
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="size-5" />
                 <span className="text-sm">Cerrar Sesión</span>
               </button>
             </div>
