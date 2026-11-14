@@ -9,7 +9,7 @@ import type { PendingSaleLine } from "../types";
 import type { CasheaOrderInput } from "@/types";
 import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { SaleSummaryTable } from "@/components/modals/shared/sale-summary";
+import { SaleSummary } from "@/components/modals/shared/sale-summary";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmSaleDialogProps = {
@@ -60,20 +60,19 @@ export function ConfirmSaleDialog({
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!exchangeRate.isReady || isOrderTotalPending}
     >
-      <SaleSummaryTable
+      <SaleSummary
         lines={pendingSaleLines.map((saleLine) => ({
-          key: saleLine.tempId,
           code: saleLine.code,
           description: saleLine.description,
           quantity: saleLine.quantity,
-          totalUsd: saleLine.totalUsd,
+          priceUsd: saleLine.priceUsd,
         }))}
         totalUsd={totalAmountUsd}
         totalVes={exchangeRate.isReady ? totalAmountVes : null}
         exchangeRate={exchangeRate.isReady ? exchangeRate.displayValue : null}
         notice={
           !exchangeRate.isReady && (
-            <p className="text-warning-foreground dark:text-warning flex items-start gap-1.5 text-xs font-medium">
+            <p className="text-warning-foreground dark:text-warning mt-2 flex items-start gap-1.5 text-xs font-medium">
               <TriangleAlert className="text-warning mt-px size-3.5 shrink-0" aria-hidden="true" />
               {exchangeRate.statusMessage}
             </p>
@@ -109,7 +108,7 @@ export function ConfirmSaleDialog({
 
           {hasOrderTotalMismatch && (
             <div className="border-warning/40 bg-warning/10 flex flex-col gap-2 border-t px-3 py-2">
-              <p className="text-warning-foreground dark:text-warning flex gap-2 text-xs leading-snug">
+              <p className="text-warning-foreground dark:text-warning mt-2 flex gap-2 text-xs leading-snug">
                 <TriangleAlert className="text-warning mt-px size-4 shrink-0" aria-hidden="true" />
                 <span>
                   El total de la orden (<strong>{formatCurrencyUSD(casheaOrder.total_usd)}</strong>) difiere del total

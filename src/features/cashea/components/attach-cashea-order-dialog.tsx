@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { SaleSummaryTable } from "@/components/modals/shared/sale-summary";
+import { SaleSummary } from "@/components/modals/shared/sale-summary";
 import { getSalesSummary } from "@/features/transactions/sales-display";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { TransactionWithRelations } from "@/types";
@@ -52,13 +52,12 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
       confirmDisabled={!order || (saleTotalMismatch && !isOrderTotalConfirmed)}
       contentClassName="data-[size=default]:sm:max-w-xl"
     >
-      <SaleSummaryTable
+      <SaleSummary
         lines={saleLines.map((line) => ({
-          key: line.id,
           code: line.products.code,
           description: line.products.description,
           quantity: line.quantity,
-          totalUsd: line.price_usd * line.quantity,
+          priceUsd: line.price_usd,
         }))}
         totalUsd={saleTotalUsd}
         totalVes={saleTotalVes}

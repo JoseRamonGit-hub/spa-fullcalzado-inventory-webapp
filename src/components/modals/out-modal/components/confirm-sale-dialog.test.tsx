@@ -108,7 +108,7 @@ describe("ConfirmSaleDialog", () => {
     useBusinessStore.setState({ userId: USER_ID, activeBusinessId: BUSINESS_ID });
   });
 
-  it("presenta varios productos en una tabla", () => {
+  it("presenta varios productos con su total", () => {
     render(
       <ConfirmSaleDialog
         isOpen
@@ -131,7 +131,8 @@ describe("ConfirmSaleDialog", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Confirmar venta" })).toBeInTheDocument();
-    expect(screen.getAllByRole("row")).toHaveLength(5);
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByText("Total")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Registrar venta" })).toBeInTheDocument();
   });
 
