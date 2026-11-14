@@ -64,7 +64,7 @@ export function BusinessTriggerContent({
           <span className="text-sm leading-snug font-semibold break-words">{businessName}</span>
         )}
         <span
-          className={cn("truncate text-[11px]", isSidebar ? "text-sidebar-foreground/50" : "text-muted-foreground")}
+          className={cn("truncate text-[11px]", isSidebar ? "text-sidebar-foreground/60" : "text-muted-foreground")}
         >
           {canSwitch ? "Cambiar negocio" : "Inventario del negocio"}
         </span>

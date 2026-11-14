@@ -33,9 +33,8 @@ import {
 
 const ACTIVE_LINK_CLASS_NAME = "bg-sidebar-accent text-sidebar-primary font-medium";
 
-const SECTION_GROUP_CLASS_NAME = "pt-3 pb-0";
-
-const GROUP_LABEL_CLASS_NAME = "text-sidebar-foreground/50 h-6 text-xs group-data-[collapsible=icon]:-mt-6";
+// Los grupos se separan solo con espacio; el rótulo de cada sección queda para lectores de pantalla.
+const SECTION_GROUP_CLASS_NAME = "pt-4 pb-0";
 
 function NavLinkItem({ item }: { item: NavItem }) {
   return (
@@ -120,6 +119,9 @@ export function AppSidebar() {
 
       <SidebarContent className="gap-0">
         <SidebarGroup className="pb-0">
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] tracking-widest uppercase">
+            Plataforma
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <NavLinkItem item={DASHBOARD_NAV_ITEM} />
@@ -128,8 +130,12 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {NAV_SECTIONS.map((section) => (
-          <SidebarGroup key={section.label} className={SECTION_GROUP_CLASS_NAME}>
-            <SidebarGroupLabel className={GROUP_LABEL_CLASS_NAME}>{section.label}</SidebarGroupLabel>
+          <SidebarGroup
+            key={section.label}
+            role="group"
+            aria-label={section.label}
+            className={SECTION_GROUP_CLASS_NAME}
+          >
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => (
@@ -140,8 +146,7 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
 
-        <SidebarGroup className={SECTION_GROUP_CLASS_NAME}>
-          <SidebarGroupLabel className={GROUP_LABEL_CLASS_NAME}>{RECEIVABLES_NAV.sectionLabel}</SidebarGroupLabel>
+        <SidebarGroup role="group" aria-label={RECEIVABLES_NAV.sectionLabel} className={SECTION_GROUP_CLASS_NAME}>
           <SidebarGroupContent>
             <SidebarMenu>
               <ReceivablesNavItem />
@@ -160,27 +165,19 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-sidebar-border border-t">
+        <div className="grid px-2 pt-1 leading-tight group-data-[collapsible=icon]:hidden">
+          <OverflowTooltip className="text-sidebar-foreground text-xs font-medium">
+            {user?.fullname || "Usuario"}
+          </OverflowTooltip>
+          <OverflowTooltip className="text-sidebar-foreground/60 text-[11px]">{user?.email || ""}</OverflowTooltip>
+        </div>
         <SidebarMenu>
-          <SidebarMenuItem className="group-data-[collapsible=icon]:hidden">
-            <SidebarMenuButton asChild tooltip={user?.fullname || "Usuario"} className="py-6">
-              <div className="flex w-full items-center gap-2">
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <OverflowTooltip className="text-sidebar-foreground text-xs font-medium">
-                    {user?.fullname || "Usuario"}
-                  </OverflowTooltip>
-                  <OverflowTooltip className="text-sidebar-foreground/50 text-[11px]">
-                    {user?.email || ""}
-                  </OverflowTooltip>
-                </div>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={() => logout()}
               disabled={isLoggingOut}
               tooltip="Cerrar sesión"
-              className="text-sidebar-foreground/50 hover:bg-red-400/10 hover:text-red-400"
+              className="text-sidebar-foreground/60 hover:bg-red-400/10 hover:text-red-400"
             >
               <LogOut className="size-4" />
               <span>Cerrar sesión</span>

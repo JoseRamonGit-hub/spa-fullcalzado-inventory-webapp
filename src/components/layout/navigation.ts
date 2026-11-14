@@ -24,7 +24,7 @@ export const DASHBOARD_NAV_ITEM: NavItem = DASHBOARD;
 
 export const NAV_SECTIONS: readonly NavSection[] = [
   {
-    label: "Inventario",
+    label: "Almacén",
     items: [INVENTORY, { title: "Movimientos", url: "/movements", icon: ArrowLeftRight }],
   },
   {
@@ -32,7 +32,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     items: [
       SALES,
       { title: "Devoluciones", url: "/returns", icon: IterationCcw },
-      { title: "Cierres de Caja", url: "/cash-closes", icon: CashRegister },
+      { title: "Cierres de caja", url: "/cash-closes", icon: CashRegister },
     ],
   },
 ];
