@@ -12,7 +12,6 @@ import { formatCalendarDateForBackend, formatCalendarDateString, formatDateForBa
 import { isCalendarDate } from "../cashea-receivables";
 
 type CasheaDateRangeFilterProps = CalendarDateRange & {
-  /** Texto del botón sin rango elegido; describe la vista que se aplica en su lugar. */
   placeholder: string;
   onChange: (range: CalendarDateRange) => void;
 };
@@ -45,7 +44,6 @@ export function CasheaDateRangeFilter({ from, to, placeholder, onChange }: Cashe
     }
 
     const nextFrom = formatCalendarDateForBackend(range.from);
-    // Un solo día elegido es un rango de ese día; el siguiente clic lo extiende.
     const nextTo = range.to ? formatCalendarDateForBackend(range.to) : nextFrom;
     onChange({ from: nextFrom, to: nextTo });
   };

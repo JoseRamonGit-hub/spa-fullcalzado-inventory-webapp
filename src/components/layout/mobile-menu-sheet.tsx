@@ -18,7 +18,6 @@ import {
 
 const primaryUrls = new Set(MOBILE_PRIMARY_NAV.map((item) => item.url));
 
-/** Secciones del menú móvil: las de la barra lateral sin los accesos que ya están en la barra inferior. */
 const MOBILE_SECTIONS: readonly NavSection[] = [
   ...NAV_SECTIONS.map((section) => ({
     ...section,

@@ -3,7 +3,6 @@ import { toServiceError } from "@/lib/errors";
 import type { CasheaOrder, CasheaOrderInput, CasheaOrdersFilter } from "@/types";
 
 export const casheaService = {
-  /** Órdenes Cashea del negocio, de la venta más reciente a la más antigua. */
   getOrders: async (businessId: string, filter: CasheaOrdersFilter): Promise<CasheaOrder[]> => {
     let query = supabase
       .from("cashea_orders")

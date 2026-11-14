@@ -1,7 +1,6 @@
 import type { CalendarDateRange, CasheaOrder, CasheaOrderStatus, CasheaOrdersFilter } from "@/types";
 import { formatDateForBackend } from "@/utils/formatters";
 
-/** Filtro de estado de la página Cashea: un estado de la Cuenta por cobrar Cashea o todos. */
 export const casheaStatusFilters = ["pending", "collected", "voided", "all"] as const;
 
 export type CasheaStatusFilter = (typeof casheaStatusFilters)[number];
@@ -21,7 +20,6 @@ export const casheaOrderStatusLabels: Record<CasheaOrderStatus, string> = {
   voided: "Anulada",
 };
 
-/** Días que cubre la vista sin rango de los estados distintos de Pendiente, como la lista de Ventas. */
 const DEFAULT_PERIOD_DAYS = 30;
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -49,15 +47,10 @@ export type CasheaOrdersSearch = CalendarDateRange & {
   status?: CasheaStatusFilter;
 };
 
-/** Describe la vista que se aplica cuando no se elige un rango de fechas. */
 export function getCasheaDefaultPeriodLabel(status: CasheaStatusFilter) {
   return status === "pending" ? "Cualquier fecha" : `Últimos ${DEFAULT_PERIOD_DAYS} días`;
 }
 
-/**
- * Traduce los parámetros de búsqueda a la consulta de Órdenes Cashea (REQ-005).
- * Sin rango, las Pendientes no tienen límite de fecha y los demás estados se limitan a los últimos 30 días.
- */
 export function resolveCasheaOrdersFilter(
   search: CasheaOrdersSearch,
   today = formatDateForBackend(new Date()),
@@ -75,7 +68,6 @@ export function resolveCasheaOrdersFilter(
   return { status, from: subtractCalendarDays(today, DEFAULT_PERIOD_DAYS) };
 }
 
-/** Antigüedad en días de una orden: hoy en `America/Caracas` menos la fecha de la venta. */
 export function getCasheaOrderAgeDays(saleDate: string, today = formatDateForBackend(new Date())): number | null {
   if (!isCalendarDate(saleDate) || !isCalendarDate(today)) return null;
 
@@ -84,13 +76,10 @@ export function getCasheaOrderAgeDays(saleDate: string, today = formatDateForBac
 
 export type CasheaPendingSummary = {
   count: number;
-  /** Saldo pendiente: suma del Monto financiado de las Pendientes. */
   financedUsd: number;
-  /** Suma del Neto esperado de las Pendientes. */
   expectedNetUsd: number;
 };
 
-/** Totales de las órdenes Pendientes listadas; suma en centavos para no acumular errores de coma flotante. */
 export function getCasheaPendingSummary(
   orders: readonly Pick<CasheaOrder, "status" | "financed_usd" | "expected_net_usd">[],
 ): CasheaPendingSummary {

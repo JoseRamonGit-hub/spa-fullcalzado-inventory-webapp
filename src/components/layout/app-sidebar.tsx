@@ -33,7 +33,10 @@ import {
 
 const ACTIVE_LINK_CLASS_NAME = "bg-sidebar-accent text-sidebar-primary font-medium";
 
-const GROUP_LABEL_CLASS_NAME = "text-sidebar-foreground/40 text-[10px] tracking-widest uppercase";
+const SECTION_GROUP_CLASS_NAME = "pt-3 pb-0";
+
+const GROUP_LABEL_CLASS_NAME =
+  "text-sidebar-foreground/40 h-6 text-[10px] tracking-widest uppercase group-data-[collapsible=icon]:-mt-6";
 
 function NavLinkItem({ item }: { item: NavItem }) {
   return (
@@ -48,7 +51,6 @@ function NavLinkItem({ item }: { item: NavItem }) {
   );
 }
 
-/** Módulo «Cuentas por cobrar»: se despliega con sus subrutas; con la barra contraída lleva a la primera. */
 function ReceivablesNavItem() {
   const { state } = useSidebar();
   const isActive = useRouterState({
@@ -117,8 +119,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
+      <SidebarContent className="gap-0">
+        <SidebarGroup className="pb-0">
           <SidebarGroupContent>
             <SidebarMenu>
               <NavLinkItem item={DASHBOARD_NAV_ITEM} />
@@ -127,7 +129,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {NAV_SECTIONS.map((section) => (
-          <SidebarGroup key={section.label}>
+          <SidebarGroup key={section.label} className={SECTION_GROUP_CLASS_NAME}>
             <SidebarGroupLabel className={GROUP_LABEL_CLASS_NAME}>{section.label}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -139,7 +141,7 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
 
-        <SidebarGroup>
+        <SidebarGroup className={SECTION_GROUP_CLASS_NAME}>
           <SidebarGroupLabel className={GROUP_LABEL_CLASS_NAME}>{RECEIVABLES_NAV.sectionLabel}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

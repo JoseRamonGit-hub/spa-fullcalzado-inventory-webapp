@@ -7,7 +7,6 @@ type CasheaPendingSummaryProps = {
   orders: readonly CasheaOrder[];
 };
 
-/** Totales de las órdenes Pendientes de la lista (REQ-005). */
 export function CasheaPendingSummary({ orders }: CasheaPendingSummaryProps) {
   const summary = getCasheaPendingSummary(orders);
   const label = "Pendientes de la lista";

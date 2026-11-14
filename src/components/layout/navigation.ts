@@ -13,8 +13,6 @@ import {
 import { DashboardPanel } from "@/components/icons/dashboard-panel";
 import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
 
-/** Navegación de la app, compartida por la barra lateral y el menú móvil. */
-
 export type NavItem = {
   title: string;
   url: string;
@@ -47,7 +45,6 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   },
 ];
 
-/** Módulo «Cuentas por cobrar» de la sección Cobranzas, con una subruta por origen del cobro. */
 export const RECEIVABLES_NAV = {
   sectionLabel: "Cobranzas",
   title: "Cuentas por cobrar",
@@ -60,7 +57,6 @@ export const USERS_NAV_ITEM: NavItem = { title: "Usuarios", url: "/users", icon:
 
 export const SETTINGS_NAV_ITEM: NavItem = { title: "Ajustes", url: "/settings", icon: Settings };
 
-/** Accesos de la barra inferior móvil; el menú móvil no los repite. */
 export const MOBILE_PRIMARY_NAV: readonly { title: string; url: string; icon: LucideIcon }[] = [
   { title: "Panel", url: DASHBOARD.url, icon: DASHBOARD.icon },
   { title: INVENTORY.title, url: INVENTORY.url, icon: INVENTORY.icon },
