@@ -230,6 +230,12 @@ export type CasheaOrderInput = {
   financed_usd: number;
 };
 
+export type CasheaOrderVoid = {
+  orderId: string;
+  reason: CasheaVoidReason;
+  note: string;
+};
+
 export type ProcessSalePayload = {
   p_items: PricedProductLineInput[];
   p_exchange_rate: number;

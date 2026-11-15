@@ -2,6 +2,7 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import type { TransactionWithRelations } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { narrowActionsColumn } from "@/components/ui/data-table-actions-column";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateForBackend, formatDateTime } from "@/utils/formatters";
 import { useNavigate } from "@tanstack/react-router";
@@ -92,17 +93,11 @@ export const columns = [
       </OverflowTooltip>
     ),
   }),
-  columnHelper.display({
-    id: "actions",
-    header: () => <span className="sr-only">Acciones</span>,
-    meta: { className: "w-10" },
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as TransactionsTableMeta | undefined;
-      const { sale_id: saleId } = row.original;
-      if (!meta || !saleId || !meta.canAttachCasheaOrder(row.original)) return null;
+  narrowActionsColumn<TransactionWithRelations, TransactionsTableMeta>((transaction, meta) => {
+    const { sale_id: saleId } = transaction;
+    if (!saleId || !meta.canAttachCasheaOrder(transaction)) return null;
 
-      return <AttachCasheaOrderButton onClick={() => meta.onAttachCasheaOrder(saleId)} />;
-    },
+    return <AttachCasheaOrderButton onClick={() => meta.onAttachCasheaOrder(saleId)} />;
   }),
 ] as ColumnDef<TransactionWithRelations>[];
 

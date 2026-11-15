@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { toServiceError } from "@/lib/errors";
-import type { CasheaOrder, CasheaOrderInput, CasheaOrdersFilter, CasheaVoidReason } from "@/types";
+import type { CasheaOrder, CasheaOrderInput, CasheaOrderVoid, CasheaOrdersFilter } from "@/types";
 
 export const casheaService = {
   getOrders: async (businessId: string, filter: CasheaOrdersFilter): Promise<CasheaOrder[]> => {
@@ -32,7 +32,7 @@ export const casheaService = {
     return data;
   },
 
-  voidOrder: async (businessId: string, orderId: string, reason: CasheaVoidReason, note: string): Promise<void> => {
+  voidOrder: async (businessId: string, { orderId, reason, note }: CasheaOrderVoid): Promise<void> => {
     const { error } = await supabase.rpc("void_cashea_order", {
       p_business_id: businessId,
       p_order_id: orderId,

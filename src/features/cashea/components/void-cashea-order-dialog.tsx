@@ -2,12 +2,13 @@ import { useStore } from "@tanstack/react-form";
 import { toast } from "sonner";
 import { ConfirmDialogSummarySection, ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
 import type { RadioGroupFieldOption } from "@/components/forms/radio-group-field";
+import { COMPACT_FIELD_LABEL_CLASS_NAME } from "@/components/forms/field-wrapper";
 import { FieldGroup } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/form";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { CasheaOrder, CasheaVoidReason } from "@/types";
 import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
-import { requiredValue, validateOnBlur } from "@/utils/form-validators";
+import { requiredText, validateOnBlur } from "@/utils/form-validators";
 import { casheaVoidReasonLabels } from "../cashea-receivables";
 import { useVoidCasheaOrder } from "../hooks/useCasheaMutations";
 
@@ -35,13 +36,12 @@ type VoidCasheaOrderDialogProps = {
 export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCasheaOrderDialogProps) {
   const voidMutation = useVoidCasheaOrder();
   const form = useAppForm({ defaultValues: { reason: "" as CasheaVoidReason | "", note: "" } });
-  const values = useStore(form.store, (state) => state.values);
-  const reason = values.reason || null;
-  const note = values.note.trim();
+  const { reason, note } = useStore(form.store, (state) => state.values);
+  const orderVoid = reason && note.trim() ? { orderId: order.id, reason, note: note.trim() } : null;
 
   async function voidOrder() {
-    if (!reason || !note) return;
-    await voidMutation.mutateAsync({ orderId: order.id, reason, note });
+    if (!orderVoid) return;
+    await voidMutation.mutateAsync(orderVoid);
     toast.success("Orden Cashea anulada");
     onOpenChange(false);
   }
@@ -64,13 +64,13 @@ export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCashe
       submissionErrorMessage={(error) => getBusinessRuleErrorMessage(error, VOID_ERROR_MESSAGE)}
       isSubmissionPending={voidMutation.isPending}
       onConfirmSubmit={voidOrder}
-      confirmDisabled={!reason || !note}
+      confirmDisabled={!orderVoid}
     >
       <ConfirmDialogSummarySection>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
           {summary.map(({ label, value }) => (
             <div key={label} className="min-w-0">
-              <dt className="text-muted-foreground text-[11px] font-semibold uppercase">{label}</dt>
+              <dt className={COMPACT_FIELD_LABEL_CLASS_NAME}>{label}</dt>
               <dd className="data-value truncate font-medium">{value}</dd>
             </div>
           ))}
@@ -80,7 +80,7 @@ export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCashe
       <FieldGroup className="gap-4">
         <form.AppField
           name="reason"
-          validators={{ onChange: requiredValue("Elige el motivo de la anulación") }}
+          validators={{ onChange: requiredText("Elige el motivo de la anulación") }}
           listeners={{ onBlur: validateOnBlur }}
         >
           {(field) => (
@@ -90,7 +90,7 @@ export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCashe
 
         <form.AppField
           name="note"
-          validators={{ onChange: requiredValue("Escribe una nota para la anulación") }}
+          validators={{ onChange: requiredText("Escribe una nota para la anulación") }}
           listeners={{ onBlur: validateOnBlur }}
         >
           {(field) => (

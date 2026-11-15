@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { narrowActionsColumn } from "@/components/ui/data-table-actions-column";
 import { formatCalendarDateString, formatCurrencyUSD, formatInteger } from "@/utils/formatters";
 import { casheaOrderStatusLabels, getCasheaOrderAgeDays } from "./cashea-receivables";
 
@@ -79,17 +80,9 @@ export const columns = [
       <span className="tabular-value text-muted-foreground block text-right">{formatAgeDays(getValue())}</span>
     ),
   }),
-  columnHelper.display({
-    id: "actions",
-    header: () => <span className="sr-only">Acciones</span>,
-    meta: { className: "w-10" },
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as CasheaTableMeta | undefined;
-      if (!meta?.canVoidOrder(row.original)) return null;
-
-      return <OrderActions order={row.original} onVoid={() => meta.onVoidOrder(row.original)} />;
-    },
-  }),
+  narrowActionsColumn<CasheaOrder, CasheaTableMeta>((order, meta) =>
+    meta.canVoidOrder(order) ? <OrderActions order={order} onVoid={() => meta.onVoidOrder(order)} /> : null,
+  ),
 ] as ColumnDef<CasheaOrder>[];
 
 function OrderActions({ order, onVoid }: { order: CasheaOrder; onVoid: () => void }) {

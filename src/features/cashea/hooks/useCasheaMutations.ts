@@ -4,18 +4,12 @@ import { activeBusinessMutationOptions } from "@/features/business/utils/active-
 import { transactionKeys } from "@/features/transactions/hooks/useTransactionQueries";
 import { cashCloseKeys } from "@/features/cash-closes/hooks/useCashCloseQueries";
 import { dashboardKeys } from "@/features/dashboard/hooks/useDashboardMetrics";
-import type { CasheaOrderInput, CasheaVoidReason } from "@/types";
+import type { CasheaOrderInput, CasheaOrderVoid } from "@/types";
 import { casheaKeys } from "./useCasheaQueries";
 
 type AttachCasheaOrderVariables = {
   saleId: string;
   order: CasheaOrderInput;
-};
-
-type VoidCasheaOrderVariables = {
-  orderId: string;
-  reason: CasheaVoidReason;
-  note: string;
 };
 
 function invalidateCasheaDependents(queryClient: QueryClient, businessId: string) {
@@ -40,8 +34,8 @@ export function useVoidCasheaOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    ...activeBusinessMutationOptions((businessId, { orderId, reason, note }: VoidCasheaOrderVariables) =>
-      casheaService.voidOrder(businessId, orderId, reason, note),
+    ...activeBusinessMutationOptions((businessId, orderVoid: CasheaOrderVoid) =>
+      casheaService.voidOrder(businessId, orderVoid),
     ),
     onSuccess: (_, __, { businessId }) => invalidateCasheaDependents(queryClient, businessId),
   });
