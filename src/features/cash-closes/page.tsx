@@ -8,11 +8,12 @@ import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { formatDate } from "@/utils/formatters";
-import type { CashCloseSummary, CashCloseWithRelations } from "@/types";
+import type { CashCloseRow, CashCloseSummary } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
 import { MetricsSummary } from "./components/metrics-summary";
 import { CashCloseModal } from "./components/cash-close-modal";
 import { Route } from "@/routes/_app/cash-closes";
+import { useCasheaCollectionStatus } from "@/features/cashea/hooks/useCasheaQueries";
 
 const EMPTY_CASH_CLOSE_SUMMARY: CashCloseSummary = {
   billedOperations: 0,
@@ -37,6 +38,7 @@ export function CashClosesPage() {
 
   const { data: cashCloses, isLoading, isError, isFetching, refetch } = useCashCloses(date);
   const { data: cashCloseSummary, isLoading: isMetricsLoading, isError: hasMetricsError } = useCashCloseSummary(date);
+  const { data: casheaStatuses } = useCasheaCollectionStatus(date);
   const closeMutation = useGenerateCashClose();
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate({ from: "/cash-closes" });
@@ -46,6 +48,11 @@ export function CashClosesPage() {
   };
 
   const summaryMetrics = cashCloseSummary ?? EMPTY_CASH_CLOSE_SUMMARY;
+  const casheaStatusByDate = new Map(casheaStatuses?.map((status) => [status.sale_date, status]));
+  const rows: CashCloseRow[] = (cashCloses ?? []).map((cashClose) => ({
+    ...cashClose,
+    cashea: casheaStatusByDate.get(cashClose.date),
+  }));
 
   const handleConfirmClose = async () => {
     if (!user) return;
@@ -65,7 +72,7 @@ export function CashClosesPage() {
     }
   };
 
-  const handleRowClick = (row: CashCloseWithRelations) => {
+  const handleRowClick = (row: CashCloseRow) => {
     navigate({ to: "/transactions", search: { date: row.date } });
   };
 
@@ -107,7 +114,7 @@ export function CashClosesPage() {
       <div className="flex min-h-0 flex-1 flex-col">
         <DataTable
           columns={columns}
-          data={cashCloses || []}
+          data={rows}
           isLoading={isLoading}
           errorState={
             isError && !cashCloses

@@ -1,10 +1,11 @@
-import type { CashCloseWithRelations } from "@/types";
+import type { CashCloseRow } from "@/types";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
+import { CasheaStatusIndicator } from "./components/cashea-status-indicator";
 
-const columnHelper = createColumnHelper<CashCloseWithRelations>();
+const columnHelper = createColumnHelper<CashCloseRow>();
 
 export const columns = [
   columnHelper.accessor("closed_at", {
@@ -60,6 +61,12 @@ export const columns = [
     ),
   }),
   columnHelper.display({
+    id: "cashea",
+    meta: { className: "w-20 text-center" },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Cashea" />,
+    cell: ({ row }) => <CasheaStatusIndicator status={row.original.cashea} />,
+  }),
+  columnHelper.display({
     id: "closed_by",
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Cerrado por" />,
@@ -69,4 +76,4 @@ export const columns = [
       </OverflowTooltip>
     ),
   }),
-] as ColumnDef<CashCloseWithRelations>[];
+] as ColumnDef<CashCloseRow>[];

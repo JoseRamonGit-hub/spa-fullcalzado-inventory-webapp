@@ -21,6 +21,7 @@ export type CasheaOrder = Tables<"cashea_orders">;
 export type CasheaDeposit = Tables<"cashea_deposits">;
 export type CasheaOrderStatus = Database["public"]["Enums"]["cashea_order_status"];
 export type CasheaVoidReason = Database["public"]["Enums"]["cashea_void_reason"];
+export type CasheaCollectionStatus = Database["public"]["Functions"]["get_cashea_collection_status"]["Returns"][number];
 
 export type CalendarDateRange = {
   from?: string;
@@ -125,6 +126,10 @@ export type ExchangeRateUpdate = TablesUpdate<"exchange_rates">;
 // ── Extended types with joined relations ────────────────────
 export type CashCloseWithRelations = CashClose & {
   users: Pick<User, "fullname">;
+};
+
+export type CashCloseRow = CashCloseWithRelations & {
+  cashea?: CasheaCollectionStatus;
 };
 
 export type CashCloseSummary = {

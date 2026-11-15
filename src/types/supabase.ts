@@ -1081,6 +1081,14 @@ export type Database = {
           total_ves: number;
         }[];
       };
+      get_cashea_collection_status: {
+        Args: { p_business_id: string; p_from?: string; p_to?: string };
+        Returns: {
+          collected_count: number;
+          orders_count: number;
+          sale_date: string;
+        }[];
+      };
       get_dashboard_daily_metrics: {
         Args: { p_business_id: string };
         Returns: {

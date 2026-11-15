@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { toServiceError } from "@/lib/errors";
 import type {
+  CasheaCollectionStatus,
   CasheaOrder,
   CasheaOrderAdjustment,
   CasheaOrderInput,
@@ -26,6 +27,17 @@ export const casheaService = {
     if (filter.to) query = query.lte("sale_date", filter.to);
 
     const { data, error } = await query;
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
+  getCollectionStatus: async (businessId: string, date?: string): Promise<CasheaCollectionStatus[]> => {
+    const { data, error } = await supabase.rpc("get_cashea_collection_status", {
+      p_business_id: businessId,
+      p_from: date,
+      p_to: date,
+    });
 
     if (error) throw toServiceError(error);
     return data;
