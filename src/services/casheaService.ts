@@ -6,7 +6,11 @@ import type {
   CasheaOrderInput,
   CasheaOrderVoid,
   CasheaOrdersFilter,
+  CasheaSettings,
+  CasheaSettingsUpdate,
 } from "@/types";
+
+const DEFAULT_CASHEA_SETTINGS: CasheaSettings = { serviceFeePct: 4, advanceFeePct: 4 };
 
 export const casheaService = {
   getOrders: async (businessId: string, filter: CasheaOrdersFilter): Promise<CasheaOrder[]> => {
@@ -73,5 +77,32 @@ export const casheaService = {
     });
 
     if (error) throw toServiceError(error);
+  },
+
+  getSettings: async (businessId: string): Promise<CasheaSettings> => {
+    const { data, error } = await supabase
+      .from("app_settings")
+      .select("cashea_service_fee_pct, cashea_advance_fee_pct")
+      .eq("business_id", businessId)
+      .maybeSingle();
+
+    if (error) throw toServiceError(error);
+    if (!data) return DEFAULT_CASHEA_SETTINGS;
+    return { serviceFeePct: data.cashea_service_fee_pct, advanceFeePct: data.cashea_advance_fee_pct };
+  },
+
+  updateSettings: async (
+    businessId: string,
+    { serviceFeePct, advanceFeePct, applyToPending }: CasheaSettingsUpdate,
+  ): Promise<number> => {
+    const { data, error } = await supabase.rpc("update_cashea_settings", {
+      p_business_id: businessId,
+      p_service_fee_pct: serviceFeePct,
+      p_advance_fee_pct: advanceFeePct,
+      p_apply_to_pending: applyToPending,
+    });
+
+    if (error) throw toServiceError(error);
+    return data;
   },
 };

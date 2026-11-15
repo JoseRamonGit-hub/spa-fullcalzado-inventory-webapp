@@ -68,12 +68,12 @@ const MESSAGES = {
 type ParsedAmount = { cents: number } | { error: string };
 
 /** Interpreta un monto en dólares con punto o coma decimal; trabaja en centavos para evitar errores de coma flotante. */
-function parseAmount(rawValue: string): ParsedAmount {
+export function parseAmount(rawValue: string, invalidMessage: string = MESSAGES.invalidAmount): ParsedAmount {
   const value = rawValue.trim();
   if (value === "") return { error: MESSAGES.required };
 
   const match = /^(-?)(\d+)(?:[.,](\d+))?$/.exec(value);
-  if (!match) return { error: MESSAGES.invalidAmount };
+  if (!match) return { error: invalidMessage };
 
   const [, sign, integerPart, decimalPart = ""] = match;
   if (decimalPart.length > 2) return { error: MESSAGES.tooManyDecimals };

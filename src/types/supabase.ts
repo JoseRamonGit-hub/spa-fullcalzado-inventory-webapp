@@ -1218,6 +1218,15 @@ export type Database = {
         Args: { p_active: boolean; p_business_id: string; p_product_id: string };
         Returns: undefined;
       };
+      update_cashea_settings: {
+        Args: {
+          p_advance_fee_pct: number;
+          p_apply_to_pending?: boolean;
+          p_business_id: string;
+          p_service_fee_pct: number;
+        };
+        Returns: number;
+      };
       void_cashea_order: {
         Args: {
           p_business_id: string;

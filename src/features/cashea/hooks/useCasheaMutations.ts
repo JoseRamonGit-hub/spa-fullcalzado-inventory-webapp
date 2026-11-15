@@ -41,3 +41,7 @@ export function useVoidCasheaOrder() {
 export function useAdjustCasheaOrder() {
   return useCasheaMutation(casheaService.adjustOrder);
 }
+
+export function useUpdateCasheaSettings() {
+  return useCasheaMutation(casheaService.updateSettings);
+}

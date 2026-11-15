@@ -242,6 +242,15 @@ export type CasheaOrderAdjustment = {
   note: string;
 };
 
+export type CasheaSettings = {
+  serviceFeePct: number;
+  advanceFeePct: number;
+};
+
+export type CasheaSettingsUpdate = CasheaSettings & {
+  applyToPending: boolean;
+};
+
 export type ProcessSalePayload = {
   p_items: PricedProductLineInput[];
   p_exchange_rate: number;
