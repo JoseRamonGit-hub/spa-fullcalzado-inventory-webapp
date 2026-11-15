@@ -9,6 +9,8 @@ export const casheaKeys = {
   orders: (businessId: string | null) => [...casheaKeys.business(businessId), "orders"] as const,
   orderList: (businessId: string | null, filter: CasheaOrdersFilter) =>
     [...casheaKeys.orders(businessId), filter] as const,
+  saleTotal: (businessId: string | null, saleId: string) =>
+    [...casheaKeys.business(businessId), "sale-total", saleId] as const,
 };
 
 export function useCasheaOrders(filter: CasheaOrdersFilter) {
@@ -17,5 +19,14 @@ export function useCasheaOrders(filter: CasheaOrdersFilter) {
   return useQuery({
     queryKey: casheaKeys.orderList(businessId, filter),
     queryFn: businessId ? () => casheaService.getOrders(businessId, filter) : skipToken,
+  });
+}
+
+export function useCasheaSaleTotal(saleId: string) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: casheaKeys.saleTotal(businessId, saleId),
+    queryFn: businessId ? () => casheaService.getSaleTotalUsd(businessId, saleId) : skipToken,
   });
 }

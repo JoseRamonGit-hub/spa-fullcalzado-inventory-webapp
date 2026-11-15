@@ -19,6 +19,22 @@ export const EMPTY_CASHEA_ORDER_DRAFT: CasheaOrderDraft = {
   financedUsd: "",
 };
 
+export const formatDraftAmount = (usd: number) => usd.toFixed(2);
+
+export function toCasheaOrderDraft(order: CasheaOrderInput): CasheaOrderDraft {
+  return {
+    orderNumber: order.order_number,
+    invoiceNumber: order.invoice_number,
+    totalUsd: formatDraftAmount(order.total_usd),
+    paidTodayUsd: formatDraftAmount(order.paid_today_usd),
+    financedUsd: formatDraftAmount(order.financed_usd),
+  };
+}
+
+export function isSameCasheaOrder(order: CasheaOrderInput, other: CasheaOrderInput) {
+  return (Object.keys(order) as (keyof CasheaOrderInput)[]).every((key) => order[key] === other[key]);
+}
+
 export type CasheaOrderEvaluation = {
   fieldErrors: Partial<Record<CasheaOrderDraftField, string>>;
   /** Total de la orden interpretado, cuando es un monto válido. */
@@ -93,7 +109,7 @@ export function calculateFinancedUsd(totalUsd: string, paidTodayUsd: string): st
  * Aplica las reglas de REQ-001 a los datos que escribe el cajero. La RPC repite estas reglas:
  * el formulario no es la autoridad.
  */
-export function evaluateCasheaOrderDraft(draft: CasheaOrderDraft, saleTotalUsd: number): CasheaOrderEvaluation {
+export function evaluateCasheaOrderDraft(draft: CasheaOrderDraft, saleTotalUsd: number | null): CasheaOrderEvaluation {
   const fieldErrors: CasheaOrderEvaluation["fieldErrors"] = {};
 
   const orderNumberError = validateText(draft.orderNumber);
@@ -112,17 +128,19 @@ export function evaluateCasheaOrderDraft(draft: CasheaOrderDraft, saleTotalUsd: 
   if ("error" in paidToday) fieldErrors.paidTodayUsd = paidToday.error;
   else if (paidToday.cents < 0) fieldErrors.paidTodayUsd = MESSAGES.mustNotBeNegative;
 
-  const saleTotalCents = toCents(saleTotalUsd);
+  const saleTotalCents = saleTotalUsd === null ? null : toCents(saleTotalUsd);
   if ("error" in financed) fieldErrors.financedUsd = financed.error;
   else if (financed.cents <= 0) fieldErrors.financedUsd = MESSAGES.mustBePositive;
-  else if (financed.cents > saleTotalCents) fieldErrors.financedUsd = MESSAGES.financedExceedsSale;
+  else if (saleTotalCents !== null && financed.cents > saleTotalCents)
+    fieldErrors.financedUsd = MESSAGES.financedExceedsSale;
 
   const sumCents = "cents" in paidToday && "cents" in financed ? paidToday.cents + financed.cents : null;
   const sumDifferenceCents = sumCents !== null && "cents" in total ? sumCents - total.cents : null;
   const sumError =
     sumDifferenceCents !== null && Math.abs(sumDifferenceCents) > TOLERANCE_CENTS ? MESSAGES.sumMismatch : null;
 
-  const saleTotalMismatch = "cents" in total && Math.abs(total.cents - saleTotalCents) > TOLERANCE_CENTS;
+  const saleTotalMismatch =
+    saleTotalCents !== null && "cents" in total && Math.abs(total.cents - saleTotalCents) > TOLERANCE_CENTS;
 
   const isValid = Object.keys(fieldErrors).length === 0 && sumError === null;
   const order =

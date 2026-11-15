@@ -933,6 +933,19 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      adjust_cashea_order: {
+        Args: {
+          p_business_id: string;
+          p_financed_usd: number;
+          p_invoice_number: string;
+          p_note: string;
+          p_order_id: string;
+          p_order_number: string;
+          p_paid_today_usd: number;
+          p_total_usd: number;
+        };
+        Returns: undefined;
+      };
       adjust_product_stock: {
         Args: {
           p_business_id: string;

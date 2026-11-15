@@ -236,6 +236,12 @@ export type CasheaOrderVoid = {
   note: string;
 };
 
+export type CasheaOrderAdjustment = {
+  orderId: string;
+  order: CasheaOrderInput;
+  note: string;
+};
+
 export type ProcessSalePayload = {
   p_items: PricedProductLineInput[];
   p_exchange_rate: number;

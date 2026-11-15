@@ -1,22 +1,17 @@
-import { useState } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { COMPACT_FIELD_LABEL_CLASS_NAME } from "@/components/forms/field-wrapper";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
 import { getSalesSummary } from "@/features/transactions/sales-display";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { TransactionWithRelations } from "@/types";
 import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
-import { useCasheaOrderForm } from "../hooks/use-cashea-order-form";
+import { useConfirmableCasheaOrderForm } from "../hooks/use-cashea-order-form";
 import { useAttachCasheaOrder } from "../hooks/useCasheaMutations";
 import { CasheaDialogMedia } from "./cashea-logo-icon";
-import { CasheaOrderFields } from "./cashea-order-fields";
-import { PasteCasheaSummaryButton } from "./paste-cashea-summary-button";
+import { CasheaOrderFormCard } from "./cashea-order-form-card";
 
 const ATTACH_ERROR_MESSAGE = "No se pudo asociar la Orden Cashea. Revisa la conexión e intenta de nuevo.";
-const ORDER_TOTAL_CONFIRMATION_ID = "attach-cashea-order-total-confirmation";
 
 type AttachCasheaOrderDialogProps = {
   isOpen: boolean;
@@ -29,10 +24,9 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
   const { grossUsd: saleTotalUsd } = getSalesSummary(saleLines, []);
   const saleDate = saleLines[0]?.date;
 
-  const orderForm = useCasheaOrderForm(saleTotalUsd);
-  const { order, saleTotalMismatch } = orderForm.evaluation;
+  const orderForm = useConfirmableCasheaOrderForm(saleTotalUsd);
+  const order = orderForm.confirmedOrder;
   const attachMutation = useAttachCasheaOrder();
-  const [isOrderTotalConfirmed, setIsOrderTotalConfirmed] = useState(false);
 
   async function attachOrder() {
     if (!order) return;
@@ -57,7 +51,7 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
       submissionErrorMessage={(error) => getBusinessRuleErrorMessage(error, ATTACH_ERROR_MESSAGE)}
       isSubmissionPending={attachMutation.isPending}
       onConfirmSubmit={attachOrder}
-      confirmDisabled={!order || (saleTotalMismatch && !isOrderTotalConfirmed)}
+      confirmDisabled={!order}
     >
       {/* Todos los renglones a la vista, sin desplazamiento: el código y el nombre identifican la venta. Sin raya debajo:
           el total en negrita ya cierra el bloque, y una segunda raya lo encerraba en una franja. */}
@@ -90,35 +84,7 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
         </dl>
       </section>
 
-      <section aria-labelledby="attach-cashea-order-title" className="bg-card rounded-lg border shadow-xs">
-        {/* Sin descripción: el título nombra lo que se captura y el icono de pegar trae su nombre en la ayuda emergente. */}
-        <div className="flex items-center justify-between gap-3 border-b px-3 py-2">
-          <h3 id="attach-cashea-order-title" className="text-sm font-semibold">
-            Datos de la orden Cashea
-          </h3>
-          <PasteCasheaSummaryButton orderForm={orderForm} disabled={attachMutation.isPending} />
-        </div>
-        <div className="p-3">
-          <CasheaOrderFields
-            orderForm={orderForm}
-            disabled={attachMutation.isPending}
-            saleTotalMismatchNotice={
-              // El aviso y la confirmación son una sola fila: el total de la venta ya está a la vista arriba.
-              <Field orientation="horizontal" className="bg-warning/10 rounded-md px-3 py-2">
-                <Checkbox
-                  id={ORDER_TOTAL_CONFIRMATION_ID}
-                  checked={isOrderTotalConfirmed}
-                  onCheckedChange={(checked) => setIsOrderTotalConfirmed(checked === true)}
-                  disabled={attachMutation.isPending}
-                />
-                <FieldLabel htmlFor={ORDER_TOTAL_CONFIRMATION_ID} className="text-xs font-medium">
-                  El total no coincide con la venta. Confirmo que es correcto.
-                </FieldLabel>
-              </Field>
-            }
-          />
-        </div>
-      </section>
+      <CasheaOrderFormCard orderForm={orderForm} disabled={attachMutation.isPending} />
     </ModalConfirmDialog>
   );
 }

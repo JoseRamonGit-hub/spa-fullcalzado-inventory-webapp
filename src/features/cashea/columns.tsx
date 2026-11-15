@@ -1,5 +1,5 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import { Ban, Ellipsis } from "lucide-react";
+import { Ban, Ellipsis, Pencil } from "lucide-react";
 import type { CasheaOrder, CasheaOrderStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,8 @@ import { casheaOrderStatusLabels, getCasheaOrderAgeDays } from "./cashea-receiva
 const columnHelper = createColumnHelper<CasheaOrder>();
 
 export type CasheaTableMeta = {
-  canVoidOrder: (order: CasheaOrder) => boolean;
+  canCorrectOrder: (order: CasheaOrder) => boolean;
+  onAdjustOrder: (order: CasheaOrder) => void;
   onVoidOrder: (order: CasheaOrder) => void;
 };
 
@@ -81,11 +82,11 @@ export const columns = [
     ),
   }),
   narrowActionsColumn<CasheaOrder, CasheaTableMeta>((order, meta) =>
-    meta.canVoidOrder(order) ? <OrderActions order={order} onVoid={() => meta.onVoidOrder(order)} /> : null,
+    meta.canCorrectOrder(order) ? <OrderActions order={order} meta={meta} /> : null,
   ),
 ] as ColumnDef<CasheaOrder>[];
 
-function OrderActions({ order, onVoid }: { order: CasheaOrder; onVoid: () => void }) {
+function OrderActions({ order, meta }: { order: CasheaOrder; meta: CasheaTableMeta }) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -94,7 +95,11 @@ function OrderActions({ order, onVoid }: { order: CasheaOrder; onVoid: () => voi
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40">
-        <DropdownMenuItem variant="destructive" onSelect={onVoid}>
+        <DropdownMenuItem onSelect={() => meta.onAdjustOrder(order)}>
+          <Pencil aria-hidden="true" />
+          Ajustar orden
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onSelect={() => meta.onVoidOrder(order)}>
           <Ban aria-hidden="true" />
           Anular orden
         </DropdownMenuItem>

@@ -8,7 +8,7 @@ import { useAppForm } from "@/hooks/form";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { CasheaOrder, CasheaVoidReason } from "@/types";
 import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
-import { requiredText, validateOnBlur } from "@/utils/form-validators";
+import { requiredFieldOptions } from "@/utils/form-validators";
 import { casheaVoidReasonLabels } from "../cashea-receivables";
 import { CasheaDialogSummary } from "./cashea-dialog-summary";
 import { CasheaDialogMedia } from "./cashea-logo-icon";
@@ -83,21 +83,13 @@ export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCashe
       />
 
       <FieldGroup className="gap-4">
-        <form.AppField
-          name="reason"
-          validators={{ onChange: requiredText("Elige el motivo de la anulación") }}
-          listeners={{ onBlur: validateOnBlur }}
-        >
+        <form.AppField name="reason" {...requiredFieldOptions("Elige el motivo de la anulación")}>
           {(field) => (
             <field.RadioGroupField label="Motivo" options={reasonOptions} disabled={voidMutation.isPending} compact />
           )}
         </form.AppField>
 
-        <form.AppField
-          name="note"
-          validators={{ onChange: requiredText("Escribe una nota para la anulación") }}
-          listeners={{ onBlur: validateOnBlur }}
-        >
+        <form.AppField name="note" {...requiredFieldOptions("Escribe una nota para la anulación")}>
           {(field) => (
             <field.TextareaField
               label="Nota"

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "@tanstack/react-form";
 import { useAppForm } from "@/hooks/form";
 import { validateOnBlur } from "@/utils/form-validators";
@@ -6,6 +6,7 @@ import {
   calculateFinancedUsd,
   EMPTY_CASHEA_ORDER_DRAFT,
   evaluateCasheaOrderDraft,
+  formatDraftAmount,
   type CasheaOrderDraft,
   type CasheaOrderDraftField,
 } from "../cashea-order-draft";
@@ -19,8 +20,8 @@ const FINANCED_INPUT_FIELDS = new Set<CasheaOrderDraftField>(["totalUsd", "paidT
  * Cada campo se valida por separado: su error aparece al escribir en él o al salir de él, sin tocar los demás.
  * Lo usan «Registrar Venta» y los diálogos que capturan una Orden Cashea; `evaluation.order` dice si se puede confirmar.
  */
-export function useCasheaOrderForm(saleTotalUsd: number) {
-  const form = useAppForm({ defaultValues: EMPTY_CASHEA_ORDER_DRAFT });
+export function useCasheaOrderForm(saleTotalUsd: number | null, initialDraft = EMPTY_CASHEA_ORDER_DRAFT) {
+  const form = useAppForm({ defaultValues: initialDraft });
 
   const draft = useStore(form.store, (state) => state.values);
   const evaluation = evaluateCasheaOrderDraft(draft, saleTotalUsd);
@@ -72,7 +73,18 @@ export function useCasheaOrderForm(saleTotalUsd: number) {
   return { form, evaluation, fieldOptions, fillFromSummary };
 }
 
-const formatAmount = (usd: number | null) => (usd === null ? null : usd.toFixed(2));
+const formatAmount = (usd: number | null) => (usd === null ? null : formatDraftAmount(usd));
 
 /** Lo que devuelve `useCasheaOrderForm`; se entrega completo a `CasheaOrderFields`. */
 export type CasheaOrderFormApi = ReturnType<typeof useCasheaOrderForm>;
+
+export function useConfirmableCasheaOrderForm(saleTotalUsd: number | null, initialDraft?: CasheaOrderDraft) {
+  const orderForm = useCasheaOrderForm(saleTotalUsd, initialDraft);
+  const [isOrderTotalConfirmed, setIsOrderTotalConfirmed] = useState(false);
+  const { order, saleTotalMismatch } = orderForm.evaluation;
+  const confirmedOrder = saleTotalMismatch && !isOrderTotalConfirmed ? null : order;
+
+  return { ...orderForm, isOrderTotalConfirmed, setIsOrderTotalConfirmed, confirmedOrder };
+}
+
+export type ConfirmableCasheaOrderFormApi = ReturnType<typeof useConfirmableCasheaOrderForm>;

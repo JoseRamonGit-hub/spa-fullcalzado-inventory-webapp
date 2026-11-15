@@ -1,6 +1,12 @@
 import { supabase } from "@/lib/supabase";
 import { toServiceError } from "@/lib/errors";
-import type { CasheaOrder, CasheaOrderInput, CasheaOrderVoid, CasheaOrdersFilter } from "@/types";
+import type {
+  CasheaOrder,
+  CasheaOrderAdjustment,
+  CasheaOrderInput,
+  CasheaOrderVoid,
+  CasheaOrdersFilter,
+} from "@/types";
 
 export const casheaService = {
   getOrders: async (businessId: string, filter: CasheaOrdersFilter): Promise<CasheaOrder[]> => {
@@ -21,6 +27,17 @@ export const casheaService = {
     return data;
   },
 
+  getSaleTotalUsd: async (businessId: string, saleId: string): Promise<number> => {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("total_usd")
+      .eq("business_id", businessId)
+      .eq("sale_id", saleId);
+
+    if (error) throw toServiceError(error);
+    return data.reduce((totalCents, line) => totalCents + Math.round((line.total_usd ?? 0) * 100), 0) / 100;
+  },
+
   attachOrder: async (businessId: string, saleId: string, order: CasheaOrderInput): Promise<string> => {
     const { data, error } = await supabase.rpc("attach_cashea_order", {
       p_business_id: businessId,
@@ -37,6 +54,21 @@ export const casheaService = {
       p_business_id: businessId,
       p_order_id: orderId,
       p_reason: reason,
+      p_note: note,
+    });
+
+    if (error) throw toServiceError(error);
+  },
+
+  adjustOrder: async (businessId: string, { orderId, order, note }: CasheaOrderAdjustment): Promise<void> => {
+    const { error } = await supabase.rpc("adjust_cashea_order", {
+      p_business_id: businessId,
+      p_order_id: orderId,
+      p_order_number: order.order_number,
+      p_invoice_number: order.invoice_number,
+      p_total_usd: order.total_usd,
+      p_paid_today_usd: order.paid_today_usd,
+      p_financed_usd: order.financed_usd,
       p_note: note,
     });
 

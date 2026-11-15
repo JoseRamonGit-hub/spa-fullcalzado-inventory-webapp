@@ -9,6 +9,7 @@ import type { CalendarDateRange, CasheaOrder, CasheaOrdersFilter } from "@/types
 import { columns, type CasheaTableMeta } from "./columns";
 import { Topbar } from "./components/topbar";
 import { CasheaPendingSummary } from "./components/cashea-pending-summary";
+import { AdjustCasheaOrderDialog } from "./components/adjust-cashea-order-dialog";
 import { VoidCasheaOrderDialog } from "./components/void-cashea-order-dialog";
 import { useCasheaOrders } from "./hooks/useCasheaQueries";
 import {
@@ -38,9 +39,11 @@ export function CasheaPage() {
   const { data: orders, isLoading, isError, isFetching, refetch } = useCasheaOrders(filter);
 
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
+  const adjustDialog = useDialogTarget<CasheaOrder>();
   const voidDialog = useDialogTarget<CasheaOrder>();
   const tableMeta: CasheaTableMeta = {
-    canVoidOrder: (order) => isAdmin && order.status === "pending",
+    canCorrectOrder: (order) => isAdmin && order.status === "pending",
+    onAdjustOrder: adjustDialog.open,
     onVoidOrder: voidDialog.open,
   };
 
@@ -71,6 +74,14 @@ export function CasheaPage() {
         getRowAriaLabel={(row) => `Orden Cashea ${row.order_number}`}
         scrollAreaLabel="Cuentas por cobrar Cashea"
       />
+      {adjustDialog.target && (
+        <AdjustCasheaOrderDialog
+          key={adjustDialog.key}
+          isOpen={adjustDialog.isOpen}
+          onOpenChange={adjustDialog.setIsOpen}
+          order={adjustDialog.target}
+        />
+      )}
       {voidDialog.target && (
         <VoidCasheaOrderDialog
           key={voidDialog.key}
