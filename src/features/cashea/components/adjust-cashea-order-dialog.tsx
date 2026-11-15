@@ -51,7 +51,7 @@ export function AdjustCasheaOrderDialog({ isOpen, onOpenChange, order }: AdjustC
       media={
         <CasheaDialogMedia
           badgeIcon={<Pen strokeWidth={2.5} aria-hidden="true" />}
-          badgeClassName="bg-foreground text-background [&_svg]:size-2.5"
+          badgeClassName="bg-exchange text-exchange-foreground [&_svg]:size-2.5"
         />
       }
       confirmLabel="Guardar ajuste"
