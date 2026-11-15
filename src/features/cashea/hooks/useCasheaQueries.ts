@@ -13,6 +13,8 @@ export const casheaKeys = {
     [...casheaKeys.business(businessId), "collection-status", { date }] as const,
   saleTotal: (businessId: string | null, saleId: string) =>
     [...casheaKeys.business(businessId), "sale-total", saleId] as const,
+  deposit: (businessId: string | null, depositId: string) =>
+    [...casheaKeys.business(businessId), "deposit", depositId] as const,
   settings: (businessId: string | null) => [...casheaKeys.business(businessId), "settings"] as const,
 };
 
@@ -40,6 +42,15 @@ export function useCasheaSaleTotal(saleId: string) {
   return useQuery({
     queryKey: casheaKeys.saleTotal(businessId, saleId),
     queryFn: businessId ? () => casheaService.getSaleTotalUsd(businessId, saleId) : skipToken,
+  });
+}
+
+export function useCasheaDeposit(depositId: string) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: casheaKeys.deposit(businessId, depositId),
+    queryFn: businessId ? () => casheaService.getDeposit(businessId, depositId) : skipToken,
   });
 }
 

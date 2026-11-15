@@ -2,6 +2,9 @@ import { supabase } from "@/lib/supabase";
 import { toServiceError } from "@/lib/errors";
 import type {
   CasheaCollectionStatus,
+  CasheaDepositInput,
+  CasheaDepositReversal,
+  CasheaDepositWithOrders,
   CasheaOrder,
   CasheaOrderAdjustment,
   CasheaOrderInput,
@@ -85,6 +88,42 @@ export const casheaService = {
       p_total_usd: order.total_usd,
       p_paid_today_usd: order.paid_today_usd,
       p_financed_usd: order.financed_usd,
+      p_note: note,
+    });
+
+    if (error) throw toServiceError(error);
+  },
+
+  getDeposit: async (businessId: string, depositId: string): Promise<CasheaDepositWithOrders> => {
+    const { data, error } = await supabase
+      .from("cashea_deposits")
+      .select("*, cashea_orders(order_number)")
+      .eq("business_id", businessId)
+      .eq("id", depositId)
+      .single();
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
+  registerDeposit: async (businessId: string, deposit: CasheaDepositInput): Promise<string> => {
+    const { data, error } = await supabase.rpc("register_cashea_deposit", {
+      p_business_id: businessId,
+      p_order_ids: deposit.orderIds,
+      p_received_ves: deposit.receivedVes,
+      p_deposit_date: deposit.depositDate,
+      p_applied_rate: deposit.appliedRate ?? undefined,
+      p_reference: deposit.reference ?? undefined,
+    });
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
+  revertDeposit: async (businessId: string, { depositId, note }: CasheaDepositReversal): Promise<void> => {
+    const { error } = await supabase.rpc("revert_cashea_deposit", {
+      p_business_id: businessId,
+      p_deposit_id: depositId,
       p_note: note,
     });
 

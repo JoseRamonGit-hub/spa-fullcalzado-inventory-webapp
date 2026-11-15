@@ -7,10 +7,10 @@ import { FieldGroup } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/form";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { CasheaOrder, CasheaVoidReason } from "@/types";
-import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
+import { formatCurrencyUSD } from "@/utils/formatters";
 import { requiredFieldOptions } from "@/utils/form-validators";
 import { casheaVoidReasonLabels } from "../cashea-receivables";
-import { CasheaDialogSummary } from "./cashea-dialog-summary";
+import { CasheaDialogSummary, CasheaOrderInvoice } from "./cashea-dialog-summary";
 import { CasheaDialogMedia } from "./cashea-logo-icon";
 import { useVoidCasheaOrder } from "../hooks/useCasheaMutations";
 
@@ -67,15 +67,7 @@ export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCashe
       <CasheaDialogSummary
         label="Datos de la orden"
         rows={[
-          {
-            label: "Factura",
-            value: (
-              <>
-                {order.invoice_number}
-                <span className="text-muted-foreground"> · {formatCalendarDateString(order.sale_date)}</span>
-              </>
-            ),
-          },
+          { label: "Factura", value: <CasheaOrderInvoice order={order} /> },
           { label: "Total de la venta", value: formatCurrencyUSD(order.total_usd) },
           { label: "Cobrado", value: formatCurrencyUSD(order.paid_today_usd) },
           { label: "Financiado por Cashea", value: formatCurrencyUSD(order.financed_usd), isKey: true },

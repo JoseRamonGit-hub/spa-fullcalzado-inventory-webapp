@@ -1222,6 +1222,21 @@ export type Database = {
         };
         Returns: Json;
       };
+      register_cashea_deposit: {
+        Args: {
+          p_applied_rate?: number;
+          p_business_id: string;
+          p_deposit_date: string;
+          p_order_ids: string[];
+          p_received_ves: number;
+          p_reference?: string;
+        };
+        Returns: string;
+      };
+      revert_cashea_deposit: {
+        Args: { p_business_id: string; p_deposit_id: string; p_note: string };
+        Returns: undefined;
+      };
       set_product_active: {
         Args: { p_active: boolean; p_business_id: string; p_product_id: string };
         Returns: undefined;

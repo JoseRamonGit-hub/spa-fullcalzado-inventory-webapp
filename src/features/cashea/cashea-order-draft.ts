@@ -54,7 +54,7 @@ const MAX_TEXT_LENGTH = 40;
 /** Tolerancia de $0.01, expresada en centavos. */
 const TOLERANCE_CENTS = 1;
 
-const MESSAGES = {
+export const DRAFT_MESSAGES = {
   required: "Campo obligatorio",
   textTooLong: `Máximo ${MAX_TEXT_LENGTH} caracteres`,
   invalidAmount: "Monto inválido",
@@ -68,15 +68,15 @@ const MESSAGES = {
 type ParsedAmount = { cents: number } | { error: string };
 
 /** Interpreta un monto en dólares con punto o coma decimal; trabaja en centavos para evitar errores de coma flotante. */
-export function parseAmount(rawValue: string, invalidMessage: string = MESSAGES.invalidAmount): ParsedAmount {
+export function parseAmount(rawValue: string, invalidMessage: string = DRAFT_MESSAGES.invalidAmount): ParsedAmount {
   const value = rawValue.trim();
-  if (value === "") return { error: MESSAGES.required };
+  if (value === "") return { error: DRAFT_MESSAGES.required };
 
   const match = /^(-?)(\d+)(?:[.,](\d+))?$/.exec(value);
   if (!match) return { error: invalidMessage };
 
   const [, sign, integerPart, decimalPart = ""] = match;
-  if (decimalPart.length > 2) return { error: MESSAGES.tooManyDecimals };
+  if (decimalPart.length > 2) return { error: DRAFT_MESSAGES.tooManyDecimals };
 
   const cents = Number(integerPart) * 100 + Number(decimalPart.padEnd(2, "0"));
   return { cents: sign === "-" ? -cents : cents };
@@ -84,8 +84,8 @@ export function parseAmount(rawValue: string, invalidMessage: string = MESSAGES.
 
 function validateText(rawValue: string): string | null {
   const value = rawValue.trim();
-  if (value === "") return MESSAGES.required;
-  if (value.length > MAX_TEXT_LENGTH) return MESSAGES.textTooLong;
+  if (value === "") return DRAFT_MESSAGES.required;
+  if (value.length > MAX_TEXT_LENGTH) return DRAFT_MESSAGES.textTooLong;
   return null;
 }
 
@@ -123,21 +123,21 @@ export function evaluateCasheaOrderDraft(draft: CasheaOrderDraft, saleTotalUsd: 
   const financed = parseAmount(draft.financedUsd);
 
   if ("error" in total) fieldErrors.totalUsd = total.error;
-  else if (total.cents <= 0) fieldErrors.totalUsd = MESSAGES.mustBePositive;
+  else if (total.cents <= 0) fieldErrors.totalUsd = DRAFT_MESSAGES.mustBePositive;
 
   if ("error" in paidToday) fieldErrors.paidTodayUsd = paidToday.error;
-  else if (paidToday.cents < 0) fieldErrors.paidTodayUsd = MESSAGES.mustNotBeNegative;
+  else if (paidToday.cents < 0) fieldErrors.paidTodayUsd = DRAFT_MESSAGES.mustNotBeNegative;
 
   const saleTotalCents = saleTotalUsd === null ? null : toCents(saleTotalUsd);
   if ("error" in financed) fieldErrors.financedUsd = financed.error;
-  else if (financed.cents <= 0) fieldErrors.financedUsd = MESSAGES.mustBePositive;
+  else if (financed.cents <= 0) fieldErrors.financedUsd = DRAFT_MESSAGES.mustBePositive;
   else if (saleTotalCents !== null && financed.cents > saleTotalCents)
-    fieldErrors.financedUsd = MESSAGES.financedExceedsSale;
+    fieldErrors.financedUsd = DRAFT_MESSAGES.financedExceedsSale;
 
   const sumCents = "cents" in paidToday && "cents" in financed ? paidToday.cents + financed.cents : null;
   const sumDifferenceCents = sumCents !== null && "cents" in total ? sumCents - total.cents : null;
   const sumError =
-    sumDifferenceCents !== null && Math.abs(sumDifferenceCents) > TOLERANCE_CENTS ? MESSAGES.sumMismatch : null;
+    sumDifferenceCents !== null && Math.abs(sumDifferenceCents) > TOLERANCE_CENTS ? DRAFT_MESSAGES.sumMismatch : null;
 
   const saleTotalMismatch =
     saleTotalCents !== null && "cents" in total && Math.abs(total.cents - saleTotalCents) > TOLERANCE_CENTS;

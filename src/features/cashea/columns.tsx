@@ -1,8 +1,9 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import { Ban, Ellipsis, Pencil } from "lucide-react";
+import { Ban, Check, Ellipsis, Pencil, Undo2 } from "lucide-react";
 import type { CasheaOrder, CasheaOrderStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +18,13 @@ import { casheaOrderStatusLabels, getCasheaOrderAgeDays } from "./cashea-receiva
 const columnHelper = createColumnHelper<CasheaOrder>();
 
 export type CasheaTableMeta = {
-  canCorrectOrder: (order: CasheaOrder) => boolean;
+  isAdmin: boolean;
+  selectedOrderIds: ReadonlySet<string>;
+  onSelectOrders: (orders: CasheaOrder[], selected: boolean) => void;
+  onCollectOrder: (order: CasheaOrder) => void;
   onAdjustOrder: (order: CasheaOrder) => void;
   onVoidOrder: (order: CasheaOrder) => void;
+  onRevertDeposit: (order: CasheaOrder) => void;
 };
 
 const statusBadgeVariants: Record<CasheaOrderStatus, "warning" | "success" | "secondary"> = {
@@ -82,8 +87,47 @@ export const columns = [
     ),
   }),
   narrowActionsColumn<CasheaOrder, CasheaTableMeta>((order, meta) =>
-    meta.canCorrectOrder(order) ? <OrderActions order={order} meta={meta} /> : null,
+    meta.isAdmin && order.status !== "voided" ? <OrderActions order={order} meta={meta} /> : null,
   ),
+] as ColumnDef<CasheaOrder>[];
+
+export const adminColumns = [
+  columnHelper.display({
+    id: "select",
+    meta: { className: "w-10" },
+    header: ({ table }) => {
+      const meta = table.options.meta as CasheaTableMeta;
+      const pendingOrders = table
+        .getCoreRowModel()
+        .rows.map((row) => row.original)
+        .filter((order) => order.status === "pending");
+      const selectedCount = pendingOrders.filter((order) => meta.selectedOrderIds.has(order.id)).length;
+      const allSelected = pendingOrders.length > 0 && selectedCount === pendingOrders.length;
+
+      return (
+        <Checkbox
+          aria-label="Seleccionar todas las órdenes pendientes"
+          disabled={pendingOrders.length === 0}
+          checked={allSelected ? true : selectedCount > 0 ? "indeterminate" : false}
+          onCheckedChange={() => meta.onSelectOrders(pendingOrders, !allSelected)}
+        />
+      );
+    },
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as CasheaTableMeta;
+      const order = row.original;
+      if (order.status !== "pending") return null;
+
+      return (
+        <Checkbox
+          aria-label={`Seleccionar la orden Cashea ${order.order_number}`}
+          checked={meta.selectedOrderIds.has(order.id)}
+          onCheckedChange={(checked) => meta.onSelectOrders([order], checked === true)}
+        />
+      );
+    },
+  }),
+  ...columns,
 ] as ColumnDef<CasheaOrder>[];
 
 function OrderActions({ order, meta }: { order: CasheaOrder; meta: CasheaTableMeta }) {
@@ -95,14 +139,27 @@ function OrderActions({ order, meta }: { order: CasheaOrder; meta: CasheaTableMe
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40">
-        <DropdownMenuItem onSelect={() => meta.onAdjustOrder(order)}>
-          <Pencil aria-hidden="true" />
-          Ajustar orden
-        </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive" onSelect={() => meta.onVoidOrder(order)}>
-          <Ban aria-hidden="true" />
-          Anular orden
-        </DropdownMenuItem>
+        {order.status === "collected" ? (
+          <DropdownMenuItem variant="destructive" onSelect={() => meta.onRevertDeposit(order)}>
+            <Undo2 aria-hidden="true" />
+            Revertir depósito
+          </DropdownMenuItem>
+        ) : (
+          <>
+            <DropdownMenuItem onSelect={() => meta.onCollectOrder(order)}>
+              <Check aria-hidden="true" />
+              Cobrar orden
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => meta.onAdjustOrder(order)}>
+              <Pencil aria-hidden="true" />
+              Ajustar orden
+            </DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onSelect={() => meta.onVoidOrder(order)}>
+              <Ban aria-hidden="true" />
+              Anular orden
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

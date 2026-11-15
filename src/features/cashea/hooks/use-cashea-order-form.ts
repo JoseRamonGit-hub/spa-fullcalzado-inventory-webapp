@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useStore } from "@tanstack/react-form";
 import { useAppForm } from "@/hooks/form";
-import { validateOnBlur } from "@/utils/form-validators";
+import { draftFieldOptions } from "@/utils/form-validators";
 import {
   calculateFinancedUsd,
   EMPTY_CASHEA_ORDER_DRAFT,
@@ -27,17 +27,17 @@ export function useCasheaOrderForm(saleTotalUsd: number | null, initialDraft = E
   const evaluation = evaluateCasheaOrderDraft(draft, saleTotalUsd);
 
   /** Props de `form.AppField` para un campo: su validador y la validación al salir de él. */
-  const fieldOptions = <TName extends CasheaOrderDraftField>(name: TName) => ({
-    name,
-    validators: {
-      onChange: ({ value }: { value: CasheaOrderDraft[TName] }) =>
-        evaluateCasheaOrderDraft({ ...form.state.values, [name]: value }, saleTotalUsd).fieldErrors[name],
-    },
-    listeners: {
-      onBlur: validateOnBlur,
-      onChange: FINANCED_INPUT_FIELDS.has(name) ? fillFinancedUsd : undefined,
-    },
-  });
+  const fieldOptions = <TName extends CasheaOrderDraftField>(name: TName) => {
+    const options = draftFieldOptions(
+      name,
+      () => form.state.values,
+      (values) => evaluateCasheaOrderDraft(values, saleTotalUsd).fieldErrors,
+    );
+    return {
+      ...options,
+      listeners: { ...options.listeners, onChange: FINANCED_INPUT_FIELDS.has(name) ? fillFinancedUsd : undefined },
+    };
+  };
 
   // El Monto financiado se calcula como total menos Cobrado hoy; el cajero puede corregirlo después.
   function fillFinancedUsd() {

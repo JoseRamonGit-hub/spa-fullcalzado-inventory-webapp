@@ -241,6 +241,23 @@ export type CasheaOrderVoid = {
   note: string;
 };
 
+export type CasheaDepositInput = {
+  orderIds: string[];
+  receivedVes: number;
+  depositDate: string;
+  appliedRate: number | null;
+  reference: string | null;
+};
+
+export type CasheaDepositReversal = {
+  depositId: string;
+  note: string;
+};
+
+export type CasheaDepositWithOrders = CasheaDeposit & {
+  cashea_orders: Pick<CasheaOrder, "order_number">[];
+};
+
 export type CasheaOrderAdjustment = {
   orderId: string;
   order: CasheaOrderInput;

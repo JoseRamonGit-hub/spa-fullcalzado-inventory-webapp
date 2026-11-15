@@ -42,6 +42,14 @@ export function useAdjustCasheaOrder() {
   return useCasheaMutation(casheaService.adjustOrder);
 }
 
+export function useRegisterCasheaDeposit() {
+  return useCasheaMutation(casheaService.registerDeposit);
+}
+
+export function useRevertCasheaDeposit() {
+  return useCasheaMutation(casheaService.revertDeposit);
+}
+
 export function useUpdateCasheaSettings() {
   return useCasheaMutation(casheaService.updateSettings);
 }

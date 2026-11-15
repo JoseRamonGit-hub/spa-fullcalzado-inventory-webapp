@@ -10,3 +10,17 @@ export function requiredFieldOptions(message: string) {
     listeners: { onBlur: validateOnBlur },
   };
 }
+
+export function draftFieldOptions<TDraft, TName extends keyof TDraft>(
+  name: TName,
+  getDraft: () => TDraft,
+  getFieldErrors: (draft: TDraft) => Partial<Record<keyof TDraft, string>>,
+) {
+  return {
+    name,
+    validators: {
+      onChange: ({ value }: { value: TDraft[TName] }) => getFieldErrors({ ...getDraft(), [name]: value })[name],
+    },
+    listeners: { onBlur: validateOnBlur },
+  };
+}

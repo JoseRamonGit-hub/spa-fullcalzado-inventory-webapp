@@ -1,14 +1,12 @@
-import { useStore } from "@tanstack/react-form";
 import { Pen } from "lucide-react";
 import { toast } from "sonner";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
-import { useAppForm } from "@/hooks/form";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
 import type { CasheaOrder } from "@/types";
 import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
-import { requiredFieldOptions } from "@/utils/form-validators";
 import { isSameCasheaOrder, toCasheaOrderDraft } from "../cashea-order-draft";
 import { useConfirmableCasheaOrderForm } from "../hooks/use-cashea-order-form";
+import { useCasheaNoteField } from "../hooks/use-cashea-note-field";
 import { useAdjustCasheaOrder } from "../hooks/useCasheaMutations";
 import { useCasheaSaleTotal } from "../hooks/useCasheaQueries";
 import { CasheaDialogSummary } from "./cashea-dialog-summary";
@@ -26,9 +24,12 @@ type AdjustCasheaOrderDialogProps = {
 export function AdjustCasheaOrderDialog({ isOpen, onOpenChange, order }: AdjustCasheaOrderDialogProps) {
   const { data: saleTotalUsd = null, isPending: isSaleTotalPending } = useCasheaSaleTotal(order.sale_id);
   const orderForm = useConfirmableCasheaOrderForm(saleTotalUsd, toCasheaOrderDraft(order));
-  const noteForm = useAppForm({ defaultValues: { note: "" } });
-  const note = useStore(noteForm.store, (state) => state.values.note.trim());
   const adjustMutation = useAdjustCasheaOrder();
+  const { note, noteField } = useCasheaNoteField({
+    requiredMessage: "Escribe una nota para el ajuste",
+    placeholder: "Explica qué se corrige",
+    disabled: adjustMutation.isPending,
+  });
 
   const adjustedOrder = orderForm.confirmedOrder;
   const adjustment =
@@ -75,17 +76,7 @@ export function AdjustCasheaOrderDialog({ isOpen, onOpenChange, order }: AdjustC
 
       <CasheaOrderFormCard orderForm={orderForm} disabled={adjustMutation.isPending} />
 
-      <noteForm.AppField name="note" {...requiredFieldOptions("Escribe una nota para el ajuste")}>
-        {(field) => (
-          <field.TextareaField
-            label="Nota"
-            placeholder="Explica qué se corrige"
-            rows={3}
-            disabled={adjustMutation.isPending}
-            compact
-          />
-        )}
-      </noteForm.AppField>
+      {noteField}
     </ModalConfirmDialog>
   );
 }
