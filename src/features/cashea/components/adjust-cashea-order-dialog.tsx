@@ -1,5 +1,5 @@
 import { useStore } from "@tanstack/react-form";
-import { Pencil } from "lucide-react";
+import { Pen } from "lucide-react";
 import { toast } from "sonner";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
 import { useAppForm } from "@/hooks/form";
@@ -50,8 +50,8 @@ export function AdjustCasheaOrderDialog({ isOpen, onOpenChange, order }: AdjustC
       title={`Ajustar orden Cashea #${order.order_number}`}
       media={
         <CasheaDialogMedia
-          badgeIcon={<Pencil strokeWidth={3} aria-hidden="true" />}
-          badgeClassName="bg-primary text-primary-foreground"
+          badgeIcon={<Pen strokeWidth={2.5} aria-hidden="true" />}
+          badgeClassName="bg-foreground text-background [&_svg]:size-2.5"
         />
       }
       confirmLabel="Guardar ajuste"
