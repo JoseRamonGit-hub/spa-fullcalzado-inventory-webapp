@@ -1,12 +1,15 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useDialogTarget } from "@/hooks/use-dialog-target";
 import { DataTable } from "@/components/ui/data-table";
 import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { Route } from "@/routes/_app/receivables/cashea";
 import { formatCalendarDateString } from "@/utils/formatters";
-import type { CalendarDateRange, CasheaOrdersFilter } from "@/types";
-import { columns } from "./columns";
+import type { CalendarDateRange, CasheaOrder, CasheaOrdersFilter } from "@/types";
+import { columns, type CasheaTableMeta } from "./columns";
 import { Topbar } from "./components/topbar";
 import { CasheaPendingSummary } from "./components/cashea-pending-summary";
+import { VoidCasheaOrderDialog } from "./components/void-cashea-order-dialog";
 import { useCasheaOrders } from "./hooks/useCasheaQueries";
 import {
   casheaOrderStatusLabels,
@@ -34,6 +37,13 @@ export function CasheaPage() {
 
   const { data: orders, isLoading, isError, isFetching, refetch } = useCasheaOrders(filter);
 
+  const isAdmin = useAuthStore((state) => state.user?.role === "admin");
+  const voidDialog = useDialogTarget<CasheaOrder>();
+  const tableMeta: CasheaTableMeta = {
+    canVoidOrder: (order) => isAdmin && order.status === "pending",
+    onVoidOrder: voidDialog.open,
+  };
+
   const setStatus = (value: CasheaStatusFilter) => {
     navigate({ search: (prev) => ({ ...prev, status: value === DEFAULT_CASHEA_STATUS_FILTER ? undefined : value }) });
   };
@@ -56,10 +66,19 @@ export function CasheaPage() {
             : undefined
         }
         getRowId={(row) => row.id}
+        meta={tableMeta}
         emptyMessage={getEmptyMessage(filter, hasRange)}
         getRowAriaLabel={(row) => `Orden Cashea ${row.order_number}`}
         scrollAreaLabel="Cuentas por cobrar Cashea"
       />
+      {voidDialog.target && (
+        <VoidCasheaOrderDialog
+          key={voidDialog.key}
+          isOpen={voidDialog.isOpen}
+          onOpenChange={voidDialog.setIsOpen}
+          order={voidDialog.target}
+        />
+      )}
     </section>
   );
 }

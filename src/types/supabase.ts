@@ -1205,6 +1205,15 @@ export type Database = {
         Args: { p_active: boolean; p_business_id: string; p_product_id: string };
         Returns: undefined;
       };
+      void_cashea_order: {
+        Args: {
+          p_business_id: string;
+          p_note: string;
+          p_order_id: string;
+          p_reason: Database["public"]["Enums"]["cashea_void_reason"];
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       cashea_order_status: "pending" | "collected" | "voided";

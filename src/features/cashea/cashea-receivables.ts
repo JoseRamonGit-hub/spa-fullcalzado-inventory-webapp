@@ -1,4 +1,4 @@
-import type { CalendarDateRange, CasheaOrder, CasheaOrderStatus, CasheaOrdersFilter } from "@/types";
+import type { CalendarDateRange, CasheaOrder, CasheaOrderStatus, CasheaOrdersFilter, CasheaVoidReason } from "@/types";
 import { formatDateForBackend } from "@/utils/formatters";
 
 export const casheaStatusFilters = ["pending", "collected", "voided", "all"] as const;
@@ -18,6 +18,11 @@ export const casheaOrderStatusLabels: Record<CasheaOrderStatus, string> = {
   pending: "Pendiente",
   collected: "Cobrada",
   voided: "Anulada",
+};
+
+export const casheaVoidReasonLabels: Record<CasheaVoidReason, string> = {
+  customer_return: "Devolución del cliente",
+  registration_error: "Error de registro",
 };
 
 const DEFAULT_PERIOD_DAYS = 30;

@@ -1,11 +1,24 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
+import { Ban, Ellipsis } from "lucide-react";
 import type { CasheaOrder, CasheaOrderStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { formatCalendarDateString, formatCurrencyUSD, formatInteger } from "@/utils/formatters";
 import { casheaOrderStatusLabels, getCasheaOrderAgeDays } from "./cashea-receivables";
 
 const columnHelper = createColumnHelper<CasheaOrder>();
+
+export type CasheaTableMeta = {
+  canVoidOrder: (order: CasheaOrder) => boolean;
+  onVoidOrder: (order: CasheaOrder) => void;
+};
 
 const statusBadgeVariants: Record<CasheaOrderStatus, "warning" | "success" | "secondary"> = {
   pending: "warning",
@@ -66,4 +79,33 @@ export const columns = [
       <span className="tabular-value text-muted-foreground block text-right">{formatAgeDays(getValue())}</span>
     ),
   }),
+  columnHelper.display({
+    id: "actions",
+    header: () => <span className="sr-only">Acciones</span>,
+    meta: { className: "w-10" },
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as CasheaTableMeta | undefined;
+      if (!meta?.canVoidOrder(row.original)) return null;
+
+      return <OrderActions order={row.original} onVoid={() => meta.onVoidOrder(row.original)} />;
+    },
+  }),
 ] as ColumnDef<CasheaOrder>[];
+
+function OrderActions({ order, onVoid }: { order: CasheaOrder; onVoid: () => void }) {
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon-sm" aria-label={`Acciones de la orden Cashea ${order.order_number}`}>
+          <Ellipsis aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-40">
+        <DropdownMenuItem variant="destructive" onSelect={onVoid}>
+          <Ban aria-hidden="true" />
+          Anular orden
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

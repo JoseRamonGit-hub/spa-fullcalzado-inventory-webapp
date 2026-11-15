@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useStore } from "@tanstack/react-form";
 import { useAppForm } from "@/hooks/form";
+import { validateOnBlur } from "@/utils/form-validators";
 import {
   calculateFinancedUsd,
   EMPTY_CASHEA_ORDER_DRAFT,
@@ -32,10 +33,7 @@ export function useCasheaOrderForm(saleTotalUsd: number) {
         evaluateCasheaOrderDraft({ ...form.state.values, [name]: value }, saleTotalUsd).fieldErrors[name],
     },
     listeners: {
-      // Un campo obligatorio que se deja vacío muestra su error al salir de él.
-      onBlur: ({ fieldApi }: { fieldApi: { validate: (cause: "change") => unknown } }) => {
-        fieldApi.validate("change");
-      },
+      onBlur: validateOnBlur,
       onChange: FINANCED_INPUT_FIELDS.has(name) ? fillFinancedUsd : undefined,
     },
   });

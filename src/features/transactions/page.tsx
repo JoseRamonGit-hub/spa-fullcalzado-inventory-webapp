@@ -8,7 +8,7 @@ import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
 import { SalesSummary } from "./components/sales-summary";
 import { Route } from "@/routes/_app/transactions";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useDialogTarget } from "@/hooks/use-dialog-target";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { AttachCasheaOrderDialog } from "@/features/cashea/components/attach-cashea-order-dialog";
 import { formatDateForBackend } from "@/utils/formatters";
@@ -39,19 +39,13 @@ export function TransactionsPage() {
   } = useCashCloseSummary();
 
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
-  const [attachSaleId, setAttachSaleId] = useState<string | null>(null);
-  const [isAttachDialogOpen, setIsAttachDialogOpen] = useState(false);
-  const [attachDialogKey, setAttachDialogKey] = useState(0);
-  const attachSaleLines = (transactions ?? []).filter((transaction) => transaction.sale_id === attachSaleId);
+  const attachDialog = useDialogTarget<string>();
+  const attachSaleLines = (transactions ?? []).filter((transaction) => transaction.sale_id === attachDialog.target);
 
   const today = formatDateForBackend(new Date());
   const tableMeta: TransactionsTableMeta = {
     canAttachCasheaOrder: (transaction) => canAttachCasheaOrder(transaction, { isAdmin, today }),
-    onAttachCasheaOrder: (saleId) => {
-      setAttachSaleId(saleId);
-      setAttachDialogKey((key) => key + 1);
-      setIsAttachDialogOpen(true);
-    },
+    onAttachCasheaOrder: attachDialog.open,
   };
 
   const isSummaryLoading = isTodayTransactionsLoading || isTodayReturnsLoading || isTodayCashCloseSummaryLoading;
@@ -114,12 +108,12 @@ export function TransactionsPage() {
       <Topbar {...topbarProps} />
       {renderMetrics()}
       {renderContent()}
-      {attachSaleId && (
+      {attachDialog.target && (
         <AttachCasheaOrderDialog
-          key={attachDialogKey}
-          isOpen={isAttachDialogOpen}
-          onOpenChange={setIsAttachDialogOpen}
-          saleId={attachSaleId}
+          key={attachDialog.key}
+          isOpen={attachDialog.isOpen}
+          onOpenChange={attachDialog.setIsOpen}
+          saleId={attachDialog.target}
           saleLines={attachSaleLines}
         />
       )}
