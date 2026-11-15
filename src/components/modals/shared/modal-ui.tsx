@@ -19,6 +19,7 @@ type ModalConfirmDialogProps = {
   onOpenChange: (isOpen: boolean) => void;
   title: string;
   description?: ReactNode;
+  media?: ReactNode;
   confirmLabel: string;
   cancelLabel?: string;
   pendingLabel: string;
@@ -27,6 +28,7 @@ type ModalConfirmDialogProps = {
   onConfirmSubmit: () => void | Promise<void>;
   contentClassName?: string;
   confirmDisabled?: boolean;
+  variant?: "default" | "danger";
   children: ReactNode;
 };
 
@@ -64,6 +66,7 @@ export function ModalConfirmDialog({
   onOpenChange,
   title,
   description,
+  media,
   confirmLabel,
   cancelLabel = "Cancelar",
   pendingLabel,
@@ -72,6 +75,7 @@ export function ModalConfirmDialog({
   onConfirmSubmit,
   contentClassName,
   confirmDisabled = false,
+  variant = "default",
   children,
 }: ModalConfirmDialogProps) {
   const [visibleSubmissionError, setVisibleSubmissionError] = useState<string | null>(null);
@@ -106,12 +110,15 @@ export function ModalConfirmDialog({
         className={cn("max-h-[calc(100dvh-2rem)] gap-3 overflow-y-auto p-4 sm:gap-4 sm:p-5", contentClassName)}
         {...(description ? {} : { "aria-describedby": undefined })}
       >
-        <AlertDialogHeader className="flex flex-col items-stretch gap-0 text-left sm:place-items-start sm:text-left">
-          <AlertDialogTitle className="text-base leading-tight">{title}</AlertDialogTitle>
-          <ActiveBusinessContext className="mt-1" />
-          {description && (
-            <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
-          )}
+        <AlertDialogHeader className="flex flex-row items-center gap-3 text-left sm:text-left">
+          {media}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <AlertDialogTitle className="text-base leading-tight">{title}</AlertDialogTitle>
+            <ActiveBusinessContext className="mt-1" />
+            {description && (
+              <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
+            )}
+          </div>
         </AlertDialogHeader>
 
         {visibleSubmissionError && (
@@ -130,6 +137,7 @@ export function ModalConfirmDialog({
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
+            variant={variant === "danger" ? "destructive" : "default"}
             className="w-full sm:w-auto"
             onClick={(event) => {
               event.preventDefault();

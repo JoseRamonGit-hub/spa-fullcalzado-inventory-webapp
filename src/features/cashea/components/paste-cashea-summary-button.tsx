@@ -1,6 +1,7 @@
-import { ClipboardPaste } from "lucide-react";
 import { toast } from "sonner";
+import { PasteSummary } from "@/components/icons/paste-summary";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CasheaOrderFormApi } from "../hooks/use-cashea-order-form";
 
 type PasteCasheaSummaryButtonProps = {
@@ -8,11 +9,12 @@ type PasteCasheaSummaryButtonProps = {
   disabled?: boolean;
 };
 
+const LABEL = "Pegar resumen";
 const CLIPBOARD_ERROR_MESSAGE = "No se pudo leer el portapapeles. Permite el acceso o escribe los datos a mano.";
 
 /**
- * Lee el resumen copiado del panel de Cashea y rellena los campos de la Orden Cashea que reconoce. Acción secundaria:
- * va en el encabezado de quien muestra `CasheaOrderFields`.
+ * Lee el resumen copiado del panel de Cashea y rellena los campos de la Orden Cashea que reconoce. Acción secundaria
+ * de solo icono: el nombre queda en la descripción emergente y en el nombre accesible.
  */
 export function PasteCasheaSummaryButton({ orderForm, disabled = false }: PasteCasheaSummaryButtonProps) {
   // El texto del portapapeles solo se analiza: no se guarda en ningún estado.
@@ -25,10 +27,20 @@ export function PasteCasheaSummaryButton({ orderForm, disabled = false }: PasteC
   }
 
   return (
-    <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={pasteSummary}>
-      <ClipboardPaste aria-hidden="true" />
-      {/* En móvil queda solo el icono para que el encabezado no se parta; el nombre accesible no cambia. */}
-      <span className="sr-only sm:not-sr-only">Pegar resumen</span>
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          aria-label={LABEL}
+          disabled={disabled}
+          onClick={pasteSummary}
+        >
+          <PasteSummary aria-hidden="true" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{LABEL}</TooltipContent>
+    </Tooltip>
   );
 }

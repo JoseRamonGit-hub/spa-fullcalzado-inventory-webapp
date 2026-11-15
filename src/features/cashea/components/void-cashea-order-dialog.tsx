@@ -1,8 +1,8 @@
 import { useStore } from "@tanstack/react-form";
+import { X } from "lucide-react";
 import { toast } from "sonner";
-import { ConfirmDialogSummarySection, ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
+import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
 import type { RadioGroupFieldOption } from "@/components/forms/radio-group-field";
-import { COMPACT_FIELD_LABEL_CLASS_NAME } from "@/components/forms/field-wrapper";
 import { FieldGroup } from "@/components/ui/field";
 import { useAppForm } from "@/hooks/form";
 import { getBusinessRuleErrorMessage } from "@/lib/errors";
@@ -10,6 +10,8 @@ import type { CasheaOrder, CasheaVoidReason } from "@/types";
 import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
 import { requiredText, validateOnBlur } from "@/utils/form-validators";
 import { casheaVoidReasonLabels } from "../cashea-receivables";
+import { CasheaDialogSummary } from "./cashea-dialog-summary";
+import { CasheaDialogMedia } from "./cashea-logo-icon";
 import { useVoidCasheaOrder } from "../hooks/useCasheaMutations";
 
 const VOID_ERROR_MESSAGE = "No se pudo anular la Orden Cashea. Revisa la conexión e intenta de nuevo.";
@@ -18,13 +20,10 @@ const reasonOptions = [
   {
     value: "customer_return",
     label: casheaVoidReasonLabels.customer_return,
-    description: "Anular la orden no registra la devolución: si la mercancía volvió, regístrala en Devoluciones.",
+    // Anular la orden no reintegra la mercancía: eso lo hace la Devolución.
+    hint: "Registra la devolución en Devoluciones.",
   },
-  {
-    value: "registration_error",
-    label: casheaVoidReasonLabels.registration_error,
-    description: "La venta no era Cashea o la orden se registró por error.",
-  },
+  { value: "registration_error", label: casheaVoidReasonLabels.registration_error },
 ] satisfies (RadioGroupFieldOption & { value: CasheaVoidReason })[];
 
 type VoidCasheaOrderDialogProps = {
@@ -46,36 +45,42 @@ export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCashe
     onOpenChange(false);
   }
 
-  const summary = [
-    { label: "N° de orden", value: order.order_number },
-    { label: "N° de factura", value: order.invoice_number },
-    { label: "Fecha de la venta", value: formatCalendarDateString(order.sale_date) },
-    { label: "Monto financiado", value: formatCurrencyUSD(order.financed_usd) },
-  ];
-
   return (
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="Anular orden Cashea"
-      description="La venta sigue facturada y el inventario no cambia."
+      title={`Anular orden Cashea #${order.order_number}`}
+      media={
+        <CasheaDialogMedia
+          badgeIcon={<X strokeWidth={3} aria-hidden="true" />}
+          badgeClassName="bg-destructive text-white"
+        />
+      }
       confirmLabel="Anular orden"
       pendingLabel="Anulando..."
       submissionErrorMessage={(error) => getBusinessRuleErrorMessage(error, VOID_ERROR_MESSAGE)}
       isSubmissionPending={voidMutation.isPending}
       onConfirmSubmit={voidOrder}
       confirmDisabled={!orderVoid}
+      variant="danger"
     >
-      <ConfirmDialogSummarySection>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
-          {summary.map(({ label, value }) => (
-            <div key={label} className="min-w-0">
-              <dt className={COMPACT_FIELD_LABEL_CLASS_NAME}>{label}</dt>
-              <dd className="data-value truncate font-medium">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </ConfirmDialogSummarySection>
+      <CasheaDialogSummary
+        label="Datos de la orden"
+        rows={[
+          {
+            label: "Factura",
+            value: (
+              <>
+                {order.invoice_number}
+                <span className="text-muted-foreground"> · {formatCalendarDateString(order.sale_date)}</span>
+              </>
+            ),
+          },
+          { label: "Total de la venta", value: formatCurrencyUSD(order.total_usd) },
+          { label: "Cobrado", value: formatCurrencyUSD(order.paid_today_usd) },
+          { label: "Financiado por Cashea", value: formatCurrencyUSD(order.financed_usd), isKey: true },
+        ]}
+      />
 
       <FieldGroup className="gap-4">
         <form.AppField

@@ -90,7 +90,7 @@ describe("evaluateCasheaOrderDraft", () => {
     expect(evaluation.orderTotalUsd).toBe(100);
     expect(evaluation.sumUsd).toBe(99.98);
     expect(evaluation.sumDifferenceUsd).toBe(-0.02);
-    expect(evaluation.sumError).toBe("Cobrado hoy + Monto financiado debe coincidir con el total de la orden");
+    expect(evaluation.sumError).toBe("Cobrado hoy + Monto financiado no cuadra con el total");
     expect(evaluation.order).toBeNull();
   });
 

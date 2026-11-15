@@ -1,4 +1,4 @@
-import { CircleCheck } from "lucide-react";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import type { CasheaOrderFormApi } from "../hooks/use-cashea-order-form";
@@ -7,7 +7,18 @@ type CasheaOrderFieldsProps = {
   /** Lo que devuelve `useCasheaOrderForm`; su dueño lo limpia con `orderForm.form.reset()`. */
   orderForm: CasheaOrderFormApi;
   disabled?: boolean;
+  /**
+   * Lo que aparece cuando el total de la orden difiere del de la venta. Por defecto, el aviso de que habrá que
+   * confirmarlo más adelante; quien pide la confirmación en el mismo lugar pasa aquí su casilla.
+   */
+  saleTotalMismatchNotice?: ReactNode;
 };
+
+const DEFAULT_SALE_TOTAL_MISMATCH_NOTICE = (
+  <p className="border-warning/40 bg-warning/8 text-warning-foreground rounded-md border px-3 py-2 text-xs font-medium">
+    El total de la orden difiere del total de la venta. Podrás registrarla, pero tendrás que confirmarlo.
+  </p>
+);
 
 // Misma altura (32 px) que los campos de «Agregar producto» en el mismo modal.
 const TEXT_INPUT_PROPS = { compact: true, autoComplete: "off", className: "h-8 text-sm" } as const;
@@ -22,21 +33,24 @@ const AMOUNT_INPUT_PROPS = {
   className: "text-sm tabular-nums",
 } as const;
 
-const TEXT_FIELD_CELL = "min-w-0 @md:col-span-3 @2xl:col-span-1";
-const AMOUNT_FIELD_CELL = "min-w-0 @md:col-span-2 @2xl:col-span-1";
+// Desde 384 px los tres montos comparten fila; antes de eso el Monto financiado baja solo a la suya.
+const TEXT_FIELD_CELL = "min-w-0 @sm:col-span-3 @2xl:col-span-1";
+const AMOUNT_FIELD_CELL = "min-w-0 @sm:col-span-2 @2xl:col-span-1";
 
 /** Los cinco datos de una Orden Cashea con la verificación de la suma contra el total. */
-export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFieldsProps) {
+export function CasheaOrderFields({
+  orderForm,
+  disabled = false,
+  saleTotalMismatchNotice = DEFAULT_SALE_TOTAL_MISMATCH_NOTICE,
+}: CasheaOrderFieldsProps) {
   const { form, evaluation, fieldOptions } = orderForm;
-  const { orderTotalUsd, sumUsd, sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
-  const hasSumCheck = sumUsd !== null || orderTotalUsd !== null;
-  const sumMatches = sumUsd !== null && orderTotalUsd !== null && !sumError;
+  const { sumDifferenceUsd, sumError, saleTotalMismatch } = evaluation;
 
   return (
     <div className="@container flex flex-col gap-3">
       <fieldset
         disabled={disabled}
-        className="grid min-w-0 grid-cols-2 items-start gap-3 @md:grid-cols-6 @2xl:grid-cols-5"
+        className="grid min-w-0 grid-cols-2 items-start gap-3 @sm:grid-cols-6 @2xl:grid-cols-5"
       >
         <div className={TEXT_FIELD_CELL}>
           <form.AppField {...fieldOptions("orderNumber")}>
@@ -69,45 +83,15 @@ export function CasheaOrderFields({ orderForm, disabled = false }: CasheaOrderFi
         </div>
       </fieldset>
 
-      {/* Sin montos escritos no hay nada que verificar: la fila de guiones solo añadía ruido. */}
-      {hasSumCheck && (
-        <div
-          className={cn(
-            "bg-muted/60 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md px-3 py-1.5 text-xs",
-            sumError && "bg-destructive/8",
-          )}
-        >
-          <p className="text-muted-foreground">
-            Cobrado hoy + Monto financiado:{" "}
-            <span data-testid="cashea-sum" className="data-value text-foreground font-semibold">
-              {sumUsd === null ? "—" : formatCurrencyUSD(sumUsd)}
-            </span>
-          </p>
-          <p className="text-muted-foreground">
-            Total de la orden:{" "}
-            <span data-testid="cashea-order-total" className="data-value text-foreground font-semibold">
-              {orderTotalUsd === null ? "—" : formatCurrencyUSD(orderTotalUsd)}
-            </span>
-          </p>
-          {sumMatches && (
-            <p className="text-success ml-auto flex items-center gap-1 font-medium">
-              <CircleCheck className="size-3.5" aria-hidden="true" />
-              Cuadra
-            </p>
-          )}
-          {sumError && sumDifferenceUsd !== null && (
-            <p role="alert" className="text-destructive basis-full font-medium">
-              {sumError}. Diferencia: {formatCurrencyUSD(Math.abs(sumDifferenceUsd))}
-            </p>
-          )}
-        </div>
-      )}
-
-      {saleTotalMismatch && (
-        <p className="border-warning/40 bg-warning/8 text-warning-foreground rounded-md border px-3 py-2 text-xs font-medium">
-          El total de la orden difiere del total de la venta. Podrás registrarla, pero tendrás que confirmarlo.
+      {/* Como el Monto financiado se calcula solo, casi siempre cuadra: la suma solo se menciona cuando no. */}
+      {sumError && sumDifferenceUsd !== null && (
+        <p role="alert" className="text-destructive text-xs font-medium">
+          {sumError}: {sumDifferenceUsd < 0 ? "faltan" : "sobran"}{" "}
+          <span className="data-value">{formatCurrencyUSD(Math.abs(sumDifferenceUsd))}</span>
         </p>
       )}
+
+      {saleTotalMismatch && saleTotalMismatchNotice}
     </div>
   );
 }

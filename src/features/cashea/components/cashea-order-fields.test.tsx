@@ -47,19 +47,25 @@ describe("CasheaOrderFields", () => {
     expect(screen.getByLabelText("Monto financiado")).toHaveValue("59.99");
   });
 
-  it("muestra Cobrado hoy + Monto financiado junto al total y la diferencia cuando no cuadran", () => {
+  it("no menciona la suma mientras Cobrado hoy + Monto financiado cuadra con el total", () => {
+    render(<CasheaOrderFieldsHarness />);
+
+    fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
+    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "40" } });
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("avisa la diferencia cuando Cobrado hoy + Monto financiado no cuadra con el total", () => {
     render(<CasheaOrderFieldsHarness />);
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
     fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "40" } });
     fireEvent.change(screen.getByLabelText("Monto financiado"), { target: { value: "50" } });
 
-    expect(screen.getByTestId("cashea-sum")).toHaveTextContent(formatCurrencyUSD(90));
-    expect(screen.getByTestId("cashea-order-total")).toHaveTextContent(formatCurrencyUSD(100));
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Cobrado hoy + Monto financiado debe coincidir con el total de la orden",
+      `Cobrado hoy + Monto financiado no cuadra con el total: faltan ${formatCurrencyUSD(10)}`,
     );
-    expect(screen.getByRole("alert")).toHaveTextContent(formatCurrencyUSD(10));
   });
 
   it("muestra el error de un campo después de salir de él", async () => {

@@ -46,7 +46,7 @@ const MESSAGES = {
   mustBePositive: "Debe ser mayor a 0",
   mustNotBeNegative: "No puede ser negativo",
   financedExceedsSale: "No puede superar el total de la venta",
-  sumMismatch: "Cobrado hoy + Monto financiado debe coincidir con el total de la orden",
+  sumMismatch: "Cobrado hoy + Monto financiado no cuadra con el total",
 } as const;
 
 type ParsedAmount = { cents: number } | { error: string };

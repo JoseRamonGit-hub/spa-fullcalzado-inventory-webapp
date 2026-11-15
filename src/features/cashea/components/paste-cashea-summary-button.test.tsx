@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { toast } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCasheaOrderForm } from "../hooks/use-cashea-order-form";
 import { CasheaOrderFields } from "./cashea-order-fields";
 import { PasteCasheaSummaryButton } from "./paste-cashea-summary-button";
@@ -8,10 +9,10 @@ import { PasteCasheaSummaryButton } from "./paste-cashea-summary-button";
 function CasheaOrderFieldsHarness({ saleTotalUsd = 100 }: { saleTotalUsd?: number }) {
   const orderForm = useCasheaOrderForm(saleTotalUsd);
   return (
-    <>
+    <TooltipProvider>
       <PasteCasheaSummaryButton orderForm={orderForm} />
       <CasheaOrderFields orderForm={orderForm} />
-    </>
+    </TooltipProvider>
   );
 }
 
