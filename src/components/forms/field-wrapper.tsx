@@ -1,6 +1,7 @@
 import { useFieldContext } from "@/hooks/form";
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import type { VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 export type FormFieldProps = {
   label: string;
@@ -9,6 +10,8 @@ export type FormFieldProps = {
   descriptionBelow?: boolean;
   compact?: boolean;
   hideErrorMessage?: boolean;
+  /** Deja la etiqueta solo para lectores de pantalla, cuando el contexto ya nombra el campo. */
+  hideLabel?: boolean;
 };
 
 export const COMPACT_FIELD_LABEL_CLASS_NAME = "text-muted-foreground text-[11px] font-medium tracking-wider uppercase";
@@ -26,6 +29,7 @@ export function FieldWrapper({
   descriptionBelow,
   compact,
   hideErrorMessage = false,
+  hideLabel = false,
 }: FieldWrapperProps) {
   const field = useFieldContext();
 
@@ -39,7 +43,7 @@ export function FieldWrapper({
   const descriptionElement = description && <FieldDescription>{description}</FieldDescription>;
 
   const labelElement = (
-    <FieldLabel htmlFor={field.name} className={compact ? COMPACT_FIELD_LABEL_CLASS_NAME : undefined}>
+    <FieldLabel htmlFor={field.name} className={cn(compact && COMPACT_FIELD_LABEL_CLASS_NAME, hideLabel && "sr-only")}>
       {label}
     </FieldLabel>
   );

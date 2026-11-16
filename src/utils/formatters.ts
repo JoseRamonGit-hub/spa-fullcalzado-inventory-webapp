@@ -32,6 +32,10 @@ const integerFormatter = new Intl.NumberFormat(LOCALE_VE, {
   maximumFractionDigits: 0,
 });
 
+const percentFormatter = new Intl.NumberFormat(LOCALE_VE, {
+  maximumFractionDigits: 2,
+});
+
 // ============================================================================
 // Date & Time Formatters Options
 // ============================================================================
@@ -93,6 +97,12 @@ export function formatCurrencyVES(value: number, options?: { includeCurrency?: b
 export function formatInteger(value: number): string {
   if (typeof value !== "number" || !Number.isFinite(value)) return "0";
   return integerFormatter.format(value);
+}
+
+/** Porcentaje ya expresado sobre 100 (4 → «4 %», 12.5 → «12,5 %»). */
+export function formatPercent(value: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "0 %";
+  return `${percentFormatter.format(value)} %`;
 }
 
 export function formatDate(dateInput?: DateInput): string {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCalendarDateForBackend, formatCurrencyVES, formatInteger } from "./formatters";
+import { formatCalendarDateForBackend, formatCurrencyVES, formatInteger, formatPercent } from "./formatters";
 
 describe("formatCurrencyVES", () => {
   it("incluye la moneda por defecto", () => {
@@ -14,6 +14,13 @@ describe("formatCurrencyVES", () => {
 describe("formatCalendarDateForBackend", () => {
   it("preserva el día elegido en el calendario sin convertirlo a Caracas", () => {
     expect(formatCalendarDateForBackend(new Date(2026, 7, 8))).toBe("2026-08-08");
+  });
+});
+
+describe("formatPercent", () => {
+  it("usa la coma decimal y separa el signo de porcentaje", () => {
+    expect(formatPercent(4)).toBe("4 %");
+    expect(formatPercent(12.5)).toBe("12,5 %");
   });
 });
 

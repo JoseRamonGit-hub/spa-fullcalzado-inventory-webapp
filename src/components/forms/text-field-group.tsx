@@ -22,6 +22,7 @@ export function TextFieldGroup({
   descriptionBelow,
   compact,
   hideErrorMessage,
+  hideLabel,
   passwordEye,
   groupClassName,
   ...props
@@ -39,6 +40,7 @@ export function TextFieldGroup({
       descriptionBelow={descriptionBelow}
       compact={compact}
       hideErrorMessage={hideErrorMessage}
+      hideLabel={hideLabel}
     >
       <InputGroup className={groupClassName}>
         <InputGroupInput

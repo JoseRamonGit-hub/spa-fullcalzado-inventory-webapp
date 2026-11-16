@@ -1,90 +1,37 @@
-import type { ComponentType, ReactNode } from "react";
+import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { ExchangeRateSection } from "./components/exchange-rate-section";
-import { CasheaSettingsSection } from "./components/cashea-settings-section";
-import { Settings, User, Globe } from "lucide-react";
-import { useActiveBusiness } from "@/features/business/hooks/useBusinessQueries";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
-import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
+import { getUserRoleLabel } from "@/features/users/utils/user-labels";
+import { CasheaSettingsSection } from "./components/cashea-settings-section";
+import { ExchangeRateSection } from "./components/exchange-rate-section";
+import { SettingsGroup, SettingsRow } from "./components/settings-group";
 
-type SettingsSectionTitleProps = {
-  icon: ComponentType<{ className?: string }>;
-  children: ReactNode;
-};
-
-function SettingsSectionTitle({ icon: Icon, children }: SettingsSectionTitleProps) {
-  return (
-    <div className="font-heading text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
-      <Icon className="size-3.5" />
-      {children}
-    </div>
-  );
-}
-
-function SettingsInfoRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="border-border/50 flex items-center justify-between border-b py-1.5 last:border-b-0">
-      <span className="text-muted-foreground text-xs">{label}</span>
-      {children}
-    </div>
-  );
-}
+const APP_VERSION = "1.0.0";
 
 export function SettingsPage() {
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === "admin";
-  const activeBusiness = useActiveBusiness();
 
   return (
-    <section className="custom-scrollbar flex flex-1 flex-col overflow-auto">
+    <section className="custom-scrollbar bg-background flex flex-1 flex-col overflow-auto">
       <div className="topbar-height bg-background sticky top-0 z-10 flex shrink-0 items-center gap-2 border-b px-3 md:px-4">
         <BusinessModuleTitle title="Ajustes" />
       </div>
 
-      <div className="flex flex-col gap-3 border-b px-3 py-3 md:px-4">
-        <SettingsSectionTitle icon={Settings}>Tasa de Cambio</SettingsSectionTitle>
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-6 md:py-10">
         <ExchangeRateSection />
-      </div>
 
-      {isAdmin && (
-        <div className="flex flex-col gap-3 border-b px-3 py-3 md:px-4">
-          <SettingsSectionTitle icon={CasheaLogoIcon}>Comisión Cashea</SettingsSectionTitle>
-          <CasheaSettingsSection />
-        </div>
-      )}
+        {isAdmin && <CasheaSettingsSection />}
 
-      <div className="grid grid-cols-1 gap-6 border-b px-3 py-3 sm:grid-cols-2 md:px-4">
-        <div className="flex flex-col gap-3">
-          <SettingsSectionTitle icon={User}>Cuenta</SettingsSectionTitle>
-          <div className="flex flex-col gap-2.5">
-            <SettingsInfoRow label="Nombre">
-              <span className="text-sm font-medium">{user?.fullname || "—"}</span>
-            </SettingsInfoRow>
-            <SettingsInfoRow label="Email">
-              <span className="text-foreground/70 text-sm">{user?.email || "—"}</span>
-            </SettingsInfoRow>
-            <SettingsInfoRow label="Rol">
-              <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-semibold tracking-wider uppercase">
-                {user?.role || "—"}
-              </span>
-            </SettingsInfoRow>
-          </div>
-        </div>
+        <SettingsGroup title="Cuenta">
+          <SettingsRow label={user?.fullname || "—"} description={user?.email || "—"}>
+            {user?.role && <Badge>{getUserRoleLabel(user.role)}</Badge>}
+          </SettingsRow>
+        </SettingsGroup>
 
-        <div className="flex flex-col gap-3">
-          <SettingsSectionTitle icon={Globe}>Aplicación</SettingsSectionTitle>
-          <div className="flex flex-col gap-2.5">
-            <SettingsInfoRow label="Nombre">
-              <span className="text-sm font-medium">{activeBusiness?.name ?? "—"}</span>
-            </SettingsInfoRow>
-            <SettingsInfoRow label="Versión">
-              <span className="font-mono text-sm tabular-nums">1.0.0</span>
-            </SettingsInfoRow>
-            <SettingsInfoRow label="Autor">
-              <span className="text-sm font-medium">Anderson R. Román</span>
-            </SettingsInfoRow>
-          </div>
-        </div>
+        <p className="text-muted-foreground text-center text-xs">
+          Full Calzado · Versión <span className="tabular-nums">{APP_VERSION}</span> · Anderson R. Román
+        </p>
       </div>
     </section>
   );
