@@ -30,14 +30,23 @@ SELECT results_eq(
   'Cada negocio arranca con Comisiones Cashea de 4% y 4%'
 );
 
+-- Solo los cierres anteriores a Cashea: los que genera generate_daily_cash_close
+-- desde entonces guardan el desglose aunque sea 0.
 SELECT is(
   (
     SELECT count(*)::integer
     FROM public.cash_closes
-    WHERE cashea_receivable_usd IS NOT NULL
-      OR cashea_receivable_ves IS NOT NULL
-      OR cashea_voided_return_usd IS NOT NULL
-      OR cashea_voided_return_ves IS NOT NULL
+    WHERE id IN (
+        'e0000000-0000-0000-0000-000000000001',
+        'e0000000-0000-0000-0000-000000000002',
+        'e0000000-0000-0000-0000-000000000003'
+      )
+      AND (
+        cashea_receivable_usd IS NOT NULL
+        OR cashea_receivable_ves IS NOT NULL
+        OR cashea_voided_return_usd IS NOT NULL
+        OR cashea_voided_return_ves IS NOT NULL
+      )
   ),
   0,
   'Los cierres existentes quedan con el desglose Cashea en null'

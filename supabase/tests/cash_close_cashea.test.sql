@@ -3,12 +3,12 @@
 -- El cierre de caja separa el Por cobrar Cashea y el Cashea anulado por
 -- devolución (REQ-004, D-05, D-14).
 -- Requires the deterministic local seed: Zapatería Estilos has no activity
--- today and no Órdenes Cashea before CURRENT_DATE - 3.
+-- today nor between CURRENT_DATE - 12 and CURRENT_DATE - 10.
 -- ============================================================================
 
 BEGIN;
 
-SELECT plan(14);
+SELECT plan(13);
 
 SELECT set_config('test.today', ((now() AT TIME ZONE 'America/Caracas')::date)::text, true);
 
@@ -226,23 +226,6 @@ SELECT is_empty(
     FROM historical_closes
   $$,
   'Los cierres previos no cambian'
-);
-
-SELECT is(
-  (
-    SELECT count(*)::integer
-    FROM public.cash_closes
-    WHERE business_id = '10000000-0000-0000-0000-000000000002'
-      AND date < current_setting('test.today')::date
-      AND (
-        cashea_receivable_usd IS NOT NULL
-        OR cashea_receivable_ves IS NOT NULL
-        OR cashea_voided_return_usd IS NOT NULL
-        OR cashea_voided_return_ves IS NOT NULL
-      )
-  ),
-  0,
-  'Los cierres previos conservan null en el desglose Cashea'
 );
 
 -- ─── Qué órdenes cuentan ────────────────────────────────────────────────────
