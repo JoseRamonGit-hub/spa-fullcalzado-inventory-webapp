@@ -3,6 +3,7 @@ import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate } from "@/utils/formatters";
+import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
 import { CasheaStatusIndicator } from "./components/cashea-status-indicator";
 
 const columnHelper = createColumnHelper<CashCloseRow>();
@@ -62,8 +63,14 @@ export const columns = [
   }),
   columnHelper.display({
     id: "cashea",
-    meta: { className: "w-20 text-center" },
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Cashea" />,
+    meta: { className: "w-36" },
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title="Cashea"
+        icon={<CasheaLogoIcon className="size-3.5 rounded-[3px]" />}
+      />
+    ),
     cell: ({ row }) => <CasheaStatusIndicator status={row.original.cashea} />,
   }),
   columnHelper.display({

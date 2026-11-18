@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Column } from "@tanstack/react-table";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -5,18 +6,26 @@ import { cn } from "@/lib/utils";
 type DataTableColumnHeaderProps<TData, TValue> = {
   column: Column<TData, TValue>;
   title: string;
+  /** Icono decorativo antes del título (p. ej. el logo de una integración). */
+  icon?: ReactNode;
   className?: string;
 };
 
 export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
+  icon,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   "use no memo";
 
   if (!column.getCanSort()) {
-    return <div className={cn("uppercase", className)}>{title}</div>;
+    return (
+      <div className={cn("uppercase", icon && "flex items-center gap-1.5", className)}>
+        {icon}
+        {title}
+      </div>
+    );
   }
 
   const sorted = column.getIsSorted();
@@ -39,6 +48,7 @@ export function DataTableColumnHeader<TData, TValue>({
         onClick={column.getToggleSortingHandler()}
         aria-label={sortActionLabel}
       >
+        {icon}
         {title}
         {sorted === "asc" ? (
           <ChevronUp className="size-3" aria-hidden="true" />
