@@ -10,7 +10,7 @@ import { useCasheaNoteField } from "../hooks/use-cashea-note-field";
 import { useAdjustCasheaOrder } from "../hooks/useCasheaMutations";
 import { useCasheaSaleTotal } from "../hooks/useCasheaQueries";
 import { CasheaDialogSummary } from "./cashea-dialog-summary";
-import { CasheaDialogMedia } from "./cashea-logo-icon";
+import { CasheaBadgedLogo } from "./cashea-logo-icon";
 import { CasheaOrderFormCard } from "./cashea-order-form-card";
 
 const ADJUST_ERROR_MESSAGE = "No se pudo ajustar la Orden Cashea. Revisa la conexión e intenta de nuevo.";
@@ -50,7 +50,7 @@ export function AdjustCasheaOrderDialog({ isOpen, onOpenChange, order }: AdjustC
       onOpenChange={onOpenChange}
       title={`Ajustar orden Cashea #${order.order_number}`}
       media={
-        <CasheaDialogMedia
+        <CasheaBadgedLogo
           badgeIcon={<Pen strokeWidth={2.5} aria-hidden="true" />}
           badgeClassName="bg-exchange text-exchange-foreground [&_svg]:size-2.5"
         />

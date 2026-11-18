@@ -7,7 +7,7 @@ import { useCasheaNoteField } from "../hooks/use-cashea-note-field";
 import { useRevertCasheaDeposit } from "../hooks/useCasheaMutations";
 import { useCasheaDeposit } from "../hooks/useCasheaQueries";
 import { CasheaDialogSummary } from "./cashea-dialog-summary";
-import { CasheaDialogMedia } from "./cashea-logo-icon";
+import { CasheaBadgedLogo } from "./cashea-logo-icon";
 
 const REVERT_ERROR_MESSAGE = "No se pudo revertir el Depósito Cashea. Revisa la conexión e intenta de nuevo.";
 
@@ -42,7 +42,7 @@ export function RevertCasheaDepositDialog({ isOpen, onOpenChange, depositId }: R
       onOpenChange={onOpenChange}
       title="Revertir depósito Cashea"
       media={
-        <CasheaDialogMedia
+        <CasheaBadgedLogo
           badgeIcon={<Undo2 strokeWidth={3} aria-hidden="true" />}
           badgeClassName="bg-destructive text-white"
         />

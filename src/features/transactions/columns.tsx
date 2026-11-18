@@ -7,7 +7,7 @@ import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { formatCurrencyUSD, formatCurrencyVES, formatDateForBackend, formatDateTime } from "@/utils/formatters";
 import { useNavigate } from "@tanstack/react-router";
 import { IterationCcw } from "lucide-react";
-import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
+import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
 import { Button } from "@/components/ui/button";
 import { getActiveCasheaOrder } from "./sales-display";
 
@@ -129,7 +129,7 @@ function CasheaBadge({ orderNumber }: { orderNumber: string }) {
 
   return (
     <Badge variant="outline" className="px-1.5 py-0 text-[11px]" title={label} aria-label={label}>
-      <img src={casheaLogo} alt="" aria-hidden="true" className="size-3 rounded-[3px]" />
+      <CasheaLogoIcon className="size-3 rounded-[3px]" />
       <span aria-hidden="true">Cashea</span>
     </Badge>
   );
@@ -150,7 +150,7 @@ function AttachCasheaOrderButton({ onClick }: { onClick: () => void }) {
       aria-label="Asociar orden Cashea"
       title="Asociar orden Cashea"
     >
-      <img src={casheaLogo} alt="" aria-hidden="true" className="size-4 rounded-[3px]" />
+      <CasheaLogoIcon />
     </Button>
   );
 }

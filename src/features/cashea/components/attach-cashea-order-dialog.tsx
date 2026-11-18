@@ -8,7 +8,7 @@ import type { TransactionWithRelations } from "@/types";
 import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
 import { useConfirmableCasheaOrderForm } from "../hooks/use-cashea-order-form";
 import { useAttachCasheaOrder } from "../hooks/useCasheaMutations";
-import { CasheaDialogMedia } from "./cashea-logo-icon";
+import { CasheaBadgedLogo } from "./cashea-logo-icon";
 import { CasheaOrderFormCard } from "./cashea-order-form-card";
 
 const ATTACH_ERROR_MESSAGE = "No se pudo asociar la Orden Cashea. Revisa la conexión e intenta de nuevo.";
@@ -41,7 +41,7 @@ export function AttachCasheaOrderDialog({ isOpen, onOpenChange, saleId, saleLine
       onOpenChange={onOpenChange}
       title="Asociar venta a orden Cashea"
       media={
-        <CasheaDialogMedia
+        <CasheaBadgedLogo
           badgeIcon={<Plus strokeWidth={3} aria-hidden="true" />}
           badgeClassName="bg-success text-success-foreground"
         />
