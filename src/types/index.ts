@@ -22,6 +22,12 @@ export type CasheaDeposit = Tables<"cashea_deposits">;
 export type CasheaOrderStatus = Database["public"]["Enums"]["cashea_order_status"];
 export type CasheaVoidReason = Database["public"]["Enums"]["cashea_void_reason"];
 export type CasheaCollectionStatus = Database["public"]["Functions"]["get_cashea_collection_status"]["Returns"][number];
+export type CasheaReceivableSummary = Omit<
+  Database["public"]["Functions"]["get_cashea_receivable_summary"]["Returns"][number],
+  "oldest_sale_date"
+> & {
+  oldest_sale_date: string | null;
+};
 
 export type CalendarDateRange = {
   from?: string;

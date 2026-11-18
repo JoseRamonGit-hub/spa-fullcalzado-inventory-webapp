@@ -1089,6 +1089,15 @@ export type Database = {
           sale_date: string;
         }[];
       };
+      get_cashea_receivable_summary: {
+        Args: { p_business_id: string };
+        Returns: {
+          expected_net_usd: number;
+          financed_usd: number;
+          oldest_sale_date: string;
+          orders_count: number;
+        }[];
+      };
       get_dashboard_daily_metrics: {
         Args: { p_business_id: string };
         Returns: {

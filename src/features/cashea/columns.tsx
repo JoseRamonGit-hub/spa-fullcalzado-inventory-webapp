@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { narrowActionsColumn } from "@/components/ui/data-table-actions-column";
-import { formatCalendarDateString, formatCurrencyUSD, formatInteger } from "@/utils/formatters";
-import { casheaOrderStatusLabels, getCasheaOrderAgeDays } from "./cashea-receivables";
+import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
+import { casheaOrderStatusLabels, formatCasheaAgeDays, getCasheaOrderAgeDays } from "./cashea-receivables";
 
 const columnHelper = createColumnHelper<CasheaOrder>();
 
@@ -32,11 +32,6 @@ const statusBadgeVariants: Record<CasheaOrderStatus, "warning" | "success" | "se
   collected: "success",
   voided: "secondary",
 };
-
-function formatAgeDays(days: number | null) {
-  if (days == null) return "—";
-  return `${formatInteger(days)} ${days === 1 ? "día" : "días"}`;
-}
 
 function amountColumn(key: "total_usd" | "paid_today_usd" | "financed_usd" | "expected_net_usd", title: string) {
   return columnHelper.accessor(key, {
@@ -83,7 +78,7 @@ export const columns = [
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Antigüedad" className="justify-end" />,
     cell: ({ getValue }) => (
-      <span className="tabular-value text-muted-foreground block text-right">{formatAgeDays(getValue())}</span>
+      <span className="tabular-value text-muted-foreground block text-right">{formatCasheaAgeDays(getValue())}</span>
     ),
   }),
   narrowActionsColumn<CasheaOrder, CasheaTableMeta>((order, meta) =>

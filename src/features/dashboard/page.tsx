@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./components/dashboard-metric-card";
 import { SalesPeriodSection } from "./components/sales-period-section";
+import { CasheaReceivableCard } from "./components/cashea-receivable-card";
 import { ProductStockAlertsSection } from "./components/product-stock-alerts-section";
 import { useDashboardMetrics } from "./hooks/useDashboardMetrics";
 import { DEFAULT_SALES_PERIOD, type DashboardSalesPeriodSelection } from "./sales-period";
@@ -52,60 +53,59 @@ export function DashboardPage() {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3">
           <h2 className="font-heading text-base font-semibold">Indicadores de hoy</h2>
 
-          {metricsQuery.isPending ? (
-            <div
-              className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-4"
-              aria-label="Cargando indicadores"
-            >
-              {Array.from({ length: 4 }).map((_, index) => (
-                <DashboardMetricCardSkeleton key={index} />
-              ))}
-            </div>
-          ) : metricsQuery.isError ? (
-            <div className="flex min-h-48 flex-col items-center justify-center gap-3 rounded-xl border p-6 text-center">
-              <div className="bg-destructive/10 text-destructive flex size-10 items-center justify-center rounded-lg">
-                <TriangleAlert className="size-5" aria-hidden="true" />
+          <div
+            className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-5"
+            aria-busy={metricsQuery.isPending}
+          >
+            {metricsQuery.isPending ? (
+              Array.from({ length: 4 }).map((_, index) => <DashboardMetricCardSkeleton key={index} />)
+            ) : metricsQuery.isError ? (
+              <div className="col-span-full flex min-h-48 flex-col items-center justify-center gap-3 rounded-xl border p-6 text-center">
+                <div className="bg-destructive/10 text-destructive flex size-10 items-center justify-center rounded-lg">
+                  <TriangleAlert className="size-5" aria-hidden="true" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-semibold">No se pudieron cargar los indicadores.</p>
+                  <p className="text-muted-foreground text-xs">Verifica la conexión e inténtalo de nuevo.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => metricsQuery.refetch()}>
+                  <RefreshCw data-icon="inline-start" />
+                  Reintentar
+                </Button>
               </div>
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-semibold">No se pudieron cargar los indicadores.</p>
-                <p className="text-muted-foreground text-xs">Verifica la conexión e inténtalo de nuevo.</p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => metricsQuery.refetch()}>
-                <RefreshCw data-icon="inline-start" />
-                Reintentar
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-4">
-              <DashboardMetricCard
-                title="Total producido"
-                value={formatCurrencyUSD(metricsQuery.data.total_produced_usd)}
-                description={`Facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)}`}
-                icon={CircleDollarSign}
-                emphasis="primary"
-              />
-              <DashboardMetricCard
-                title="Operaciones facturadas"
-                value={String(metricsQuery.data.billed_operations)}
-                description={formatUnitsSold(metricsQuery.data.units_sold)}
-                icon={ReceiptText}
-              />
-              <DashboardMetricCard
-                title="Stock disponible"
-                value={`${formatInteger(metricsQuery.data.stock_units)} unidades`}
-                description={`${metricsQuery.data.products_in_stock} productos con stock`}
-                icon={Package}
-              />
-              <DashboardMetricCard
-                title="Stock bajo"
-                value={String(metricsQuery.data.low_stock_products)}
-                icon={TriangleAlert}
-                emphasis={metricsQuery.data.low_stock_products > 0 ? "warning" : undefined}
-                actionLabel={metricsQuery.data.low_stock_products > 0 ? "Revisar stock bajo" : undefined}
-                onAction={() => navigate({ to: "/inventory", search: { status: "low_stock" } })}
-              />
-            </div>
-          )}
+            ) : (
+              <>
+                <DashboardMetricCard
+                  title="Total producido"
+                  value={formatCurrencyUSD(metricsQuery.data.total_produced_usd)}
+                  description={`Facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)}`}
+                  icon={CircleDollarSign}
+                  emphasis="primary"
+                />
+                <DashboardMetricCard
+                  title="Operaciones facturadas"
+                  value={String(metricsQuery.data.billed_operations)}
+                  description={formatUnitsSold(metricsQuery.data.units_sold)}
+                  icon={ReceiptText}
+                />
+                <DashboardMetricCard
+                  title="Stock disponible"
+                  value={`${formatInteger(metricsQuery.data.stock_units)} unidades`}
+                  description={`${metricsQuery.data.products_in_stock} productos con stock`}
+                  icon={Package}
+                />
+                <DashboardMetricCard
+                  title="Stock bajo"
+                  value={String(metricsQuery.data.low_stock_products)}
+                  icon={TriangleAlert}
+                  emphasis={metricsQuery.data.low_stock_products > 0 ? "warning" : undefined}
+                  actionLabel={metricsQuery.data.low_stock_products > 0 ? "Revisar stock bajo" : undefined}
+                  onAction={() => navigate({ to: "/inventory", search: { status: "low_stock" } })}
+                />
+              </>
+            )}
+            <CasheaReceivableCard />
+          </div>
 
           <ProductStockAlertsSection />
           <SalesPeriodSection selection={salesPeriod} onSelectionChange={setSalesPeriod} />

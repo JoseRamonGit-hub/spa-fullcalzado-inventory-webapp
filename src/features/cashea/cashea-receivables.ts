@@ -1,5 +1,5 @@
 import type { CalendarDateRange, CasheaOrder, CasheaOrderStatus, CasheaOrdersFilter, CasheaVoidReason } from "@/types";
-import { formatDateForBackend } from "@/utils/formatters";
+import { formatDateForBackend, formatInteger } from "@/utils/formatters";
 
 export const casheaStatusFilters = ["pending", "collected", "voided", "all"] as const;
 
@@ -77,6 +77,11 @@ export function getCasheaOrderAgeDays(saleDate: string, today = formatDateForBac
   if (!isCalendarDate(saleDate) || !isCalendarDate(today)) return null;
 
   return Math.round((calendarDateToUtcTime(today) - calendarDateToUtcTime(saleDate)) / 86_400_000);
+}
+
+export function formatCasheaAgeDays(days: number | null) {
+  if (days == null) return "—";
+  return `${formatInteger(days)} ${days === 1 ? "día" : "días"}`;
 }
 
 export type CasheaPendingSummary = {

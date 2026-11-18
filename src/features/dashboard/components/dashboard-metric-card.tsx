@@ -13,6 +13,7 @@ type DashboardMetricCardProps = {
   emphasis?: "primary" | "warning";
   actionLabel?: string;
   onAction?: () => void;
+  className?: string;
 };
 
 export function DashboardMetricCard({
@@ -23,9 +24,10 @@ export function DashboardMetricCard({
   emphasis,
   actionLabel,
   onAction,
+  className,
 }: DashboardMetricCardProps) {
   return (
-    <Card className={cn("h-full min-w-0 gap-3 py-3", emphasis === "warning" && "bg-warning/5")}>
+    <Card className={cn("h-full min-w-0 gap-3 py-3", emphasis === "warning" && "bg-warning/5", className)}>
       <CardHeader className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-3 px-4">
         <CardTitle
           role="heading"
@@ -66,9 +68,9 @@ export function DashboardMetricCard({
   );
 }
 
-export function DashboardMetricCardSkeleton() {
+export function DashboardMetricCardSkeleton({ className }: { className?: string }) {
   return (
-    <Card className="h-full min-w-0 gap-3 py-3">
+    <Card className={cn("h-full min-w-0 gap-3 py-3", className)}>
       <CardHeader className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-3 px-4">
         <Skeleton className="h-3 w-28" />
         <Skeleton className="size-8 rounded-lg" />

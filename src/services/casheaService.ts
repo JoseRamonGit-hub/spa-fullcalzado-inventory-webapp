@@ -10,6 +10,7 @@ import type {
   CasheaOrderInput,
   CasheaOrderVoid,
   CasheaOrdersFilter,
+  CasheaReceivableSummary,
   CasheaSettings,
   CasheaSettingsUpdate,
 } from "@/types";
@@ -41,6 +42,16 @@ export const casheaService = {
       p_from: date,
       p_to: date,
     });
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
+  getReceivableSummary: async (businessId: string, signal?: AbortSignal): Promise<CasheaReceivableSummary> => {
+    let query = supabase.rpc("get_cashea_receivable_summary", { p_business_id: businessId });
+    if (signal) query = query.abortSignal(signal);
+
+    const { data, error } = await query.single();
 
     if (error) throw toServiceError(error);
     return data;
