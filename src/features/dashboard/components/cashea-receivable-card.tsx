@@ -6,7 +6,7 @@ import { useDashboardCasheaReceivable } from "../hooks/useDashboardMetrics";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./dashboard-metric-card";
 
 const CARD_CLASS_NAME = "min-[360px]:max-xl:col-span-2";
-const TITLE = "Por cobrar Cashea";
+const TITLE = "Saldo pendiente Cashea";
 
 export function CasheaReceivableCard() {
   const navigate = useNavigate();
