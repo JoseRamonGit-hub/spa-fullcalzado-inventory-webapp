@@ -1,152 +1,207 @@
 import { useState } from "react";
-import { useCashCloses, useCashCloseSummary } from "./hooks/useCashCloseQueries";
-import { useGenerateCashClose } from "./hooks/useCashCloseMutations";
-import { Topbar } from "./components/topbar";
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
-import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { formatDate } from "@/utils/formatters";
-import type { CashCloseRow, CashCloseSummary } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
-import { MetricsSummary } from "./components/metrics-summary";
-import { CashCloseModal } from "./components/cash-close-modal";
-import { Route } from "@/routes/_app/cash-closes";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCasheaCollectionStatus } from "@/features/cashea/hooks/useCasheaQueries";
+import { useDialogTarget } from "@/hooks/use-dialog-target";
+import { Route } from "@/routes/_app/cash-closes";
+import { formatDate, formatDateForBackend } from "@/utils/formatters";
+import {
+  buildCashCloseHistory,
+  getCashCloseDayState,
+  getSummaryFigures,
+  type CashCloseHistoryRow,
+} from "./cash-close-ledger";
+import { columns } from "./columns";
+import { CashCloseModal } from "./components/cash-close-modal";
+import { CashCloseSheet } from "./components/cash-close-sheet";
+import { DayClosePanel, DayClosePanelSkeleton, type DayCloseState } from "./components/day-close-panel";
+import { Topbar } from "./components/topbar";
+import { useGenerateCashClose } from "./hooks/useCashCloseMutations";
+import { useCashCloses, useCashCloseSummary, useUnclosedCashCloseDays } from "./hooks/useCashCloseQueries";
 
-const EMPTY_CASH_CLOSE_SUMMARY: CashCloseSummary = {
-  billedOperations: 0,
-  units: 0,
-  totalUsd: 0,
-  totalVes: 0,
-  returnsCount: 0,
-  returnsCreditUsd: 0,
-  returnsCreditVes: 0,
-  netUsd: 0,
-  netVes: 0,
-  casheaReceivableUsd: 0,
-  casheaReceivableVes: 0,
-  casheaVoidedReturnUsd: 0,
-  casheaVoidedReturnVes: 0,
-};
+const OPEN_ROW_CLASS_NAME = "bg-primary/8 hover:bg-primary/10 shadow-[inset_2px_0_0_var(--color-primary)]";
+/** Un día con ventas sin cierre es la excepción que el dueño busca: se ve al recorrer las fechas. */
+const UNCLOSED_ROW_CLASS_NAME = "bg-warning/10 hover:bg-warning/15 shadow-[inset_2px_0_0_var(--color-warning)]";
 
 export function CashClosesPage() {
   const { date } = Route.useSearch();
+  const navigate = useNavigate({ from: "/cash-closes" });
+  const user = useAuthStore((s) => s.user);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const isFiltered = !!date;
+  const detailSheet = useDialogTarget<CashCloseHistoryRow>();
 
   const { data: cashCloses, isLoading, isError, isFetching, refetch } = useCashCloses(date);
-  const { data: cashCloseSummary, isLoading: isMetricsLoading, isError: hasMetricsError } = useCashCloseSummary(date);
+  const summaryQuery = useCashCloseSummary(date);
+  const unclosedQuery = useUnclosedCashCloseDays();
   const { data: casheaStatuses } = useCasheaCollectionStatus(date);
   const closeMutation = useGenerateCashClose();
-  const user = useAuthStore((s) => s.user);
-  const navigate = useNavigate({ from: "/cash-closes" });
 
   const setDate = (value: string | undefined) => {
     navigate({ search: (prev) => ({ ...prev, date: value }) });
   };
 
-  const summaryMetrics = cashCloseSummary ?? EMPTY_CASH_CLOSE_SUMMARY;
-  const casheaStatusByDate = new Map(casheaStatuses?.map((status) => [status.sale_date, status]));
-  const rows: CashCloseRow[] = (cashCloses ?? []).map((cashClose) => ({
-    ...cashClose,
-    cashea: casheaStatusByDate.get(cashClose.date),
-  }));
+  const todayKey = formatDateForBackend(new Date());
+  const viewedDate = date ?? todayKey;
+  const isToday = viewedDate === todayKey;
+  const viewedDateLabel = formatDate(`${viewedDate}T12:00:00`);
+  const panelTitle = isToday ? `Hoy · ${viewedDateLabel}` : viewedDateLabel;
+
+  const unclosedDays = unclosedQuery.data ?? [];
+  const rows = buildCashCloseHistory({
+    cashCloses: cashCloses ?? [],
+    unclosedDays: date ? unclosedDays.filter((day) => day.date === date) : unclosedDays,
+    casheaStatuses: casheaStatuses ?? [],
+  });
+
+  const figures = summaryQuery.data ? getSummaryFigures(summaryQuery.data) : null;
+  const dayState: DayCloseState | null =
+    isError || summaryQuery.isError
+      ? {
+          kind: "unverified",
+          reason: isError ? "close" : "summary",
+          isRetrying: (isError && isFetching) || (summaryQuery.isError && summaryQuery.isFetching),
+          retry: () => {
+            if (isError) refetch();
+            if (summaryQuery.isError) summaryQuery.refetch();
+          },
+        }
+      : figures && cashCloses
+        ? getCashCloseDayState({
+            viewedDate,
+            todayKey,
+            figures,
+            cashClose: cashCloses.find((cashClose) => cashClose.date === viewedDate),
+            // Con un día filtrado la lista solo trae ese cierre: no hay último cierre que comparar.
+            lastClose: date ? undefined : cashCloses.find((cashClose) => cashClose.date < todayKey),
+            unclosedDates: date ? [] : unclosedDays.map((day) => day.date),
+          })
+        : null;
+  const previousClose = dayState?.kind === "outdated" ? dayState.cashClose : undefined;
+  const canSave = Boolean(user && (dayState?.kind === "open" || dayState?.kind === "outdated"));
+
+  if (confirmOpen && !canSave && !closeMutation.isPending) {
+    setConfirmOpen(false);
+  }
 
   const handleConfirmClose = async () => {
-    if (!user) return;
+    if (!canSave || closeMutation.isPending) return;
 
     const promise = closeMutation.mutateAsync(undefined);
     toast.promise(promise, {
-      loading: "Generando cierre de caja...",
-      success: "Cierre realizado correctamente",
-      error: "Error al realizar el cierre",
+      loading: previousClose ? "Actualizando el cierre…" : "Cerrando el día…",
+      success: previousClose ? "Cierre actualizado" : "Día cerrado",
+      error: previousClose ? "No se pudo actualizar el cierre" : "No se pudo cerrar el día",
     });
 
     try {
       await promise;
       setConfirmOpen(false);
     } catch {
-      // The mutation error is presented by the toast while the dialog remains open.
+      // El toast presenta el error y el diálogo sigue abierto para reintentar.
     }
   };
 
-  const handleRowClick = (row: CashCloseRow) => {
-    navigate({ to: "/transactions", search: { date: row.date } });
+  const hasHistoryError = (isError && !cashCloses) || (unclosedQuery.isError && !unclosedQuery.data);
+  const retryHistory = () => {
+    if (isError) refetch();
+    if (unclosedQuery.isError) unclosedQuery.refetch();
   };
 
-  const today = formatDate(new Date());
-  const summaryLabel = isFiltered ? `Resumen del ${formatDate(date + "T12:00:00")}` : `Resumen del Día — ${today}`;
-  const metricsErrorMessage = isFiltered
-    ? "No se pudo cargar el resumen de la fecha filtrada."
-    : "No se pudo cargar el resumen del día en este momento.";
+  function renderDayPanel() {
+    if (summaryQuery.isLoading || isLoading || (!cashCloses && !isError)) return <DayClosePanelSkeleton />;
 
-  function renderSummary() {
-    if (isMetricsLoading) {
-      return <MetricsSkeleton count={4} />;
-    }
-
-    if (hasMetricsError && !cashCloseSummary) {
+    if (!figures || !dayState) {
+      if (!summaryQuery.isError) return null;
       return (
         <div className="border-b px-3 py-3 md:px-4">
-          <div className="border-warning/30 bg-warning/10 text-warning-foreground rounded-md border px-3 py-2 text-sm">
-            {metricsErrorMessage}
+          <div
+            role="alert"
+            className="border-warning/30 bg-warning/10 text-warning-foreground flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+          >
+            {isToday ? "No se pudo cargar el cuadre de hoy." : "No se pudo cargar el cuadre de la fecha filtrada."}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => summaryQuery.refetch()}
+              disabled={summaryQuery.isFetching}
+              className="shrink-0"
+            >
+              <RefreshCw data-icon="inline-start" aria-hidden="true" />
+              {summaryQuery.isFetching ? "Reintentando…" : "Reintentar"}
+            </Button>
           </div>
         </div>
       );
     }
 
     return (
-      <MetricsSummary
-        metrics={summaryMetrics}
-        label={summaryLabel}
-        isFiltered={isFiltered}
-        onOpenConfirm={() => setConfirmOpen(true)}
+      <DayClosePanel
+        key={viewedDate}
+        date={viewedDate}
+        title={panelTitle}
+        figures={figures}
+        state={dayState}
+        onRequestClose={() => setConfirmOpen(true)}
         isPending={closeMutation.isPending}
-        hasUser={!!user}
+        canClose={canSave}
       />
-    );
-  }
-
-  function renderContent() {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <DataTable
-          columns={columns}
-          data={rows}
-          isLoading={isLoading}
-          errorState={
-            isError && !cashCloses
-              ? { title: "No pudimos cargar los cierres de caja", onRetry: refetch, isRetrying: isFetching }
-              : undefined
-          }
-          getRowId={(row) => row.id}
-          emptyMessage={
-            date ? "No hay cierres de caja registrados para esta fecha." : "No hay cierres de caja registrados."
-          }
-          onRowClick={handleRowClick}
-          getRowAriaLabel={(row) => `Ver ventas del cierre del ${formatDate(row.date + "T12:00:00")}`}
-          scrollAreaLabel="Cierres de caja"
-        />
-      </div>
     );
   }
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col">
+    <main className="custom-scrollbar @container/cash-close flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
       <Topbar date={date} onDateChange={setDate} />
-      {renderSummary()}
-      {renderContent()}
+      {renderDayPanel()}
 
-      <CashCloseModal
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        isPending={closeMutation.isPending}
-        onConfirm={handleConfirmClose}
-        today={today}
-        metrics={summaryMetrics}
-      />
+      <div className="flex min-h-64 min-w-0 flex-1 flex-col">
+        <h2 className="shrink-0 border-b px-3 pt-3.5 pb-2 text-xs font-semibold md:px-4">Historial</h2>
+        <DataTable
+          tableClassName="[&_td]:px-2 [&_th]:px-2 [&_:is(th,td):nth-child(5)]:ps-6 [&_:is(th,td):first-child]:ps-3 md:[&_:is(th,td):first-child]:ps-4 md:[&_:is(th,td):last-child]:ps-4 [&_th_button]:leading-tight [&_th_button]:whitespace-nowrap [&_th_svg]:shrink-0"
+          columns={columns}
+          data={rows}
+          isLoading={isLoading || unclosedQuery.isLoading}
+          errorState={
+            hasHistoryError
+              ? {
+                  title: "No pudimos cargar los cierres de caja",
+                  onRetry: retryHistory,
+                  isRetrying: isFetching || unclosedQuery.isFetching,
+                }
+              : undefined
+          }
+          getRowId={(row) => row.id}
+          emptyMessage={date ? "Este día no tiene cierre de caja." : "Todavía no hay cierres de caja."}
+          onRowClick={detailSheet.open}
+          getRowClassName={(row) => {
+            if (detailSheet.isOpen && detailSheet.target?.id === row.id) return OPEN_ROW_CLASS_NAME;
+            return row.original.kind === "unclosed" ? UNCLOSED_ROW_CLASS_NAME : undefined;
+          }}
+          getRowAriaLabel={(row) =>
+            row.kind === "closed"
+              ? `Ver el cierre del ${formatDate(`${row.date}T12:00:00`)}`
+              : `Ver el ${formatDate(`${row.date}T12:00:00`)}, día con ventas sin cierre`
+          }
+          scrollAreaLabel="Tabla del historial de cierres"
+        />
+      </div>
+
+      {figures && (
+        <CashCloseModal
+          open={confirmOpen && (canSave || closeMutation.isPending)}
+          onOpenChange={setConfirmOpen}
+          isPending={closeMutation.isPending}
+          onConfirm={handleConfirmClose}
+          dateLabel={viewedDateLabel}
+          figures={figures}
+          previousClose={previousClose}
+        />
+      )}
+
+      <CashCloseSheet row={detailSheet.target} isOpen={detailSheet.isOpen} onOpenChange={detailSheet.setIsOpen} />
     </main>
   );
 }

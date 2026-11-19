@@ -97,7 +97,8 @@ export function DatePickerFilter({
             variant="outline"
             className={cn(
               filterTriggerClassName,
-              value && !disabled && "pe-9",
+              // El botón base fija el padding con has-[>svg]; hay que vencerlo ahí para dejar sitio a la ✕.
+              value && !disabled && "pe-9 has-[>svg]:pe-9",
               filterStateClassName(Boolean(value) && !disabled),
               className,
             )}

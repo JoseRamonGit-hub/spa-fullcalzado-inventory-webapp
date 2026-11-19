@@ -58,7 +58,8 @@ export function CasheaDateRangeFilter({ from, to, placeholder, onChange }: Cashe
             aria-label={hasRange ? `Cambiar rango de fechas. Rango seleccionado: ${label}` : `${label}. Elegir rango`}
           >
             <CalendarDays data-icon="inline-start" aria-hidden="true" className={filterIconClassName(hasRange)} />
-            <span className="max-w-48 truncate">{label}</span>
+            {/* En móvil, sin rango elegido basta el ícono: el periodo por defecto ya lo nombra el aria-label. */}
+            <span className={cn("max-w-48 truncate", !hasRange && "max-md:sr-only")}>{label}</span>
           </Button>
         </PopoverTrigger>
         {hasRange ? (

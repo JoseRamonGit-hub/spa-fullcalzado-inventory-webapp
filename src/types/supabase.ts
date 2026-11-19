@@ -1220,6 +1220,26 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      get_unclosed_cash_close_days: {
+        Args: { p_business_id: string };
+        Returns: {
+          billed_operations: number;
+          cashea_receivable_usd: number;
+          cashea_receivable_ves: number;
+          cashea_voided_return_usd: number;
+          cashea_voided_return_ves: number;
+          date: string;
+          net_usd: number;
+          net_ves: number;
+          total_returns: number;
+          total_returns_usd: number;
+          total_returns_ves: number;
+          total_transactions: number;
+          total_units_sold: number;
+          total_usd: number;
+          total_ves: number;
+        }[];
+      };
       process_return: {
         Args: {
           p_business_id: string;

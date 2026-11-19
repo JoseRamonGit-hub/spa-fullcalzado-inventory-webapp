@@ -102,6 +102,11 @@ VALUES
 
 SELECT set_config('app.suppress_log_entry', 'false', true);
 
+-- El seed puede tener un cierre en la fecha de la fila histórica de esta prueba.
+DELETE FROM public.cash_closes
+WHERE business_id = '10000000-0000-0000-0000-000000000001'
+  AND date = (now() AT TIME ZONE 'America/Caracas')::date - 10;
+
 INSERT INTO public.cash_closes (
   id,
   business_id,

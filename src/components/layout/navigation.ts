@@ -3,7 +3,6 @@ import { ArrowLeftRight, IterationCcw, Package, Settings, ShoppingCart, Users, t
 import { CashRegister } from "@/components/icons/cash-register";
 import { DashboardPanel } from "@/components/icons/dashboard-panel";
 import { ReceivableInvoice } from "@/components/icons/receivable-invoice";
-import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
 
 export type NavItem = {
   title: string;
@@ -42,7 +41,7 @@ export const RECEIVABLES_NAV = {
   title: "Cuentas por cobrar",
   url: "/receivables",
   icon: ReceivableInvoice,
-  items: [{ title: "Cashea", url: "/receivables/cashea", icon: CasheaLogoIcon }] as readonly NavItem[],
+  items: [{ title: "Cashea", url: "/receivables/cashea" }] as readonly Omit<NavItem, "icon">[],
 };
 
 export const USERS_NAV_ITEM: NavItem = { title: "Usuarios", url: "/users", icon: Users };

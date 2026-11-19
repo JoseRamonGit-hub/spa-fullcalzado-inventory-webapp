@@ -90,7 +90,6 @@ function ReceivablesNavItem() {
               <SidebarMenuSubItem key={item.url}>
                 <SidebarMenuSubButton asChild>
                   <Link to={item.url} activeProps={{ className: ACTIVE_LINK_CLASS_NAME }}>
-                    <item.icon />
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuSubButton>

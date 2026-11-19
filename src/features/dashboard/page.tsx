@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { CircleDollarSign, Package, ReceiptText, RefreshCw, TriangleAlert } from "lucide-react";
+import { Package, ReceiptText, RefreshCw, TriangleAlert } from "lucide-react";
+import { CashStack } from "@/components/icons/cash-stack";
+import { PackageLow } from "@/components/icons/package-low";
 import { Button } from "@/components/ui/button";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./components/dashboard-metric-card";
@@ -54,7 +56,7 @@ export function DashboardPage() {
           <h2 className="font-heading text-base font-semibold">Indicadores de hoy</h2>
 
           <div
-            className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-5"
+            className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 xl:grid-cols-4"
             aria-busy={metricsQuery.isPending}
           >
             {metricsQuery.isPending ? (
@@ -79,7 +81,7 @@ export function DashboardPage() {
                   title="Total producido"
                   value={formatCurrencyUSD(metricsQuery.data.total_produced_usd)}
                   description={`Facturado ${formatCurrencyUSD(metricsQuery.data.total_billed_usd)}`}
-                  icon={CircleDollarSign}
+                  icon={CashStack}
                   emphasis="primary"
                 />
                 <DashboardMetricCard
@@ -97,7 +99,7 @@ export function DashboardPage() {
                 <DashboardMetricCard
                   title="Stock bajo"
                   value={String(metricsQuery.data.low_stock_products)}
-                  icon={TriangleAlert}
+                  icon={PackageLow}
                   emphasis={metricsQuery.data.low_stock_products > 0 ? "warning" : undefined}
                   actionLabel={metricsQuery.data.low_stock_products > 0 ? "Revisar stock bajo" : undefined}
                   onAction={() => navigate({ to: "/inventory", search: { status: "low_stock" } })}

@@ -25,7 +25,11 @@ const MOBILE_SECTIONS: readonly NavSection[] = [
   })).filter((section) => section.items.length > 0),
   {
     label: RECEIVABLES_NAV.sectionLabel,
-    items: RECEIVABLES_NAV.items.map((item) => ({ ...item, title: `${RECEIVABLES_NAV.title} ${item.title}` })),
+    items: RECEIVABLES_NAV.items.map((item) => ({
+      ...item,
+      title: `${RECEIVABLES_NAV.title} ${item.title}`,
+      icon: RECEIVABLES_NAV.icon,
+    })),
   },
 ];
 

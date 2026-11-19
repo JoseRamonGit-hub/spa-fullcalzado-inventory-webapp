@@ -1,32 +1,50 @@
-import type { CasheaOrder } from "@/types";
+import { MetricsSkeleton } from "@/components/ui/metrics-skeleton";
+import { useDashboardCasheaReceivable } from "@/features/dashboard/hooks/useDashboardMetrics";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatInteger } from "@/utils/formatters";
-import { getCasheaPendingSummary } from "../cashea-receivables";
+import { formatCasheaAgeDays, getCasheaOrderAgeDays } from "../cashea-receivables";
 
-type CasheaPendingSummaryProps = {
-  orders: readonly CasheaOrder[];
-};
+const MISSING_VALUE = "—";
 
-export function CasheaPendingSummary({ orders }: CasheaPendingSummaryProps) {
-  const summary = getCasheaPendingSummary(orders);
-  const label = "Pendientes de la lista";
+/** Lo que Cashea debe hoy al negocio, sin importar la pestaña, la búsqueda ni el rango que se esté mirando. */
+export function CasheaPendingSummary() {
+  const { data, isPending, isError } = useDashboardCasheaReceivable();
+
+  if (isPending) return <MetricsSkeleton count={4} />;
+
+  const summary = isError ? null : data;
+  const ageDays = summary?.oldest_sale_date ? getCasheaOrderAgeDays(summary.oldest_sale_date) : null;
   const metrics = [
-    { label: "Órdenes pendientes", value: formatInteger(summary.count) },
-    { label: "Saldo pendiente", value: formatCurrencyUSD(summary.financedUsd) },
-    { label: "Neto esperado", value: formatCurrencyUSD(summary.expectedNetUsd) },
+    { label: "Saldo pendiente", value: summary ? formatCurrencyUSD(summary.financed_usd) : MISSING_VALUE },
+    { label: "Neto esperado", value: summary ? formatCurrencyUSD(summary.expected_net_usd) : MISSING_VALUE },
+    { label: "Órdenes pendientes", value: summary ? formatInteger(summary.orders_count) : MISSING_VALUE },
+    { label: "La más antigua", value: ageDays == null ? MISSING_VALUE : formatCasheaAgeDays(ageDays) },
   ];
 
   return (
-    <section className="shrink-0 border-b px-3 py-2.5 md:px-4" aria-label={label}>
-      <p className="text-muted-foreground mb-2 hidden text-[10px] font-semibold uppercase md:block">{label}</p>
-      <div className="grid grid-cols-3">
-        {metrics.map((metric, index) => (
-          <div key={metric.label} className={cn("min-w-0 px-3", index === 0 ? "pl-0" : "border-l md:pl-4")}>
-            <p className="text-muted-foreground truncate text-[10px] font-semibold uppercase">{metric.label}</p>
-            <p className="mt-1 text-sm leading-tight font-semibold tabular-nums">{metric.value}</p>
-          </div>
-        ))}
-      </div>
+    <section
+      aria-label="Saldo pendiente Cashea"
+      className="grid shrink-0 grid-cols-2 gap-y-2 border-b px-3 py-2.5 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-4"
+    >
+      {metrics.map((metric, index) => (
+        <div
+          key={metric.label}
+          className={cn(
+            "min-w-0 pr-3 md:pr-4",
+            index === 0 ? "pl-0" : index % 2 === 1 ? "border-l pl-3 md:pl-4" : "pl-0 md:border-l md:pl-4",
+          )}
+        >
+          <p className="text-muted-foreground truncate text-[10px] font-semibold uppercase">{metric.label}</p>
+          <p
+            className={cn(
+              "mt-1 truncate leading-tight font-semibold tabular-nums",
+              index === 0 ? "font-heading text-xl font-bold tracking-tight" : "text-sm",
+            )}
+          >
+            {metric.value}
+          </p>
+        </div>
+      ))}
     </section>
   );
 }

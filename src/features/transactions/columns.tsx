@@ -141,7 +141,7 @@ function AttachCasheaOrderButton({ onClick }: { onClick: () => void }) {
     <Button
       type="button"
       variant="ghost"
-      size="icon-sm"
+      size="icon-xs"
       className="opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0 focus-visible:opacity-100 focus-visible:grayscale-0"
       onClick={(event) => {
         event.stopPropagation();

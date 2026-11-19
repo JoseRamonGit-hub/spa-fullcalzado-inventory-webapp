@@ -1,6 +1,27 @@
 import type { ReactNode } from "react";
 import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
+import casheaHorizontalLogo from "@/assets/cashea_logos/cashea_logo_horizontal_normal_version.png";
 import { cn } from "@/lib/utils";
+
+const HORIZONTAL_LOGO_MASK = { maskImage: `url(${casheaHorizontalLogo})`, maskSize: "100% 100%" };
+
+export function CasheaHorizontalLogo({ className }: { className?: string }) {
+  return (
+    <span
+      role="img"
+      aria-label="Cashea"
+      className={cn("relative inline-block aspect-[1107/275] h-6 shrink-0", className)}
+    >
+      <img src={casheaHorizontalLogo} alt="" className="size-full" />
+      {/* El texto del logo es negro; en oscuro se repinta con el foreground para que se lea, sin tocar el ícono amarillo. */}
+      <span
+        aria-hidden="true"
+        className="bg-foreground absolute inset-0 hidden [clip-path:inset(0_0_0_26%)] dark:block"
+        style={HORIZONTAL_LOGO_MASK}
+      />
+    </span>
+  );
+}
 
 export function CasheaLogoIcon({ className }: { className?: string }) {
   return (

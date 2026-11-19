@@ -1,4 +1,5 @@
-import { Banknote, DollarSign, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
+import { CashStack } from "@/components/icons/cash-stack";
 import { cn } from "@/lib/utils";
 import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
 import {
@@ -18,8 +19,8 @@ export function SalesSummary({ transactions, returns, cashea }: SalesSummaryProp
   const summary = getSalesSummary(transactions, returns, cashea);
   const metrics = [
     { label: "Ventas", value: String(summary.salesCount), icon: ShoppingCart },
-    { label: "Total producido USD", value: formatCurrencyUSD(summary.netUsd), icon: DollarSign },
-    { label: "Total producido Bs.", value: formatCurrencyVES(summary.netVes), icon: Banknote },
+    { label: "Total producido USD", value: formatCurrencyUSD(summary.netUsd), icon: CashStack },
+    { label: "Total producido Bs.", value: formatCurrencyVES(summary.netVes), icon: CashStack },
   ];
 
   return (

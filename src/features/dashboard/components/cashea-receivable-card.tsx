@@ -1,27 +1,31 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ReceivableInvoice } from "@/components/icons/receivable-invoice";
 import { formatCasheaAgeDays, getCasheaOrderAgeDays } from "@/features/cashea/cashea-receivables";
+import { CasheaHorizontalLogo } from "@/features/cashea/components/cashea-logo-icon";
 import { formatCurrencyUSD, formatInteger } from "@/utils/formatters";
 import { useDashboardCasheaReceivable } from "../hooks/useDashboardMetrics";
 import { DashboardMetricCard, DashboardMetricCardSkeleton } from "./dashboard-metric-card";
 
-const CARD_CLASS_NAME = "min-[360px]:max-xl:col-span-2";
-const TITLE = "Saldo pendiente Cashea";
+const CARD_PROPS = { className: "col-span-full", inline: true };
+const TITLE = (
+  <span className="flex items-center gap-3">
+    <CasheaHorizontalLogo />
+    Saldo pendiente
+  </span>
+);
 
 export function CasheaReceivableCard() {
   const navigate = useNavigate();
   const { data, isPending, isError, refetch } = useDashboardCasheaReceivable();
 
-  if (isPending) return <DashboardMetricCardSkeleton className={CARD_CLASS_NAME} />;
+  if (isPending) return <DashboardMetricCardSkeleton {...CARD_PROPS} />;
 
   if (isError) {
     return (
       <DashboardMetricCard
-        className={CARD_CLASS_NAME}
+        {...CARD_PROPS}
         title={TITLE}
         value="—"
         description="No se pudo cargar el saldo."
-        icon={ReceivableInvoice}
         actionLabel="Reintentar"
         onAction={() => refetch()}
       />
@@ -34,11 +38,10 @@ export function CasheaReceivableCard() {
 
   return (
     <DashboardMetricCard
-      className={CARD_CLASS_NAME}
+      {...CARD_PROPS}
       title={TITLE}
       value={formatCurrencyUSD(data.financed_usd)}
       description={ageDays == null ? ordersLabel : `${ordersLabel} · más antigua: ${formatCasheaAgeDays(ageDays)}`}
-      icon={ReceivableInvoice}
       actionLabel={count > 0 ? "Ver pendientes" : undefined}
       onAction={() => navigate({ to: "/receivables/cashea" })}
     />

@@ -17,23 +17,53 @@ import type {
 
 const DEFAULT_CASHEA_SETTINGS: CasheaSettings = { serviceFeePct: 4, advanceFeePct: 4 };
 
+type FilterableOrdersQuery<TQuery> = {
+  eq: (column: "business_id" | "status", value: string) => TQuery;
+  gte: (column: "sale_date", value: string) => TQuery;
+  lte: (column: "sale_date", value: string) => TQuery;
+};
+
+/** Aplica el negocio, el estado y el rango de fechas de venta de una lista de órdenes. */
+function filterOrders<TQuery extends FilterableOrdersQuery<TQuery>>(
+  query: TQuery,
+  businessId: string,
+  filter: CasheaOrdersFilter,
+): TQuery {
+  let filtered = query.eq("business_id", businessId);
+  if (filter.status) filtered = filtered.eq("status", filter.status);
+  if (filter.from) filtered = filtered.gte("sale_date", filter.from);
+  if (filter.to) filtered = filtered.lte("sale_date", filter.to);
+  return filtered;
+}
+
 export const casheaService = {
   getOrders: async (businessId: string, filter: CasheaOrdersFilter): Promise<CasheaOrder[]> => {
-    let query = supabase
-      .from("cashea_orders")
-      .select("*")
-      .eq("business_id", businessId)
+    const query = filterOrders(supabase.from("cashea_orders").select("*"), businessId, filter)
       .order("sale_date", { ascending: false })
       .order("created_at", { ascending: false });
-
-    if (filter.status) query = query.eq("status", filter.status);
-    if (filter.from) query = query.gte("sale_date", filter.from);
-    if (filter.to) query = query.lte("sale_date", filter.to);
 
     const { data, error } = await query;
 
     if (error) throw toServiceError(error);
     return data;
+  },
+
+  /** Cuántas órdenes hay con cada filtro, contadas en la base sin traer las filas. */
+  getOrderCounts: async <TKey extends string>(
+    businessId: string,
+    filters: Record<TKey, CasheaOrdersFilter>,
+  ): Promise<Record<TKey, number>> => {
+    const entries = await Promise.all(
+      (Object.entries(filters) as [TKey, CasheaOrdersFilter][]).map(async ([key, filter]) => {
+        const query = supabase.from("cashea_orders").select("id", { count: "exact", head: true });
+        const { count, error } = await filterOrders(query, businessId, filter);
+
+        if (error) throw toServiceError(error);
+        return [key, count ?? 0] as const;
+      }),
+    );
+
+    return Object.fromEntries(entries) as Record<TKey, number>;
   },
 
   getCollectionStatus: async (businessId: string, date?: string): Promise<CasheaCollectionStatus[]> => {

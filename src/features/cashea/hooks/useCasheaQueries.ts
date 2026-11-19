@@ -1,7 +1,8 @@
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { casheaService } from "@/services/casheaService";
-import type { CasheaOrdersFilter } from "@/types";
+import type { CalendarDateRange, CasheaOrdersFilter } from "@/types";
+import { casheaStatusFilters, resolveCasheaOrdersFilter, type CasheaStatusFilter } from "../cashea-receivables";
 
 export const casheaKeys = {
   all: ["cashea"] as const,
@@ -9,6 +10,8 @@ export const casheaKeys = {
   orders: (businessId: string | null) => [...casheaKeys.business(businessId), "orders"] as const,
   orderList: (businessId: string | null, filter: CasheaOrdersFilter) =>
     [...casheaKeys.orders(businessId), filter] as const,
+  orderCounts: (businessId: string | null, filters: Record<CasheaStatusFilter, CasheaOrdersFilter>) =>
+    [...casheaKeys.orders(businessId), "counts", filters] as const,
   collectionStatus: (businessId: string | null, date?: string) =>
     [...casheaKeys.business(businessId), "collection-status", { date }] as const,
   saleTotal: (businessId: string | null, saleId: string) =>
@@ -24,6 +27,19 @@ export function useCasheaOrders(filter: CasheaOrdersFilter) {
   return useQuery({
     queryKey: casheaKeys.orderList(businessId, filter),
     queryFn: businessId ? () => casheaService.getOrders(businessId, filter) : skipToken,
+  });
+}
+
+/** Órdenes de cada pestaña de estado, cada una con el periodo que aplicaría al elegirla. */
+export function useCasheaOrderCounts(range: CalendarDateRange) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+  const filters = Object.fromEntries(
+    casheaStatusFilters.map((status) => [status, resolveCasheaOrdersFilter({ ...range, status })]),
+  ) as Record<CasheaStatusFilter, CasheaOrdersFilter>;
+
+  return useQuery({
+    queryKey: casheaKeys.orderCounts(businessId, filters),
+    queryFn: businessId ? () => casheaService.getOrderCounts(businessId, filters) : skipToken,
   });
 }
 

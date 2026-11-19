@@ -1,5 +1,6 @@
 import type { CalendarDateRange, CasheaOrder, CasheaOrderStatus, CasheaOrdersFilter, CasheaVoidReason } from "@/types";
 import { formatDateForBackend, formatInteger } from "@/utils/formatters";
+import { normalizeSearchValue } from "@/utils/search";
 
 export const casheaStatusFilters = ["pending", "collected", "voided", "all"] as const;
 
@@ -11,13 +12,19 @@ export const casheaStatusFilterLabels: Record<CasheaStatusFilter, string> = {
   pending: "Pendientes",
   collected: "Cobradas",
   voided: "Anuladas",
-  all: "Todos los estados",
+  all: "Todas",
 };
 
 export const casheaOrderStatusLabels: Record<CasheaOrderStatus, string> = {
   pending: "Pendiente",
   collected: "Cobrada",
   voided: "Anulada",
+};
+
+export const casheaOrderStatusBadgeVariants: Record<CasheaOrderStatus, "warning" | "success" | "secondary"> = {
+  pending: "warning",
+  collected: "success",
+  voided: "secondary",
 };
 
 export const casheaVoidReasonLabels: Record<CasheaVoidReason, string> = {
@@ -84,25 +91,54 @@ export function formatCasheaAgeDays(days: number | null) {
   return `${formatInteger(days)} ${days === 1 ? "día" : "días"}`;
 }
 
-export type CasheaPendingSummary = {
+/** Desde esta Antigüedad una orden Pendiente se resalta: Cashea ya está tardando en depositarla. */
+export const CASHEA_LATE_ORDER_DAYS = 15;
+
+export function isCasheaOrderLate(order: Pick<CasheaOrder, "status">, ageDays: number | null) {
+  return order.status === "pending" && ageDays != null && ageDays >= CASHEA_LATE_ORDER_DAYS;
+}
+
+/** Comisión Cashea de una orden: lo que separa el Monto financiado del Neto esperado. */
+export function getCasheaCommissionUsd(order: Pick<CasheaOrder, "financed_usd" | "expected_net_usd">) {
+  return (Math.round(order.financed_usd * 100) - Math.round(order.expected_net_usd * 100)) / 100;
+}
+
+export type CasheaOrdersTotals = {
   count: number;
   financedUsd: number;
   expectedNetUsd: number;
 };
 
-export function getCasheaPendingSummary(
-  orders: readonly Pick<CasheaOrder, "status" | "financed_usd" | "expected_net_usd">[],
-): CasheaPendingSummary {
-  let count = 0;
+type SummableCasheaOrder = Pick<CasheaOrder, "status" | "financed_usd" | "expected_net_usd">;
+
+/** Suma en centavos para que muchas órdenes no acumulen error de redondeo. */
+export function sumCasheaOrders(orders: readonly SummableCasheaOrder[]): CasheaOrdersTotals {
   let financedCents = 0;
   let expectedNetCents = 0;
 
   for (const order of orders) {
-    if (order.status !== "pending") continue;
-    count += 1;
     financedCents += Math.round(order.financed_usd * 100);
     expectedNetCents += Math.round(order.expected_net_usd * 100);
   }
 
-  return { count, financedUsd: financedCents / 100, expectedNetUsd: expectedNetCents / 100 };
+  return { count: orders.length, financedUsd: financedCents / 100, expectedNetUsd: expectedNetCents / 100 };
+}
+
+export function getCasheaPendingSummary(orders: readonly SummableCasheaOrder[]): CasheaOrdersTotals {
+  return sumCasheaOrders(orders.filter((order) => order.status === "pending"));
+}
+
+/** Busca por número de orden o de factura. */
+export function searchCasheaOrders<TOrder extends Pick<CasheaOrder, "order_number" | "invoice_number">>(
+  orders: TOrder[],
+  search: string,
+): TOrder[] {
+  const query = normalizeSearchValue(search);
+  if (!query) return orders;
+
+  return orders.filter(
+    (order) =>
+      normalizeSearchValue(order.order_number).includes(query) ||
+      normalizeSearchValue(order.invoice_number).includes(query),
+  );
 }

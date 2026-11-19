@@ -134,10 +134,6 @@ export type CashCloseWithRelations = CashClose & {
   users: Pick<User, "fullname">;
 };
 
-export type CashCloseRow = CashCloseWithRelations & {
-  cashea?: CasheaCollectionStatus;
-};
-
 export type CashCloseSummary = {
   billedOperations: number;
   units: number;
@@ -153,6 +149,12 @@ export type CashCloseSummary = {
   casheaReceivableVes: number;
   casheaVoidedReturnUsd: number;
   casheaVoidedReturnVes: number;
+};
+
+/** Día anterior a hoy con al menos una Operación facturada y sin Cierre de Caja. */
+export type UnclosedCashCloseDay = {
+  date: string;
+  summary: CashCloseSummary;
 };
 
 export type TransactionWithRelations = Transaction & {
