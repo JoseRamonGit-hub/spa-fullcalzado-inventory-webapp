@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { toServiceError } from "@/lib/errors";
+import { readAllPages } from "./readAllPages";
+import { formatDateForBackend, TIMEZONE_CCS } from "@/utils/formatters";
 import type {
   CasheaCollectionStatus,
   CasheaDepositInput,
@@ -46,6 +48,41 @@ export const casheaService = {
 
     if (error) throw toServiceError(error);
     return data;
+  },
+
+  /** Ventas Cashea del día y anulaciones por devolución de ventas anteriores. */
+  getOrdersForCashClose: async (businessId: string, date: string, closedAt?: string) => {
+    const nextDay = new Date(`${date}T12:00:00Z`);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    const dayStart = JSON.stringify(`${date} 00:00:00 ${TIMEZONE_CCS}`);
+    const dayEnd = JSON.stringify(`${formatDateForBackend(nextDay)} 00:00:00 ${TIMEZONE_CCS}`);
+    const cutoff = closedAt ? JSON.stringify(closedAt) : undefined;
+    const saleStatuses = ["status.neq.voided", `and(void_reason.eq.customer_return,voided_at.gte.${dayEnd})`];
+    if (cutoff) saleStatuses.push(`voided_at.gt.${cutoff}`);
+
+    const sales = `and(sale_date.eq.${JSON.stringify(date)},or(${saleStatuses.join(",")}))`;
+    const reversals = [
+      `sale_date.lt.${JSON.stringify(date)}`,
+      "status.eq.voided",
+      "void_reason.eq.customer_return",
+      `voided_at.gte.${dayStart}`,
+      `voided_at.lt.${dayEnd}`,
+    ];
+    if (cutoff) reversals.push(`voided_at.lte.${cutoff}`);
+
+    const query = supabase
+      .from("cashea_orders")
+      .select(
+        "*, sale:sales!cashea_orders_business_sale_fkey(transactions!transactions_business_sale_fkey(quantity, total_usd, total_ves))",
+      )
+      .eq("business_id", businessId)
+      .or(`${sales},and(${reversals.join(",")})`)
+      .order("sale_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("id");
+    if (closedAt) query.lte("created_at", closedAt);
+
+    return readAllPages(query);
   },
 
   /** Cuántas órdenes hay con cada filtro, contadas en la base sin traer las filas. */

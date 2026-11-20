@@ -131,6 +131,29 @@ describe("InventoryPage product navigation", () => {
     expect(screen.getByText("40 días")).toBeInTheDocument();
   });
 
+  it("ubica el icono de ordenamiento según la alineación de la columna", () => {
+    render(<InventoryPage />);
+
+    const code = screen.getByRole("columnheader", { name: "Código" });
+    const stock = screen.getByRole("columnheader", { name: "Stock" });
+    const status = screen.getByRole("columnheader", { name: "Estado" });
+    const sortStock = within(stock).getByRole("button");
+
+    expect(within(code).getByRole("button").lastChild).toEqual(code.querySelector("svg"));
+    expect(stock).toHaveClass("text-right");
+    expect(screen.getByRole("cell", { name: "8" })).toHaveClass("text-right");
+    expect(status).toHaveClass("text-center");
+    expect(screen.getByRole("cell", { name: "Activo" })).toHaveClass("text-center");
+    expect(within(status).getByRole("button").lastChild).toEqual(status.querySelector("svg"));
+
+    for (const direction of ["none", "descending", "ascending"]) {
+      expect(stock).toHaveAttribute("aria-sort", direction);
+      expect(sortStock.firstChild).toEqual(stock.querySelector("svg"));
+      fireEvent.click(sortStock);
+    }
+    expect(stock).toHaveAttribute("aria-sort", "none");
+  });
+
   it("explica el alcance y el orden de revisión de los productos estancados", async () => {
     inventoryStatus = "stagnant";
     render(<InventoryPage />);

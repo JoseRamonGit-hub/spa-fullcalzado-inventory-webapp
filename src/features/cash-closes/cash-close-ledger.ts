@@ -8,9 +8,13 @@ import type {
   Return,
   Transaction,
 } from "@/types";
-import { formatDateForBackend } from "@/utils/formatters";
 
 export type Money = { usd: number; ves: number };
+
+export function formatLedgerAmount(value: number, format: (amount: number) => string, showPlus: boolean) {
+  const sign = value < 0 ? "−" : value > 0 && showPlus ? "+" : "";
+  return sign + format(Math.abs(value));
+}
 
 /** Lo que hace falta para cuadrar un día: del Total facturado al Total producido. */
 export type CashCloseFigures = {
@@ -29,10 +33,9 @@ type LedgerReturn = Pick<Return, "type" | "credit_usd" | "credit_ves"> & {
 };
 
 export type ExchangeBreakdown = { count: number; units: number; delivered: Money; credit: Money };
-type LedgerCasheaOrder = Pick<
-  CasheaOrder,
-  "sale_id" | "status" | "void_reason" | "voided_at" | "paid_today_usd" | "financed_usd" | "exchange_rate"
-> & { sale: { transactions: LedgerReturn["transactions"] } | null };
+type LedgerCasheaOrder = Pick<CasheaOrder, "sale_id" | "paid_today_usd" | "financed_usd" | "exchange_rate"> & {
+  sale: { transactions: LedgerReturn["transactions"] } | null;
+};
 
 export type CasheaBreakdown = { count: number; units: number; billed: Money; initial: Money; roundingUsd: number };
 export type LedgerLineId = "sales" | "sales-and-exchanges" | "exchanges" | "returns" | "cashea";
@@ -107,12 +110,7 @@ const zero: Money = { usd: 0, ves: 0 };
 const subtract = (a: Money, b: Money): Money => ({ usd: roundCents(a.usd - b.usd), ves: roundCents(a.ves - b.ves) });
 const add = (a: Money, b: Money): Money => ({ usd: roundCents(a.usd + b.usd), ves: roundCents(a.ves + b.ves) });
 
-export function getCasheaBreakdown(
-  receivable: Money,
-  date: string,
-  orders?: LedgerCasheaOrder[],
-  closedAt?: string,
-): CasheaBreakdown | undefined {
+export function getCasheaBreakdown(receivable: Money, orders?: LedgerCasheaOrder[]): CasheaBreakdown | undefined {
   const breakdown = { count: 0, units: 0, billed: { ...zero }, initial: { ...zero }, roundingUsd: 0 };
   if (isZero(receivable)) return breakdown;
   if (!orders) return undefined;
@@ -120,10 +118,6 @@ export function getCasheaBreakdown(
   const financed = { ...zero };
   const sales = new Set<string>();
   for (const order of orders) {
-    const voidedAfterClose = closedAt && order.voided_at && Date.parse(order.voided_at) > Date.parse(closedAt);
-    const voidedOnLaterDay =
-      order.void_reason === "customer_return" && order.voided_at && formatDateForBackend(order.voided_at) > date;
-    if (order.status === "voided" && !voidedAfterClose && !voidedOnLaterDay) continue;
     const items = order.sale?.transactions;
     if (!items?.length || sales.has(order.sale_id)) return undefined;
     sales.add(order.sale_id);
@@ -194,7 +188,7 @@ export function getLedgerLines(
         exchanges.count > 0
           ? [
               { label: "Entregado al cliente", amount: exchanges.delivered },
-              { label: "Crédito por lo devuelto", amount: subtract(zero, exchanges.credit) },
+              { label: "Valor de lo devuelto", amount: subtract(zero, exchanges.credit) },
             ]
           : undefined,
     });

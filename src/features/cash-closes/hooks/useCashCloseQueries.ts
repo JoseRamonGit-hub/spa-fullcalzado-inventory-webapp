@@ -51,21 +51,6 @@ export function useLedgerReturns(date: string, figures: CashCloseFigures, closed
   });
 }
 
-export function useLedgerCasheaOrders(
-  date: string,
-  receivable: CashCloseFigures["casheaReceivable"],
-  closedAt?: string,
-) {
-  const businessId = useBusinessStore((state) => state.activeBusinessId);
-  return useQuery({
-    queryKey: [...cashCloseKeys.summaries(businessId), "ledger-cashea", date, closedAt, receivable],
-    queryFn:
-      businessId && (receivable.usd !== 0 || receivable.ves !== 0)
-        ? () => cashClosesService.getLedgerCasheaOrders(businessId, date, closedAt)
-        : skipToken,
-  });
-}
-
 /** Siempre todos: el historial filtra por fecha y el panel cuenta los que quedaron tras el último cierre. */
 export function useUnclosedCashCloseDays() {
   const businessId = useBusinessStore((state) => state.activeBusinessId);

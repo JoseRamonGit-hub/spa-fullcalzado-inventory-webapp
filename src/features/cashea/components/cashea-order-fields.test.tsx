@@ -16,7 +16,7 @@ describe("CasheaOrderFields", () => {
     expect(screen.getByLabelText("N° de orden")).toBeInTheDocument();
     expect(screen.getByLabelText("N° de factura")).toBeInTheDocument();
     expect(screen.getByLabelText("Total de la orden")).toBeInTheDocument();
-    expect(screen.getByLabelText("Cobrado hoy")).toBeInTheDocument();
+    expect(screen.getByLabelText("Inicial")).toBeInTheDocument();
     expect(screen.getByLabelText("Monto financiado")).toBeInTheDocument();
   });
 
@@ -26,11 +26,11 @@ describe("CasheaOrderFields", () => {
     expect(screen.getByLabelText("Total de la orden")).toHaveValue("");
   });
 
-  it("calcula el Monto financiado al escribir el total y lo Cobrado hoy", () => {
+  it("calcula el Monto financiado al escribir el total y la Inicial", () => {
     render(<CasheaOrderFieldsHarness saleTotalUsd={185.6} />);
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "185.60" } });
-    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "92.8" } });
+    fireEvent.change(screen.getByLabelText("Inicial"), { target: { value: "92.8" } });
     expect(screen.getByLabelText("Monto financiado")).toHaveValue("92.80");
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "150" } });
@@ -41,30 +41,30 @@ describe("CasheaOrderFields", () => {
     render(<CasheaOrderFieldsHarness />);
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
-    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "40" } });
+    fireEvent.change(screen.getByLabelText("Inicial"), { target: { value: "40" } });
     fireEvent.change(screen.getByLabelText("Monto financiado"), { target: { value: "59.99" } });
 
     expect(screen.getByLabelText("Monto financiado")).toHaveValue("59.99");
   });
 
-  it("no menciona la suma mientras Cobrado hoy + Monto financiado cuadra con el total", () => {
+  it("no menciona la suma mientras Inicial + Monto financiado cuadra con el total", () => {
     render(<CasheaOrderFieldsHarness />);
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
-    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "40" } });
+    fireEvent.change(screen.getByLabelText("Inicial"), { target: { value: "40" } });
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("avisa la diferencia cuando Cobrado hoy + Monto financiado no cuadra con el total", () => {
+  it("avisa la diferencia cuando Inicial + Monto financiado no cuadra con el total", () => {
     render(<CasheaOrderFieldsHarness />);
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
-    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "40" } });
+    fireEvent.change(screen.getByLabelText("Inicial"), { target: { value: "40" } });
     fireEvent.change(screen.getByLabelText("Monto financiado"), { target: { value: "50" } });
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      `Cobrado hoy + Monto financiado no cuadra con el total: faltan ${formatCurrencyUSD(10)}`,
+      `Inicial + Monto financiado no cuadra con el total: faltan ${formatCurrencyUSD(10)}`,
     );
   });
 
@@ -116,7 +116,7 @@ describe("CasheaOrderFields", () => {
   it("muestra el error de un monto mientras se escribe", async () => {
     render(<CasheaOrderFieldsHarness />);
 
-    fireEvent.change(screen.getByLabelText("Cobrado hoy"), { target: { value: "92.805" } });
+    fireEvent.change(screen.getByLabelText("Inicial"), { target: { value: "92.805" } });
 
     expect(await screen.findByText("Máximo dos decimales")).toBeInTheDocument();
   });

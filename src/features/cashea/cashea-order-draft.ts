@@ -39,7 +39,7 @@ export type CasheaOrderEvaluation = {
   fieldErrors: Partial<Record<CasheaOrderDraftField, string>>;
   /** Total de la orden interpretado, cuando es un monto válido. */
   orderTotalUsd: number | null;
-  /** Cobrado hoy + Monto financiado, cuando ambos son válidos. */
+  /** Inicial + Monto financiado, cuando ambos son válidos. */
   sumUsd: number | null;
   /** Suma menos el total de la orden, cuando los tres montos son válidos. */
   sumDifferenceUsd: number | null;
@@ -60,9 +60,9 @@ export const DRAFT_MESSAGES = {
   invalidAmount: "Monto inválido",
   tooManyDecimals: "Máximo dos decimales",
   mustBePositive: "Debe ser mayor a 0",
-  mustNotBeNegative: "No puede ser negativo",
+  mustNotBeNegative: "No puede ser negativa",
   financedExceedsSale: "No puede superar el total de la venta",
-  sumMismatch: "Cobrado hoy + Monto financiado no cuadra con el total",
+  sumMismatch: "Inicial + Monto financiado no cuadra con el total",
 } as const;
 
 type ParsedAmount = { cents: number } | { error: string };
@@ -93,8 +93,8 @@ const toCents = (usd: number) => Math.round(usd * 100);
 const fromCents = (cents: number) => cents / 100;
 
 /**
- * Monto financiado que corresponde a un total de la orden y un Cobrado hoy: la diferencia, con dos decimales.
- * `null` mientras alguno de los dos no sea un monto válido o lo Cobrado hoy supere el total.
+ * Monto financiado que corresponde a un total de la orden y una Inicial: la diferencia, con dos decimales.
+ * `null` mientras alguno de los dos no sea un monto válido o la Inicial supere el total.
  */
 export function calculateFinancedUsd(totalUsd: string, paidTodayUsd: string): string | null {
   const total = parseAmount(totalUsd);

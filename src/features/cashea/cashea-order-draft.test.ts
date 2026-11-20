@@ -65,13 +65,13 @@ describe("evaluateCasheaOrderDraft", () => {
     expect(evaluate({ totalUsd: "abc" }).fieldErrors.totalUsd).toBe("Monto inválido");
   });
 
-  it("exige total y Monto financiado mayores a cero y Cobrado hoy no negativo", () => {
+  it("exige total y Monto financiado mayores a cero y una Inicial no negativa", () => {
     expect(evaluate({ totalUsd: "0" }).fieldErrors.totalUsd).toBe("Debe ser mayor a 0");
     expect(evaluate({ financedUsd: "0" }).fieldErrors.financedUsd).toBe("Debe ser mayor a 0");
-    expect(evaluate({ paidTodayUsd: "-1" }).fieldErrors.paidTodayUsd).toBe("No puede ser negativo");
+    expect(evaluate({ paidTodayUsd: "-1" }).fieldErrors.paidTodayUsd).toBe("No puede ser negativa");
   });
 
-  it("acepta un Cobrado hoy en cero", () => {
+  it("acepta una Inicial en cero", () => {
     const evaluation = evaluate({ totalUsd: "92.80", paidTodayUsd: "0", financedUsd: "92.80" });
 
     expect(evaluation.order).toMatchObject({ paid_today_usd: 0 });
@@ -84,13 +84,13 @@ describe("evaluateCasheaOrderDraft", () => {
     expect(evaluation.fieldErrors.invoiceNumber).toBe("Máximo 40 caracteres");
   });
 
-  it("muestra la suma de Cobrado hoy y Monto financiado y bloquea si difiere del total en más de $0.01", () => {
+  it("muestra la suma de Inicial y Monto financiado y bloquea si difiere del total en más de $0.01", () => {
     const evaluation = evaluate({ totalUsd: "100", paidTodayUsd: "40", financedUsd: "59.98" }, 100);
 
     expect(evaluation.orderTotalUsd).toBe(100);
     expect(evaluation.sumUsd).toBe(99.98);
     expect(evaluation.sumDifferenceUsd).toBe(-0.02);
-    expect(evaluation.sumError).toBe("Cobrado hoy + Monto financiado no cuadra con el total");
+    expect(evaluation.sumError).toBe("Inicial + Monto financiado no cuadra con el total");
     expect(evaluation.order).toBeNull();
   });
 
@@ -129,7 +129,7 @@ describe("evaluateCasheaOrderDraft", () => {
 });
 
 describe("calculateFinancedUsd", () => {
-  it("el Monto financiado es el total de la orden menos lo Cobrado hoy, con dos decimales", () => {
+  it("el Monto financiado es el total de la orden menos la Inicial, con dos decimales", () => {
     expect(calculateFinancedUsd("92.80", "46.4")).toBe("46.40");
     expect(calculateFinancedUsd("185,60", "0")).toBe("185.60");
   });
@@ -140,7 +140,7 @@ describe("calculateFinancedUsd", () => {
     expect(calculateFinancedUsd("92.80", "46.405")).toBeNull();
   });
 
-  it("no calcula si lo Cobrado hoy supera el total de la orden", () => {
+  it("no calcula si la Inicial supera el total de la orden", () => {
     expect(calculateFinancedUsd("92.80", "100")).toBeNull();
   });
 });

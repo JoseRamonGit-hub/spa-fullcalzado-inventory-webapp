@@ -51,31 +51,26 @@ export const columns = [
   }),
   columnHelper.accessor("quantity", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Cantidad" className="justify-end" />,
-    cell: ({ getValue }) => <span className="tabular-value block text-right font-medium">{getValue()}</span>,
+    meta: { align: "right" },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Cantidad" />,
+    cell: ({ getValue }) => <span className="tabular-value font-medium">{getValue()}</span>,
   }),
   columnHelper.accessor("total_usd", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="USD" className="justify-end" />,
+    meta: { align: "right" },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="USD" />,
     cell: ({ getValue }) => {
       const value = getValue();
-      return (
-        <span className="data-value block text-right font-medium">
-          {value == null ? "—" : formatCurrencyUSD(value)}
-        </span>
-      );
+      return <span className="data-value font-medium">{value == null ? "—" : formatCurrencyUSD(value)}</span>;
     },
   }),
   columnHelper.accessor("total_ves", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Bs." className="justify-end" />,
+    meta: { align: "right" },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Bs." />,
     cell: ({ getValue }) => {
       const value = getValue();
-      return (
-        <span className="data-value text-muted-foreground block text-right">
-          {value == null ? "—" : formatCurrencyVES(value)}
-        </span>
-      );
+      return <span className="data-value text-muted-foreground">{value == null ? "—" : formatCurrencyVES(value)}</span>;
     },
   }),
   columnHelper.accessor("exchange_rate", {

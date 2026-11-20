@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { ResponsiveAlertModal } from "@/components/modals/shared/responsive-alert-modal";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import type { CashClose } from "@/types";
 import { formatCurrencyUSD, formatCurrencyVES, formatInteger, formatTime } from "@/utils/formatters";
-import type { CashCloseFigures } from "../cash-close-ledger";
+import { formatLedgerAmount, type CashCloseDayState, type CashCloseFigures } from "../cash-close-ledger";
 
 type CashCloseModalProps = {
   open: boolean;
@@ -12,20 +12,37 @@ type CashCloseModalProps = {
   onConfirm: () => void;
   dateLabel: string;
   figures: CashCloseFigures;
-  /** El cierre que se va a reemplazar, cuando el día ya se había cerrado. */
-  previousClose?: CashClose;
+  update?: Extract<CashCloseDayState, { kind: "outdated" }>;
 };
 
-function SummaryRow({ label, children, isKey }: { label: string; children: ReactNode; isKey?: boolean }) {
+function AmountRow({
+  label,
+  usd,
+  ves,
+  difference = false,
+  total = false,
+}: {
+  label: ReactNode;
+  usd: number;
+  ves: number;
+  difference?: boolean;
+  total?: boolean;
+}) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b py-2.5">
-      <dt className={cn("text-muted-foreground", isKey && "text-foreground font-medium")}>{label}</dt>
-      <dd className="data-value text-right">{children}</dd>
-    </div>
+    <TableRow className={cn("border-border/50 hover:bg-transparent", total && "font-semibold")}>
+      <th scope="row" className={cn("px-3 py-2 text-left text-xs font-normal", total && "font-semibold")}>
+        {label}
+      </th>
+      <TableCell className={cn("data-value text-right", total && "text-sm")}>
+        {formatLedgerAmount(usd, formatCurrencyUSD, difference)}
+      </TableCell>
+      <TableCell className={cn("data-value text-right", total && "text-sm")}>
+        {formatLedgerAmount(ves, formatCurrencyVES, difference)}
+      </TableCell>
+    </TableRow>
   );
 }
 
-/** Confirmación corta: el cuadre completo ya está en la vista, aquí solo va la cifra que se guarda. */
 export function CashCloseModal({
   open,
   onOpenChange,
@@ -33,35 +50,72 @@ export function CashCloseModal({
   onConfirm,
   dateLabel,
   figures,
-  previousClose,
+  update,
 }: CashCloseModalProps) {
-  const isUpdate = Boolean(previousClose);
+  const sameTotal = update && update.deltaUsd === 0 && update.deltaVes === 0;
+  const savedTime = formatTime(update?.cashClose.closed_at);
 
   return (
     <ResponsiveAlertModal
       open={open}
       onOpenChange={onOpenChange}
-      title={isUpdate ? `Actualizar el cierre del ${dateLabel}` : `Cerrar el día ${dateLabel}`}
-      description={isUpdate ? "Se reemplazará el cierre guardado de este día." : undefined}
-      confirmLabel={isUpdate ? "Actualizar cierre" : "Cerrar el día"}
+      title={update ? "Actualizar cierre de caja" : "Confirmar cierre de caja"}
+      description={update ? "El nuevo cuadre reemplazará al guardado para este día." : undefined}
+      confirmLabel={update ? "Actualizar cierre" : "Cerrar el día"}
       isPending={isPending}
       onConfirm={onConfirm}
     >
-      <dl className="flex flex-col border-t text-sm">
-        {previousClose && (
-          <SummaryRow label={`Cierre de las ${formatTime(previousClose.closed_at)}`}>
-            <span className="text-muted-foreground block">{formatCurrencyUSD(previousClose.total_usd)}</span>
-            <span className="text-muted-foreground block text-xs">{formatCurrencyVES(previousClose.total_ves)}</span>
-          </SummaryRow>
+      <div className="bg-card @container overflow-hidden rounded-md border">
+        <Table density="compact" scrollAreaLabel={`Cuadre del ${dateLabel}`}>
+          <TableHeader className="bg-muted">
+            <TableRow className="hover:bg-transparent">
+              <TableHead scope="col" className="whitespace-normal">
+                <span className="sr-only">Cuadre del </span>
+                {dateLabel}
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                USD
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Bs.
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          {update && (
+            <TableBody className="text-muted-foreground">
+              <AmountRow
+                label={
+                  <>
+                    Cierre guardado
+                    {savedTime && <span className="tabular-value block whitespace-nowrap">{savedTime}</span>}
+                  </>
+                }
+                usd={update.cashClose.total_usd}
+                ves={update.cashClose.total_ves}
+              />
+              {!sameTotal && <AmountRow label="Diferencia" usd={update.deltaUsd} ves={update.deltaVes} difference />}
+            </TableBody>
+          )}
+          <TableFooter className={cn("bg-card", update ? "border-foreground/30" : "border-t-0")}>
+            <AmountRow label={update ? "Nuevo total producido" : "Total producido"} {...figures.produced} total />
+          </TableFooter>
+        </Table>
+        {sameTotal && (
+          <p className="text-muted-foreground border-t px-3 py-2 text-xs">
+            Cambió el cuadre con el mismo total producido.
+          </p>
         )}
-        <SummaryRow label={isUpdate ? "Nuevo total producido" : "Total producido"} isKey>
-          <span className="font-heading block text-xl leading-tight font-bold tracking-tight">
-            {formatCurrencyUSD(figures.produced.usd)}
-          </span>
-          <span className="text-muted-foreground text-xs font-semibold">{formatCurrencyVES(figures.produced.ves)}</span>
-        </SummaryRow>
-        <SummaryRow label="Operaciones facturadas">{formatInteger(figures.billedOperations)}</SummaryRow>
-      </dl>
+        <dl className="text-muted-foreground grid divide-y border-t text-xs @min-[20rem]:grid-cols-[3fr_2fr] @min-[20rem]:divide-x @min-[20rem]:divide-y-0">
+          <div className="flex items-baseline justify-between gap-2 px-3 py-2">
+            <dt>Operaciones facturadas</dt>
+            <dd className="data-value text-foreground font-medium">{formatInteger(figures.billedOperations)}</dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-2 px-3 py-2">
+            <dt>Unidades</dt>
+            <dd className="data-value text-foreground font-medium">{formatInteger(figures.units)}</dd>
+          </div>
+        </dl>
+      </div>
     </ResponsiveAlertModal>
   );
 }

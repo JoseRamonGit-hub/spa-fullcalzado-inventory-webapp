@@ -97,6 +97,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      cash_close_previous_versions: {
+        Row: {
+          business_id: string;
+          closed_at: string | null;
+          closed_by: string;
+          date: string;
+          id: number;
+        };
+        Insert: {
+          business_id: string;
+          closed_at?: string | null;
+          closed_by: string;
+          date: string;
+          id?: never;
+        };
+        Update: {
+          business_id?: string;
+          closed_at?: string | null;
+          closed_by?: string;
+          date?: string;
+          id?: never;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cash_close_previous_versions_business_id_date_fkey";
+            columns: ["business_id", "date"];
+            isOneToOne: false;
+            referencedRelation: "cash_closes";
+            referencedColumns: ["business_id", "date"];
+          },
+          {
+            foreignKeyName: "cash_close_previous_versions_closed_by_fkey";
+            columns: ["closed_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cash_closes: {
         Row: {
           business_id: string;

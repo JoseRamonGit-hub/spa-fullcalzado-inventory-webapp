@@ -8,27 +8,37 @@ type DataTableColumnHeaderProps<TData, TValue> = {
   title: string;
   /** Icono decorativo antes del título (p. ej. el logo de una integración). */
   icon?: ReactNode;
-  className?: string;
 };
 
 export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
   icon,
-  className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   "use no memo";
 
   if (!column.getCanSort()) {
     return (
-      <div className={cn("uppercase", icon && "flex items-center gap-1.5", className)}>
+      <span className={cn("uppercase", icon && "inline-flex items-center gap-1.5")}>
         {icon}
         {title}
-      </div>
+      </span>
     );
   }
 
   const sorted = column.getIsSorted();
+  const isRightAligned = column.columnDef.meta?.align === "right";
+  const SortIcon = sorted === "asc" ? ChevronUp : sorted === "desc" ? ChevronDown : ChevronsUpDown;
+  const sortIndicator = (
+    <SortIcon
+      className={cn(
+        "size-3 shrink-0",
+        !sorted && "opacity-20 transition-opacity group-hover/sort:opacity-50 group-focus-visible/sort:opacity-50",
+      )}
+      aria-hidden="true"
+    />
+  );
+
   const nextSort = column.getNextSortingOrder();
   const sortActionLabel =
     nextSort === "asc"
@@ -38,29 +48,19 @@ export function DataTableColumnHeader<TData, TValue>({
         : `Quitar el orden de ${title}`;
 
   return (
-    <div className={cn("flex w-full items-center", className)}>
-      <button
-        type="button"
-        className={cn(
-          "group/sort hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded-sm uppercase transition-colors outline-none select-none focus-visible:ring-2",
-          sorted && "text-foreground",
-        )}
-        onClick={column.getToggleSortingHandler()}
-        aria-label={sortActionLabel}
-      >
-        {icon}
-        {title}
-        {sorted === "asc" ? (
-          <ChevronUp className="size-3" aria-hidden="true" />
-        ) : sorted === "desc" ? (
-          <ChevronDown className="size-3" aria-hidden="true" />
-        ) : (
-          <ChevronsUpDown
-            className="size-3 opacity-20 transition-opacity group-hover/sort:opacity-50 group-focus-visible/sort:opacity-50"
-            aria-hidden="true"
-          />
-        )}
-      </button>
-    </div>
+    <button
+      type="button"
+      className={cn(
+        "group/sort hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded-sm uppercase transition-colors outline-none select-none focus-visible:ring-2",
+        sorted && "text-foreground",
+      )}
+      onClick={column.getToggleSortingHandler()}
+      aria-label={sortActionLabel}
+    >
+      {isRightAligned ? sortIndicator : null}
+      {icon}
+      {title}
+      {isRightAligned ? null : sortIndicator}
+    </button>
   );
 }

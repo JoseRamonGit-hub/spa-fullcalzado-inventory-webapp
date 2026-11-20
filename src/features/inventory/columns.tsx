@@ -34,7 +34,7 @@ type InventoryColumnsOptions = {
 function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading, isExchangeRateError }: PriceBsCellProps) {
   if (isExchangeRateLoading) {
     return (
-      <div className="text-muted-foreground text-right" aria-label="Consultando tasa de cambio">
+      <div className="text-muted-foreground" aria-label="Consultando tasa de cambio">
         …
       </div>
     );
@@ -42,19 +42,19 @@ function renderPriceBsCell({ priceUsd, exchangeRate, isExchangeRateLoading, isEx
 
   if (isExchangeRateError) {
     return (
-      <div className="text-warning text-right font-medium" title="No se pudo consultar la tasa de cambio">
+      <div className="text-warning font-medium" title="No se pudo consultar la tasa de cambio">
         No disponible
       </div>
     );
   }
 
   if (!exchangeRate) {
-    return <div className="text-warning text-right font-medium">Sin tasa</div>;
+    return <div className="text-warning font-medium">Sin tasa</div>;
   }
 
   const priceBs = priceUsd * exchangeRate;
 
-  return <div className="data-value text-muted-foreground text-right">{formatCurrencyVES(priceBs)}</div>;
+  return <div className="data-value text-muted-foreground">{formatCurrencyVES(priceBs)}</div>;
 }
 
 export function getColumns({
@@ -77,11 +77,12 @@ export function getColumns({
     }),
     columnHelper.accessor("stock", {
       enableSorting: true,
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Stock" className="justify-end" />,
+      meta: { align: "right" },
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Stock" />,
       cell: ({ getValue }) => (
         <span
           className={cn(
-            "tabular-value block text-right font-medium",
+            "tabular-value font-medium",
             getValue() === 0 ? "text-destructive" : getValue() <= 3 ? "text-warning" : "text-foreground",
           )}
         >
@@ -91,15 +92,15 @@ export function getColumns({
     }),
     columnHelper.accessor("price_usd", {
       enableSorting: true,
-      header: ({ column }) => <DataTableColumnHeader column={column} title="USD" className="justify-end" />,
-      cell: ({ getValue }) => (
-        <span className="data-value block text-right font-medium">{formatCurrencyUSD(getValue())}</span>
-      ),
+      meta: { align: "right" },
+      header: ({ column }) => <DataTableColumnHeader column={column} title="USD" />,
+      cell: ({ getValue }) => <span className="data-value font-medium">{formatCurrencyUSD(getValue())}</span>,
     }),
     columnHelper.accessor((row) => row.price_usd, {
       id: "price_ves",
       enableSorting: true,
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Bs." className="justify-end" />,
+      meta: { align: "right" },
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Bs." />,
       cell: ({ row }) =>
         renderPriceBsCell({
           priceUsd: row.original.price_usd,
@@ -110,11 +111,10 @@ export function getColumns({
     }),
     columnHelper.accessor("active", {
       enableSorting: true,
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Estado" className="justify-center" />,
+      meta: { align: "center" },
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Estado" />,
       cell: ({ getValue }) => (
-        <div className="text-center">
-          <Badge variant={getValue() ? "success" : "destructive"}>{getValue() ? "Activo" : "Inactivo"}</Badge>
-        </div>
+        <Badge variant={getValue() ? "success" : "destructive"}>{getValue() ? "Activo" : "Inactivo"}</Badge>
       ),
     }),
   ] as ColumnDef<InventoryProduct>[];
@@ -125,10 +125,10 @@ export function getColumns({
       0,
       columnHelper.accessor("stagnantDays", {
         enableSorting: true,
-        meta: { className: "bg-warning/10 text-warning-foreground" },
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Sin salida" className="justify-end" />,
+        meta: { align: "right", className: "bg-warning/10 text-warning-foreground" },
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Sin salida" />,
         cell: ({ getValue }) => (
-          <span className="tabular-value block text-right font-semibold">{formatProductStagnantDays(getValue())}</span>
+          <span className="tabular-value font-semibold">{formatProductStagnantDays(getValue())}</span>
         ),
       }),
     );

@@ -52,7 +52,7 @@ export function ConfirmSaleDialog({
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title={casheaOrder ? "Confirmar Venta Cashea" : "Confirmar venta"}
+      title={casheaOrder ? "Confirmar venta Cashea" : "Confirmar venta"}
       confirmLabel="Registrar venta"
       pendingLabel="Registrando..."
       submissionErrorMessage={getSaleSubmissionErrorMessage}
@@ -84,27 +84,26 @@ export function ConfirmSaleDialog({
       />
 
       {casheaOrder && (
-        <section aria-labelledby="confirm-sale-cashea" className="bg-card overflow-hidden rounded-lg border">
-          <header className="flex items-center gap-2.5 border-b px-3 py-2">
-            <img src={casheaLogo} alt="" aria-hidden="true" className="size-8 shrink-0 rounded-md" />
-            <div className="min-w-0">
-              <h3 id="confirm-sale-cashea" className="text-sm font-semibold">
+        <section aria-labelledby="confirm-sale-cashea" className="bg-card overflow-hidden rounded-md border">
+          <header className="bg-muted/70 flex items-center gap-2 border-b px-3 py-2">
+            <img src={casheaLogo} alt="" aria-hidden="true" className="size-5 shrink-0 rounded-md" />
+            <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3 [overflow-wrap:anywhere]">
+              <h3 id="confirm-sale-cashea" className="text-sm font-normal">
                 Pago con Cashea
               </h3>
               <p className="text-muted-foreground text-xs">
-                Orden <span className="data-value text-foreground font-semibold">{casheaOrder.order_number}</span> ·
-                Factura <span className="data-value text-foreground font-semibold">{casheaOrder.invoice_number}</span>
+                Orden <span className="data-value text-foreground font-normal">{casheaOrder.order_number}</span> ·
+                Factura <span className="data-value text-foreground font-normal">{casheaOrder.invoice_number}</span>
               </p>
             </div>
           </header>
 
           <dl>
-            <CasheaAmountRow label="Cobrado hoy" value={formatCurrencyUSD(casheaOrder.paid_today_usd)} />
+            <CasheaAmountRow emphasized label="Inicial" value={formatCurrencyUSD(casheaOrder.paid_today_usd)} />
             <CasheaAmountRow label="Monto financiado" value={formatCurrencyUSD(casheaOrder.financed_usd)} />
             <CasheaAmountRow
               label="Total de la orden"
               value={formatCurrencyUSD(casheaOrder.total_usd)}
-              isSummary
               className={cn(hasOrderTotalMismatch && "[&_dd]:text-warning-foreground dark:[&_dd]:text-warning")}
             />
           </dl>
@@ -141,24 +140,26 @@ export function ConfirmSaleDialog({
 type CasheaAmountRowProps = {
   label: string;
   value: string;
-  isSummary?: boolean;
+  emphasized?: boolean;
   className?: string;
 };
 
-function CasheaAmountRow({ label, value, isSummary = false, className }: CasheaAmountRowProps) {
+function CasheaAmountRow({ label, value, emphasized = false, className }: CasheaAmountRowProps) {
   return (
     <div
       className={cn(
-        "flex items-baseline justify-between gap-3 border-t px-3 py-2 text-sm leading-5 first:border-t-0",
-        isSummary ? "border-border" : "border-border/60",
+        "flex items-baseline justify-between gap-3 border-t px-3 py-1.5 text-xs leading-5 first:border-t-0",
+        emphasized ? "border-border" : "border-border/60",
         className,
       )}
     >
-      <dt className={cn("min-w-0", isSummary ? "text-foreground font-medium" : "text-muted-foreground")}>{label}</dt>
+      <dt className={cn("min-w-0", emphasized ? "text-foreground font-semibold" : "text-muted-foreground font-normal")}>
+        {label}
+      </dt>
       <dd
         className={cn(
           "data-value text-foreground shrink-0 whitespace-nowrap",
-          isSummary ? "font-bold" : "font-semibold",
+          emphasized ? "font-semibold" : "font-normal",
         )}
       >
         {value}

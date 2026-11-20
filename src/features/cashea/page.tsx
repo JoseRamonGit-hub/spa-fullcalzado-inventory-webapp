@@ -15,7 +15,7 @@ import { AdjustCasheaOrderDialog } from "./components/adjust-cashea-order-dialog
 import { VoidCasheaOrderDialog } from "./components/void-cashea-order-dialog";
 import { RegisterCasheaDepositDialog } from "./components/register-cashea-deposit-dialog";
 import { RevertCasheaDepositDialog } from "./components/revert-cashea-deposit-dialog";
-import { useCasheaOrderCounts, useCasheaOrders } from "./hooks/useCasheaQueries";
+import { useCasheaOrderCounts, useCasheaOrders, useCasheaOrdersForCashClose } from "./hooks/useCasheaQueries";
 import {
   casheaOrderStatusLabels,
   DEFAULT_CASHEA_STATUS_FILTER,
@@ -43,9 +43,24 @@ export function CasheaPage() {
   const range: CalendarDateRange = { from: search.from, to: search.to };
   const filter = resolveCasheaOrdersFilter(search);
   const hasRange = Boolean(search.from || search.to);
+  const ledgerDate = search.cashClose && search.from === search.to ? search.from : undefined;
+  const closedAt = search.cashClose === "day" ? undefined : search.cashClose;
 
-  const { data: orders, isLoading, isError, isFetching, refetch } = useCasheaOrders(filter);
-  const { data: statusCounts } = useCasheaOrderCounts(range);
+  const ordersQuery = useCasheaOrders(filter, !ledgerDate);
+  const ledgerQuery = useCasheaOrdersForCashClose(ledgerDate, closedAt);
+  const { data, isLoading, isError, isFetching, refetch } = ledgerDate ? ledgerQuery : ordersQuery;
+  const { data: rangeCounts } = useCasheaOrderCounts(range, !ledgerDate);
+  const orders = ledgerDate && status !== "all" ? data?.filter((order) => order.status === status) : data;
+  const statusCounts = ledgerDate
+    ? data?.reduce(
+        (counts, order) => {
+          counts[order.status]++;
+          counts.all++;
+          return counts;
+        },
+        { pending: 0, collected: 0, voided: 0, all: 0 },
+      )
+    : rangeCounts;
 
   const [searchInput, setSearchInput] = useState("");
   const deferredSearch = useDeferredValue(searchInput);
@@ -98,7 +113,7 @@ export function CasheaPage() {
 
   const setRange = (nextRange: CalendarDateRange) => {
     clearSelection();
-    navigate({ search: (prev) => ({ ...prev, from: nextRange.from, to: nextRange.to }) });
+    navigate({ search: (prev) => ({ ...prev, from: nextRange.from, to: nextRange.to, cashClose: undefined }) });
   };
 
   return (

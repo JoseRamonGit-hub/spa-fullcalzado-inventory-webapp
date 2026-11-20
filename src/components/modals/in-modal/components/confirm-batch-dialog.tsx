@@ -44,30 +44,27 @@ export function ConfirmBatchDialog({
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       title="Confirmar carga"
-      description={
-        <>
-          Se cargará{isMultipleProducts ? "n" : ""}{" "}
-          <strong className="text-foreground">
-            {pendingBatchItems.length} {productLabel}
-          </strong>
-          . Verifica las cantidades y los precios.
-        </>
-      }
+      description={`${pendingBatchItems.length} ${productLabel} para cargar`}
       confirmLabel={`Cargar ${isMultipleProducts ? "productos" : "producto"}`}
       pendingLabel="Procesando..."
       submissionErrorMessage={MODAL_SUBMISSION_ERROR_MESSAGES.inventoryLoad}
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
-      contentClassName="sm:max-w-xl"
+      contentClassName="data-[size=default]:sm:max-w-2xl"
     >
-      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-64">
+      <ConfirmDialogTableSection className="bg-card border-border/80 sm:max-h-64">
         <ConfirmDialogLineTable
           header={
             <>
-              <TableHead scope="col">Acción</TableHead>
+              <TableHead scope="col" className="hidden sm:table-cell">
+                Acción
+              </TableHead>
               <TableHead scope="col">Producto</TableHead>
               <TableHead scope="col" className="text-right">
-                Cantidad
+                <span className="sm:hidden" aria-label="Cantidad">
+                  Cant.
+                </span>
+                <span className="hidden sm:inline">Cantidad</span>
               </TableHead>
               <TableHead scope="col" className="text-right">
                 Precio USD
@@ -77,16 +74,16 @@ export function ConfirmBatchDialog({
         >
           {pendingBatchItems.map((item) => (
             <ConfirmDialogLineRow key={item.tempId}>
-              <td className="p-0 align-middle">
+              <td className="hidden p-0 align-middle sm:table-cell">
                 <BatchActionBadge item={item} />
               </td>
               <td className="min-w-0 p-0 align-middle">
                 <ModalProductIdentity code={item.code} description={item.description} />
+                <div className="mt-1 sm:hidden">
+                  <BatchActionBadge item={item} />
+                </div>
               </td>
-              <td className="tabular-value p-0 align-middle whitespace-nowrap sm:text-right">
-                <span className="text-muted-foreground mr-1.5 font-sans text-[11px] font-medium sm:hidden">
-                  Cantidad
-                </span>
+              <td className="tabular-value p-0 text-right align-middle whitespace-nowrap">
                 {item.kind === "new" ? (
                   <span className="text-foreground font-semibold">{item.initialStock}</span>
                 ) : (
@@ -102,15 +99,12 @@ export function ConfirmBatchDialog({
                 )}
               </td>
               <td className="data-value p-0 text-right align-middle font-semibold whitespace-nowrap">
-                <span className="text-muted-foreground mr-1.5 font-sans text-[11px] font-medium sm:hidden">
-                  Precio USD
-                </span>
                 {item.kind === "new" ? (
                   formatCurrencyUSD(item.priceUsd ?? DEFAULT_FALLBACK_PRICE)
                 ) : item.priceUsd != null &&
                   item.originalPriceUsd != null &&
                   item.priceUsd !== item.originalPriceUsd ? (
-                  <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
                     <span className="text-muted-foreground text-[11px] font-normal line-through">
                       {formatCurrencyUSD(item.originalPriceUsd)}
                     </span>

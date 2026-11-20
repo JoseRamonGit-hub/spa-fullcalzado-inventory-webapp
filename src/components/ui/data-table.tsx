@@ -34,6 +34,12 @@ import { cn } from "@/lib/utils";
 const INTERACTIVE_ROW_TARGET_SELECTOR =
   "a, button, input, select, textarea, [role='button'], [role='link'], [role='menuitem'], [role='switch'], [contenteditable='true'], [tabindex]:not([tabindex='-1'])";
 
+const columnAlignmentClasses = {
+  left: "text-left",
+  center: "text-center",
+  right: "text-right",
+};
+
 function isNestedInteractiveTarget(target: EventTarget | null, row: HTMLTableRowElement) {
   if (!(target instanceof Element)) return false;
   const interactiveTarget = target.closest(INTERACTIVE_ROW_TARGET_SELECTOR);
@@ -202,10 +208,12 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-border border-b bg-transparent hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
+                  const { align, className } = header.column.columnDef.meta ?? {};
+
                   return (
                     <TableHead
                       key={header.id}
-                      className={header.column.columnDef.meta?.className}
+                      className={cn(className, align && columnAlignmentClasses[align])}
                       aria-sort={
                         header.column.getCanSort()
                           ? header.column.getIsSorted() === "asc"
@@ -263,14 +271,18 @@ export function DataTable<TData, TValue>({
                         onRowClick?.(row.original);
                       }}
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          key={cell.id}
-                          className={cn("overflow-hidden", cell.column.columnDef.meta?.className)}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
+                      {row.getVisibleCells().map((cell) => {
+                        const { align, className } = cell.column.columnDef.meta ?? {};
+
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            className={cn("overflow-hidden", className, align && columnAlignmentClasses[align])}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                     {renderSubRow && row.getIsExpanded() ? (
                       <TableRow className="hover:bg-transparent">

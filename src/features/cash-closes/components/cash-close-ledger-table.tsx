@@ -1,13 +1,17 @@
-import { Fragment, useState, type ReactNode } from "react";
+import { Fragment, useState, type MouseEvent, type ReactNode } from "react";
 import { ChevronDown, Info } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CasheaLogoIcon } from "@/features/cashea/components/cashea-logo-icon";
+import { useCasheaOrdersForCashClose } from "@/features/cashea/hooks/useCasheaQueries";
+import { returnTypeLabels } from "@/features/returns/return-display";
 import { cn } from "@/lib/utils";
+import type { Return } from "@/types";
 import { formatCurrencyUSD, formatCurrencyVES, formatInteger } from "@/utils/formatters";
 import {
+  formatLedgerAmount,
   getCasheaBreakdown,
   getExchangeBreakdown,
   getLedgerLines,
@@ -19,40 +23,82 @@ import {
   type LedgerLineId,
   type Money,
 } from "../cash-close-ledger";
-import { useLedgerCasheaOrders, useLedgerReturns } from "../hooks/useCashCloseQueries";
+import { useLedgerReturns } from "../hooks/useCashCloseQueries";
 
 const MISSING_VALUE = "—";
 const DETAIL_CELL_CLASS_NAME = "hidden @min-[34rem]/ledger:table-cell";
-
-function formatAmount(value: number, format: (amount: number) => string, showPlus: boolean) {
-  const sign = value < 0 ? "−" : value > 0 && showPlus ? "+" : "";
-  return sign + format(Math.abs(value));
-}
+const COUNT_LINK_CLASS_NAME =
+  "hover:text-primary focus-visible:outline-ring decoration-muted-foreground/40 rounded-sm underline underline-offset-2 hover:decoration-current focus-visible:decoration-current";
 
 function countLabel(count: number, singular: string, plural: string) {
   return `${formatInteger(count)} ${count === 1 ? singular : plural}`;
 }
 
-function getLineDetail(
+function getSalesDetail(
   line: LedgerLine,
   figures: CashCloseFigures,
+  showUnits: boolean,
   exchanges?: ExchangeBreakdown,
   cashea?: CasheaBreakdown,
 ) {
-  switch (line.id) {
-    case "sales":
-      return `${countLabel(figures.billedOperations - (exchanges?.count ?? 0) - (cashea?.count ?? 0), "venta", "ventas")} · ${countLabel(figures.units - (exchanges?.units ?? 0) - (cashea?.units ?? 0), "unidad", "unidades")}`;
-    case "exchanges":
-      return countLabel(exchanges?.count ?? 0, "cambio", "cambios");
+  if (line.id !== "sales" && line.id !== "sales-and-exchanges") return undefined;
+
+  const excludedExchanges = line.id === "sales" ? exchanges : undefined;
+  const operations = figures.billedOperations - (cashea?.count ?? 0) - (excludedExchanges?.count ?? 0);
+  if (operations <= 0) return undefined;
+
+  const count =
+    line.id === "sales"
+      ? countLabel(operations, "venta", "ventas")
+      : countLabel(operations, "operación", "operaciones");
+  if (!showUnits) return count;
+
+  const units = figures.units - (cashea?.units ?? 0) - (excludedExchanges?.units ?? 0);
+  return `${count} · ${countLabel(units, "unidad", "unidades")}`;
+}
+
+type LedgerMovement = { kind: "cashea"; count: number } | { kind: "returns"; count: number; type?: Return["type"] };
+
+function getLedgerMovement(
+  id: LedgerLineId,
+  casheaCount: number,
+  returnsCount: number,
+  exchanges?: ExchangeBreakdown,
+): LedgerMovement | undefined {
+  switch (id) {
     case "cashea":
-      return cashea?.count ? countLabel(cashea.count, "orden", "órdenes") : undefined;
-    case "sales-and-exchanges":
-      return `${countLabel(figures.billedOperations - (cashea?.count ?? 0), "operación", "operaciones")} · ${countLabel(figures.units - (cashea?.units ?? 0), "unidad", "unidades")}`;
+      return { kind: "cashea", count: casheaCount };
+    case "exchanges":
+      return { kind: "returns", count: exchanges?.count ?? 0, type: "exchange" };
     case "returns":
-      return exchanges ? countLabel(figures.returnsCount - exchanges.count, "devolución", "devoluciones") : undefined;
-    default:
-      return undefined;
+      return { kind: "returns", count: returnsCount - (exchanges?.count ?? 0), type: exchanges && "refund" };
   }
+}
+
+function LedgerCountLink({ movement, date, closedAt }: { movement: LedgerMovement; date: string; closedAt?: string }) {
+  const preventRowToggle = (event: MouseEvent<HTMLAnchorElement>) => event.stopPropagation();
+  const { count } = movement;
+
+  if (movement.kind === "cashea") {
+    return (
+      <Link
+        to="/receivables/cashea"
+        search={{ status: "all", from: date, to: date, cashClose: closedAt ?? "day" }}
+        className={COUNT_LINK_CLASS_NAME}
+        onClick={preventRowToggle}
+      >
+        {countLabel(count, "orden", "órdenes")}
+      </Link>
+    );
+  }
+
+  const { type } = movement;
+  const label = type ? returnTypeLabels[type] : { singular: "Operación", plural: "Operaciones" };
+  return (
+    <Link to="/returns" search={{ date, type, closedAt }} className={COUNT_LINK_CLASS_NAME} onClick={preventRowToggle}>
+      {countLabel(count, label.singular.toLowerCase(), label.plural.toLowerCase())}
+    </Link>
+  );
 }
 
 function LedgerHelp({ label, children }: { label: string; children: string }) {
@@ -93,50 +139,63 @@ export function CashCloseLedgerTable({
   hasExactOperationCount = true,
 }: CashCloseLedgerTableProps) {
   const returnsQuery = useLedgerReturns(date, figures, closedAt);
-  const casheaQuery = useLedgerCasheaOrders(date, figures.casheaReceivable, closedAt);
+  const [dayLabel, dayDate] = title.split(" · ");
+  const hasCashea = !isLedgerAmountZero(figures.casheaReceivable) || !isLedgerAmountZero(figures.casheaVoidedReturn);
+  const casheaQuery = useCasheaOrdersForCashClose(hasCashea ? date : undefined, closedAt);
   const exchanges = getExchangeBreakdown(figures, returnsQuery.data);
-  const cashea = getCasheaBreakdown(figures.casheaReceivable, date, casheaQuery.data, closedAt);
+  const cashea = getCasheaBreakdown(
+    figures.casheaReceivable,
+    casheaQuery.data?.filter((order) => order.sale_date === date),
+  );
   const lines = getLedgerLines(figures, exchanges, cashea);
   const [expandedLines, setExpandedLines] = useState<Partial<Record<LedgerLineId, boolean>>>({});
   const isOperational = density === "operational";
-  const totalCellClassName = cn("font-bold", isOperational ? "h-12" : "h-9");
+  const salesDestination = { to: "/transactions", search: { date } } as const;
+  const totalCellClassName = cn("font-bold", isOperational && "h-10");
   const totalAmountClassName = cn(
-    "data-value text-right text-base",
-    !isOperational && "@max-[24rem]/ledger:text-sm",
+    "data-value text-right",
+    isOperational ? "text-base" : "text-sm @max-[24rem]/ledger:text-xs",
     totalCellClassName,
   );
 
   function renderLine(line: LedgerLine) {
     const canExpand = Boolean(line.details?.length);
-    const isZero = isLedgerAmountZero(line.amount) && !canExpand;
     const expanded = expandedLines[line.id] ?? false;
-    const detail =
-      !hasExactOperationCount && (line.id === "sales" || line.id === "sales-and-exchanges")
-        ? undefined
-        : getLineDetail(line, figures, exchanges, cashea);
+    const detail = hasExactOperationCount ? getSalesDetail(line, figures, isOperational, exchanges, cashea) : undefined;
+    const movement = getLedgerMovement(line.id, casheaQuery.data?.length ?? 0, figures.returnsCount, exchanges);
+    const movementDetail = movement && movement.count > 0 && (
+      <LedgerCountLink movement={movement} date={date} closedAt={closedAt} />
+    );
+    const isZero = isLedgerAmountZero(line.amount) && !canExpand && !movementDetail;
     const salesLink = line.id === "sales" && detail && (
       <Link
-        to="/transactions"
-        search={{ date }}
-        className="hover:text-primary focus-visible:outline-ring rounded-sm underline-offset-2 hover:underline"
+        {...salesDestination}
+        aria-label={isOperational ? undefined : `${line.label} · ${detail}`}
+        className={COUNT_LINK_CLASS_NAME}
       >
         {detail}
       </Link>
     );
     const isCashea = line.id === "cashea";
-    const useSalesCountAsLabel = !isOperational && line.label === "Ventas" && Boolean(salesLink);
+    const showInlineSalesCount = isOperational && Boolean(salesLink);
     const showPlus = isCashea || line.id === "exchanges";
     const label = (
       <>
         {isCashea && <CasheaLogoIcon className="size-3.5 shrink-0 rounded-[3px]" />}
-        {line.label}
+        <span className="underline-offset-2 group-hover/ledger-toggle:underline group-focus-visible/ledger-toggle:underline">
+          {line.label}
+        </span>
       </>
     );
 
     return (
       <Fragment key={line.id}>
         <TableRow
-          className={cn("border-border/40", canExpand ? "cursor-pointer" : "hover:bg-transparent")}
+          className={cn(
+            "border-border/40",
+            canExpand ? "cursor-pointer" : "hover:bg-transparent",
+            expanded && canExpand && "bg-muted/75 hover:bg-muted border-transparent",
+          )}
           onClick={
             canExpand ? () => setExpandedLines((current) => ({ ...current, [line.id]: !current[line.id] })) : undefined
           }
@@ -147,12 +206,15 @@ export function CashCloseLedgerTable({
               isZero ? "text-muted-foreground" : "font-medium",
             )}
           >
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex flex-wrap items-center gap-x-1.5">
               {canExpand ? (
                 <button
                   type="button"
                   aria-expanded={expanded}
-                  className="focus-visible:outline-ring inline-flex min-h-7 flex-wrap items-center gap-x-1.5 rounded-sm text-left hover:underline @max-[34rem]/ledger:-my-1 @max-[34rem]/ledger:min-h-9"
+                  className={cn(
+                    "group/ledger-toggle focus-visible:outline-ring inline-flex min-h-7 flex-wrap items-center gap-x-1.5 rounded-sm text-left",
+                    isOperational && "@max-[34rem]/ledger:-my-1 @max-[34rem]/ledger:min-h-9",
+                  )}
                 >
                   <span className="inline-flex items-center gap-1.5">
                     {label}
@@ -161,53 +223,57 @@ export function CashCloseLedgerTable({
                       className={cn("text-muted-foreground size-3.5 shrink-0", expanded && "rotate-180")}
                     />
                   </span>
-                  {detail && (
-                    <span
-                      className={cn(
-                        "text-muted-foreground text-xs font-normal",
-                        isOperational && "@min-[34rem]/ledger:hidden",
-                      )}
-                    >
-                      {detail}
-                    </span>
-                  )}
                 </button>
-              ) : useSalesCountAsLabel ? (
-                salesLink
+              ) : showInlineSalesCount ? (
+                <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
+                  <span className="hidden @min-[26rem]/ledger:inline">{label}</span>
+                  <Link
+                    {...salesDestination}
+                    aria-label={`${line.label} · ${detail}`}
+                    title={detail}
+                    className={cn(
+                      COUNT_LINK_CLASS_NAME,
+                      "@min-[26rem]/ledger:text-muted-foreground @min-[26rem]/ledger:text-xs @min-[26rem]/ledger:font-normal @min-[34rem]/ledger:hidden",
+                    )}
+                  >
+                    <span className="@min-[26rem]/ledger:hidden">{line.label}</span>
+                    <span className="hidden @min-[26rem]/ledger:inline">{detail}</span>
+                  </Link>
+                </span>
+              ) : !salesLink && (line.id === "sales" || line.id === "sales-and-exchanges") ? (
+                <Link {...salesDestination} className={COUNT_LINK_CLASS_NAME}>
+                  {line.label}
+                </Link>
               ) : (
                 label
               )}
+              {isOperational && movementDetail && (
+                <span className="text-muted-foreground text-xs font-normal @min-[34rem]/ledger:hidden">
+                  {movementDetail}
+                </span>
+              )}
               {line.id === "sales" && cashea && (
                 <LedgerHelp label="Qué incluye Ventas">
-                  No incluye las ventas del bloque Cashea, los cambios ni las devoluciones.
+                  Las ventas con Cashea, los cambios y las devoluciones se muestran por separado.
                 </LedgerHelp>
               )}
             </span>
-            {salesLink && !useSalesCountAsLabel && (
-              <span
-                className={cn(
-                  "text-xs",
-                  isOperational
-                    ? "block @min-[34rem]/ledger:hidden"
-                    : "text-muted-foreground inline-block ps-1.5 font-normal",
-                )}
-              >
-                {salesLink}
-              </span>
-            )}
           </TableCell>
-          {isOperational && (
-            <TableCell className={cn("text-muted-foreground text-xs", DETAIL_CELL_CLASS_NAME)}>
-              {salesLink || (isZero ? null : detail)}
-            </TableCell>
-          )}
+          <TableCell
+            className={cn(
+              "text-muted-foreground text-xs",
+              isOperational ? DETAIL_CELL_CLASS_NAME : "whitespace-normal",
+            )}
+          >
+            {salesLink || movementDetail || (isZero ? null : detail)}
+          </TableCell>
           <TableCell
             className={cn("data-value text-right", isZero ? "text-muted-foreground font-normal" : "font-medium")}
           >
-            {isZero ? MISSING_VALUE : formatAmount(line.amount.usd, formatCurrencyUSD, showPlus)}
+            {isZero ? MISSING_VALUE : formatLedgerAmount(line.amount.usd, formatCurrencyUSD, showPlus)}
           </TableCell>
           <TableCell className="data-value text-muted-foreground text-right text-xs font-normal">
-            {isZero ? MISSING_VALUE : formatAmount(line.amount.ves, formatCurrencyVES, showPlus)}
+            {isZero ? MISSING_VALUE : formatLedgerAmount(line.amount.ves, formatCurrencyVES, showPlus)}
           </TableCell>
         </TableRow>
         {expanded && canExpand && (
@@ -222,13 +288,14 @@ export function CashCloseLedgerTable({
                 )}
               </LedgerDetailRow>
             )}
-            {line.details?.map(({ label, amount, reference, help }) => (
+            {line.details?.map(({ label, amount, reference, help }, index, details) => (
               <LedgerDetailRow
                 key={label}
                 amount={amount}
                 reference={reference}
                 showPlus={isCashea && !reference}
                 showDetailColumn={isOperational}
+                isLast={index === details.length - 1}
               >
                 {label}
                 {help && <LedgerHelp label={`Qué significa ${label}`}>{help}</LedgerHelp>}
@@ -247,8 +314,10 @@ export function CashCloseLedgerTable({
         scrollAreaLabel={`Importes del cuadre: ${title}`}
         aria-label={`Cuadre: ${title}`}
         className={cn(
-          "@max-[360px]/ledger:[&_:is(th,td)]:px-1.5 @min-[360px]/ledger:@max-[34rem]/ledger:[&_:is(th,td)]:px-2.5",
-          isOperational ? "@max-[34rem]/ledger:[&_tbody_td]:py-2" : "[&_tbody_td]:h-9 [&_tbody_td]:py-1",
+          "bg-card",
+          isOperational
+            ? "@max-[360px]/ledger:[&_:is(th,td)]:px-1.5 @min-[360px]/ledger:@max-[34rem]/ledger:[&_:is(th,td)]:px-2.5 @max-[34rem]/ledger:[&_tbody_td]:py-2"
+            : "[&_:is(th,td)]:px-1 [&_:is(th,td)]:py-0 @min-[360px]/ledger:[&_:is(th,td)]:px-1.5 @min-[448px]/ledger:[&_:is(th,td)]:px-3 [&_:is(thead,tbody)_tr]:h-8 [&_tfoot_tr]:h-9 [&_tr>:first-child]:ps-2 @min-[360px]/ledger:[&_tr>:first-child]:ps-3 @min-[448px]/ledger:[&_tr>:first-child]:ps-6 [&_tr>:last-child]:pe-2 @min-[360px]/ledger:[&_tr>:last-child]:pe-3 @min-[448px]/ledger:[&_tr>:last-child]:pe-6",
         )}
       >
         {!exchanges && !returnsQuery.isLoading && (
@@ -261,16 +330,27 @@ export function CashCloseLedgerTable({
             )}
           </caption>
         )}
-        <TableHeader className="bg-muted">
+        {/* Keep the separator inside the header height so it lines up with the adjacent status panel. */}
+        <TableHeader
+          className={cn(
+            "bg-muted",
+            isOperational && "bg-[linear-gradient(to_top,var(--border)_1px,transparent_1px)] [&_tr]:border-b-0",
+          )}
+        >
           <TableRow className="border-border hover:bg-transparent">
-            <TableHead className={cn("whitespace-normal", isOperational ? "@min-[34rem]/ledger:w-64" : "w-full")}>
-              {title}
+            <TableHead className={cn("whitespace-normal", isOperational && "h-10 @min-[34rem]/ledger:w-44")}>
+              {isOperational ? (
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 py-1 leading-tight tracking-normal">
+                  <strong className="text-foreground text-sm font-semibold normal-case">{dayLabel}</strong>
+                  {dayDate && <small className="text-xs font-normal normal-case">{dayDate}</small>}
+                </div>
+              ) : (
+                title
+              )}
             </TableHead>
-            {isOperational && (
-              <TableHead className={DETAIL_CELL_CLASS_NAME}>
-                <span className="sr-only">Detalle</span>
-              </TableHead>
-            )}
+            <TableHead className={isOperational ? DETAIL_CELL_CLASS_NAME : "w-full"}>
+              <span className="sr-only">Detalle</span>
+            </TableHead>
             <TableHead className={cn("text-right", isOperational ? "w-24 @min-[34rem]/ledger:w-36" : undefined)}>
               USD
             </TableHead>
@@ -282,9 +362,11 @@ export function CashCloseLedgerTable({
 
         <TableBody>{lines.map(renderLine)}</TableBody>
 
-        <TableFooter className={cn("border-foreground/70 font-normal", !isOperational && "bg-primary/8")}>
+        <TableFooter className="border-foreground/40 bg-card font-normal">
           <TableRow className="hover:bg-transparent">
-            <TableCell className={cn(totalCellClassName, "whitespace-normal")}>Total producido</TableCell>
+            <TableCell className={cn(totalCellClassName, "whitespace-normal")} colSpan={isOperational ? 1 : 2}>
+              {isOperational ? "Total producido del día" : "Total producido"}
+            </TableCell>
             {isOperational && <TableCell className={DETAIL_CELL_CLASS_NAME} />}
             <TableCell className={totalAmountClassName}>{formatCurrencyUSD(figures.produced.usd)}</TableCell>
             <TableCell className={totalAmountClassName}>{formatCurrencyVES(figures.produced.ves)}</TableCell>
@@ -301,24 +383,39 @@ function LedgerDetailRow({
   reference,
   showPlus = false,
   showDetailColumn,
+  isLast = false,
 }: {
   children: ReactNode;
   amount?: Money;
   reference?: boolean;
   showPlus?: boolean;
   showDetailColumn: boolean;
+  isLast?: boolean;
 }) {
   return (
-    <TableRow className="border-border/40 bg-muted/40 hover:bg-muted/40">
-      <TableCell className={cn("text-xs whitespace-normal", reference && "text-muted-foreground")}>
-        <span className="border-border block border-s ps-2">{children}</span>
+    <TableRow className={cn("bg-muted/50 hover:bg-muted/50", isLast ? "border-border/40" : "border-b-0")}>
+      <TableCell
+        className={cn("text-xs whitespace-normal", reference && "text-muted-foreground")}
+        colSpan={showDetailColumn ? 1 : 2}
+      >
+        <span className="relative block ps-4">
+          <svg
+            aria-hidden="true"
+            className="fill-muted-foreground/50 absolute inset-s-0 top-[7px] h-px w-2"
+            viewBox="0 0 8 1"
+            shapeRendering="crispEdges"
+          >
+            <rect width="8" height="1" />
+          </svg>
+          {children}
+        </span>
       </TableCell>
       {showDetailColumn && <TableCell className={DETAIL_CELL_CLASS_NAME} />}
       <TableCell className={cn("data-value text-right text-xs", reference && "text-muted-foreground")}>
-        {amount && formatAmount(amount.usd, formatCurrencyUSD, showPlus)}
+        {amount && formatLedgerAmount(amount.usd, formatCurrencyUSD, showPlus)}
       </TableCell>
       <TableCell className="data-value text-muted-foreground text-right text-xs">
-        {amount && formatAmount(amount.ves, formatCurrencyVES, showPlus)}
+        {amount && formatLedgerAmount(amount.ves, formatCurrencyVES, showPlus)}
       </TableCell>
     </TableRow>
   );

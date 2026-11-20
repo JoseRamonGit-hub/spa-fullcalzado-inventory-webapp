@@ -8,6 +8,20 @@ const TRANSACTION_SELECT =
   "*, products(code, description), users(fullname), sales(cashea_orders(order_number, status))" as const;
 
 export const transactionsService = {
+  getSaleLines: async (businessId: string, saleId: string, signal: AbortSignal) => {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("id, quantity, products(code, description)")
+      .eq("business_id", businessId)
+      .eq("sale_id", saleId)
+      .order("created_at")
+      .order("id")
+      .abortSignal(signal);
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
   getAll: async (businessId: string, date?: string): Promise<TransactionWithRelations[]> => {
     let query = supabase
       .from("transactions")

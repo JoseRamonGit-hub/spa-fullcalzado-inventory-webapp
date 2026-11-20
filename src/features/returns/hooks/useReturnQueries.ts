@@ -1,5 +1,5 @@
 import { skipToken, useQuery } from "@tanstack/react-query";
-import { returnsService } from "@/services/returnsService";
+import { returnsService, type ReturnsFilter } from "@/services/returnsService";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 
 type ReturnQueryOptions = {
@@ -10,16 +10,16 @@ export const returnKeys = {
   all: ["returns"] as const,
   business: (businessId: string | null) => [...returnKeys.all, businessId] as const,
   lists: (businessId: string | null) => [...returnKeys.business(businessId), "list"] as const,
-  list: (businessId: string | null, date?: string) => [...returnKeys.lists(businessId), { date }] as const,
+  list: (businessId: string | null, filter: ReturnsFilter) => [...returnKeys.lists(businessId), filter] as const,
   today: (businessId: string | null) => [...returnKeys.business(businessId), "today"] as const,
 };
 
-export function useReturns(date?: string, options?: ReturnQueryOptions) {
+export function useReturns(filter: ReturnsFilter = {}, options?: ReturnQueryOptions) {
   const businessId = useBusinessStore((state) => state.activeBusinessId);
 
   return useQuery({
-    queryKey: returnKeys.list(businessId, date),
-    queryFn: businessId ? () => returnsService.getAll(businessId, date) : skipToken,
+    queryKey: returnKeys.list(businessId, filter),
+    queryFn: businessId ? () => returnsService.getAll(businessId, filter) : skipToken,
     enabled: options?.enabled,
   });
 }

@@ -73,11 +73,11 @@ Venta cuyo importe se paga en parte en la tienda y en parte mediante financiamie
 _Avoid_: Venta a crédito, venta a cuotas
 
 **Orden Cashea**:
-Registro en Full Calzado de la orden creada en el panel de Cashea para una Venta Cashea: número de orden, Total de la orden, Cobrado hoy, Monto financiado y número de factura.
+Registro en Full Calzado de la orden creada en el panel de Cashea para una Venta Cashea: número de orden, Total de la orden, Inicial, Monto financiado y número de factura.
 
-**Cobrado hoy**:
-Parte de una Venta Cashea que el cliente paga en la tienda en el momento de la compra. Es lo que entra a caja.
-_Avoid_: Inicial, anticipo
+**Inicial**:
+Importe que el cliente paga directamente a la tienda al realizar una Venta Cashea.
+_Avoid_: Cobrado hoy, anticipo
 
 **Monto financiado**:
 Parte de una Venta Cashea que Cashea adeuda a la tienda. Es una Cuenta por cobrar Cashea, no dinero en caja.
@@ -89,7 +89,7 @@ Monto financiado de una Orden Cashea mientras Cashea no lo haya depositado. Esta
 Etiqueta del cierre de caja: suma del Monto financiado de las Órdenes Cashea no anuladas de las Ventas del período, aunque Cashea las deposite después. Se descuenta del Total producido. También cuenta la orden anulada por «Devolución del cliente» en un día posterior al de su venta: su compensación se registra el día de la anulación (Cashea anulado por devolución).
 
 **Cashea anulado por devolución**:
-Etiqueta del cierre de caja: suma del Monto financiado de las Órdenes Cashea anuladas ese día con el motivo «Devolución del cliente» cuya Venta es de un día anterior. Se suma al Total producido para compensar que la Devolución resta el crédito completo aunque de caja solo salió lo Cobrado hoy.
+Etiqueta del cierre de caja: suma del Monto financiado de las Órdenes Cashea anuladas ese día con el motivo «Devolución del cliente» cuya Venta es de un día anterior. Se suma al Total producido para compensar que la Devolución resta el crédito completo aunque de caja solo salió el reembolso de la Inicial.
 
 **Depósito Cashea**:
 Pago agrupado que Cashea hace a la tienda, en bolívares y neto de comisiones, por una o varias Órdenes Cashea.

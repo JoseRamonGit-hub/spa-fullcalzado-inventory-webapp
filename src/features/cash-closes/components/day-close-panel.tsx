@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { CashCloseWithRelations } from "@/types";
 import { formatCurrencyUSD, formatCurrencyVES, formatDate, formatTime } from "@/utils/formatters";
-import type { CashCloseDayState, CashCloseFigures } from "../cash-close-ledger";
+import { formatLedgerAmount, type CashCloseDayState, type CashCloseFigures } from "../cash-close-ledger";
 import { CashCloseLedgerTable } from "./cash-close-ledger-table";
 
 export type DayCloseState =
@@ -24,9 +24,11 @@ type DayClosePanelProps = {
 };
 
 const PANEL_GRID_CLASS_NAME =
-  "grid min-w-0 shrink-0 grid-cols-1 border-b @min-[58rem]/cash-close:grid-cols-[minmax(0,1fr)_15rem]";
+  "bg-card grid min-w-0 shrink-0 grid-cols-1 border-b @min-[58rem]/cash-close:grid-cols-[minmax(0,1fr)_15rem]";
+const RAIL_CLASS_NAME =
+  "flex min-w-0 flex-col border-t @min-[58rem]/cash-close:border-t-0 @min-[58rem]/cash-close:border-l";
 const RAIL_HEADER_CLASS_NAME =
-  "bg-muted operational-label text-muted-foreground hidden h-7 shrink-0 items-center border-b px-4 @min-[58rem]/cash-close:flex";
+  "bg-muted operational-label text-muted-foreground hidden h-10 shrink-0 items-center border-b px-4 @min-[58rem]/cash-close:flex";
 
 /**
  * El cuadre del día a la izquierda y, a la derecha, si el día está cerrado y qué hacer. El botón queda a la altura del
@@ -96,11 +98,6 @@ function DayStateLabel({ state }: { state: DayCloseState }) {
 
 const WARNING_TEXT_CLASS_NAME = "text-warning-foreground dark:text-warning font-medium";
 
-function signedAmount(value: number, format: (value: number) => string) {
-  const sign = value < 0 ? "−" : value > 0 ? "+" : "";
-  return sign + format(Math.abs(value));
-}
-
 function dayCount(count: number) {
   return count === 1 ? "1 día con ventas sin cerrar" : `${count} días con ventas sin cerrar`;
 }
@@ -114,7 +111,7 @@ function lastCloseLabel(state: Extract<DayCloseState, { kind: "open" }>) {
 type RailContent = {
   /** Contexto arriba: de dónde viene el día. */
   context?: ReactNode;
-  /** Resultado abajo, a la altura del Total producido, cuando no hay nada que hacer. */
+  /** Información que acompaña al estado cuando no hay una acción disponible. */
   result?: ReactNode;
   actionLabel?: string;
   actionDetail?: ReactNode;
@@ -153,16 +150,18 @@ function getRailContent(state: DayCloseState): RailContent {
                 </>
               )}
             </span>
-            <span className="tabular-value text-foreground block">
-              {formatCurrencyUSD(cashClose.total_usd)} · {formatCurrencyVES(cashClose.total_ves)}
+            <span className="tabular-value text-foreground mt-0.5 flex flex-wrap justify-between gap-x-2">
+              <span>{formatCurrencyUSD(cashClose.total_usd)}</span>
+              <span className="whitespace-nowrap">{formatCurrencyVES(cashClose.total_ves)}</span>
             </span>
           </>
         ),
         actionDetail: hasDelta ? (
           <>
             Diferencia desde el cierre
-            <span className={cn("tabular-value block text-sm", WARNING_TEXT_CLASS_NAME)}>
-              {signedAmount(state.deltaUsd, formatCurrencyUSD)} · {signedAmount(state.deltaVes, formatCurrencyVES)}
+            <span className="tabular-value text-foreground mt-0.5 flex flex-wrap justify-between gap-x-2 text-base font-bold">
+              <span>{formatLedgerAmount(state.deltaUsd, formatCurrencyUSD, true)}</span>
+              <span className="whitespace-nowrap">{formatLedgerAmount(state.deltaVes, formatCurrencyVES, true)}</span>
             </span>
           </>
         ) : (
@@ -202,7 +201,7 @@ function DayCloseRail({ state, onRequestClose, isPending, canClose }: DayCloseRa
   const { context, result, actionLabel, actionDetail } = getRailContent(state);
 
   return (
-    <div className="flex min-w-0 flex-col border-t @min-[58rem]/cash-close:border-t-0 @min-[58rem]/cash-close:border-l">
+    <div className={RAIL_CLASS_NAME}>
       <div className={RAIL_HEADER_CLASS_NAME} role="status">
         <DayStateLabel state={state} />
       </div>
@@ -213,7 +212,8 @@ function DayCloseRail({ state, onRequestClose, isPending, canClose }: DayCloseRa
             <DayStateLabel state={state} />
           </span>
           {context && <p>{context}</p>}
-          {result && <p className="@min-[58rem]/cash-close:hidden">{result}</p>}
+          {actionDetail && <p className="mt-2 border-t pt-2">{actionDetail}</p>}
+          {result && <p className="leading-relaxed break-words">{result}</p>}
         </div>
 
         {state.kind === "unverified" ? (
@@ -228,19 +228,13 @@ function DayCloseRail({ state, onRequestClose, isPending, canClose }: DayCloseRa
           </Button>
         ) : actionLabel ? (
           <div className="flex flex-col gap-2 @min-[34rem]/cash-close:@max-[58rem]/cash-close:flex-row @min-[34rem]/cash-close:@max-[58rem]/cash-close:items-center">
-            {actionDetail && <p className="text-muted-foreground text-xs">{actionDetail}</p>}
             <Button onClick={onRequestClose} disabled={isPending || !canClose}>
               {state.kind === "open" && <Lock data-icon="inline-start" aria-hidden="true" />}
+              {state.kind === "outdated" && <RefreshCw data-icon="inline-start" aria-hidden="true" />}
               {isPending ? (state.kind === "outdated" ? "Actualizando…" : "Cerrando…") : actionLabel}
             </Button>
           </div>
-        ) : (
-          result && (
-            <p className="text-muted-foreground hidden h-9 min-w-0 items-center text-sm @min-[58rem]/cash-close:flex">
-              <span className="truncate">{result}</span>
-            </p>
-          )
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -253,7 +247,7 @@ export function DayClosePanelSkeleton() {
   return (
     <div className={PANEL_GRID_CLASS_NAME} aria-hidden="true">
       <div className="flex min-w-0 flex-col">
-        <div className="bg-muted flex h-7 items-center border-b px-3 @min-[58rem]/cash-close:px-4">
+        <div className="bg-muted flex h-10 items-center border-b px-3 @min-[58rem]/cash-close:px-4">
           <Skeleton className="h-2.5 w-28 rounded" />
         </div>
         {SKELETON_LINE_WIDTHS.map((width) => (
@@ -265,12 +259,12 @@ export function DayClosePanelSkeleton() {
             <Skeleton className="h-3 w-40 rounded" />
           </div>
         ))}
-        <div className="border-foreground/70 flex h-12 items-center justify-between border-t px-3 @min-[58rem]/cash-close:px-4">
+        <div className="border-foreground/40 flex h-10 items-center justify-between border-t px-3 @min-[58rem]/cash-close:px-4">
           <Skeleton className="h-3.5 w-28 rounded" />
           <Skeleton className="h-3 w-40 rounded" />
         </div>
       </div>
-      <div className="flex flex-col border-t @min-[58rem]/cash-close:border-t-0 @min-[58rem]/cash-close:border-l">
+      <div className={RAIL_CLASS_NAME}>
         <div className={RAIL_HEADER_CLASS_NAME}>
           <Skeleton className="h-2.5 w-20 rounded" />
         </div>

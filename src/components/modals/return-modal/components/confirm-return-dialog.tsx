@@ -1,14 +1,12 @@
-import { cn } from "@/lib/utils";
-import { CurrencyStack } from "@/components/ui/currency-stack";
+import { ConfirmationAmounts } from "../../shared/confirmation-amounts";
 import { TableHead } from "@/components/ui/table";
-import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
+import { formatCurrencyUSD } from "@/utils/formatters";
 import type { PendingReturnItem, PendingExchangeItem, ReturnSummary } from "../types";
 import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
 import { getReturnPresentation } from "../return-presentation";
 import {
   ConfirmDialogLineRow,
   ConfirmDialogLineTable,
-  ConfirmDialogSummarySection,
   ConfirmDialogTableSection,
   ModalConfirmDialog,
   ModalProductIdentity,
@@ -54,29 +52,7 @@ export function ConfirmReturnDialog({
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       title={presentation.confirmTitle}
-      description={
-        isExchange ? (
-          <>
-            Se registrarán{" "}
-            <strong className="text-foreground">
-              {returnedUnitCount} {returnedUnitCount === 1 ? "unidad" : "unidades"} de entrada
-            </strong>{" "}
-            y{" "}
-            <strong className="text-foreground">
-              {exchangedUnitCount} {exchangedUnitCount === 1 ? "unidad" : "unidades"} de salida
-            </strong>
-            . Verifica productos e importes.
-          </>
-        ) : (
-          <>
-            Se registrará{returnedUnitCount === 1 ? "" : "n"}{" "}
-            <strong className="text-foreground">
-              {returnedUnitCount} {returnedUnitCount === 1 ? "unidad" : "unidades"} de entrada
-            </strong>
-            . Verifica el reembolso.
-          </>
-        )
-      }
+      description={`${returnedUnitCount} ${returnedUnitCount === 1 ? "unidad" : "unidades"} de entrada${isExchange ? ` · ${exchangedUnitCount} ${exchangedUnitCount === 1 ? "unidad" : "unidades"} de salida` : ""}`}
       confirmLabel={presentation.actionLabel}
       pendingLabel="Registrando..."
       submissionErrorMessage={
@@ -85,16 +61,21 @@ export function ConfirmReturnDialog({
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
       confirmDisabled={!exchangeRate.isReady}
-      contentClassName="data-[size=default]:sm:max-w-xl"
+      contentClassName="data-[size=default]:sm:max-w-2xl"
     >
-      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-52">
+      <ConfirmDialogTableSection className="bg-card border-border/80 sm:max-h-52">
         <ConfirmDialogLineTable
           header={
             <>
-              <TableHead scope="col">Movimiento</TableHead>
+              <TableHead scope="col" className="hidden sm:table-cell">
+                Movimiento
+              </TableHead>
               <TableHead scope="col">Producto</TableHead>
               <TableHead scope="col" className="text-right">
-                Cantidad
+                <span className="sm:hidden" aria-label="Cantidad">
+                  Cant.
+                </span>
+                <span className="hidden sm:inline">Cantidad</span>
               </TableHead>
               <TableHead scope="col" className="text-right">
                 Importe USD
@@ -104,18 +85,19 @@ export function ConfirmReturnDialog({
         >
           {allItems.map((item) => (
             <ConfirmDialogLineRow key={item.tempId}>
-              <td className="p-0 align-middle">
+              <td className="hidden p-0 align-middle sm:table-cell">
                 <ReturnMovementBadge kind={item.movement === "Entrada" ? "entry" : "exit"} />
               </td>
               <td className="min-w-0 p-0 align-middle">
                 <ModalProductIdentity code={item.code} description={item.description} />
+                <div className="mt-1 sm:hidden">
+                  <ReturnMovementBadge kind={item.movement === "Entrada" ? "entry" : "exit"} />
+                </div>
               </td>
-              <td className="p-0 align-middle whitespace-nowrap sm:text-right">
-                <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Cantidad</span>
+              <td className="p-0 text-right align-middle whitespace-nowrap">
                 <span className="tabular-value font-semibold">{item.quantity}</span>
               </td>
               <td className="p-0 text-right align-middle whitespace-nowrap">
-                <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Importe USD</span>
                 <span className="data-value font-semibold">{formatCurrencyUSD(item.totalUsd)}</span>
               </td>
             </ConfirmDialogLineRow>
@@ -123,64 +105,30 @@ export function ConfirmReturnDialog({
         </ConfirmDialogLineTable>
       </ConfirmDialogTableSection>
 
-      <ConfirmDialogSummarySection className="border-primary/20 bg-card gap-0 overflow-hidden p-0">
-        {!exchangeRate.isReady && <p className="text-warning px-3 py-2">{exchangeRate.statusMessage}</p>}
-
-        <div className="bg-primary/5 flex items-center justify-between gap-3 border-b px-3 py-2">
-          <p className="text-muted-foreground text-[11px] font-semibold uppercase">Diferencia</p>
-          <p className="font-semibold">{presentation.outcomeLabel}</p>
-        </div>
-
-        <div className="grid grid-cols-2 divide-x">
-          <div className="min-w-0 p-3">
-            <p className="text-muted-foreground text-[11px] font-semibold uppercase">USD</p>
-            <p
-              className={cn(
-                "data-value mt-1 text-base leading-tight font-bold whitespace-nowrap sm:text-lg",
-                presentation.differenceClassName,
-              )}
-            >
-              {formatCurrencyUSD(presentation.differenceUsd)}
-            </p>
-          </div>
-          <div className="min-w-0 p-3 text-right">
-            <p className="text-muted-foreground text-[11px] font-semibold uppercase">Bs.</p>
-            <p
-              className={cn(
-                "data-value mt-1 text-base leading-tight font-bold whitespace-nowrap sm:text-lg",
-                presentation.differenceClassName,
-              )}
-            >
-              {exchangeRate.isReady ? formatCurrencyVES(presentation.differenceVes) : "—"}
-            </p>
-          </div>
-        </div>
-
-        {isExchange && (
-          <div className="bg-muted/20 grid grid-cols-2 divide-x border-t">
-            <div className="min-w-0 px-3 py-2">
-              <p className="text-muted-foreground text-[11px] font-semibold uppercase">Crédito</p>
-              <CurrencyStack usd={creditUsd} ves={creditVes} className="mt-1" />
-            </div>
-            <div className="min-w-0 px-3 py-2 text-right">
-              <p className="text-muted-foreground text-[11px] font-semibold uppercase">Nueva compra</p>
-              <CurrencyStack usd={newPurchaseUsd} ves={newPurchaseVes} className="mt-1 justify-items-end" />
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between gap-3 border-t px-3 py-2">
-          <p className="text-muted-foreground text-[11px] font-semibold uppercase">Tasa aplicada</p>
-          <p className="data-value font-medium whitespace-nowrap">{exchangeRate.displayValue}</p>
-        </div>
-
-        {notes && (
-          <div className="border-t px-3 py-2 break-words whitespace-pre-wrap">
-            <span className="text-muted-foreground">Motivo: </span>
-            <span className="text-foreground">{notes}</span>
-          </div>
-        )}
-      </ConfirmDialogSummarySection>
+      <ConfirmationAmounts
+        details={
+          isExchange
+            ? [
+                { label: "Valor de lo devuelto", usd: creditUsd, ves: exchangeRate.isReady ? creditVes : null },
+                { label: "Nueva compra", usd: newPurchaseUsd, ves: exchangeRate.isReady ? newPurchaseVes : null },
+              ]
+            : []
+        }
+        totalClassName={presentation.differenceClassName}
+        total={{
+          label: presentation.outcomeLabel,
+          usd: presentation.differenceUsd,
+          ves: exchangeRate.isReady ? presentation.differenceVes : null,
+        }}
+        rate={exchangeRate.isReady ? exchangeRate.displayValue : null}
+      />
+      {!exchangeRate.isReady && <p className="text-warning-foreground text-xs">{exchangeRate.statusMessage}</p>}
+      {notes && (
+        <p className="text-xs break-words whitespace-pre-wrap">
+          <span className="text-muted-foreground">Motivo: </span>
+          {notes}
+        </p>
+      )}
     </ModalConfirmDialog>
   );
 }

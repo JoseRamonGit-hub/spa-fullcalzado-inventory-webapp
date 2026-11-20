@@ -239,7 +239,7 @@ SELECT throws_ok(
     )
   $$,
   'P0001',
-  'Cobrado hoy más Monto financiado debe coincidir con el total de la Orden Cashea',
+  'Inicial más Monto financiado debe coincidir con el total de la Orden Cashea',
   'Se rechaza una suma que difiere del total en más de $0.01'
 );
 
@@ -332,8 +332,8 @@ SELECT throws_ok(
     )
   $$,
   'P0001',
-  'El monto Cobrado hoy no puede ser negativo',
-  'Se rechaza un Cobrado hoy negativo'
+  'La Inicial no puede ser negativa',
+  'Se rechaza una Inicial negativa'
 );
 
 SELECT throws_ok(
@@ -557,7 +557,7 @@ SELECT throws_ok(
   $$,
   '23514',
   NULL,
-  'El check de suma rechaza Cobrado hoy + Monto financiado distinto del total'
+  'El check de suma rechaza Inicial + Monto financiado distinto del total'
 );
 
 SELECT throws_ok(
@@ -587,7 +587,7 @@ SELECT throws_ok(
   $$,
   '23514',
   NULL,
-  'El check de signos rechaza un Cobrado hoy negativo'
+  'El check de signos rechaza una Inicial negativa'
 );
 
 SELECT throws_ok(

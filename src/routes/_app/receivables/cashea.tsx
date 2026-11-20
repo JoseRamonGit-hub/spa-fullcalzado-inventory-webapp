@@ -9,6 +9,10 @@ const searchSchema = z.object({
   status: z.enum(casheaStatusFilters).optional().catch(undefined),
   from: calendarDate,
   to: calendarDate,
+  cashClose: z
+    .union([z.literal("day"), z.iso.datetime({ offset: true })])
+    .optional()
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/_app/receivables/cashea")({

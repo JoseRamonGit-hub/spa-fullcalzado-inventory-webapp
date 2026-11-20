@@ -43,8 +43,38 @@ describe("PasteCasheaSummaryButton", () => {
     expect(screen.getByLabelText("N° de orden")).toHaveValue("6400685");
     expect(screen.getByLabelText("N° de factura")).toHaveValue("551-000738");
     expect(screen.getByLabelText("Total de la orden")).toHaveValue("185.60");
-    expect(screen.getByLabelText("Cobrado hoy")).toHaveValue("92.80");
+    expect(screen.getByLabelText("Inicial")).toHaveValue("92.80");
     expect(screen.getByLabelText("Monto financiado")).toHaveValue("92.80");
+  });
+
+  it("rellena los cinco campos al pegar el detalle con plan de pago", async () => {
+    render(<CasheaOrderFieldsHarness saleTotalUsd={41} />);
+
+    await pasteSummary(
+      [
+        "Detalle de orden #249663589",
+        "Factura",
+        "19 Nov 2026",
+        "Plan de pago de $41.00",
+        "QR",
+        "Pagada",
+        "Por Otro",
+        "$24.60",
+        "19 Nov 2026",
+        "Pagada",
+        "$5.46",
+        "Canal de venta",
+        "QR",
+        "Factura",
+        "0011",
+      ].join("\n"),
+    );
+
+    expect(screen.getByLabelText("N° de orden")).toHaveValue("249663589");
+    expect(screen.getByLabelText("N° de factura")).toHaveValue("0011");
+    expect(screen.getByLabelText("Total de la orden")).toHaveValue("41.00");
+    expect(screen.getByLabelText("Inicial")).toHaveValue("24.60");
+    expect(screen.getByLabelText("Monto financiado")).toHaveValue("16.40");
   });
 
   it("un segundo pegado solo reemplaza los campos que reconoce", async () => {
@@ -59,7 +89,7 @@ describe("PasteCasheaSummaryButton", () => {
     expect(screen.getByLabelText("N° de orden")).toHaveValue("6400700");
     expect(screen.getByLabelText("N° de factura")).toHaveValue("551-000738");
     expect(screen.getByLabelText("Total de la orden")).toHaveValue("120.00");
-    expect(screen.getByLabelText("Cobrado hoy")).toHaveValue("92.80");
+    expect(screen.getByLabelText("Inicial")).toHaveValue("92.80");
     expect(screen.getByLabelText("Monto financiado")).toHaveValue("92.80");
   });
 

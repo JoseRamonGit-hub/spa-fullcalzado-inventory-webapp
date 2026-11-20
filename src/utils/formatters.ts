@@ -10,7 +10,7 @@
 const LOCALE_VE = "es-VE";
 const LOCALE_US = "en-US";
 const LOCALE_CA = "en-CA"; // Used for YYYY-MM-DD backend format
-const TIMEZONE_CCS = "America/Caracas";
+export const TIMEZONE_CCS = "America/Caracas";
 
 // ============================================================================
 // Number & Currency Formatters Options

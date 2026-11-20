@@ -27,6 +27,9 @@
 
 BEGIN;
 
+-- Match the business date used by generate_daily_cash_close and the sale RPCs.
+SET LOCAL TIME ZONE 'America/Caracas';
+
 -- The production migration intentionally leaves tenant columns without a
 -- default. Temporary defaults keep this historical dataset readable while
 -- making every omitted business_id belong to Full Calzado. They are removed
@@ -1417,7 +1420,7 @@ END
 $$;
 
 -- Completa la Orden Cashea: el total es el de la Venta y lo financiado es el
--- total menos lo Cobrado hoy.
+-- total menos la Inicial.
 CREATE FUNCTION pg_temp.seed_cashea_payload(p_cashea jsonb, p_sale_total numeric)
 RETURNS jsonb
 LANGUAGE sql
@@ -1687,7 +1690,7 @@ BEGIN
 END
 $$;
 
--- Ajusta números y lo Cobrado hoy; el total se mantiene.
+-- Ajusta números y la Inicial; el total se mantiene.
 CREATE FUNCTION pg_temp.seed_adjust_order(
   p_business_id uuid,
   p_order_number text,

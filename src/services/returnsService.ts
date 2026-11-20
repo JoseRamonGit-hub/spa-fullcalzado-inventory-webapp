@@ -3,9 +3,12 @@ import { toServiceError } from "@/lib/errors";
 import type { ProcessReturnPayload, Return, ReturnWithRelations } from "@/types/index";
 import type { Json } from "@/types/supabase";
 import { formatDateForBackend } from "@/utils/formatters";
+import { readAllPages } from "./readAllPages";
 
 const RETURN_WITH_RELATIONS_SELECT =
   "*, users(fullname), return_items(*, products(code, description)), transactions(*, products(code, description))" as const;
+
+export type ReturnsFilter = { date?: string; type?: Return["type"]; closedAt?: string };
 
 export const returnsService = {
   getToday: async (businessId: string): Promise<Return[]> => {
@@ -21,26 +24,27 @@ export const returnsService = {
     return data;
   },
 
-  getAll: async (businessId: string, date?: string): Promise<ReturnWithRelations[]> => {
+  getAll: async (businessId: string, { date, type, closedAt }: ReturnsFilter = {}): Promise<ReturnWithRelations[]> => {
     let query = supabase
       .from("returns")
       .select(RETURN_WITH_RELATIONS_SELECT)
       .eq("business_id", businessId)
       .order("created_at", { ascending: false });
 
+    if (type) query = query.eq("type", type);
     if (date) {
       query = query.eq("date", date);
-    } else {
-      // Default: last 30 days
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - 30);
-      query = query.gte("date", formatDateForBackend(cutoff));
+      if (closedAt) query = query.lte("created_at", closedAt);
+      return readAllPages(query.order("id"));
     }
 
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    query = query.gte("date", formatDateForBackend(cutoff));
     const { data, error } = await query;
 
     if (error) throw toServiceError(error);
-    return data as ReturnWithRelations[];
+    return data;
   },
 
   processReturn: async (businessId: string, payload: ProcessReturnPayload): Promise<void> => {

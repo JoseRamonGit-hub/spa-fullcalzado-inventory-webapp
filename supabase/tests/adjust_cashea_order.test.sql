@@ -105,7 +105,7 @@ SELECT throws_ok(
   $$
     SELECT public.adjust_cashea_order(
       '3d000000-0000-0000-0000-000000000001', '3d000000-0000-0000-0000-000000000201',
-      'ADJ-401', 'F-401', 100, 30, 70, 'Se tecleó mal el cobrado hoy'
+      'ADJ-401', 'F-401', 100, 30, 70, 'Se tecleó mal la inicial'
     )
   $$,
   'P0001',
@@ -119,7 +119,7 @@ SELECT lives_ok(
   $$
     SELECT public.adjust_cashea_order(
       '3d000000-0000-0000-0000-000000000001', '3d000000-0000-0000-0000-000000000201',
-      ' ADJ-401 ', ' F-401 ', 100, 30, 70, '  Se tecleó mal el cobrado hoy  '
+      ' ADJ-401 ', ' F-401 ', 100, 30, 70, '  Se tecleó mal la inicial  '
     )
   $$,
   'El Administrador ajusta una orden Pendiente'
@@ -153,7 +153,7 @@ SELECT results_eq(
     VALUES (
       'ADJ-TYPO'::text, 'ADJ-401'::text, 'F-40I'::text, 'F-401'::text,
       100::numeric(12,2), 100::numeric(12,2), 40::numeric(12,2), 30::numeric(12,2),
-      60::numeric(12,2), 70::numeric(12,2), 'Se tecleó mal el cobrado hoy'::text,
+      60::numeric(12,2), 70::numeric(12,2), 'Se tecleó mal la inicial'::text,
       'a0000000-0000-0000-0000-000000000001'::text, true
     )
   $$,
@@ -168,7 +168,7 @@ SELECT throws_ok(
     )
   $$,
   'P0001',
-  'Cobrado hoy más Monto financiado debe coincidir con el total de la Orden Cashea',
+  'Inicial más Monto financiado debe coincidir con el total de la Orden Cashea',
   'La suma debe coincidir con el total'
 );
 

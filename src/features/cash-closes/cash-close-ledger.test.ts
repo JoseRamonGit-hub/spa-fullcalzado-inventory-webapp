@@ -23,27 +23,14 @@ describe("renglones del cuadre", () => {
       casheaVoidedReturn: money(3),
       produced: { usd: 132.01, ves: 10260 },
     };
-    const date = "2026-11-19";
     const order = {
       sale_id: "sale",
-      status: "pending" as const,
-      void_reason: null,
-      voided_at: null,
       paid_today_usd: 40,
       financed_usd: 40,
       exchange_rate: 87.5,
       sale: { transactions: [{ quantity: 1, total_usd: 80.01, total_ves: 7000 }] },
     };
-    const cashea = getCasheaBreakdown(figures.casheaReceivable, date, [
-      order,
-      {
-        ...order,
-        sale_id: "voided",
-        status: "voided",
-        void_reason: "customer_return",
-        voided_at: "2026-11-19T16:00:00Z",
-      },
-    ]);
+    const cashea = getCasheaBreakdown(figures.casheaReceivable, [order]);
     const lines = getLedgerLines(figures, { count: 1, units: 1, delivered: money(86), credit: money(57) }, cashea);
     expect(lines.map(({ id, amount }) => [id, amount.usd])).toEqual([
       ["sales", 60],
@@ -59,7 +46,7 @@ describe("renglones del cuadre", () => {
     ]);
     expect(lines.reduce((sum, line) => sum + line.amount.usd, 0)).toBeCloseTo(figures.produced.usd);
     expect(lines.reduce((sum, line) => sum + line.amount.ves, 0)).toBe(figures.produced.ves);
-    expect(getCasheaBreakdown(figures.casheaReceivable, date, [])).toBeUndefined();
+    expect(getCasheaBreakdown(figures.casheaReceivable, [])).toBeUndefined();
   });
 
   it.each([30, 20, 10])("separa un reemplazo de $%i de las ventas y devoluciones sin cambio", (replacement) => {

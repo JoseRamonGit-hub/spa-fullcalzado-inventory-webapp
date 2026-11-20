@@ -4,7 +4,7 @@ Las Ventas Cashea se registran manualmente en Full Calzado, con ayuda del pegado
 
 El Total producido conserva su nombre y su significado, la cifra real resultante en caja, y pasa a descontar lo financiado: el cierre de caja lo muestra como «Por cobrar Cashea». El Total facturado no cambia, así que el Ticket promedio y los períodos del dashboard siguen igual. Los cierres ya generados no se recalculan, coherente con ADR 0001.
 
-Cuando una Venta Cashea se devuelve en un día posterior al de su venta, la Devolución resta el crédito completo aunque de caja solo salió lo Cobrado hoy. Se compensa en el cierre del día de la anulación, que suma el Monto financiado como «Cashea anulado por devolución». Las devoluciones no se ligan a la venta original: basta con anular la Orden Cashea con el motivo «Devolución del cliente».
+Cuando una Venta Cashea se devuelve en un día posterior al de su venta, la Devolución resta el crédito completo aunque de caja solo salió el reembolso de la Inicial. Se compensa en el cierre del día de la anulación, que suma el Monto financiado como «Cashea anulado por devolución». Las devoluciones no se ligan a la venta original: basta con anular la Orden Cashea con el motivo «Devolución del cliente».
 
 ## Alternativas rechazadas
 

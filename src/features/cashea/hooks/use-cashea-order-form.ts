@@ -39,7 +39,7 @@ export function useCasheaOrderForm(saleTotalUsd: number | null, initialDraft = E
     };
   };
 
-  // El Monto financiado se calcula como total menos Cobrado hoy; el cajero puede corregirlo después.
+  // El Monto financiado se calcula como total menos Inicial; el cajero puede corregirlo después.
   function fillFinancedUsd() {
     const { totalUsd, paidTodayUsd } = form.state.values;
     const financedUsd = calculateFinancedUsd(totalUsd, paidTodayUsd);

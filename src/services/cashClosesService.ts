@@ -2,8 +2,9 @@ import { supabase } from "@/lib/supabase";
 import { toServiceError } from "@/lib/errors";
 import type { CashClose, CashCloseSummary, CashCloseWithRelations, UnclosedCashCloseDay } from "@/types/index";
 import type { Database } from "@/types/supabase";
+import { readAllPages } from "./readAllPages";
 
-const CASH_CLOSE_SELECT = "*, users(fullname)" as const;
+const CASH_CLOSE_SELECT = "*, users(fullname), cash_close_previous_versions(id, closed_at, users(fullname))" as const;
 
 type SummaryRow = Database["public"]["Functions"]["get_cash_close_summary"]["Returns"][number];
 
@@ -26,27 +27,6 @@ function toCashCloseSummary(summary: SummaryRow): CashCloseSummary {
 }
 
 export const cashClosesService = {
-  getLedgerCasheaOrders: async (businessId: string, date: string, closedAt?: string) => {
-    const query = supabase
-      .from("cashea_orders")
-      .select(
-        "sale_id, status, void_reason, voided_at, paid_today_usd, financed_usd, exchange_rate, sale:sales!cashea_orders_business_sale_fkey(transactions!transactions_business_sale_fkey(quantity, total_usd, total_ves))",
-      )
-      .eq("business_id", businessId)
-      .eq("sale_date", date)
-      .order("id");
-    if (closedAt) query.lte("created_at", closedAt);
-
-    const pageSize = 500;
-    const orders = [];
-    for (let offset = 0; ; offset += pageSize) {
-      const { data, error } = await query.range(offset, offset + pageSize - 1);
-      if (error) throw toServiceError(error);
-      orders.push(...data);
-      if (data.length < pageSize) return orders;
-    }
-  },
-
   /** Solo el día consultado. Un cierre guardado excluye operaciones registradas después de cerrarlo. */
   getLedgerReturns: async (businessId: string, date: string, closedAt?: string) => {
     const query = supabase
@@ -57,14 +37,7 @@ export const cashClosesService = {
       .order("id");
     if (closedAt) query.lte("created_at", closedAt);
 
-    const pageSize = 500;
-    const records = [];
-    for (let offset = 0; ; offset += pageSize) {
-      const { data, error } = await query.range(offset, offset + pageSize - 1);
-      if (error) throw toServiceError(error);
-      records.push(...data);
-      if (data.length < pageSize) return records;
-    }
+    return readAllPages(query);
   },
 
   getAll: async (businessId: string, date?: string): Promise<CashCloseWithRelations[]> => {
@@ -72,7 +45,8 @@ export const cashClosesService = {
       .from("cash_closes")
       .select(CASH_CLOSE_SELECT)
       .eq("business_id", businessId)
-      .order("date", { ascending: false });
+      .order("date", { ascending: false })
+      .order("id", { referencedTable: "cash_close_previous_versions" });
 
     if (date) query = query.eq("date", date);
 

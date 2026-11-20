@@ -131,7 +131,7 @@ describe("ConfirmSaleDialog", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Confirmar venta" })).toBeInTheDocument();
-    expect(screen.getByText("2 productos")).toBeInTheDocument();
+    expect(screen.getByText("3 unidades")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Registrar venta" })).toBeInTheDocument();
   });
 
@@ -154,10 +154,10 @@ describe("ConfirmSaleDialog", () => {
       );
     }
 
-    it("muestra por separado lo cobrado hoy y el monto financiado por Cashea", () => {
+    it("muestra por separado la inicial y el monto financiado por Cashea", () => {
       renderCasheaDialog();
 
-      const cashToday = screen.getByText("Cobrado hoy").closest("div");
+      const cashToday = screen.getByText("Inicial").closest("div");
       const receivable = screen.getByText("Monto financiado").closest("div");
 
       expect(within(cashToday!).getByText(formatCurrencyUSD(25))).toBeInTheDocument();

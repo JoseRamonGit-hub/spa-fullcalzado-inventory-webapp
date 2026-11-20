@@ -132,6 +132,11 @@ export type ExchangeRateUpdate = TablesUpdate<"exchange_rates">;
 // ── Extended types with joined relations ────────────────────
 export type CashCloseWithRelations = CashClose & {
   users: Pick<User, "fullname">;
+  cash_close_previous_versions?: {
+    id: number;
+    closed_at: string | null;
+    users: Pick<User, "fullname"> | null;
+  }[];
 };
 
 export type CashCloseSummary = {

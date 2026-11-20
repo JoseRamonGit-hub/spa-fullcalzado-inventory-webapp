@@ -31,8 +31,9 @@ export type CasheaTableMeta = {
 function amountColumn(key: "total_usd" | "paid_today_usd" | "financed_usd" | "expected_net_usd", title: string) {
   return columnHelper.accessor(key, {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title={title} className="justify-end" />,
-    cell: ({ getValue }) => <span className="data-value block text-right">{formatCurrencyUSD(getValue())}</span>,
+    meta: { align: "right" },
+    header: ({ column }) => <DataTableColumnHeader column={column} title={title} />,
+    cell: ({ getValue }) => <span className="data-value">{formatCurrencyUSD(getValue())}</span>,
   });
 }
 
@@ -90,7 +91,7 @@ const dataColumns = [
     ),
   }),
   amountColumn("total_usd", "Total"),
-  amountColumn("paid_today_usd", "Cobrado hoy"),
+  amountColumn("paid_today_usd", "Inicial"),
   amountColumn("financed_usd", "Monto financiado"),
   amountColumn("expected_net_usd", "Neto esperado"),
 ];
@@ -109,13 +110,14 @@ const statusColumn = columnHelper.accessor("status", {
 const ageColumn = columnHelper.accessor((order) => getCasheaOrderAgeDays(order.sale_date), {
   id: "age",
   enableSorting: true,
-  header: ({ column }) => <DataTableColumnHeader column={column} title="Antigüedad" className="justify-end" />,
+  meta: { align: "right" },
+  header: ({ column }) => <DataTableColumnHeader column={column} title="Antigüedad" />,
   cell: ({ getValue, row }) => {
     const ageDays = getValue();
     const label = formatCasheaAgeDays(ageDays);
 
     return (
-      <span className="tabular-value text-muted-foreground block text-right">
+      <span className="tabular-value text-muted-foreground">
         {isCasheaOrderLate(row.original, ageDays) ? <Badge variant="warning">{label}</Badge> : label}
       </span>
     );

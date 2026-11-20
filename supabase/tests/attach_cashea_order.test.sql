@@ -259,8 +259,8 @@ SELECT throws_ok(
     )
   $$,
   'P0001',
-  'Cobrado hoy más Monto financiado debe coincidir con el total de la Orden Cashea',
-  'La suma de Cobrado hoy y Monto financiado debe coincidir con el total'
+  'Inicial más Monto financiado debe coincidir con el total de la Orden Cashea',
+  'La suma de Inicial y Monto financiado debe coincidir con el total'
 );
 
 SELECT throws_ok(

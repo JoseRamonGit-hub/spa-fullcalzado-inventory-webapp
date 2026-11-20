@@ -37,6 +37,64 @@ const DETALLE_DE_ORDEN = [
   "$ 15.46",
 ];
 
+const DETALLE_CON_PLAN = [
+  "Inicio",
+  "Órdenes",
+  "Detalle",
+  "Detalle de orden #249663589",
+  "19 de noviembre de 2026 a las 11:08 a.m.",
+  "",
+  "Entregado",
+  "Entrega del producto",
+  "Retiro en tienda",
+  "QR",
+  "19 Nov 2026",
+  "Factura",
+  "19 Nov 2026",
+  "Pago inicial",
+  "19 Nov 2026",
+  "Entregado",
+  "",
+  "En Progreso",
+  "Plan de pago de $41.00",
+  "QR",
+  "",
+  "Pagada",
+  "Por Otro",
+  "$24.60",
+  "",
+  "19 Nov 2026",
+  "Pagada",
+  "$5.46",
+  "03 Dic 2026",
+  "Pagada",
+  "$5.46",
+  "17 Dic 2026",
+  "Pagada",
+  "$5.48",
+  "31 Dic 2026",
+  "",
+  "Canal de venta",
+  "QR",
+  "Sucursal",
+  "Cashea FCB",
+  "Caja",
+  "Caja 1",
+  "Factura",
+  "0011",
+  "Editar",
+  "Datos de comprador",
+  "Cancelar orden",
+].join("\n");
+
+const DETALLE_CON_PLAN_RESULT = {
+  orderNumber: "249663589",
+  totalUsd: 41,
+  paidTodayUsd: 24.6,
+  financedUsd: 16.4,
+  invoiceNumber: "0011",
+};
+
 const NOTHING_RECOGNIZED = {
   orderNumber: null,
   totalUsd: null,
@@ -76,6 +134,41 @@ describe("parseCasheaSummary", () => {
       totalUsd: 92.8,
       paidTodayUsd: 46.4,
       financedUsd: 46.4,
+    });
+  });
+
+  it("lee la Orden Cashea desde la vista de detalle con plan de pago", () => {
+    expect(parseCasheaSummary(DETALLE_CON_PLAN)).toEqual(DETALLE_CON_PLAN_RESULT);
+  });
+
+  it("lee el detalle con saltos de Windows, espacios de no separación y coma decimal", () => {
+    const text = DETALLE_CON_PLAN.replace("$41.00", "$\u00a041,00")
+      .replace("$24.60", "$ 24,60")
+      .replaceAll("\n", "\r\n");
+    expect(parseCasheaSummary(text)).toEqual(DETALLE_CON_PLAN_RESULT);
+  });
+
+  it("deja vacía la Inicial cuando al primer pago le falta el monto", () => {
+    const text = DETALLE_CON_PLAN.replace("$24.60", "");
+    expect(parseCasheaSummary(text)).toEqual({ ...DETALLE_CON_PLAN_RESULT, paidTodayUsd: null, financedUsd: null });
+  });
+
+  it("deja vacía la factura si falta su número en los datos de la venta", () => {
+    const text = DETALLE_CON_PLAN.replace("0011", "").replace("Datos de comprador", "Datos de comprador\nID\n888");
+    expect(parseCasheaSummary(text)).toEqual({ ...DETALLE_CON_PLAN_RESULT, invoiceNumber: null });
+  });
+
+  it("reconoce el detalle incompleto sin leer las fechas de entrega como valores", () => {
+    const text = DETALLE_CON_PLAN.split("En Progreso")[0];
+    expect(parseCasheaSummary(text)).toEqual({ ...NOTHING_RECOGNIZED, orderNumber: "249663589" });
+  });
+
+  it("lee la etiqueta «Inicial» y la distingue de las cuotas", () => {
+    expect(parseCasheaSummary("Monto total: $100. Inicial: $40. Segunda cuota: $20.")).toEqual({
+      ...NOTHING_RECOGNIZED,
+      totalUsd: 100,
+      paidTodayUsd: 40,
+      financedUsd: 60,
     });
   });
 

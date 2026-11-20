@@ -2,6 +2,7 @@ import { skipToken, useQuery } from "@tanstack/react-query";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { casheaService } from "@/services/casheaService";
 import type { CalendarDateRange, CasheaOrdersFilter } from "@/types";
+import { formatDateForBackend } from "@/utils/formatters";
 import { casheaStatusFilters, resolveCasheaOrdersFilter, type CasheaStatusFilter } from "../cashea-receivables";
 
 export const casheaKeys = {
@@ -10,6 +11,8 @@ export const casheaKeys = {
   orders: (businessId: string | null) => [...casheaKeys.business(businessId), "orders"] as const,
   orderList: (businessId: string | null, filter: CasheaOrdersFilter) =>
     [...casheaKeys.orders(businessId), filter] as const,
+  cashCloseOrders: (businessId: string | null, date?: string, closedAt?: string) =>
+    [...casheaKeys.orders(businessId), "cash-close", { date, closedAt }] as const,
   orderCounts: (businessId: string | null, filters: Record<CasheaStatusFilter, CasheaOrdersFilter>) =>
     [...casheaKeys.orders(businessId), "counts", filters] as const,
   collectionStatus: (businessId: string | null, date?: string) =>
@@ -21,17 +24,28 @@ export const casheaKeys = {
   settings: (businessId: string | null) => [...casheaKeys.business(businessId), "settings"] as const,
 };
 
-export function useCasheaOrders(filter: CasheaOrdersFilter) {
+export function useCasheaOrders(filter: CasheaOrdersFilter, enabled = true) {
   const businessId = useBusinessStore((state) => state.activeBusinessId);
 
   return useQuery({
     queryKey: casheaKeys.orderList(businessId, filter),
     queryFn: businessId ? () => casheaService.getOrders(businessId, filter) : skipToken,
+    enabled,
+  });
+}
+
+export function useCasheaOrdersForCashClose(date?: string, closedAt?: string) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: casheaKeys.cashCloseOrders(businessId, date, closedAt),
+    queryFn: businessId && date ? () => casheaService.getOrdersForCashClose(businessId, date, closedAt) : skipToken,
+    refetchInterval: !closedAt && date === formatDateForBackend(new Date()) ? 30_000 : false,
   });
 }
 
 /** Órdenes de cada pestaña de estado, cada una con el periodo que aplicaría al elegirla. */
-export function useCasheaOrderCounts(range: CalendarDateRange) {
+export function useCasheaOrderCounts(range: CalendarDateRange, enabled = true) {
   const businessId = useBusinessStore((state) => state.activeBusinessId);
   const filters = Object.fromEntries(
     casheaStatusFilters.map((status) => [status, resolveCasheaOrdersFilter({ ...range, status })]),
@@ -40,6 +54,7 @@ export function useCasheaOrderCounts(range: CalendarDateRange) {
   return useQuery({
     queryKey: casheaKeys.orderCounts(businessId, filters),
     queryFn: businessId ? () => casheaService.getOrderCounts(businessId, filters) : skipToken,
+    enabled,
   });
 }
 

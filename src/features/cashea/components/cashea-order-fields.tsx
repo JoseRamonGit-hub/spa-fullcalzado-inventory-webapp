@@ -72,7 +72,7 @@ export function CasheaOrderFields({
 
         <div className={AMOUNT_FIELD_CELL}>
           <form.AppField {...fieldOptions("paidTodayUsd")}>
-            {(field) => <field.TextFieldGroup label="Cobrado hoy" {...AMOUNT_INPUT_PROPS} />}
+            {(field) => <field.TextFieldGroup label="Inicial" {...AMOUNT_INPUT_PROPS} />}
           </form.AppField>
         </div>
 

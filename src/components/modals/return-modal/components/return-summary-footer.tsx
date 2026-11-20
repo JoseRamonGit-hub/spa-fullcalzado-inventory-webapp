@@ -4,11 +4,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ModalFooterActionRow, ModalShortcutActionButton } from "@/components/modals/shared/modal-ui";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { cn } from "@/lib/utils";
-import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
+import { ConfirmationAmounts } from "@/components/modals/shared/confirmation-amounts";
 import type { ReturnSummary } from "../types";
 import { getReturnPresentation } from "../return-presentation";
-import { ReturnMovementBadge } from "./return-movement-badge";
 
 type ReturnSummaryFooterProps = {
   hasReturnItems: boolean;
@@ -65,44 +63,19 @@ export function ReturnSummaryFooter({
         className="h-9 text-xs"
       />
 
-      <section className="bg-card overflow-hidden rounded-md border">
-        <header className="flex items-center justify-between gap-3 border-b px-3 py-2">
-          <span className="flex min-w-0 items-center gap-2">
-            <ReturnMovementBadge kind={presentation.isExchange ? "exchange" : "refund"} />
-            <span className="truncate text-xs font-semibold">{presentation.outcomeLabel}</span>
-          </span>
-          <span className="text-muted-foreground shrink-0 text-[10px] tabular-nums">
-            Tasa {exchangeRate.displayValue}
-          </span>
-        </header>
+      {hasReturnItems && (
+        <ConfirmationAmounts
+          total={{
+            label: presentation.outcomeLabel,
+            usd: presentation.differenceUsd,
+            ves: exchangeRate.isReady ? presentation.differenceVes : null,
+          }}
+          totalClassName={presentation.differenceClassName}
+          rate={exchangeRate.isReady ? exchangeRate.displayValue : null}
+        />
+      )}
 
-        <div className="bg-primary/5 grid grid-cols-2 divide-x">
-          <div className="min-w-0 px-3 py-2">
-            <p className="text-muted-foreground text-[10px] font-semibold uppercase">Diferencia USD</p>
-            <p
-              className={cn(
-                "mt-0.5 text-base leading-tight font-bold whitespace-nowrap tabular-nums",
-                presentation.differenceClassName,
-              )}
-            >
-              {formatCurrencyUSD(presentation.differenceUsd)}
-            </p>
-          </div>
-          <div className="min-w-0 px-3 py-2 text-right">
-            <p className="text-muted-foreground text-[10px] font-semibold uppercase">Diferencia Bs.</p>
-            <p
-              className={cn(
-                "mt-0.5 text-base leading-tight font-bold whitespace-nowrap tabular-nums",
-                presentation.differenceClassName,
-              )}
-            >
-              {exchangeRate.isReady ? formatCurrencyVES(presentation.differenceVes) : "—"}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <ModalFooterActionRow message={hasReturnItems ? presentation.outcomeLabel : "Agrega productos de entrada"}>
+      <ModalFooterActionRow message={hasReturnItems ? "" : "Agrega productos de entrada"}>
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="w-full md:w-auto">

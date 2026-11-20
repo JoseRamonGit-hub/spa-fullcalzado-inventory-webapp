@@ -80,7 +80,7 @@ export function CashClosesPage() {
             unclosedDates: date ? [] : unclosedDays.map((day) => day.date),
           })
         : null;
-  const previousClose = dayState?.kind === "outdated" ? dayState.cashClose : undefined;
+  const update = dayState?.kind === "outdated" ? dayState : undefined;
   const canSave = Boolean(user && (dayState?.kind === "open" || dayState?.kind === "outdated"));
 
   if (confirmOpen && !canSave && !closeMutation.isPending) {
@@ -92,9 +92,9 @@ export function CashClosesPage() {
 
     const promise = closeMutation.mutateAsync(undefined);
     toast.promise(promise, {
-      loading: previousClose ? "Actualizando el cierre…" : "Cerrando el día…",
-      success: previousClose ? "Cierre actualizado" : "Día cerrado",
-      error: previousClose ? "No se pudo actualizar el cierre" : "No se pudo cerrar el día",
+      loading: update ? "Actualizando el cierre…" : "Cerrando el día…",
+      success: update ? "Cierre actualizado" : "Día cerrado",
+      error: update ? "No se pudo actualizar el cierre" : "No se pudo cerrar el día",
     });
 
     try {
@@ -158,7 +158,7 @@ export function CashClosesPage() {
       {renderDayPanel()}
 
       <div className="flex min-h-64 min-w-0 flex-1 flex-col">
-        <h2 className="shrink-0 border-b px-3 pt-3.5 pb-2 text-xs font-semibold md:px-4">Historial</h2>
+        <h2 className="shrink-0 px-3 pt-5 pb-2 text-sm font-semibold md:px-4 md:pt-7">Historial de cierres</h2>
         <DataTable
           tableClassName="[&_td]:px-2 [&_th]:px-2 [&_:is(th,td):nth-child(5)]:ps-6 [&_:is(th,td):first-child]:ps-3 md:[&_:is(th,td):first-child]:ps-4 md:[&_:is(th,td):last-child]:ps-4 [&_th_button]:leading-tight [&_th_button]:whitespace-nowrap [&_th_svg]:shrink-0"
           columns={columns}
@@ -197,11 +197,15 @@ export function CashClosesPage() {
           onConfirm={handleConfirmClose}
           dateLabel={viewedDateLabel}
           figures={figures}
-          previousClose={previousClose}
+          update={update}
         />
       )}
 
-      <CashCloseSheet row={detailSheet.target} isOpen={detailSheet.isOpen} onOpenChange={detailSheet.setIsOpen} />
+      <CashCloseSheet
+        row={rows.find((row) => row.id === detailSheet.target?.id) ?? detailSheet.target}
+        isOpen={detailSheet.isOpen}
+        onOpenChange={detailSheet.setIsOpen}
+      />
     </main>
   );
 }
