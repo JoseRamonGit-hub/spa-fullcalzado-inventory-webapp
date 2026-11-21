@@ -114,7 +114,7 @@ export function ConfirmReturnDialog({
               ]
             : []
         }
-        totalClassName={presentation.differenceClassName}
+        totalClassName={`text-sm leading-tight ${presentation.differenceClassName}`}
         total={{
           label: presentation.outcomeLabel,
           usd: presentation.differenceUsd,

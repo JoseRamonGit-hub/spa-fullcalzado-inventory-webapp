@@ -63,7 +63,11 @@ export function SaleSummaryCard({ title, lines, totalUsd, totalVes, exchangeRate
           ))}
         </ul>
       </div>
-      <ConfirmationAmounts total={{ label: "Total de la venta", usd: totalUsd, ves: totalVes }} rate={exchangeRate} />
+      <ConfirmationAmounts
+        total={{ label: "Total de la venta", usd: totalUsd, ves: totalVes }}
+        totalClassName="text-sm leading-tight"
+        rate={exchangeRate}
+      />
       {notice}
     </section>
   );

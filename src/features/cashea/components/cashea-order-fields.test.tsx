@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { formatCurrencyUSD } from "@/utils/formatters";
 import { useCasheaOrderForm } from "../hooks/use-cashea-order-form";
 import { CasheaOrderFields } from "./cashea-order-fields";
+import { CasheaOrderSection } from "./cashea-order-section";
 
 function CasheaOrderFieldsHarness({ saleTotalUsd = 100 }: { saleTotalUsd?: number }) {
   const orderForm = useCasheaOrderForm(saleTotalUsd);
@@ -10,6 +11,25 @@ function CasheaOrderFieldsHarness({ saleTotalUsd = 100 }: { saleTotalUsd?: numbe
 }
 
 describe("CasheaOrderFields", () => {
+  it("mantiene estable la banda de la venta hasta salir del importe", () => {
+    function SaleHarness() {
+      const orderForm = useCasheaOrderForm(100);
+      return <CasheaOrderSection title="Pago con Cashea" orderForm={orderForm} />;
+    }
+    render(<SaleHarness />);
+    const total = screen.getByLabelText("Total de la orden");
+    fireEvent.focus(total);
+    fireEvent.change(total, { target: { value: "10" } });
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    fireEvent.blur(total);
+    expect(screen.getByRole("status")).toHaveTextContent("$90.00");
+    fireEvent.focus(total);
+    fireEvent.change(total, { target: { value: "100" } });
+    expect(screen.getByRole("status")).toHaveTextContent("$90.00");
+    fireEvent.blur(total);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("captura los cinco datos de la Orden Cashea", () => {
     render(<CasheaOrderFieldsHarness />);
 
@@ -57,15 +77,17 @@ describe("CasheaOrderFields", () => {
   });
 
   it("avisa la diferencia cuando Inicial + Monto financiado no cuadra con el total", () => {
-    render(<CasheaOrderFieldsHarness />);
+    render(<CasheaOrderFieldsHarness saleTotalUsd={120} />);
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
     fireEvent.change(screen.getByLabelText("Inicial"), { target: { value: "40" } });
     fireEvent.change(screen.getByLabelText("Monto financiado"), { target: { value: "50" } });
 
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      `Inicial + Monto financiado no cuadra con el total: faltan ${formatCurrencyUSD(10)}`,
-    );
+    expect(screen.getByRole("alert")).toHaveTextContent(`Faltan ${formatCurrencyUSD(10)}`);
+    expect(screen.queryByText(/menor que la venta/)).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Monto financiado"), { target: { value: "60" } });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByText(/menor que la venta/)).toBeInTheDocument();
   });
 
   it("muestra el error de un campo después de salir de él", async () => {
@@ -126,6 +148,6 @@ describe("CasheaOrderFields", () => {
 
     fireEvent.change(screen.getByLabelText("Total de la orden"), { target: { value: "100" } });
 
-    expect(screen.getByText(/difiere del total de la venta/)).toBeInTheDocument();
+    expect(screen.getByText(/La orden es \$20\.00 menor que la venta/)).toBeInTheDocument();
   });
 });

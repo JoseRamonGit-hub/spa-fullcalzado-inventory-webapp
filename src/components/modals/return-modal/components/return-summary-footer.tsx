@@ -70,7 +70,7 @@ export function ReturnSummaryFooter({
             usd: presentation.differenceUsd,
             ves: exchangeRate.isReady ? presentation.differenceVes : null,
           }}
-          totalClassName={presentation.differenceClassName}
+          totalClassName={`text-sm leading-tight ${presentation.differenceClassName}`}
           rate={exchangeRate.isReady ? exchangeRate.displayValue : null}
         />
       )}

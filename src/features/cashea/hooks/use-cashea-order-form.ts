@@ -60,9 +60,13 @@ export function useCasheaOrderForm(saleTotalUsd: number | null, initialDraft = E
       paidTodayUsd: formatAmount(summary.paidTodayUsd),
       financedUsd: formatAmount(summary.financedUsd),
     };
+    let filled = 0;
     for (const [name, value] of Object.entries(recognized) as [CasheaOrderDraftField, string | null][]) {
-      if (value !== null) form.setFieldValue(name, value, { dontRunListeners: true });
+      if (value === null) continue;
+      form.setFieldValue(name, value, { dontRunListeners: true });
+      filled++;
     }
+    return filled;
   }
 
   // El tope del Monto financiado depende del total de la venta, que cambia al agregar o quitar Renglones.
@@ -70,7 +74,7 @@ export function useCasheaOrderForm(saleTotalUsd: number | null, initialDraft = E
     if (form.getFieldMeta("financedUsd")?.isTouched) void form.validateField("financedUsd", "change");
   }, [form, saleTotalUsd]);
 
-  return { form, evaluation, fieldOptions, fillFromSummary };
+  return { form, evaluation, fieldOptions, fillFromSummary, saleTotalUsd };
 }
 
 const formatAmount = (usd: number | null) => (usd === null ? null : formatDraftAmount(usd));

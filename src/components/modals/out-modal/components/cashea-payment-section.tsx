@@ -21,11 +21,6 @@ export function CasheaPaymentSection({
   return (
     <CasheaOrderSection
       title="Pago con Cashea"
-      description={
-        isCasheaPayment
-          ? "Pega el resumen «Debe pagar» de la orden o escribe los datos."
-          : "Actívalo si el cliente financia la compra con Cashea."
-      }
       orderForm={orderForm}
       titleId={titleId}
       showFields={isCasheaPayment}
