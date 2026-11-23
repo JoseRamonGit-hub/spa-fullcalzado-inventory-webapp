@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 type ModalConfirmDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  title: string;
+  title: ReactNode;
   description?: ReactNode;
   media?: ReactNode;
   confirmLabel: string;

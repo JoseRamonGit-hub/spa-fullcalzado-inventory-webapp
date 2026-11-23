@@ -1,3 +1,4 @@
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { useState } from "react";
 import { TriangleAlert } from "lucide-react";
 import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
@@ -92,8 +93,8 @@ export function ConfirmSaleDialog({
                 Pago con Cashea
               </h3>
               <p className="text-muted-foreground text-xs">
-                Orden <span className="data-value text-foreground font-normal">{casheaOrder.order_number}</span> ·
-                Factura <span className="data-value text-foreground font-normal">{casheaOrder.invoice_number}</span>
+                Orden <CasheaOrderNumber value={casheaOrder.order_number} /> · Factura{" "}
+                <span className="data-value text-foreground font-normal">{casheaOrder.invoice_number}</span>
               </p>
             </div>
           </header>

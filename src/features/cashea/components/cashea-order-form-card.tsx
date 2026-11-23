@@ -15,14 +15,14 @@ export function CasheaOrderFormCard({ orderForm, disabled }: CasheaOrderFormCard
   const confirmationId = useId();
 
   return (
-    <section aria-labelledby={titleId} className="bg-card rounded-lg border shadow-xs">
-      <div className="flex items-center justify-between gap-3 border-b px-3 py-2">
+    <section aria-labelledby={titleId} className="grid gap-2">
+      <div className="flex items-center justify-between gap-3">
         <h3 id={titleId} className="text-sm font-semibold">
-          Datos de la orden Cashea
+          Datos de la orden
         </h3>
         <PasteCasheaSummaryButton orderForm={orderForm} disabled={disabled} />
       </div>
-      <div className="p-3">
+      <div>
         <CasheaOrderFields
           orderForm={orderForm}
           disabled={disabled}

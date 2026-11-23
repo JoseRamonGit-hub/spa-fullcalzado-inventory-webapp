@@ -1,3 +1,5 @@
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
+import { getCasheaOrderAmountRows } from "./cashea-order-amount-rows";
 import { useRef } from "react";
 import { Ban, Check, Clock, FileText, Pencil, Undo2, X, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +15,11 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import type { CasheaOrder } from "@/types";
-import { useSaleLines } from "@/features/transactions/hooks/useTransactionQueries";
-import { formatCalendarDateString, formatCurrencyUSD, formatDateTime, formatInteger } from "@/utils/formatters";
+import { CasheaOrderProducts } from "./cashea-order-products";
+import { formatCalendarDateString, formatCurrencyUSD, formatDateTime } from "@/utils/formatters";
 import {
   casheaVoidReasonLabels,
   formatCasheaAgeDays,
-  getCasheaCommissionUsd,
   getCasheaOrderAgeDays,
   isCasheaOrderLate,
 } from "../cashea-receivables";
@@ -35,22 +36,23 @@ export type CasheaOrderActions = {
 type CasheaOrderSheetProps = {
   order: CasheaOrder | null;
   isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange: (isOpen: boolean) => void | Promise<void>;
   /** Sin acciones, el detalle es solo de consulta. */
   actions?: CasheaOrderActions;
+  unavailable?: { message: string; onRetry?: () => void; isRetrying: boolean };
 };
 
 const DESTRUCTIVE_GHOST_CLASS_NAME = "text-destructive hover:bg-destructive/10 hover:text-destructive";
 const SECTION_HEADING_CLASS_NAME =
   "bg-muted operational-label text-muted-foreground flex min-h-8 items-center border-y px-4 @sm:px-6";
 
-export function CasheaOrderSheet({ order, isOpen, onOpenChange, actions }: CasheaOrderSheetProps) {
+export function CasheaOrderSheet({ order, isOpen, onOpenChange, actions, unavailable }: CasheaOrderSheetProps) {
   const returnFocus = useRef<HTMLElement | null>(null);
 
   // Cierra el detalle antes de abrir el diálogo de la acción: nunca dos capas modales a la vez.
-  const closeThen = (action: (order: CasheaOrder) => void) => (target: CasheaOrder) => {
+  const closeThen = (action: (order: CasheaOrder) => void) => async (target: CasheaOrder) => {
     returnFocus.current = null;
-    onOpenChange(false);
+    await onOpenChange(false);
     action(target);
   };
   const sheetActions: CasheaOrderActions | undefined = actions && {
@@ -74,7 +76,62 @@ export function CasheaOrderSheet({ order, isOpen, onOpenChange, actions }: Cashe
           returnFocus.current = null;
         }}
       >
+        <SheetHeader className="flex-row items-start gap-3 border-b px-4 py-4 @sm:px-6">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <SheetTitle className="font-heading flex min-w-0 items-center gap-2 text-base leading-tight font-bold tracking-tight @sm:text-lg">
+                <CasheaLogoIcon className="size-5" />
+                <span className="min-w-0 [overflow-wrap:anywhere]">
+                  {order ? (
+                    <>
+                      Orden <span className="sr-only">Cashea </span>
+                      <CasheaOrderNumber value={order.order_number} />
+                    </>
+                  ) : (
+                    "Orden Cashea"
+                  )}
+                </span>
+              </SheetTitle>
+              {order && <CasheaOrderStatusBadge status={order.status} />}
+            </div>
+            <SheetDescription className="mt-1 text-xs [overflow-wrap:anywhere]">
+              {order ? (
+                <>
+                  Factura {order.invoice_number}
+                  <time dateTime={order.sale_date} className="block @sm:inline">
+                    <span aria-hidden="true" className="hidden @sm:inline">
+                      {" · "}
+                    </span>
+                    {formatCalendarDateString(order.sale_date)}
+                  </time>
+                </>
+              ) : (
+                <span role="status">{unavailable?.message}</span>
+              )}
+            </SheetDescription>
+          </div>
+          <SheetClose asChild>
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              className="text-muted-foreground -my-1 -me-2 size-11"
+              aria-label="Cerrar"
+            >
+              <X aria-hidden="true" />
+            </Button>
+          </SheetClose>
+        </SheetHeader>
         {order && <CasheaOrderDetail order={order} isOpen={isOpen} actions={sheetActions} />}
+        {!order && unavailable?.onRetry && (
+          <Button
+            variant="outline"
+            className="mx-4 mt-4 self-start @sm:mx-6"
+            onClick={unavailable.onRetry}
+            disabled={unavailable.isRetrying}
+          >
+            Reintentar
+          </Button>
+        )}
       </SheetContent>
     </Sheet>
   );
@@ -91,42 +148,11 @@ function CasheaOrderDetail({
 }) {
   return (
     <>
-      <SheetHeader className="flex-row items-start gap-3 border-b px-4 py-4 @sm:px-6">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <SheetTitle className="font-heading flex min-w-0 items-center gap-2 text-base leading-tight font-bold tracking-tight @sm:text-lg">
-              <CasheaLogoIcon className="size-5" />
-              <span className="min-w-0 [overflow-wrap:anywhere]">
-                Orden <span className="sr-only">Cashea </span>#{order.order_number.replace(/^#+/, "")}
-              </span>
-            </SheetTitle>
-            <CasheaOrderStatusBadge status={order.status} />
-          </div>
-          <SheetDescription className="mt-1 text-xs [overflow-wrap:anywhere]">
-            Factura {order.invoice_number}
-            <time dateTime={order.sale_date} className="block @sm:inline">
-              <span aria-hidden="true" className="hidden @sm:inline">
-                {" · "}
-              </span>
-              {formatCalendarDateString(order.sale_date)}
-            </time>
-          </SheetDescription>
-        </div>
-        <SheetClose asChild>
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            className="text-muted-foreground -my-1 -me-2 size-11"
-            aria-label="Cerrar"
-          >
-            <X aria-hidden="true" />
-          </Button>
-        </SheetClose>
-      </SheetHeader>
-
       <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <CasheaOrderAmounts order={order} />
-        <CasheaOrderProducts saleId={order.sale_id} isOpen={isOpen} />
+        <div className="mt-4">
+          <CasheaOrderProducts saleId={order.sale_id} isOpen={isOpen} />
+        </div>
         <div className="px-4 @sm:px-6">
           <CasheaOrderHistory order={order} />
         </div>
@@ -138,13 +164,7 @@ function CasheaOrderDetail({
 }
 
 function CasheaOrderAmounts({ order }: { order: CasheaOrder }) {
-  const commission = getCasheaCommissionUsd(order);
-  const detail = [
-    { label: "Total de la orden", value: formatCurrencyUSD(order.total_usd) },
-    { label: "Inicial", value: formatCurrencyUSD(order.paid_today_usd) },
-    { label: "Monto financiado", value: formatCurrencyUSD(order.financed_usd) },
-    { label: "Comisión Cashea", value: formatCurrencyUSD(commission === 0 ? 0 : -commission) },
-  ];
+  const detail = getCasheaOrderAmountRows(order);
 
   return (
     <section>
@@ -166,53 +186,6 @@ function CasheaOrderAmounts({ order }: { order: CasheaOrder }) {
           <dd className="data-value text-end text-base font-semibold">{formatCurrencyUSD(order.expected_net_usd)}</dd>
         </div>
       </dl>
-    </section>
-  );
-}
-
-function CasheaOrderProducts({ saleId, isOpen }: { saleId: string; isOpen: boolean }) {
-  const { data: lines, isPending, isError, isFetching, refetch } = useSaleLines(saleId, { enabled: isOpen });
-
-  return (
-    <section className="mt-4">
-      <h3 className={cn(SECTION_HEADING_CLASS_NAME, "justify-between gap-3")}>
-        Productos de la venta
-        {Boolean(lines?.length) && <span aria-hidden="true">Cantidad</span>}
-      </h3>
-      {lines?.length ? (
-        <ul className="bg-card text-xs">
-          {lines.map(({ id, products, quantity }) => (
-            <li
-              key={id}
-              className="border-border/40 flex min-h-8 items-center justify-between gap-3 border-b px-4 @sm:px-6"
-            >
-              <p className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 [overflow-wrap:anywhere]">
-                {products?.code && <span className="product-code min-w-0 uppercase">{products.code}</span>}
-                <span className="min-w-0">{products?.description || "Producto sin descripción"}</span>
-              </p>
-              <span className="data-value shrink-0 text-right">
-                <span className="sr-only">Cantidad: </span>
-                {formatInteger(quantity)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-xs @sm:px-6">
-          <p role="status">
-            {isPending
-              ? "Cargando productos…"
-              : isError
-                ? "No pudimos cargar los productos de la venta."
-                : "Esta venta no tiene productos registrados."}
-          </p>
-          {isError && (
-            <Button variant="outline" size="xs" disabled={isFetching} onClick={() => void refetch()}>
-              Reintentar
-            </Button>
-          )}
-        </div>
-      )}
     </section>
   );
 }

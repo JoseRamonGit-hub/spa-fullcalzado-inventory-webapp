@@ -14,7 +14,7 @@ export function useCasheaNoteField({ requiredMessage, placeholder, disabled }: C
 
   const noteField = (
     <form.AppField name="note" {...requiredFieldOptions(requiredMessage)}>
-      {(field) => <field.TextareaField label="Nota" placeholder={placeholder} rows={3} disabled={disabled} compact />}
+      {(field) => <field.TextareaField label="Nota" placeholder={placeholder} rows={2} disabled={disabled} compact />}
     </form.AppField>
   );
 

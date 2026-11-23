@@ -1,3 +1,4 @@
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { Pen } from "lucide-react";
 import { toast } from "sonner";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
@@ -9,7 +10,7 @@ import { useConfirmableCasheaOrderForm } from "../hooks/use-cashea-order-form";
 import { useCasheaNoteField } from "../hooks/use-cashea-note-field";
 import { useAdjustCasheaOrder } from "../hooks/useCasheaMutations";
 import { useCasheaSaleTotal } from "../hooks/useCasheaQueries";
-import { CasheaDialogSummary } from "./cashea-dialog-summary";
+import { CasheaOrderProducts } from "./cashea-order-products";
 import { CasheaBadgedLogo } from "./cashea-logo-icon";
 import { CasheaOrderFormCard } from "./cashea-order-form-card";
 
@@ -48,7 +49,11 @@ export function AdjustCasheaOrderDialog({ isOpen, onOpenChange, order }: AdjustC
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title={`Ajustar orden Cashea #${order.order_number}`}
+      title={
+        <>
+          Ajustar orden Cashea <CasheaOrderNumber value={order.order_number} />
+        </>
+      }
       media={
         <CasheaBadgedLogo
           badgeIcon={<Pen strokeWidth={2.5} aria-hidden="true" />}
@@ -62,17 +67,18 @@ export function AdjustCasheaOrderDialog({ isOpen, onOpenChange, order }: AdjustC
       onConfirmSubmit={adjustOrder}
       confirmDisabled={!adjustment}
     >
-      <CasheaDialogSummary
-        label="Datos de la venta"
-        rows={[
-          { label: "Fecha de la venta", value: formatCalendarDateString(order.sale_date) },
-          {
-            label: "Total de la venta",
-            value: saleTotalUsd === null ? "—" : formatCurrencyUSD(saleTotalUsd),
-            isKey: true,
-          },
-        ]}
-      />
+      <section className="bg-card overflow-hidden rounded-md border">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-4 py-2 text-sm">
+          <div>
+            Total de la venta{" "}
+            <strong className="data-value ml-1">{saleTotalUsd === null ? "—" : formatCurrencyUSD(saleTotalUsd)}</strong>
+          </div>
+          <span className="text-muted-foreground text-xs">{formatCalendarDateString(order.sale_date)}</span>
+        </div>
+        <div className="custom-scrollbar max-h-44 overflow-y-auto">
+          <CasheaOrderProducts saleId={order.sale_id} isOpen={isOpen} />
+        </div>
+      </section>
 
       <CasheaOrderFormCard orderForm={orderForm} disabled={adjustMutation.isPending} />
 

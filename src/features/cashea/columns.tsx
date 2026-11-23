@@ -1,3 +1,4 @@
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { Ban, Check, Ellipsis, Pencil, Undo2 } from "lucide-react";
 import type { CasheaOrder } from "@/types";
@@ -77,7 +78,7 @@ const dataColumns = [
   columnHelper.accessor("order_number", {
     enableSorting: true,
     header: ({ column }) => <DataTableColumnHeader column={column} title="Orden" />,
-    cell: ({ getValue }) => <span className="product-code">{getValue()}</span>,
+    cell: ({ getValue }) => <CasheaOrderNumber value={getValue()} />,
   }),
   columnHelper.accessor("invoice_number", {
     header: "Factura",

@@ -1,3 +1,4 @@
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { useStore } from "@tanstack/react-form";
 import { X } from "lucide-react";
 import { toast } from "sonner";
@@ -49,7 +50,11 @@ export function VoidCasheaOrderDialog({ isOpen, onOpenChange, order }: VoidCashe
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title={`Anular orden Cashea #${order.order_number}`}
+      title={
+        <>
+          Anular orden Cashea <CasheaOrderNumber value={order.order_number} />
+        </>
+      }
       media={
         <CasheaBadgedLogo
           badgeIcon={<X strokeWidth={3} aria-hidden="true" />}

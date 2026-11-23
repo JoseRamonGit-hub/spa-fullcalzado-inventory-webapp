@@ -25,12 +25,17 @@ type CasheaDialogSummaryProps = {
  */
 export function CasheaDialogSummary({ label, rows, className }: CasheaDialogSummaryProps) {
   return (
-    <dl aria-label={label} className={cn("flex flex-col gap-1 border-b pb-3 text-sm", className)}>
+    <dl aria-label={label} className={cn("divide-border/60 divide-y border-y text-sm", className)}>
       {rows.map((row, index) => (
         // Cada fila reparte su propio ancho: un valor largo (factura · fecha) no obliga a partir los rótulos de otras.
-        <div key={index} className={cn("flex items-baseline justify-between gap-4", row.isKey && "mt-1")}>
+        <div
+          key={index}
+          className={cn("flex min-h-8 items-baseline justify-between gap-3 px-3 py-1.5", row.isKey && "bg-muted/50")}
+        >
           <dt className={cn("text-muted-foreground", row.isKey && "text-foreground font-medium")}>{row.label}</dt>
-          <dd className={cn("data-value text-right", row.isKey && "font-semibold")}>{row.value}</dd>
+          <dd className={cn("data-value min-w-0 text-right [overflow-wrap:anywhere]", row.isKey && "font-semibold")}>
+            {row.value}
+          </dd>
         </div>
       ))}
     </dl>

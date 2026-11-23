@@ -1,3 +1,4 @@
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
@@ -34,7 +35,12 @@ export function RevertCasheaDepositDialog({ isOpen, onOpenChange, depositId }: R
     onOpenChange(false);
   }
 
-  const orderNumbers = deposit?.cashea_orders.map((order) => `#${order.order_number}`).join(", ");
+  const orderNumbers = deposit?.cashea_orders.map((order, index) => (
+    <span key={order.order_number}>
+      {index > 0 && ", "}
+      <CasheaOrderNumber value={order.order_number} />
+    </span>
+  ));
 
   return (
     <ModalConfirmDialog
@@ -69,7 +75,7 @@ export function RevertCasheaDepositDialog({ isOpen, onOpenChange, depositId }: R
               "—"
             ),
           },
-          { label: "Órdenes", value: orderNumbers || "—" },
+          { label: "Órdenes", value: orderNumbers?.length ? orderNumbers : "—" },
           { label: "Neto esperado", value: deposit ? formatCurrencyUSD(deposit.expected_net_usd) : "—" },
           { label: "Bolívares recibidos", value: deposit ? formatCurrencyVES(deposit.received_ves) : "—", isKey: true },
         ]}

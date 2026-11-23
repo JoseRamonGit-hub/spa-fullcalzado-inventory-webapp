@@ -1,5 +1,6 @@
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { useStore } from "@tanstack/react-form";
-import { Check } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
 import { useAppForm } from "@/hooks/form";
@@ -11,6 +12,7 @@ import { draftFieldOptions } from "@/utils/form-validators";
 import { createCasheaDepositDraft, evaluateCasheaDepositDraft, type CasheaDepositDraft } from "../cashea-deposit-draft";
 import { useRegisterCasheaDeposit } from "../hooks/useCasheaMutations";
 import { CasheaDialogSummary, CasheaOrderInvoice, type CasheaDialogSummaryRow } from "./cashea-dialog-summary";
+import { getCasheaOrderAmountRows } from "./cashea-order-amount-rows";
 import { CasheaBadgedLogo } from "./cashea-logo-icon";
 
 const REGISTER_ERROR_MESSAGE = "No se pudo registrar el Depósito Cashea. Revisa la conexión e intenta de nuevo.";
@@ -80,7 +82,15 @@ export function RegisterCasheaDepositDialog({
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title={singleOrder ? `Cobrar orden Cashea #${singleOrder.order_number}` : "Registrar depósito Cashea"}
+      title={
+        singleOrder ? (
+          <>
+            Cobrar orden Cashea <CasheaOrderNumber value={singleOrder.order_number} />
+          </>
+        ) : (
+          "Registrar depósito Cashea"
+        )
+      }
       media={
         <CasheaBadgedLogo
           badgeIcon={<Check strokeWidth={3} aria-hidden="true" />}
@@ -94,15 +104,55 @@ export function RegisterCasheaDepositDialog({
       onConfirmSubmit={registerDeposit}
       confirmDisabled={!deposit}
     >
-      <CasheaDialogSummary
-        label="Órdenes del depósito"
-        rows={[
-          singleOrder
-            ? { label: "Factura", value: <CasheaOrderInvoice order={singleOrder} /> }
-            : { label: "Órdenes", value: formatInteger(orders.length) },
-          { label: "Neto esperado", value: formatCurrencyUSD(preview.expectedNetUsd), isKey: true },
-        ]}
-      />
+      {singleOrder ? (
+        <CasheaDialogSummary
+          label="Orden del depósito"
+          rows={[
+            { label: "Factura", value: <CasheaOrderInvoice order={singleOrder} /> },
+            { label: "Neto esperado", value: formatCurrencyUSD(preview.expectedNetUsd), isKey: true },
+          ]}
+        />
+      ) : (
+        <section aria-label="Órdenes del depósito" className="bg-card overflow-hidden rounded-md border text-sm">
+          <div className="bg-muted/60 text-muted-foreground flex justify-between gap-3 border-b px-3 py-2 text-xs">
+            <h3>Órdenes ({formatInteger(orders.length)})</h3>
+            <span>Neto esperado</span>
+          </div>
+          <div className="custom-scrollbar max-h-[min(34dvh,16rem)] divide-y overflow-y-auto">
+            {orders.map((order) => (
+              <details key={order.id} name="cashea-deposit-breakdown" className="group open:bg-muted/35">
+                <summary className="hover:bg-muted/40 focus-visible:outline-ring flex min-h-9 cursor-pointer list-none items-center gap-2 px-3 py-1.5 focus-visible:outline-2 focus-visible:-outline-offset-2 [&::-webkit-details-marker]:hidden">
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="text-muted-foreground size-4 shrink-0 group-open:rotate-90"
+                  />
+                  <span className="min-w-0 flex-1 break-all">
+                    <CasheaOrderNumber value={order.order_number} />
+                  </span>
+                  <span className="data-value">{formatCurrencyUSD(order.expected_net_usd)}</span>
+                </summary>
+                <div className="pb-2 pr-3 pl-9 text-xs">
+                  <p className="text-muted-foreground mb-1 break-words">
+                    Factura <CasheaOrderInvoice order={order} />
+                  </p>
+                  <dl>
+                    {getCasheaOrderAmountRows(order).map(({ label, value }) => (
+                      <div key={label} className="flex items-baseline justify-between gap-3 py-1">
+                        <dt className="text-muted-foreground">{label}</dt>
+                        <dd className="data-value">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              </details>
+            ))}
+          </div>
+          <div className="bg-muted/45 border-foreground/25 flex justify-between gap-3 border-t px-3 py-2 font-semibold">
+            <span>Neto total del depósito</span>
+            <span className="data-value">{formatCurrencyUSD(preview.expectedNetUsd)}</span>
+          </div>
+        </section>
+      )}
 
       <fieldset disabled={registerMutation.isPending} className="grid min-w-0 grid-cols-2 items-start gap-3">
         <form.AppField {...fieldOptions("receivedVes")}>
@@ -126,9 +176,7 @@ export function RegisterCasheaDepositDialog({
         </form.AppField>
       </fieldset>
 
-      {preview.receivedVes !== null && (
-        <CasheaDialogSummary label="Vista previa del depósito" rows={previewRows} className="border-b-0 pb-0" />
-      )}
+      {preview.receivedVes !== null && <CasheaDialogSummary label="Vista previa del depósito" rows={previewRows} />}
     </ModalConfirmDialog>
   );
 }
