@@ -3,6 +3,7 @@ import { ActivityTimeline } from "@/components/ui/activity-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 import {
   formatCalendarDateString,
   formatCurrencyUSD,
@@ -52,11 +53,26 @@ export function CashCloseSheet({ row, isOpen, onOpenChange, unavailable }: CashC
   );
 }
 
-function DetailRow({ label, children }: { label: string; children: ReactNode }) {
+function DetailRow({
+  label,
+  children,
+  keepValueTogether,
+}: {
+  label: string;
+  children: ReactNode;
+  keepValueTogether?: boolean;
+}) {
   return (
     <div className="border-border flex min-h-8 items-center justify-between gap-3 border-b px-4 text-xs @sm:px-6">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="data-value min-w-0 text-right font-medium [overflow-wrap:anywhere]">{children}</dd>
+      <dd
+        className={cn(
+          "data-value text-right font-medium",
+          keepValueTogether ? "shrink-0 whitespace-nowrap" : "min-w-0 [overflow-wrap:anywhere]",
+        )}
+      >
+        {children}
+      </dd>
     </div>
   );
 }
@@ -101,6 +117,7 @@ function CashCloseDetail({ row }: { row: CashCloseHistoryRow }) {
         </h3>
         <dl className="grid @min-[22rem]:grid-cols-2 @min-[22rem]:[&>div+div]:border-s">
           <DetailRow
+            keepValueTogether
             label={
               cashClose && cashClose.total_billed_operations == null ? "Renglones facturados" : "Operaciones facturadas"
             }
@@ -111,7 +128,9 @@ function CashCloseDetail({ row }: { row: CashCloseHistoryRow }) {
                 : figures.billedOperations,
             )}
           </DetailRow>
-          <DetailRow label="Unidades">{formatInteger(figures.units)}</DetailRow>
+          <DetailRow label="Unidades" keepValueTogether>
+            {formatInteger(figures.units)}
+          </DetailRow>
         </dl>
         <dl>
           <DetailRow label="Total facturado">
