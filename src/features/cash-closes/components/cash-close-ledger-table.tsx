@@ -75,7 +75,17 @@ function getLedgerMovement(
   }
 }
 
-function LedgerCountLink({ movement, date, closedAt }: { movement: LedgerMovement; date: string; closedAt?: string }) {
+function LedgerCountLink({
+  movement,
+  date,
+  closedAt,
+  children,
+}: {
+  movement: LedgerMovement;
+  date: string;
+  closedAt?: string;
+  children?: ReactNode;
+}) {
   const preventRowToggle = (event: MouseEvent<HTMLAnchorElement>) => event.stopPropagation();
   const { count } = movement;
 
@@ -87,7 +97,7 @@ function LedgerCountLink({ movement, date, closedAt }: { movement: LedgerMovemen
         className={COUNT_LINK_CLASS_NAME}
         onClick={preventRowToggle}
       >
-        {countLabel(count, "orden", "órdenes")}
+        {children ?? countLabel(count, "orden", "órdenes")}
       </Link>
     );
   }
@@ -96,7 +106,7 @@ function LedgerCountLink({ movement, date, closedAt }: { movement: LedgerMovemen
   const label = type ? returnTypeLabels[type] : { singular: "Operación", plural: "Operaciones" };
   return (
     <Link to="/returns" search={{ date, type, closedAt }} className={COUNT_LINK_CLASS_NAME} onClick={preventRowToggle}>
-      {countLabel(count, label.singular.toLowerCase(), label.plural.toLowerCase())}
+      {children ?? countLabel(count, label.singular.toLowerCase(), label.plural.toLowerCase())}
     </Link>
   );
 }
@@ -166,6 +176,7 @@ export function CashCloseLedgerTable({
     const movementDetail = movement && movement.count > 0 && (
       <LedgerCountLink movement={movement} date={date} closedAt={closedAt} />
     );
+    const linkMovementLabel = isOperational && Boolean(movementDetail);
     const isZero = isLedgerAmountZero(line.amount) && !canExpand && !movementDetail;
     const salesLink = line.id === "sales" && detail && (
       <Link
@@ -206,18 +217,31 @@ export function CashCloseLedgerTable({
               isZero ? "text-muted-foreground" : "font-medium",
             )}
           >
-            <span className="inline-flex flex-wrap items-center gap-x-1.5">
+            <span
+              className={cn("inline-flex flex-wrap items-center gap-x-1.5", linkMovementLabel && "max-md:flex-nowrap")}
+            >
+              {linkMovementLabel && movement && (
+                <span className="md:hidden">
+                  <LedgerCountLink movement={movement} date={date} closedAt={closedAt}>
+                    <span className="inline-flex items-center gap-1.5">{label}</span>
+                  </LedgerCountLink>
+                </span>
+              )}
               {canExpand ? (
                 <button
                   type="button"
                   aria-expanded={expanded}
+                  aria-label={linkMovementLabel ? `${line.label}: ${expanded ? "ocultar" : "ver"} desglose` : undefined}
                   className={cn(
                     "group/ledger-toggle focus-visible:outline-ring inline-flex min-h-7 flex-wrap items-center gap-x-1.5 rounded-sm text-left",
                     isOperational && "@max-[34rem]/ledger:-my-1 @max-[34rem]/ledger:min-h-9",
+                    linkMovementLabel && "max-md:-my-1 max-md:min-h-9 max-md:min-w-8 max-md:justify-center",
                   )}
                 >
                   <span className="inline-flex items-center gap-1.5">
-                    {label}
+                    <span className={cn("inline-flex items-center gap-1.5", linkMovementLabel && "max-md:hidden")}>
+                      {label}
+                    </span>
                     <ChevronDown
                       aria-hidden="true"
                       className={cn("text-muted-foreground size-3.5 shrink-0", expanded && "rotate-180")}
@@ -245,7 +269,9 @@ export function CashCloseLedgerTable({
                   {line.label}
                 </Link>
               ) : (
-                label
+                <span className={cn("inline-flex items-center gap-1.5", linkMovementLabel && "max-md:hidden")}>
+                  {label}
+                </span>
               )}
               {line.id === "sales" && cashea && (
                 <LedgerHelp label="Qué incluye Ventas">
@@ -254,7 +280,7 @@ export function CashCloseLedgerTable({
               )}
             </span>
             {isOperational && movementDetail && (
-              <span className="text-muted-foreground mt-0.5 block text-xs font-normal @min-[34rem]/ledger:hidden">
+              <span className="text-muted-foreground mt-0.5 hidden text-xs font-normal md:block @min-[34rem]/ledger:md:hidden">
                 {movementDetail}
               </span>
             )}
@@ -265,7 +291,13 @@ export function CashCloseLedgerTable({
               isOperational ? DETAIL_CELL_CLASS_NAME : "whitespace-normal",
             )}
           >
-            {salesLink || movementDetail || (isZero ? null : detail)}
+            {salesLink ||
+              (movementDetail && isOperational ? (
+                <span className="hidden md:inline">{movementDetail}</span>
+              ) : (
+                movementDetail
+              )) ||
+              (isZero ? null : detail)}
           </TableCell>
           <TableCell
             className={cn("data-value text-right", isZero ? "text-muted-foreground font-normal" : "font-medium")}
