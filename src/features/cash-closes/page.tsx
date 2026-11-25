@@ -175,7 +175,7 @@ export function CashClosesPage() {
       <Topbar date={date} onDateChange={setDate} />
       {renderDayPanel()}
 
-      <div className="flex min-h-64 min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 shrink-0 flex-col md:min-h-64 md:flex-1">
         <h2 className="shrink-0 px-3 pt-5 pb-2 text-sm font-semibold md:px-4 md:pt-7">Historial de cierres</h2>
         <DataTable
           tableClassName="[&_td]:px-2 [&_th]:px-2 [&_:is(th,td):nth-child(5)]:ps-6 [&_:is(th,td):first-child]:ps-3 md:[&_:is(th,td):first-child]:ps-4 md:[&_:is(th,td):last-child]:ps-4 [&_th_button]:leading-tight [&_th_button]:whitespace-nowrap [&_th_svg]:shrink-0"
