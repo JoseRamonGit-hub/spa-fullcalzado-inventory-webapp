@@ -154,7 +154,7 @@ export function CashCloseLedgerTable({
   const totalCellClassName = cn("font-bold", isOperational && "h-10");
   const totalAmountClassName = cn(
     "data-value text-right",
-    isOperational ? "text-base" : "text-sm @max-[24rem]/ledger:text-xs",
+    isOperational ? "text-base max-md:text-[0.9375rem]" : "text-sm @max-[24rem]/ledger:text-xs",
     totalCellClassName,
   );
 
@@ -247,17 +247,17 @@ export function CashCloseLedgerTable({
               ) : (
                 label
               )}
-              {isOperational && movementDetail && (
-                <span className="text-muted-foreground text-xs font-normal @min-[34rem]/ledger:hidden">
-                  {movementDetail}
-                </span>
-              )}
               {line.id === "sales" && cashea && (
                 <LedgerHelp label="Qué incluye Ventas">
                   Las ventas con Cashea, los cambios y las devoluciones se muestran por separado.
                 </LedgerHelp>
               )}
             </span>
+            {isOperational && movementDetail && (
+              <span className="text-muted-foreground mt-0.5 block text-xs font-normal @min-[34rem]/ledger:hidden">
+                {movementDetail}
+              </span>
+            )}
           </TableCell>
           <TableCell
             className={cn(
@@ -351,10 +351,14 @@ export function CashCloseLedgerTable({
             <TableHead className={isOperational ? DETAIL_CELL_CLASS_NAME : "w-full"}>
               <span className="sr-only">Detalle</span>
             </TableHead>
-            <TableHead className={cn("text-right", isOperational ? "w-24 @min-[34rem]/ledger:w-36" : undefined)}>
+            <TableHead
+              className={cn("text-right", isOperational && "@min-[360px]/ledger:w-24 @min-[34rem]/ledger:w-36")}
+            >
               USD
             </TableHead>
-            <TableHead className={cn("text-right", isOperational ? "w-28 @min-[34rem]/ledger:w-44" : undefined)}>
+            <TableHead
+              className={cn("text-right", isOperational && "@min-[360px]/ledger:w-28 @min-[34rem]/ledger:w-44")}
+            >
               Bs.
             </TableHead>
           </TableRow>
@@ -364,8 +368,21 @@ export function CashCloseLedgerTable({
 
         <TableFooter className="border-foreground/40 bg-card font-normal">
           <TableRow className="hover:bg-transparent">
-            <TableCell className={cn(totalCellClassName, "whitespace-normal")} colSpan={isOperational ? 1 : 2}>
-              {isOperational ? "Total producido del día" : "Total producido"}
+            <TableCell
+              className={cn(
+                totalCellClassName,
+                "whitespace-normal",
+                isOperational && "@max-[34rem]/ledger:py-1.5 @max-[34rem]/ledger:leading-snug",
+              )}
+              colSpan={isOperational ? 1 : 2}
+            >
+              Total producido
+              {isOperational && (
+                <>
+                  {" "}
+                  <span className="@max-[34rem]/ledger:block">del día</span>
+                </>
+              )}
             </TableCell>
             {isOperational && <TableCell className={DETAIL_CELL_CLASS_NAME} />}
             <TableCell className={totalAmountClassName}>{formatCurrencyUSD(figures.produced.usd)}</TableCell>
