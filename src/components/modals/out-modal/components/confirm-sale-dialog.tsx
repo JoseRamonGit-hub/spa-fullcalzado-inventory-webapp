@@ -1,15 +1,16 @@
-import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import { TableHead } from "@/components/ui/table";
+import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
+import { useState } from "react";
+import { TriangleAlert } from "lucide-react";
+import casheaLogo from "@/assets/cashea_logos/cashea_logo_512x512.webp";
+import { formatCurrencyUSD } from "@/utils/formatters";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import type { PendingSaleLine } from "../types";
-import { MODAL_SUBMISSION_ERROR_MESSAGES } from "@/components/modals/shared/submission-messages";
-import {
-  ConfirmDialogLineRow,
-  ConfirmDialogLineTable,
-  ConfirmDialogSummarySection,
-  ConfirmDialogTableSection,
-  ModalConfirmDialog,
-  ModalProductIdentity,
-} from "@/components/modals/shared/modal-ui";
+import type { CasheaOrderInput } from "@/types";
+import { getSaleSubmissionErrorMessage } from "@/components/modals/shared/submission-messages";
+import { ModalConfirmDialog } from "@/components/modals/shared/modal-ui";
+import { SaleSummaryCard } from "@/components/modals/shared/sale-summary";
 import type { ModalExchangeRate } from "@/components/modals/shared/use-modal-exchange-rate";
 
 type ConfirmSaleDialogProps = {
@@ -19,6 +20,8 @@ type ConfirmSaleDialogProps = {
   exchangeRate: ModalExchangeRate;
   totalAmountUsd: number;
   totalAmountVes: number;
+  casheaOrder?: CasheaOrderInput | null;
+  casheaSaleTotalMismatch?: boolean;
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
 };
@@ -30,86 +33,138 @@ export function ConfirmSaleDialog({
   exchangeRate,
   totalAmountUsd,
   totalAmountVes,
+  casheaOrder = null,
+  casheaSaleTotalMismatch = false,
   isSubmissionPending,
   onConfirmSubmit,
 }: ConfirmSaleDialogProps) {
-  const lineCount = pendingSaleLines.length;
+  const [isOrderTotalConfirmed, setIsOrderTotalConfirmed] = useState(false);
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setIsOrderTotalConfirmed(false);
+  }
+
+  const hasOrderTotalMismatch = casheaOrder !== null && casheaSaleTotalMismatch;
+  const isOrderTotalPending = hasOrderTotalMismatch && !isOrderTotalConfirmed;
+  const orderTotalDifferenceUsd = casheaOrder ? Math.abs(casheaOrder.total_usd - totalAmountUsd) : 0;
+
   return (
     <ModalConfirmDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title="Confirmar venta"
-      description={
-        <>
-          Se registrará{lineCount === 1 ? "" : "n"}{" "}
-          <strong className="text-foreground">
-            {lineCount} {lineCount === 1 ? "renglón" : "renglones"} de venta
-          </strong>
-          . Verifica productos e importes.
-        </>
-      }
+      title={casheaOrder ? "Confirmar venta Cashea" : "Confirmar venta"}
       confirmLabel="Registrar venta"
       pendingLabel="Registrando..."
-      submissionErrorMessage={MODAL_SUBMISSION_ERROR_MESSAGES.sale}
+      submissionErrorMessage={getSaleSubmissionErrorMessage}
       isSubmissionPending={isSubmissionPending}
       onConfirmSubmit={onConfirmSubmit}
-      confirmDisabled={!exchangeRate.isReady}
+      confirmDisabled={!exchangeRate.isReady || isOrderTotalPending}
     >
-      <ConfirmDialogTableSection className="bg-card border-border/80 max-h-48">
-        <ConfirmDialogLineTable
-          header={
-            <>
-              <TableHead scope="col">Producto</TableHead>
-              <TableHead scope="col" className="text-right">
-                Cantidad
-              </TableHead>
-              <TableHead scope="col" className="text-right">
-                Importe USD
-              </TableHead>
-            </>
-          }
-        >
-          {pendingSaleLines.map((saleLine) => (
-            <ConfirmDialogLineRow key={saleLine.tempId}>
-              <td className="col-span-2 min-w-0 p-0 align-middle sm:table-cell">
-                <ModalProductIdentity code={saleLine.code} description={saleLine.description} />
-              </td>
-              <td className="flex items-baseline justify-between gap-2 p-0 align-middle sm:table-cell sm:text-right">
-                <span className="text-muted-foreground text-[11px] font-medium sm:hidden">Cantidad</span>
-                <span className="tabular-value font-semibold">{saleLine.quantity}</span>
-              </td>
-              <td className="p-0 text-right align-middle whitespace-nowrap sm:table-cell">
-                <span className="text-muted-foreground mr-1.5 text-[11px] font-medium sm:hidden">Importe USD</span>
-                <span className="data-value font-semibold">{formatCurrencyUSD(saleLine.totalUsd)}</span>
-              </td>
-            </ConfirmDialogLineRow>
-          ))}
-        </ConfirmDialogLineTable>
-      </ConfirmDialogTableSection>
-
-      <ConfirmDialogSummarySection className="border-primary/20 bg-primary/5 gap-0 overflow-hidden p-0">
-        {!exchangeRate.isReady && <p className="text-warning px-3 py-2">{exchangeRate.statusMessage}</p>}
-
-        <div className="grid grid-cols-2 divide-x">
-          <div className="min-w-0 p-3">
-            <p className="text-muted-foreground text-[11px] font-semibold uppercase">Total USD</p>
-            <p className="data-value mt-1 text-base leading-tight font-bold whitespace-nowrap sm:text-lg">
-              {formatCurrencyUSD(totalAmountUsd)}
+      <SaleSummaryCard
+        title="Productos"
+        lines={pendingSaleLines.map((saleLine) => ({
+          key: saleLine.tempId,
+          code: saleLine.code,
+          description: saleLine.description,
+          quantity: saleLine.quantity,
+          priceUsd: saleLine.priceUsd,
+          totalUsd: saleLine.totalUsd,
+        }))}
+        totalUsd={totalAmountUsd}
+        totalVes={exchangeRate.isReady ? totalAmountVes : null}
+        exchangeRate={exchangeRate.isReady ? exchangeRate.displayValue : null}
+        notice={
+          !exchangeRate.isReady && (
+            <p className="text-warning-foreground dark:text-warning mt-2 flex items-start gap-1.5 text-xs font-medium">
+              <TriangleAlert className="text-warning mt-px size-3.5 shrink-0" aria-hidden="true" />
+              {exchangeRate.statusMessage}
             </p>
-          </div>
-          <div className="min-w-0 p-3 text-right">
-            <p className="text-muted-foreground text-[11px] font-semibold uppercase">Total Bs.</p>
-            <p className="data-value mt-1 text-base leading-tight font-bold whitespace-nowrap sm:text-lg">
-              {exchangeRate.isReady ? formatCurrencyVES(totalAmountVes) : "—"}
-            </p>
-          </div>
-        </div>
+          )
+        }
+      />
 
-        <div className="bg-card/85 border-primary/15 flex items-center justify-between gap-3 border-t px-3 py-2">
-          <p className="text-muted-foreground text-[11px] font-semibold uppercase">Tasa aplicada</p>
-          <p className="data-value font-medium whitespace-nowrap">{exchangeRate.displayValue}</p>
-        </div>
-      </ConfirmDialogSummarySection>
+      {casheaOrder && (
+        <section aria-labelledby="confirm-sale-cashea" className="bg-card overflow-hidden rounded-md border">
+          <header className="bg-muted/70 flex items-center gap-2 border-b px-3 py-2">
+            <img src={casheaLogo} alt="" aria-hidden="true" className="size-5 shrink-0 rounded-md" />
+            <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3 [overflow-wrap:anywhere]">
+              <h3 id="confirm-sale-cashea" className="text-sm font-normal">
+                Pago con Cashea
+              </h3>
+              <p className="text-muted-foreground text-xs">
+                Orden <CasheaOrderNumber value={casheaOrder.order_number} /> · Factura{" "}
+                <span className="data-value text-foreground font-normal">{casheaOrder.invoice_number}</span>
+              </p>
+            </div>
+          </header>
+
+          <dl>
+            <CasheaAmountRow emphasized label="Inicial" value={formatCurrencyUSD(casheaOrder.paid_today_usd)} />
+            <CasheaAmountRow label="Monto financiado" value={formatCurrencyUSD(casheaOrder.financed_usd)} />
+            <CasheaAmountRow
+              label="Total de la orden"
+              value={formatCurrencyUSD(casheaOrder.total_usd)}
+              className={cn(hasOrderTotalMismatch && "[&_dd]:text-warning-foreground dark:[&_dd]:text-warning")}
+            />
+          </dl>
+
+          {hasOrderTotalMismatch && (
+            <div className="border-warning/40 bg-warning/10 flex flex-col gap-2 border-t px-3 py-2">
+              <p className="text-warning-foreground dark:text-warning flex gap-2 text-xs leading-snug">
+                <TriangleAlert className="text-warning mt-px size-4 shrink-0" aria-hidden="true" />
+                <span>
+                  El total de la orden (<strong>{formatCurrencyUSD(casheaOrder.total_usd)}</strong>) difiere del total
+                  de la venta (<strong>{formatCurrencyUSD(totalAmountUsd)}</strong>) por{" "}
+                  <strong>{formatCurrencyUSD(orderTotalDifferenceUsd)}</strong>. Verifícalo en el panel de Cashea antes
+                  de registrar.
+                </span>
+              </p>
+              <div className="flex items-center gap-2 pl-6">
+                <Checkbox
+                  id="cashea-order-total-confirmation"
+                  checked={isOrderTotalConfirmed}
+                  onCheckedChange={(checked) => setIsOrderTotalConfirmed(checked === true)}
+                />
+                <Label htmlFor="cashea-order-total-confirmation" className="text-xs font-medium">
+                  Confirmo el total de la Orden Cashea
+                </Label>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
     </ModalConfirmDialog>
+  );
+}
+
+type CasheaAmountRowProps = {
+  label: string;
+  value: string;
+  emphasized?: boolean;
+  className?: string;
+};
+
+function CasheaAmountRow({ label, value, emphasized = false, className }: CasheaAmountRowProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-baseline justify-between gap-3 border-t px-3 py-1.5 text-xs leading-5 first:border-t-0",
+        emphasized ? "border-border" : "border-border/60",
+        className,
+      )}
+    >
+      <dt className={cn("min-w-0", emphasized ? "text-foreground font-semibold" : "text-muted-foreground font-normal")}>
+        {label}
+      </dt>
+      <dd
+        className={cn(
+          "data-value text-foreground shrink-0 whitespace-nowrap",
+          emphasized ? "font-semibold" : "font-normal",
+        )}
+      >
+        {value}
+      </dd>
+    </div>
   );
 }

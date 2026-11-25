@@ -17,6 +17,26 @@ export type AppSettings = Tables<"app_settings">;
 export type Return = Tables<"returns">;
 export type ReturnItem = Tables<"return_items">;
 export type Sale = Tables<"sales">;
+export type CasheaOrder = Tables<"cashea_orders">;
+export type CasheaDeposit = Tables<"cashea_deposits">;
+export type CasheaOrderStatus = Database["public"]["Enums"]["cashea_order_status"];
+export type CasheaVoidReason = Database["public"]["Enums"]["cashea_void_reason"];
+export type CasheaCollectionStatus = Database["public"]["Functions"]["get_cashea_collection_status"]["Returns"][number];
+export type CasheaReceivableSummary = Omit<
+  Database["public"]["Functions"]["get_cashea_receivable_summary"]["Returns"][number],
+  "oldest_sale_date"
+> & {
+  oldest_sale_date: string | null;
+};
+
+export type CalendarDateRange = {
+  from?: string;
+  to?: string;
+};
+
+export type CasheaOrdersFilter = CalendarDateRange & {
+  status: CasheaOrderStatus | null;
+};
 
 type DashboardDailyMetricsRow = Database["public"]["Functions"]["get_dashboard_daily_metrics"]["Returns"][number];
 
@@ -112,6 +132,11 @@ export type ExchangeRateUpdate = TablesUpdate<"exchange_rates">;
 // ── Extended types with joined relations ────────────────────
 export type CashCloseWithRelations = CashClose & {
   users: Pick<User, "fullname">;
+  cash_close_previous_versions?: {
+    id: number;
+    closed_at: string | null;
+    users: Pick<User, "fullname"> | null;
+  }[];
 };
 
 export type CashCloseSummary = {
@@ -122,13 +147,26 @@ export type CashCloseSummary = {
   returnsCount: number;
   returnsCreditUsd: number;
   returnsCreditVes: number;
+  /** Total producido: facturado menos devoluciones y Por cobrar Cashea, más Cashea anulado por devolución. */
   netUsd: number;
   netVes: number;
+  casheaReceivableUsd: number;
+  casheaReceivableVes: number;
+  casheaVoidedReturnUsd: number;
+  casheaVoidedReturnVes: number;
+};
+
+/** Día anterior a hoy con al menos una Operación facturada y sin Cierre de Caja. */
+export type UnclosedCashCloseDay = {
+  date: string;
+  summary: CashCloseSummary;
 };
 
 export type TransactionWithRelations = Transaction & {
   products: Pick<Product, "code" | "description">;
   users: Pick<User, "fullname">;
+  /** Venta del Renglón con sus Órdenes Cashea; `null` en Renglones sin Venta (históricos o de un Cambio). */
+  sales: { cashea_orders: Pick<CasheaOrder, "id" | "order_number" | "status">[] } | null;
 };
 
 export type InventoryMovementWithRelations = InventoryMovement & {
@@ -201,9 +239,58 @@ export type ProcessReturnPayload = {
   p_notes?: string;
 };
 
+/** Los cinco datos de una Orden Cashea, tal como los recibe la RPC. */
+export type CasheaOrderInput = {
+  order_number: string;
+  invoice_number: string;
+  total_usd: number;
+  paid_today_usd: number;
+  financed_usd: number;
+};
+
+export type CasheaOrderVoid = {
+  orderId: string;
+  reason: CasheaVoidReason;
+  note: string;
+};
+
+export type CasheaDepositInput = {
+  orderIds: string[];
+  receivedVes: number;
+  depositDate: string;
+  appliedRate: number | null;
+  reference: string | null;
+};
+
+export type CasheaDepositReversal = {
+  depositId: string;
+  note: string;
+};
+
+export type CasheaDepositWithOrders = CasheaDeposit & {
+  cashea_orders: Pick<CasheaOrder, "order_number">[];
+};
+
+export type CasheaOrderAdjustment = {
+  orderId: string;
+  order: CasheaOrderInput;
+  note: string;
+};
+
+export type CasheaSettings = {
+  serviceFeePct: number;
+  advanceFeePct: number;
+};
+
+export type CasheaSettingsUpdate = CasheaSettings & {
+  applyToPending: boolean;
+};
+
 export type ProcessSalePayload = {
   p_items: PricedProductLineInput[];
   p_exchange_rate: number;
+  /** Presente solo en una Venta Cashea. */
+  p_cashea?: CasheaOrderInput;
 };
 
 export type UserRole = User["role"];

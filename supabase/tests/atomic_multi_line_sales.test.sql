@@ -106,6 +106,17 @@ SELECT set_config(
   (SELECT count(*)::text FROM public.sales),
   true
 );
+-- El seed ya trae Ventas de este usuario: se cuentan solo las nuevas.
+SELECT set_config(
+  'test.atomic_sale_user_baseline',
+  (
+    SELECT count(*)::text
+    FROM public.sales
+    WHERE business_id = '10000000-0000-0000-0000-000000000001'
+      AND user_id = 'a0000000-0000-0000-0000-000000000002'
+  ),
+  true
+);
 
 SELECT lives_ok(
   $$
@@ -128,7 +139,7 @@ SELECT is(
     WHERE business_id = '10000000-0000-0000-0000-000000000001'
       AND user_id = 'a0000000-0000-0000-0000-000000000002'
   ),
-  1,
+  current_setting('test.atomic_sale_user_baseline')::integer + 1,
   'La confirmación crea una sola cabecera de Venta'
 );
 
@@ -226,7 +237,7 @@ SELECT is(
     WHERE business_id = '10000000-0000-0000-0000-000000000001'
       AND user_id = 'a0000000-0000-0000-0000-000000000002'
   ),
-  1,
+  current_setting('test.atomic_sale_user_baseline')::integer + 1,
   'La Venta fallida no deja una cabecera parcial'
 );
 

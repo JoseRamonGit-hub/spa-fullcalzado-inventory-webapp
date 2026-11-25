@@ -1,129 +1,120 @@
-import { Lock, Hash, DollarSign, Banknote, ShoppingCart, AlertTriangle, IterationCcw } from "lucide-react";
+﻿import type { ReactNode } from "react";
 import { ResponsiveAlertModal } from "@/components/modals/shared/responsive-alert-modal";
-import { formatCurrencyUSD, formatCurrencyVES } from "@/utils/formatters";
-import type { CashCloseMetrics } from "./metrics-summary";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+import { formatCurrencyUSD, formatCurrencyVES, formatInteger, formatTime } from "@/utils/formatters";
+import { formatLedgerAmount, type CashCloseDayState, type CashCloseFigures } from "../cash-close-ledger";
 
 type CashCloseModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   isPending: boolean;
   onConfirm: () => void;
-  today: string;
-  metrics: CashCloseMetrics;
+  dateLabel: string;
+  figures: CashCloseFigures;
+  update?: Extract<CashCloseDayState, { kind: "outdated" }>;
 };
 
-export function CashCloseModal({ open, onOpenChange, isPending, onConfirm, today, metrics }: CashCloseModalProps) {
-  const hasReturns = metrics.returnsCount > 0;
+function AmountRow({
+  label,
+  usd,
+  ves,
+  difference = false,
+  total = false,
+}: {
+  label: ReactNode;
+  usd: number;
+  ves: number;
+  difference?: boolean;
+  total?: boolean;
+}) {
+  return (
+    <TableRow className={cn("border-border/50 hover:bg-transparent", total && "font-semibold")}>
+      <th scope="row" className={cn("px-3 py-2 text-left text-xs font-normal", total && "font-semibold")}>
+        {label}
+      </th>
+      <TableCell className={cn("data-value text-right", total && "text-sm")}>
+        {formatLedgerAmount(usd, formatCurrencyUSD, difference)}
+      </TableCell>
+      <TableCell className={cn("data-value text-right", total && "text-sm")}>
+        {formatLedgerAmount(ves, formatCurrencyVES, difference)}
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export function CashCloseModal({
+  open,
+  onOpenChange,
+  isPending,
+  onConfirm,
+  dateLabel,
+  figures,
+  update,
+}: CashCloseModalProps) {
+  const sameTotal = update && update.deltaUsd === 0 && update.deltaVes === 0;
+  const savedTime = formatTime(update?.cashClose.closed_at);
 
   return (
     <ResponsiveAlertModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Confirmar Cierre de Caja"
-      description="Estás a punto de cerrar el día de hoy. Esta acción consolidará todas las ventas y devoluciones registradas."
-      confirmLabel="Sí, cerrar el día"
+      title={update ? "Actualizar cierre de caja" : "Confirmar cierre de caja"}
+      description={update ? "El nuevo cuadre reemplazará al guardado para este día." : undefined}
+      confirmLabel={update ? "Actualizar cierre" : "Cerrar el día"}
       isPending={isPending}
       onConfirm={onConfirm}
     >
-      <div className="flex flex-col gap-3">
-        <header className="bg-primary/8 border-primary/20 flex items-center gap-3 rounded-lg border px-4 py-3">
-          <div className="bg-primary/15 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-            <Lock className="text-primary h-5 w-5" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-foreground text-sm font-semibold">Cierre del {today}</p>
-            <p className="text-muted-foreground text-xs">
-              {metrics.billedOperations} operación{metrics.billedOperations !== 1 ? "es" : ""} facturada
-              {metrics.billedOperations !== 1 ? "s" : ""}
-              {hasReturns && ` · ${metrics.returnsCount} devolución${metrics.returnsCount !== 1 ? "es" : ""}`}
-            </p>
-          </div>
-        </header>
-
-        <div className="bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
-          <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-              <DollarSign className="h-3 w-3" aria-hidden="true" /> Total Facturado USD
-            </span>
-            <span className="text-foreground text-sm font-bold tabular-nums">
-              {formatCurrencyUSD(metrics.totalUsd)}
-            </span>
-          </div>
-          <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-              <Banknote className="h-3 w-3" aria-hidden="true" /> Total Facturado Bs.
-            </span>
-            <span className="text-foreground text-sm font-bold tabular-nums">
-              {formatCurrencyVES(metrics.totalVes)}
-            </span>
-          </div>
-          <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-              <Hash className="h-3 w-3" aria-hidden="true" /> Operaciones facturadas
-            </span>
-            <span className="text-foreground text-sm font-bold tabular-nums">{metrics.billedOperations}</span>
-          </div>
-          <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-              <ShoppingCart className="h-3 w-3" aria-hidden="true" /> Unidades
-            </span>
-            <span className="text-foreground text-sm font-bold tabular-nums">{metrics.units}</span>
-          </div>
-        </div>
-
-        {hasReturns && (
-          <>
-            <div className="border-refund/25 bg-muted/40 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
-              <div className="bg-card col-span-2 flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-refund flex items-center gap-1 text-[10px] font-medium tracking-wider uppercase">
-                  <IterationCcw className="h-3 w-3" aria-hidden="true" /> Devoluciones ({metrics.returnsCount})
-                </span>
-              </div>
-              <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-                  <DollarSign className="h-3 w-3" aria-hidden="true" /> Crédito USD
-                </span>
-                <span className="text-refund text-sm font-bold tabular-nums">
-                  {formatCurrencyUSD(metrics.returnsCreditUsd)}
-                </span>
-              </div>
-              <div className="bg-card flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-                  <Banknote className="h-3 w-3" aria-hidden="true" /> Crédito Bs.
-                </span>
-                <span className="text-refund text-sm font-bold tabular-nums">
-                  {formatCurrencyVES(metrics.returnsCreditVes)}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-primary/8 border-primary/20 grid grid-cols-2 gap-px overflow-hidden rounded-lg border">
-              <div className="flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-                  <DollarSign className="h-3 w-3" aria-hidden="true" /> Total Producido USD
-                </span>
-                <span className="text-primary text-sm font-bold tabular-nums">{formatCurrencyUSD(metrics.netUsd)}</span>
-              </div>
-              <div className="flex flex-col gap-0.5 px-3 py-2.5">
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-semibold uppercase">
-                  <Banknote className="h-3 w-3" aria-hidden="true" /> Total Producido BS.
-                </span>
-                <span className="text-primary text-sm font-bold tabular-nums">{formatCurrencyVES(metrics.netVes)}</span>
-              </div>
-            </div>
-          </>
-        )}
-
-        <div className="border-warning/25 bg-warning/8 flex items-start gap-2.5 rounded-lg border px-3 py-2.5">
-          <AlertTriangle
-            className="text-warning-foreground dark:text-warning mt-0.5 h-3.5 w-3.5 shrink-0"
-            aria-hidden="true"
-          />
-          <p className="text-warning-foreground/80 dark:text-warning/90 text-[11px] leading-relaxed">
-            Una vez confirmado, no se puede deshacer. Asegúrate de que todas las ventas y devoluciones del día están
-            registradas.
+      <div className="bg-card @container overflow-hidden rounded-md border">
+        <Table density="compact" scrollAreaLabel={`Cuadre del ${dateLabel}`}>
+          <TableHeader className="bg-muted">
+            <TableRow className="hover:bg-transparent">
+              <TableHead scope="col" className="whitespace-normal">
+                <span className="sr-only">Cuadre del </span>
+                {dateLabel}
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                USD
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Bs.
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          {update && (
+            <TableBody className="text-muted-foreground">
+              <AmountRow
+                label={
+                  <>
+                    Cierre guardado
+                    {savedTime && <span className="tabular-value block whitespace-nowrap">{savedTime}</span>}
+                  </>
+                }
+                usd={update.cashClose.total_usd}
+                ves={update.cashClose.total_ves}
+              />
+              {!sameTotal && <AmountRow label="Diferencia" usd={update.deltaUsd} ves={update.deltaVes} difference />}
+            </TableBody>
+          )}
+          <TableFooter className={cn("bg-card", update ? "border-foreground/30" : "border-t-0")}>
+            <AmountRow label={update ? "Nuevo total producido" : "Total producido"} {...figures.produced} total />
+          </TableFooter>
+        </Table>
+        {sameTotal && (
+          <p className="text-muted-foreground border-t px-3 py-2 text-xs">
+            Cambió el cuadre con el mismo total producido.
           </p>
-        </div>
+        )}
+        <dl className="text-muted-foreground grid divide-y border-t text-xs @min-[20rem]:grid-cols-[3fr_2fr] @min-[20rem]:divide-x @min-[20rem]:divide-y-0">
+          <div className="flex items-baseline justify-between gap-2 px-3 py-2">
+            <dt>Operaciones facturadas</dt>
+            <dd className="data-value text-foreground font-medium">{formatInteger(figures.billedOperations)}</dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-2 px-3 py-2">
+            <dt>Unidades</dt>
+            <dd className="data-value text-foreground font-medium">{formatInteger(figures.units)}</dd>
+          </div>
+        </dl>
       </div>
     </ResponsiveAlertModal>
   );

@@ -6,7 +6,9 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import type { PendingSaleLine } from "../types";
 import type { ReactNode } from "react";
-import type { User } from "@/types";
+import type { CasheaOrderInput, User } from "@/types";
+import { toast } from "sonner";
+import { ServiceError } from "@/lib/errors";
 
 vi.mock("sonner", () => ({
   toast: { promise: vi.fn() },
@@ -64,9 +66,9 @@ describe("useSubmitSale", () => {
     useBusinessStore.setState({ activeBusinessId: BUSINESS_ID });
   });
 
-  function renderSubmitSale(pendingSaleLines: PendingSaleLine[]) {
+  function renderSubmitSale(pendingSaleLines: PendingSaleLine[], casheaOrder: CasheaOrderInput | null = null) {
     return renderHook(
-      () => useSubmitSale({ pendingSaleLines, currentExchangeRate, clearPendingSaleLines, onSuccess }),
+      () => useSubmitSale({ pendingSaleLines, currentExchangeRate, casheaOrder, clearPendingSaleLines, onSuccess }),
       { wrapper: createWrapper() },
     );
   }
@@ -131,5 +133,61 @@ describe("useSubmitSale", () => {
         ]),
       }),
     );
+  });
+
+  it("envía la Orden Cashea junto con los Renglones en una Venta Cashea", async () => {
+    mockCreateSale.mockResolvedValue(undefined);
+    const casheaOrder: CasheaOrderInput = {
+      order_number: "6400685",
+      invoice_number: "551-000738",
+      total_usd: 120,
+      paid_today_usd: 60,
+      financed_usd: 60,
+    };
+    const { result } = renderSubmitSale([makeSaleLine()], casheaOrder);
+
+    await act(() => result.current.submitSale());
+
+    expect(mockCreateSale).toHaveBeenCalledWith(BUSINESS_ID, {
+      p_items: [{ product_id: "prod-1", quantity: 2, price_usd: 60, price_ves: 2400 }],
+      p_exchange_rate: 40,
+      p_cashea: casheaOrder,
+    });
+    expect(clearPendingSaleLines).toHaveBeenCalled();
+    expect(onSuccess).toHaveBeenCalled();
+  });
+
+  describe("mensaje de error de la venta", () => {
+    async function submitRejectedSale(rejection: unknown) {
+      mockCreateSale.mockRejectedValue(rejection);
+      const { result } = renderSubmitSale([makeSaleLine()]);
+
+      await act(() => result.current.submitSale().catch(() => {}));
+
+      const toastOptions = vi.mocked(toast.promise).mock.calls[0][1];
+      const errorOption = toastOptions?.error;
+      return typeof errorOption === "function" ? errorOption(rejection) : errorOption;
+    }
+
+    it("muestra el mensaje del servidor cuando una regla de negocio rechaza la venta", async () => {
+      const message = await submitRejectedSale(
+        new ServiceError("Existencia insuficiente para el producto SHO-01", "P0001"),
+      );
+
+      expect(message).toBe("Existencia insuficiente para el producto SHO-01");
+      expect(clearPendingSaleLines).not.toHaveBeenCalled();
+    });
+
+    it("muestra el mensaje genérico cuando el error tiene otro código", async () => {
+      const message = await submitRejectedSale(new ServiceError("duplicate key value", "23505"));
+
+      expect(message).toBe("No se pudo registrar la venta. Revisa la conexión e intenta de nuevo.");
+    });
+
+    it("muestra el mensaje genérico ante un fallo de red", async () => {
+      const message = await submitRejectedSale(new TypeError("Failed to fetch"));
+
+      expect(message).toBe("No se pudo registrar la venta. Revisa la conexión e intenta de nuevo.");
+    });
   });
 });

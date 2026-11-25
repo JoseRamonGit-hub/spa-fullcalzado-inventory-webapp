@@ -26,7 +26,8 @@ type ResponsiveAlertModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: string;
+  /** Opcional: un diálogo con todo a la vista no necesita explicarse. */
+  description?: string;
   onConfirm: () => void | Promise<void>;
   confirmLabel: string;
   variant?: "default" | "danger";
@@ -54,11 +55,14 @@ export function ResponsiveAlertModal({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={handleOpenChange}>
-        <DrawerContent className="max-h-[calc(100dvh-1rem)]">
+        <DrawerContent
+          className="max-h-[calc(100dvh-1rem)]"
+          {...(description ? {} : { "aria-describedby": undefined })}
+        >
           <DrawerHeader className="shrink-0 text-left">
             <DrawerTitle className="text-sm font-bold tracking-wide uppercase">{title}</DrawerTitle>
             <ActiveBusinessContext />
-            <DrawerDescription className="text-xs">{description}</DrawerDescription>
+            {description && <DrawerDescription className="text-xs">{description}</DrawerDescription>}
           </DrawerHeader>
           {children && <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">{children}</div>}
           <DrawerFooter className="bg-background shrink-0 flex-row gap-2 border-t pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -83,11 +87,11 @@ export function ResponsiveAlertModal({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent {...(description ? {} : { "aria-describedby": undefined })}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <ActiveBusinessContext />
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
         {children && <div>{children}</div>}
         <AlertDialogFooter>

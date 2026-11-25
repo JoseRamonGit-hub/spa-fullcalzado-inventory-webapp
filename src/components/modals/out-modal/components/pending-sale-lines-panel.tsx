@@ -17,7 +17,7 @@ export function PendingSaleLinesPanel({ pendingSaleLines, onRemovePendingSaleLin
   return (
     <section
       className="bg-card -mx-2 flex h-56 min-h-0 flex-col overflow-hidden rounded-md border md:mx-0 md:h-72"
-      aria-label="Renglones de venta pendientes"
+      aria-label="Productos de la venta en curso"
     >
       <header className="bg-muted/35 border-b px-3 py-2">
         <div className="flex items-center justify-between gap-3">

@@ -11,6 +11,7 @@ type DataTablePaginationProps<TData> = {
   pageCount: number;
   canPreviousPage: boolean;
   canNextPage: boolean;
+  noun?: string;
   pageSizeOptions?: number[];
 };
 
@@ -22,8 +23,10 @@ export function DataTablePagination<TData>({
   pageCount,
   canPreviousPage,
   canNextPage,
+  noun,
   pageSizeOptions = [10, 20, 30, 50, 100],
 }: DataTablePaginationProps<TData>) {
+  const sizeLabel = noun ? `${noun.charAt(0).toUpperCase()}${noun.slice(1)} por página` : "Filas por página";
   const from = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const to = Math.min((pageIndex + 1) * pageSize, totalRows);
 
@@ -32,18 +35,19 @@ export function DataTablePagination<TData>({
       <p className="text-muted-foreground text-xs" aria-live="polite">
         <span className="tabular-value">{from}</span>–<span className="tabular-value">{to}</span> de{" "}
         <span className="tabular-value">{totalRows}</span>
+        {noun && ` ${noun}`}
       </p>
 
       <div className="flex items-center gap-1.5 md:gap-3">
         {/* Page size selector */}
         <div className="hidden items-center gap-1.5 sm:flex">
-          <span className="text-muted-foreground text-xs">Filas por página</span>
+          <span className="text-muted-foreground text-xs">{sizeLabel}</span>
           <NativeSelect
             size="sm"
             className="py-0 pr-7 pl-2 text-xs"
             value={pageSize}
             onChange={(e) => table.setPageSize(Number(e.target.value))}
-            aria-label="Filas por página"
+            aria-label={sizeLabel}
           >
             {pageSizeOptions.map((size) => (
               <NativeSelectOption key={size} value={size}>

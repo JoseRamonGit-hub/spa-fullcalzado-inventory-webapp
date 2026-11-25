@@ -20,6 +20,9 @@ export function TextFieldGroup({
   rightAddon,
   action,
   descriptionBelow,
+  compact,
+  hideErrorMessage,
+  hideLabel,
   passwordEye,
   groupClassName,
   ...props
@@ -30,7 +33,15 @@ export function TextFieldGroup({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <FieldWrapper label={label} description={description} action={action} descriptionBelow={descriptionBelow}>
+    <FieldWrapper
+      label={label}
+      description={description}
+      action={action}
+      descriptionBelow={descriptionBelow}
+      compact={compact}
+      hideErrorMessage={hideErrorMessage}
+      hideLabel={hideLabel}
+    >
       <InputGroup className={groupClassName}>
         <InputGroupInput
           {...props}
@@ -41,7 +52,12 @@ export function TextFieldGroup({
           onChange={(e) => field.handleChange(e.target.value)}
           aria-invalid={isInvalid}
           type={showPassword ? "text" : props.type}
-          className={cn(props.className, showPassword && field.state.value && "tracking-normal")}
+          className={cn(
+            props.className,
+            // Con prefijo, el borde lo pone el grupo; el del input dibujaba una caja dentro de otra.
+            leftAddon && "rounded-none border-0",
+            showPassword && field.state.value && "tracking-normal",
+          )}
         />
 
         {leftAddon && <InputGroupAddon align={"inline-start"}>{leftAddon}</InputGroupAddon>}

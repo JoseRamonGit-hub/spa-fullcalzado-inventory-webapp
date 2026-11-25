@@ -1,6 +1,7 @@
 import { useFieldContext } from "@/hooks/form";
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import type { VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 export type FormFieldProps = {
   label: string;
@@ -9,10 +10,11 @@ export type FormFieldProps = {
   descriptionBelow?: boolean;
   compact?: boolean;
   hideErrorMessage?: boolean;
+  /** Deja la etiqueta solo para lectores de pantalla, cuando el contexto ya nombra el campo. */
+  hideLabel?: boolean;
 };
 
-export const COMPACT_FIELD_LABEL_CLASS_NAME =
-  "text-muted-foreground text-[11px] font-medium tracking-wider uppercase";
+export const COMPACT_FIELD_LABEL_CLASS_NAME = "text-muted-foreground text-[11px] font-medium tracking-wider uppercase";
 
 type FieldWrapperProps = FormFieldProps & {
   children: React.ReactNode;
@@ -27,15 +29,21 @@ export function FieldWrapper({
   descriptionBelow,
   compact,
   hideErrorMessage = false,
+  hideLabel = false,
 }: FieldWrapperProps) {
   const field = useFieldContext();
 
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-  const errorElement = !hideErrorMessage && isInvalid && <FieldError errors={field.state.meta.errors} />;
+  const errorElement = !hideErrorMessage && isInvalid && (
+    <FieldError errors={field.state.meta.errors} className={compact ? "text-xs" : undefined} />
+  );
+
+  // Sin descripción no se renderiza el <p> vacío: su margen depende de su posición y movía el control al aparecer el error.
+  const descriptionElement = description && <FieldDescription>{description}</FieldDescription>;
 
   const labelElement = (
-    <FieldLabel htmlFor={field.name} className={compact ? COMPACT_FIELD_LABEL_CLASS_NAME : undefined}>
+    <FieldLabel htmlFor={field.name} className={cn(compact && COMPACT_FIELD_LABEL_CLASS_NAME, hideLabel && "sr-only")}>
       {label}
     </FieldLabel>
   );
@@ -48,13 +56,13 @@ export function FieldWrapper({
             {labelElement}
             {children}
             {errorElement}
-            <FieldDescription>{description}</FieldDescription>
+            {descriptionElement}
             {action}
           </>
         ) : (
           <>
             {labelElement}
-            <FieldDescription>{description}</FieldDescription>
+            {descriptionElement}
             {children}
             {errorElement}
             {action}

@@ -8,7 +8,7 @@ type TopbarProps = {
 
 export function Topbar({ date, onDateChange }: TopbarProps) {
   return (
-    <header className="topbar-height bg-background flex items-center justify-between gap-2 border-b px-3 md:px-4">
+    <header className="topbar-height bg-background flex shrink-0 items-center justify-between gap-2 border-b px-3 md:px-4">
       <BusinessModuleTitle title="Cierres de Caja" />
       <DatePickerFilter value={date} onChange={onDateChange} placeholder="Filtrar por día" />
     </header>

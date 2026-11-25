@@ -5,7 +5,7 @@
 
 BEGIN;
 
-SELECT plan(9);
+SELECT plan(12);
 
 DELETE FROM public.inventory_movements
 WHERE business_id IN (
@@ -38,6 +38,13 @@ WHERE business_id IN (
   '10000000-0000-0000-0000-000000000002'
 )
   AND date = (now() AT TIME ZONE 'America/Caracas')::date;
+
+DELETE FROM public.cashea_orders
+WHERE business_id IN (
+  '10000000-0000-0000-0000-000000000001',
+  '10000000-0000-0000-0000-000000000002'
+)
+  AND sale_date = (now() AT TIME ZONE 'America/Caracas')::date;
 
 DELETE FROM public.sales
 WHERE business_id IN (
@@ -94,6 +101,11 @@ VALUES
   );
 
 SELECT set_config('app.suppress_log_entry', 'false', true);
+
+-- El seed puede tener un cierre en la fecha de la fila histórica de esta prueba.
+DELETE FROM public.cash_closes
+WHERE business_id = '10000000-0000-0000-0000-000000000001'
+  AND date = (now() AT TIME ZONE 'America/Caracas')::date - 10;
 
 INSERT INTO public.cash_closes (
   id,
@@ -229,6 +241,26 @@ SELECT is(
   ),
   null,
   'El Cierre histórico permanece intacto para que la interfaz use el fallback heredado'
+);
+
+SELECT is_empty(
+  $$ SELECT id FROM public.cash_close_previous_versions
+     WHERE business_id = '10000000-0000-0000-0000-000000000001'
+       AND date = (now() AT TIME ZONE 'America/Caracas')::date $$,
+  'El primer cierre no tiene versiones anteriores'
+);
+
+SELECT lives_ok(
+  $$ SELECT public.generate_daily_cash_close('10000000-0000-0000-0000-000000000001') $$,
+  'Se puede actualizar el cierre existente'
+);
+
+SELECT results_eq(
+  $$ SELECT closed_by, closed_at FROM public.cash_close_previous_versions
+     WHERE business_id = '10000000-0000-0000-0000-000000000001'
+       AND date = (now() AT TIME ZONE 'America/Caracas')::date $$,
+  $$ VALUES ('a0000000-0000-0000-0000-000000000001'::uuid, now()) $$,
+  'Actualizar conserva el responsable y la fecha del cierre anterior'
 );
 
 SELECT * FROM finish();

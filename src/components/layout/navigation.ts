@@ -1,0 +1,55 @@
+import type { ComponentType } from "react";
+import { ArrowLeftRight, IterationCcw, Package, Settings, ShoppingCart, Users, type LucideIcon } from "lucide-react";
+import { CashRegister } from "@/components/icons/cash-register";
+import { DashboardPanel } from "@/components/icons/dashboard-panel";
+import { ReceivableInvoice } from "@/components/icons/receivable-invoice";
+
+export type NavItem = {
+  title: string;
+  url: string;
+  icon: ComponentType<{ className?: string }>;
+};
+
+export type NavSection = {
+  label: string;
+  items: readonly NavItem[];
+};
+
+const DASHBOARD = { title: "Panel principal", url: "/dashboard", icon: DashboardPanel };
+const INVENTORY = { title: "Inventario", url: "/inventory", icon: Package };
+const SALES = { title: "Ventas", url: "/transactions", icon: ShoppingCart };
+
+export const DASHBOARD_NAV_ITEM: NavItem = DASHBOARD;
+
+export const NAV_SECTIONS: readonly NavSection[] = [
+  {
+    label: "Almacén",
+    items: [INVENTORY, { title: "Movimientos", url: "/movements", icon: ArrowLeftRight }],
+  },
+  {
+    label: "Caja",
+    items: [
+      SALES,
+      { title: "Devoluciones", url: "/returns", icon: IterationCcw },
+      { title: "Cierres de caja", url: "/cash-closes", icon: CashRegister },
+    ],
+  },
+];
+
+export const RECEIVABLES_NAV = {
+  sectionLabel: "Cobranzas",
+  title: "Cuentas por cobrar",
+  url: "/receivables",
+  icon: ReceivableInvoice,
+  items: [{ title: "Cashea", url: "/receivables/cashea" }] as readonly Omit<NavItem, "icon">[],
+};
+
+export const USERS_NAV_ITEM: NavItem = { title: "Usuarios", url: "/users", icon: Users };
+
+export const SETTINGS_NAV_ITEM: NavItem = { title: "Ajustes", url: "/settings", icon: Settings };
+
+export const MOBILE_PRIMARY_NAV: readonly { title: string; url: string; icon: LucideIcon }[] = [
+  { title: "Panel", url: DASHBOARD.url, icon: DASHBOARD.icon },
+  { title: INVENTORY.title, url: INVENTORY.url, icon: INVENTORY.icon },
+  { title: SALES.title, url: SALES.url, icon: SALES.icon },
+];

@@ -19,6 +19,10 @@ vi.mock("./components/sales-period-section", () => ({
   SalesPeriodSection: () => <div>Ventas por período</div>,
 }));
 
+vi.mock("./components/cashea-receivable-card", () => ({
+  CasheaReceivableCard: () => null,
+}));
+
 vi.mock("./components/product-stock-alerts-section", () => ({
   ProductStockAlertsSection: () => <div>Alertas de inventario</div>,
 }));

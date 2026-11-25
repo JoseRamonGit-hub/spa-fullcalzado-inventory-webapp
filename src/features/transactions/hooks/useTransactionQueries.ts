@@ -12,7 +12,19 @@ export const transactionKeys = {
   lists: (businessId: string | null) => [...transactionKeys.business(businessId), "list"] as const,
   list: (businessId: string | null, date?: string) => [...transactionKeys.lists(businessId), { date }] as const,
   today: (businessId: string | null) => [...transactionKeys.business(businessId), "today"] as const,
+  saleLines: (businessId: string | null, saleId: string) =>
+    [...transactionKeys.business(businessId), "sale-lines", saleId] as const,
 };
+
+export function useSaleLines(saleId: string, options?: TransactionQueryOptions) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: transactionKeys.saleLines(businessId, saleId),
+    queryFn: businessId ? ({ signal }) => transactionsService.getSaleLines(businessId, saleId, signal) : skipToken,
+    enabled: options?.enabled,
+  });
+}
 
 export function useTransactions(date?: string, options?: TransactionQueryOptions) {
   const businessId = useBusinessStore((state) => state.activeBusinessId);

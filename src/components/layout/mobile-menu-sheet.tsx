@@ -1,21 +1,61 @@
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useTheme } from "next-themes";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftRight, Settings, ReceiptText, IterationCcw, Moon, Sun, LogOut, Users } from "lucide-react";
+import { ChevronRight, Moon, Sun, LogOut } from "lucide-react";
 import { BusinessSwitcher } from "@/features/business/components/business-switcher";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
+import {
+  DASHBOARD_NAV_ITEM,
+  MOBILE_PRIMARY_NAV,
+  NAV_SECTIONS,
+  RECEIVABLES_NAV,
+  SETTINGS_NAV_ITEM,
+  USERS_NAV_ITEM,
+  type NavItem,
+} from "./navigation";
 
-const SECONDARY_NAV = [
-  { title: "Movimientos", url: "/movements", icon: ArrowLeftRight },
-  { title: "Devoluciones", url: "/returns", icon: IterationCcw },
-  { title: "Cierres de Caja", url: "/cash-closes", icon: ReceiptText },
-  { title: "Ajustes", url: "/settings", icon: Settings },
+const primaryUrls = new Set(MOBILE_PRIMARY_NAV.map((item) => item.url));
+
+const MOBILE_NAV_ITEMS: readonly NavItem[] = [
+  DASHBOARD_NAV_ITEM,
+  ...NAV_SECTIONS.flatMap((section) => section.items.filter((item) => !primaryUrls.has(item.url))),
 ];
 
-const ADMIN_NAV = [{ title: "Usuarios", url: "/users", icon: Users }];
+const sectionHeadingClassName = "text-muted-foreground mb-2 text-xs font-semibold";
+
+const menuRowClassName = "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors";
+
+function MobileNavLink({
+  item,
+  currentPath,
+  onNavigate,
+}: {
+  item: NavItem;
+  currentPath: string;
+  onNavigate: () => void;
+}) {
+  const isActive = currentPath.startsWith(item.url);
+
+  return (
+    <Link
+      to={item.url}
+      onClick={onNavigate}
+      className={cn(
+        menuRowClassName,
+        isActive
+          ? "bg-primary/10 text-primary font-semibold"
+          : "text-foreground hover:bg-accent hover:text-foreground font-medium",
+      )}
+    >
+      <item.icon className="size-5" />
+      <span className="text-sm">{item.title}</span>
+    </Link>
+  );
+}
 
 export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const user = useAuthStore((s) => s.user);
@@ -55,50 +95,83 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
             <BusinessSwitcher variant="mobile" onBusinessChanged={() => onOpenChange(false)} />
           </div>
 
-          <div className="px-4 py-2">
-            <h4 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">
-              Navegación
-            </h4>
-            <nav className="flex flex-col gap-1">
-              {[...(user?.role === "admin" ? ADMIN_NAV : []), ...SECONDARY_NAV].map((item) => {
-                const isActive = currentPath.startsWith(item.url);
-                return (
-                  <Link
-                    key={item.url}
-                    to={item.url}
-                    onClick={() => onOpenChange(false)}
+          <nav aria-label="Navegación" className="px-4 py-2">
+            <h4 className={sectionHeadingClassName}>Navegación</h4>
+            <div className="flex flex-col gap-1">
+              {MOBILE_NAV_ITEMS.map((item) => (
+                <MobileNavLink
+                  key={item.url}
+                  item={item}
+                  currentPath={currentPath}
+                  onNavigate={() => onOpenChange(false)}
+                />
+              ))}
+              <Collapsible defaultOpen className="group/receivables">
+                <CollapsibleTrigger asChild>
+                  <button
                     className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors",
-                      isActive
-                        ? "bg-primary/10 text-primary font-semibold"
-                        : "text-foreground hover:bg-accent hover:text-foreground font-medium",
+                      menuRowClassName,
+                      "hover:bg-accent text-sm font-medium",
+                      currentPath.startsWith(RECEIVABLES_NAV.url) ? "text-primary" : "text-foreground",
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
-                    <span className="text-sm">{item.title}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
+                    <RECEIVABLES_NAV.icon className="size-5 shrink-0" />
+                    <span>{RECEIVABLES_NAV.title}</span>
+                    <ChevronRight
+                      aria-hidden="true"
+                      className="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/receivables:rotate-90"
+                    />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="border-border ml-5 flex flex-col gap-1 border-l pl-3">
+                    {RECEIVABLES_NAV.items.map((item) => (
+                      <Link
+                        key={item.url}
+                        to={item.url}
+                        onClick={() => onOpenChange(false)}
+                        className={cn(
+                          menuRowClassName,
+                          "text-sm",
+                          currentPath.startsWith(item.url)
+                            ? "bg-primary/10 text-primary font-semibold"
+                            : "text-foreground hover:bg-accent font-medium",
+                        )}
+                      >
+                        {item.title}
+                      </Link>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+              {user?.role === "admin" ? (
+                <MobileNavLink item={USERS_NAV_ITEM} currentPath={currentPath} onNavigate={() => onOpenChange(false)} />
+              ) : null}
+            </div>
+          </nav>
 
           <div className="mt-2 border-t px-4 pt-4 pb-2">
-            <h4 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">Sistema</h4>
+            <h4 className={sectionHeadingClassName}>Sistema</h4>
             <div className="flex flex-col gap-1">
+              <MobileNavLink
+                item={SETTINGS_NAV_ITEM}
+                currentPath={currentPath}
+                onNavigate={() => onOpenChange(false)}
+              />
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="text-foreground hover:bg-accent flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left font-medium transition-colors"
+                className={cn(menuRowClassName, "text-foreground hover:bg-accent font-medium")}
               >
-                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
                 <span className="flex-1 text-sm">Modo {theme === "dark" ? "Claro" : "Oscuro"}</span>
               </button>
 
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="text-destructive hover:bg-destructive/10 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left font-medium transition-colors"
+                className={cn(menuRowClassName, "text-destructive hover:bg-destructive/10 font-medium")}
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="size-5" />
                 <span className="text-sm">Cerrar Sesión</span>
               </button>
             </div>

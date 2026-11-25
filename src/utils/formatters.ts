@@ -10,7 +10,7 @@
 const LOCALE_VE = "es-VE";
 const LOCALE_US = "en-US";
 const LOCALE_CA = "en-CA"; // Used for YYYY-MM-DD backend format
-const TIMEZONE_CCS = "America/Caracas";
+export const TIMEZONE_CCS = "America/Caracas";
 
 // ============================================================================
 // Number & Currency Formatters Options
@@ -30,6 +30,10 @@ const currencyVesFormatter = new Intl.NumberFormat(LOCALE_VE, {
 
 const integerFormatter = new Intl.NumberFormat(LOCALE_VE, {
   maximumFractionDigits: 0,
+});
+
+const percentFormatter = new Intl.NumberFormat(LOCALE_VE, {
+  maximumFractionDigits: 2,
 });
 
 // ============================================================================
@@ -93,6 +97,12 @@ export function formatCurrencyVES(value: number, options?: { includeCurrency?: b
 export function formatInteger(value: number): string {
   if (typeof value !== "number" || !Number.isFinite(value)) return "0";
   return integerFormatter.format(value);
+}
+
+/** Porcentaje ya expresado sobre 100 (4 → «4 %», 12.5 → «12,5 %»). */
+export function formatPercent(value: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "0 %";
+  return `${percentFormatter.format(value)} %`;
 }
 
 export function formatDate(dateInput?: DateInput): string {

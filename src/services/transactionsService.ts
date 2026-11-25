@@ -1,11 +1,28 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
+import { readAllPages } from "./readAllPages";
 import type { ProcessSalePayload, TransactionWithRelations } from "@/types/index";
 import type { Json } from "@/types/supabase";
 import { formatDateForBackend } from "@/utils/formatters";
 
-const TRANSACTION_SELECT = "*, products(code, description), users(fullname)" as const;
+const TRANSACTION_SELECT =
+  "*, products(code, description), users(fullname), sales(cashea_orders(id, order_number, status))" as const;
 
 export const transactionsService = {
+  getSaleLines: async (businessId: string, saleId: string, signal: AbortSignal) => {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("id, quantity, products(code, description)")
+      .eq("business_id", businessId)
+      .eq("sale_id", saleId)
+      .order("created_at")
+      .order("id")
+      .abortSignal(signal);
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
   getAll: async (businessId: string, date?: string): Promise<TransactionWithRelations[]> => {
     let query = supabase
       .from("transactions")
@@ -22,33 +39,34 @@ export const transactionsService = {
       query = query.gte("date", formatDateForBackend(cutoff));
     }
 
-    const { data, error } = await query;
-
-    if (error) throw new Error(error.message);
-    return data;
+    return readAllPages(query.order("id"));
   },
 
   getToday: async (businessId: string): Promise<TransactionWithRelations[]> => {
     const today = formatDateForBackend(new Date());
 
-    const { data, error } = await supabase
+    const query = supabase
       .from("transactions")
       .select(TRANSACTION_SELECT)
       .eq("business_id", businessId)
       .eq("date", today)
       .order("time", { ascending: false });
 
-    if (error) throw new Error(error.message);
-    return data;
+    return readAllPages(query.order("id"));
   },
 
+  /** Registra la Venta; con `p_cashea` la registra como Venta Cashea junto con su Orden Cashea. */
   createSale: async (businessId: string, payload: ProcessSalePayload): Promise<void> => {
-    const { error } = await supabase.rpc("create_sale", {
+    const saleArgs = {
       p_business_id: businessId,
       p_items: payload.p_items as Json,
       p_exchange_rate: payload.p_exchange_rate,
-    });
+    };
 
-    if (error) throw new Error(error.message);
+    const { error } = payload.p_cashea
+      ? await supabase.rpc("create_cashea_sale", { ...saleArgs, p_cashea: payload.p_cashea as Json })
+      : await supabase.rpc("create_sale", saleArgs);
+
+    if (error) throw toServiceError(error);
   },
 };

@@ -8,7 +8,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 
 export default defineConfig([
-  globalIgnores(["dist", "supabase/functions"]),
+  globalIgnores(["dist", "supabase/functions", "supabase/.temp", ".claude", ".agents"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

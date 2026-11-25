@@ -1,5 +1,10 @@
 import type { ReturnWithRelations } from "@/types";
 
+export const returnTypeLabels = {
+  exchange: { singular: "Cambio", plural: "Cambios" },
+  refund: { singular: "Devolución", plural: "Devoluciones" },
+} satisfies Record<ReturnWithRelations["type"], { singular: string; plural: string }>;
+
 type ReturnOutcomeSource = Pick<ReturnWithRelations, "type" | "difference_usd" | "difference_ves">;
 type ReturnMovementSource = Pick<ReturnWithRelations, "return_items" | "transactions">;
 type ReturnCreditSource = Pick<ReturnWithRelations, "credit_usd" | "credit_ves"> & ReturnMovementSource;

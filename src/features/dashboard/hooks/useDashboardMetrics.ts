@@ -1,6 +1,7 @@
 import { keepPreviousData, queryOptions, skipToken, useQuery } from "@tanstack/react-query";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { DashboardServiceError, dashboardService } from "@/services/dashboardService";
+import { casheaService } from "@/services/casheaService";
 import type { DashboardSalesPeriodRequest, DashboardTopProductsRankMode, ProductStockAlertType } from "@/types";
 
 export const dashboardKeys = {
@@ -14,6 +15,8 @@ export const dashboardKeys = {
     request: DashboardSalesPeriodRequest | null,
     rankBy: DashboardTopProductsRankMode,
   ) => [...dashboardKeys.business(businessId), "top-products", request, rankBy] as const,
+  casheaReceivable: (businessId: string | null) =>
+    [...dashboardKeys.business(businessId), "cashea-receivable"] as const,
   productStockAlerts: (businessId: string | null, type: ProductStockAlertType) =>
     [...dashboardKeys.business(businessId), "product-stock-alerts", type] as const,
 };
@@ -38,6 +41,17 @@ export function useDashboardMetrics() {
   const businessId = useBusinessStore((state) => state.activeBusinessId);
 
   return useQuery(dashboardMetricsQueryOptions(businessId));
+}
+
+export function useDashboardCasheaReceivable() {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: dashboardKeys.casheaReceivable(businessId),
+    queryFn: businessId ? ({ signal }) => casheaService.getReceivableSummary(businessId, signal) : skipToken,
+    staleTime: 30_000,
+    retry: retryDashboardQuery,
+  });
 }
 
 export function useDashboardSalesPeriod(request: DashboardSalesPeriodRequest | null) {

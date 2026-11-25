@@ -7,6 +7,7 @@ import { cashCloseKeys } from "@/features/cash-closes/hooks/useCashCloseQueries"
 import type { ProcessSalePayload } from "@/types/index";
 import { activeBusinessMutationOptions } from "@/features/business/utils/active-business-mutation";
 import { dashboardKeys } from "@/features/dashboard/hooks/useDashboardMetrics";
+import { casheaKeys } from "@/features/cashea/hooks/useCasheaQueries";
 
 export function useCreateSale() {
   const queryClient = useQueryClient();
@@ -21,6 +22,7 @@ export function useCreateSale() {
       queryClient.invalidateQueries({ queryKey: movementKeys.business(businessId) });
       queryClient.invalidateQueries({ queryKey: cashCloseKeys.summaries(businessId) });
       queryClient.invalidateQueries({ queryKey: dashboardKeys.business(businessId) });
+      queryClient.invalidateQueries({ queryKey: casheaKeys.business(businessId) });
     },
   });
 }

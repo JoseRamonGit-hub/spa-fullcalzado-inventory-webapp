@@ -11,6 +11,8 @@ import { ConfirmSaleDialog } from "./components/confirm-sale-dialog";
 import { useModalKeyboardShortcuts } from "@/components/modals/shared/use-modal-keyboard-shortcuts";
 import { PendingSaleLinesPanel } from "./components/pending-sale-lines-panel";
 import { SalesSummaryBlock } from "./components/sales-summary-block";
+import { CasheaPaymentSection } from "./components/cashea-payment-section";
+import { useCasheaPayment } from "./hooks/use-cashea-payment";
 
 type OutModalProps = {
   isOpen: boolean;
@@ -32,6 +34,16 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     totalAmountVes,
   } = usePendingSaleLines();
 
+  const casheaPayment = useCasheaPayment(totalAmountUsd);
+  const { casheaOrder, isCasheaIncomplete } = casheaPayment;
+  const canOpenConfirmDialog = pendingSaleLines.length > 0 && exchangeRate.isReady && !isCasheaIncomplete;
+
+  // Los datos Cashea se limpian junto con los Renglones pendientes.
+  const clearSale = () => {
+    clearPendingSaleLines();
+    casheaPayment.clearCasheaPayment();
+  };
+
   const handleSubmissionSuccess = () => {
     setIsConfirmDialogOpen(false);
     onOpenChange(false);
@@ -41,13 +53,18 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
   const { submitSale, isSubmissionPending } = useSubmitSale({
     pendingSaleLines,
     currentExchangeRate: exchangeRate.value,
-    clearPendingSaleLines,
+    casheaOrder,
+    clearPendingSaleLines: clearSale,
     onSuccess: handleSubmissionSuccess,
   });
 
+  const openConfirmDialog = () => {
+    if (canOpenConfirmDialog) setIsConfirmDialogOpen(true);
+  };
+
   const handleModalOpenChange = (isCurrentlyOpen: boolean) => {
     if (!isCurrentlyOpen) {
-      clearPendingSaleLines();
+      clearSale();
     }
     onOpenChange(isCurrentlyOpen);
   };
@@ -56,9 +73,9 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
     {
       key: "enter",
       shiftKey: true,
-      when: pendingSaleLines.length > 0 && !isConfirmDialogOpen && exchangeRate.isReady,
+      when: canOpenConfirmDialog && !isConfirmDialogOpen,
       stopPropagation: true,
-      onTrigger: () => setIsConfirmDialogOpen(true),
+      onTrigger: openConfirmDialog,
     },
   ];
 
@@ -79,7 +96,8 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
             pendingSaleLines={pendingSaleLines}
             exchangeRate={exchangeRate}
             isSubmissionPending={isSubmissionPending}
-            onOpenConfirmDialog={() => setIsConfirmDialogOpen(true)}
+            isCasheaIncomplete={isCasheaIncomplete}
+            onOpenConfirmDialog={openConfirmDialog}
           />
         }
       >
@@ -97,6 +115,13 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
               totalAmountVes={totalAmountVes}
             />
           </div>
+
+          <CasheaPaymentSection
+            isCasheaPayment={casheaPayment.isCasheaPayment}
+            onCasheaPaymentChange={casheaPayment.setIsCasheaPayment}
+            orderForm={casheaPayment.orderForm}
+            disabled={isSubmissionPending}
+          />
         </section>
       </ResponsiveModal>
 
@@ -107,6 +132,8 @@ export function OutModal({ isOpen, onOpenChange }: OutModalProps) {
         exchangeRate={exchangeRate}
         totalAmountUsd={totalAmountUsd}
         totalAmountVes={totalAmountVes}
+        casheaOrder={casheaOrder}
+        casheaSaleTotalMismatch={casheaPayment.orderForm.evaluation.saleTotalMismatch}
         isSubmissionPending={isSubmissionPending}
         onConfirmSubmit={submitSale}
       />

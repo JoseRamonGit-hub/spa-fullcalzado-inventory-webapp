@@ -5,6 +5,7 @@ import { handleFormFocusError } from "@/utils/form-focus";
 import { NumberField } from "@/components/forms/number-field";
 import { ProductSearchField } from "@/components/forms/product-search-field";
 import { TextareaField } from "@/components/forms/textarea-field";
+import { RadioGroupField } from "@/components/forms/radio-group-field";
 
 const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts();
 
@@ -15,6 +16,7 @@ const { useAppForm: useBaseAppForm } = createFormHook({
     TextFieldGroup,
     NumberField,
     ProductSearchField,
+    RadioGroupField,
   },
   formComponents: {},
   fieldContext,

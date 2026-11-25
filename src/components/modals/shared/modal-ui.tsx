@@ -11,22 +11,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { ActiveBusinessContext } from "@/features/business/components/active-business-context";
-import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
+
 import { cn } from "@/lib/utils";
 
 type ModalConfirmDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  title: string;
-  description: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  media?: ReactNode;
   confirmLabel: string;
   cancelLabel?: string;
   pendingLabel: string;
-  submissionErrorMessage: string;
+  submissionErrorMessage: string | ((error: unknown) => string);
   isSubmissionPending: boolean;
   onConfirmSubmit: () => void | Promise<void>;
   contentClassName?: string;
   confirmDisabled?: boolean;
+  variant?: "default" | "danger";
   children: ReactNode;
 };
 
@@ -64,6 +66,7 @@ export function ModalConfirmDialog({
   onOpenChange,
   title,
   description,
+  media,
   confirmLabel,
   cancelLabel = "Cancelar",
   pendingLabel,
@@ -72,6 +75,7 @@ export function ModalConfirmDialog({
   onConfirmSubmit,
   contentClassName,
   confirmDisabled = false,
+  variant = "default",
   children,
 }: ModalConfirmDialogProps) {
   const [visibleSubmissionError, setVisibleSubmissionError] = useState<string | null>(null);
@@ -91,8 +95,10 @@ export function ModalConfirmDialog({
 
     try {
       await onConfirmSubmit();
-    } catch {
-      setVisibleSubmissionError(submissionErrorMessage);
+    } catch (error) {
+      setVisibleSubmissionError(
+        typeof submissionErrorMessage === "function" ? submissionErrorMessage(error) : submissionErrorMessage,
+      );
     } finally {
       submissionLockRef.current = false;
     }
@@ -102,11 +108,17 @@ export function ModalConfirmDialog({
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent
         className={cn("max-h-[calc(100dvh-2rem)] gap-3 overflow-y-auto p-4 sm:gap-4 sm:p-5", contentClassName)}
+        {...(description ? {} : { "aria-describedby": undefined })}
       >
-        <AlertDialogHeader className="flex flex-col items-stretch gap-0 text-left sm:place-items-start sm:text-left">
-          <AlertDialogTitle className="text-base leading-tight">{title}</AlertDialogTitle>
-          <ActiveBusinessContext className="mt-1" />
-          <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
+        <AlertDialogHeader className="flex flex-row items-center gap-3 text-left sm:text-left">
+          {media}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <AlertDialogTitle className="text-base leading-tight">{title}</AlertDialogTitle>
+            <ActiveBusinessContext className="mt-1" />
+            {description && (
+              <AlertDialogDescription className="mt-1 text-sm leading-snug">{description}</AlertDialogDescription>
+            )}
+          </div>
         </AlertDialogHeader>
 
         {visibleSubmissionError && (
@@ -120,11 +132,12 @@ export function ModalConfirmDialog({
 
         {children}
 
-        <AlertDialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <AlertDialogFooter className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:justify-end">
           <AlertDialogCancel className="w-full sm:w-auto" disabled={isSubmissionPending}>
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
+            variant={variant === "danger" ? "destructive" : "default"}
             className="w-full sm:w-auto"
             onClick={(event) => {
               event.preventDefault();
@@ -144,7 +157,7 @@ export function ConfirmDialogTableSection({ children, className }: ConfirmDialog
   return (
     <section
       className={cn(
-        "custom-scrollbar [&_thead]:bg-muted/95 overflow-auto rounded-md border text-xs sm:[&_td]:px-3 sm:[&_td]:py-2 [&_th]:py-1.5 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10",
+        "custom-scrollbar [&_thead]:bg-muted/95 overflow-auto rounded-md border text-xs [&_td]:px-2 [&_td]:py-1.5 sm:[&_td]:px-3 [&_th]:py-1.5 max-sm:[&_th]:px-2 [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10",
         className,
       )}
     >
@@ -156,7 +169,7 @@ export function ConfirmDialogTableSection({ children, className }: ConfirmDialog
 export function ConfirmDialogLineTable({ header, children }: ConfirmDialogLineTableProps) {
   return (
     <table className="w-full">
-      <thead className="hidden sm:table-header-group">
+      <thead className="bg-muted">
         <tr className="text-muted-foreground border-b">{header}</tr>
       </thead>
       <tbody className="divide-border/60 divide-y">{children}</tbody>
@@ -165,15 +178,7 @@ export function ConfirmDialogLineTable({ header, children }: ConfirmDialogLineTa
 }
 
 export function ConfirmDialogLineRow({ className, ...props }: ConfirmDialogLineRowProps) {
-  return (
-    <tr
-      className={cn(
-        "bg-card grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 px-3 py-2 sm:table-row sm:px-0 sm:py-0",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <tr className={cn("bg-card", className)} {...props} />;
 }
 
 export function ConfirmDialogSummarySection({ children, className }: ConfirmDialogSectionProps) {
@@ -186,9 +191,9 @@ export function ConfirmDialogSummarySection({ children, className }: ConfirmDial
 
 export function ModalProductIdentity({ code, description }: ModalProductIdentityProps) {
   return (
-    <span className="flex min-w-0 items-center gap-2 whitespace-nowrap">
-      <span className="product-code shrink-0 uppercase">{code}</span>
-      <OverflowTooltip className="text-muted-foreground max-w-52">{description}</OverflowTooltip>
+    <span className="block min-w-0 leading-snug [overflow-wrap:anywhere]">
+      <span className="product-code mr-2 uppercase">{code}</span>
+      <span className="text-foreground">{description}</span>
     </span>
   );
 }

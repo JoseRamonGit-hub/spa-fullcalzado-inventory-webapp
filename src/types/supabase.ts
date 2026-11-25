@@ -1,23 +1,54 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       app_settings: {
         Row: {
           business_id: string;
+          cashea_advance_fee_pct: number;
+          cashea_service_fee_pct: number;
           exchange_rate_mode: Database["public"]["Enums"]["exchange_modes"] | null;
           updated_at: string | null;
           updated_by: string | null;
         };
         Insert: {
           business_id: string;
+          cashea_advance_fee_pct?: number;
+          cashea_service_fee_pct?: number;
           exchange_rate_mode?: Database["public"]["Enums"]["exchange_modes"] | null;
           updated_at?: string | null;
           updated_by?: string | null;
         };
         Update: {
           business_id?: string;
+          cashea_advance_fee_pct?: number;
+          cashea_service_fee_pct?: number;
           exchange_rate_mode?: Database["public"]["Enums"]["exchange_modes"] | null;
           updated_at?: string | null;
           updated_by?: string | null;
@@ -66,9 +97,52 @@ export type Database = {
         };
         Relationships: [];
       };
+      cash_close_previous_versions: {
+        Row: {
+          business_id: string;
+          closed_at: string | null;
+          closed_by: string;
+          date: string;
+          id: number;
+        };
+        Insert: {
+          business_id: string;
+          closed_at?: string | null;
+          closed_by: string;
+          date: string;
+          id?: never;
+        };
+        Update: {
+          business_id?: string;
+          closed_at?: string | null;
+          closed_by?: string;
+          date?: string;
+          id?: never;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cash_close_previous_versions_business_id_date_fkey";
+            columns: ["business_id", "date"];
+            isOneToOne: false;
+            referencedRelation: "cash_closes";
+            referencedColumns: ["business_id", "date"];
+          },
+          {
+            foreignKeyName: "cash_close_previous_versions_closed_by_fkey";
+            columns: ["closed_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cash_closes: {
         Row: {
           business_id: string;
+          cashea_receivable_usd: number | null;
+          cashea_receivable_ves: number | null;
+          cashea_voided_return_usd: number | null;
+          cashea_voided_return_ves: number | null;
           closed_at: string | null;
           closed_by: string;
           date: string;
@@ -85,6 +159,10 @@ export type Database = {
         };
         Insert: {
           business_id: string;
+          cashea_receivable_usd?: number | null;
+          cashea_receivable_ves?: number | null;
+          cashea_voided_return_usd?: number | null;
+          cashea_voided_return_ves?: number | null;
           closed_at?: string | null;
           closed_by: string;
           date?: string;
@@ -101,6 +179,10 @@ export type Database = {
         };
         Update: {
           business_id?: string;
+          cashea_receivable_usd?: number | null;
+          cashea_receivable_ves?: number | null;
+          cashea_voided_return_usd?: number | null;
+          cashea_voided_return_ves?: number | null;
           closed_at?: string | null;
           closed_by?: string;
           date?: string;
@@ -126,6 +208,269 @@ export type Database = {
           {
             foreignKeyName: "cash_closes_closed_by_fkey";
             columns: ["closed_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cashea_deposits: {
+        Row: {
+          applied_rate: number | null;
+          business_id: string;
+          created_at: string;
+          created_by: string;
+          deposit_date: string;
+          difference_usd: number | null;
+          expected_net_usd: number;
+          id: string;
+          implied_rate: number | null;
+          received_ves: number;
+          reference: string | null;
+          revert_note: string | null;
+          reverted_at: string | null;
+          reverted_by: string | null;
+        };
+        Insert: {
+          applied_rate?: number | null;
+          business_id: string;
+          created_at?: string;
+          created_by: string;
+          deposit_date: string;
+          difference_usd?: number | null;
+          expected_net_usd: number;
+          id?: string;
+          implied_rate?: number | null;
+          received_ves: number;
+          reference?: string | null;
+          revert_note?: string | null;
+          reverted_at?: string | null;
+          reverted_by?: string | null;
+        };
+        Update: {
+          applied_rate?: number | null;
+          business_id?: string;
+          created_at?: string;
+          created_by?: string;
+          deposit_date?: string;
+          difference_usd?: number | null;
+          expected_net_usd?: number;
+          id?: string;
+          implied_rate?: number | null;
+          received_ves?: number;
+          reference?: string | null;
+          revert_note?: string | null;
+          reverted_at?: string | null;
+          reverted_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cashea_deposits_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cashea_deposits_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cashea_deposits_reverted_by_fkey";
+            columns: ["reverted_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cashea_order_adjustments: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          new_financed_usd: number;
+          new_invoice_number: string;
+          new_order_number: string;
+          new_paid_today_usd: number;
+          new_total_usd: number;
+          note: string;
+          order_id: string;
+          previous_financed_usd: number;
+          previous_invoice_number: string;
+          previous_order_number: string;
+          previous_paid_today_usd: number;
+          previous_total_usd: number;
+        };
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          new_financed_usd: number;
+          new_invoice_number: string;
+          new_order_number: string;
+          new_paid_today_usd: number;
+          new_total_usd: number;
+          note: string;
+          order_id: string;
+          previous_financed_usd: number;
+          previous_invoice_number: string;
+          previous_order_number: string;
+          previous_paid_today_usd: number;
+          previous_total_usd: number;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          new_financed_usd?: number;
+          new_invoice_number?: string;
+          new_order_number?: string;
+          new_paid_today_usd?: number;
+          new_total_usd?: number;
+          note?: string;
+          order_id?: string;
+          previous_financed_usd?: number;
+          previous_invoice_number?: string;
+          previous_order_number?: string;
+          previous_paid_today_usd?: number;
+          previous_total_usd?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cashea_order_adjustments_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cashea_order_adjustments_business_order_fkey";
+            columns: ["business_id", "order_id"];
+            isOneToOne: false;
+            referencedRelation: "cashea_orders";
+            referencedColumns: ["business_id", "id"];
+          },
+          {
+            foreignKeyName: "cashea_order_adjustments_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cashea_orders: {
+        Row: {
+          advance_fee_pct: number;
+          business_id: string;
+          collected_at: string | null;
+          created_at: string;
+          created_by: string;
+          deposit_id: string | null;
+          exchange_rate: number;
+          expected_net_usd: number;
+          financed_usd: number;
+          id: string;
+          invoice_number: string;
+          order_number: string;
+          paid_today_usd: number;
+          sale_date: string;
+          sale_id: string;
+          service_fee_pct: number;
+          status: Database["public"]["Enums"]["cashea_order_status"];
+          total_usd: number;
+          void_note: string | null;
+          void_reason: Database["public"]["Enums"]["cashea_void_reason"] | null;
+          voided_at: string | null;
+          voided_by: string | null;
+        };
+        Insert: {
+          advance_fee_pct: number;
+          business_id: string;
+          collected_at?: string | null;
+          created_at?: string;
+          created_by: string;
+          deposit_id?: string | null;
+          exchange_rate: number;
+          expected_net_usd: number;
+          financed_usd: number;
+          id?: string;
+          invoice_number: string;
+          order_number: string;
+          paid_today_usd: number;
+          sale_date: string;
+          sale_id: string;
+          service_fee_pct: number;
+          status?: Database["public"]["Enums"]["cashea_order_status"];
+          total_usd: number;
+          void_note?: string | null;
+          void_reason?: Database["public"]["Enums"]["cashea_void_reason"] | null;
+          voided_at?: string | null;
+          voided_by?: string | null;
+        };
+        Update: {
+          advance_fee_pct?: number;
+          business_id?: string;
+          collected_at?: string | null;
+          created_at?: string;
+          created_by?: string;
+          deposit_id?: string | null;
+          exchange_rate?: number;
+          expected_net_usd?: number;
+          financed_usd?: number;
+          id?: string;
+          invoice_number?: string;
+          order_number?: string;
+          paid_today_usd?: number;
+          sale_date?: string;
+          sale_id?: string;
+          service_fee_pct?: number;
+          status?: Database["public"]["Enums"]["cashea_order_status"];
+          total_usd?: number;
+          void_note?: string | null;
+          void_reason?: Database["public"]["Enums"]["cashea_void_reason"] | null;
+          voided_at?: string | null;
+          voided_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cashea_orders_business_deposit_fkey";
+            columns: ["business_id", "deposit_id"];
+            isOneToOne: false;
+            referencedRelation: "cashea_deposits";
+            referencedColumns: ["business_id", "id"];
+          },
+          {
+            foreignKeyName: "cashea_orders_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cashea_orders_business_sale_fkey";
+            columns: ["business_id", "sale_id"];
+            isOneToOne: false;
+            referencedRelation: "sales";
+            referencedColumns: ["business_id", "id"];
+          },
+          {
+            foreignKeyName: "cashea_orders_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cashea_orders_voided_by_fkey";
+            columns: ["voided_by"];
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
@@ -627,6 +972,19 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      adjust_cashea_order: {
+        Args: {
+          p_business_id: string;
+          p_financed_usd: number;
+          p_invoice_number: string;
+          p_note: string;
+          p_order_id: string;
+          p_order_number: string;
+          p_paid_today_usd: number;
+          p_total_usd: number;
+        };
+        Returns: undefined;
+      };
       adjust_product_stock: {
         Args: {
           p_business_id: string;
@@ -686,6 +1044,19 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      attach_cashea_order: {
+        Args: { p_business_id: string; p_cashea: Json; p_sale_id: string };
+        Returns: string;
+      };
+      create_cashea_sale: {
+        Args: {
+          p_business_id: string;
+          p_cashea: Json;
+          p_exchange_rate: number;
+          p_items: Json;
+        };
+        Returns: string;
+      };
       create_sale: {
         Args: { p_business_id: string; p_exchange_rate: number; p_items: Json };
         Returns: string;
@@ -705,6 +1076,10 @@ export type Database = {
         Args: { p_business_id: string };
         Returns: {
           business_id: string;
+          cashea_receivable_usd: number | null;
+          cashea_receivable_ves: number | null;
+          cashea_voided_return_usd: number | null;
+          cashea_voided_return_ves: number | null;
           closed_at: string | null;
           closed_by: string;
           date: string;
@@ -730,6 +1105,10 @@ export type Database = {
         Args: { p_business_id: string; p_date?: string };
         Returns: {
           billed_operations: number;
+          cashea_receivable_usd: number;
+          cashea_receivable_ves: number;
+          cashea_voided_return_usd: number;
+          cashea_voided_return_ves: number;
           net_usd: number;
           net_ves: number;
           total_returns: number;
@@ -739,6 +1118,23 @@ export type Database = {
           total_units_sold: number;
           total_usd: number;
           total_ves: number;
+        }[];
+      };
+      get_cashea_collection_status: {
+        Args: { p_business_id: string; p_from?: string; p_to?: string };
+        Returns: {
+          collected_count: number;
+          orders_count: number;
+          sale_date: string;
+        }[];
+      };
+      get_cashea_receivable_summary: {
+        Args: { p_business_id: string };
+        Returns: {
+          expected_net_usd: number;
+          financed_usd: number;
+          oldest_sale_date: string;
+          orders_count: number;
         }[];
       };
       get_dashboard_daily_metrics: {
@@ -863,6 +1259,26 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      get_unclosed_cash_close_days: {
+        Args: { p_business_id: string };
+        Returns: {
+          billed_operations: number;
+          cashea_receivable_usd: number;
+          cashea_receivable_ves: number;
+          cashea_voided_return_usd: number;
+          cashea_voided_return_ves: number;
+          date: string;
+          net_usd: number;
+          net_ves: number;
+          total_returns: number;
+          total_returns_usd: number;
+          total_returns_ves: number;
+          total_transactions: number;
+          total_units_sold: number;
+          total_usd: number;
+          total_ves: number;
+        }[];
+      };
       process_return: {
         Args: {
           p_business_id: string;
@@ -874,12 +1290,47 @@ export type Database = {
         };
         Returns: Json;
       };
+      register_cashea_deposit: {
+        Args: {
+          p_applied_rate?: number;
+          p_business_id: string;
+          p_deposit_date: string;
+          p_order_ids: string[];
+          p_received_ves: number;
+          p_reference?: string;
+        };
+        Returns: string;
+      };
+      revert_cashea_deposit: {
+        Args: { p_business_id: string; p_deposit_id: string; p_note: string };
+        Returns: undefined;
+      };
       set_product_active: {
         Args: { p_active: boolean; p_business_id: string; p_product_id: string };
         Returns: undefined;
       };
+      update_cashea_settings: {
+        Args: {
+          p_advance_fee_pct: number;
+          p_apply_to_pending?: boolean;
+          p_business_id: string;
+          p_service_fee_pct: number;
+        };
+        Returns: number;
+      };
+      void_cashea_order: {
+        Args: {
+          p_business_id: string;
+          p_note: string;
+          p_order_id: string;
+          p_reason: Database["public"]["Enums"]["cashea_void_reason"];
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
+      cashea_order_status: "pending" | "collected" | "voided";
+      cashea_void_reason: "customer_return" | "registration_error";
       exchange_modes: "manual" | "bcv";
       movement_types: "entry" | "exit" | "return" | "edit" | "activation" | "deactivation";
       return_types: "exchange" | "refund";
@@ -1001,8 +1452,13 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
+      cashea_order_status: ["pending", "collected", "voided"],
+      cashea_void_reason: ["customer_return", "registration_error"],
       exchange_modes: ["manual", "bcv"],
       movement_types: ["entry", "exit", "return", "edit", "activation", "deactivation"],
       return_types: ["exchange", "refund"],

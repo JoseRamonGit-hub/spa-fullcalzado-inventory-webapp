@@ -13,7 +13,7 @@ const badgeVariants = cva(
         secondary: "bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
         destructive: "bg-destructive/12 text-destructive [a&]:hover:bg-destructive/18",
         success: "bg-success/12 text-success [a&]:hover:bg-success/18",
-        warning: "bg-warning/15 text-warning-foreground [a&]:hover:bg-warning/22",
+        warning: "bg-warning/15 text-warning-foreground dark:text-warning [a&]:hover:bg-warning/22",
         exchange: "bg-exchange/12 text-exchange [a&]:hover:bg-exchange/18",
         refund: "bg-refund/12 text-refund [a&]:hover:bg-refund/18",
         edit: "bg-edit/12 text-edit [a&]:hover:bg-edit/18",

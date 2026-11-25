@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type { CreateUserInput, ManagedUser, UpdateUserInput } from "@/types";
 
 const hiddenManagedUserEmails = new Set(["andersonegoistisch@gmail.com"]);
@@ -54,8 +55,8 @@ export const usersService = {
       supabase.from("user_business_access").select("user_id, business_id").order("created_at", { ascending: true }),
     ]);
 
-    if (usersResult.error) throw new Error(usersResult.error.message);
-    if (accessResult.error) throw new Error(accessResult.error.message);
+    if (usersResult.error) throw toServiceError(usersResult.error);
+    if (accessResult.error) throw toServiceError(accessResult.error);
 
     return mergeUsersWithAccess(usersResult.data.filter(isVisibleManagedUser), accessResult.data);
   },
@@ -85,7 +86,7 @@ export const usersService = {
       p_default_business_id: input.default_business_id,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
 
     return {
       ...data,

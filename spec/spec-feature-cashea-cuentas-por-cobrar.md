@@ -29,7 +29,7 @@ está marcado como **por verificar**.
 Cashea es una aplicación venezolana de compra a cuotas. Cuando un cliente compra con Cashea en la tienda:
 
 1. El cajero crea la orden en el panel web de Cashea (no en Full Calzado).
-2. El cliente paga en la tienda una parte inicial (**cobrar hoy**).
+2. El cliente paga la **Inicial** en la tienda.
 3. Cashea financia el resto (**monto financiado**) y el cliente se lo paga a Cashea en cuotas.
 4. Cashea **adelanta** a la tienda el monto financiado, descontando comisiones, en bolívares y con la frecuencia que el
    comercio haya elegido (semanal, quincenal o mensual; la tienda usará semanal). Según el centro de ayuda de Cashea,
@@ -60,7 +60,7 @@ depósitos que Cashea hace (en bolívares y netos de comisiones).
 | D-01 | **Registro manual.** No se integra con Cashea: el personal registra en Full Calzado las órdenes y los depósitos. |
 | D-02 | **Copiar y pegar es la base del registro**, con ingreso manual siempre disponible como respaldo. |
 | D-03 | El texto pegado **no se guarda**. Solo se guardan los valores reconocidos. No se almacena nombre ni cédula del comprador. |
-| D-04 | Se registran cinco datos por orden, todos obligatorios: número de orden, total de la orden Cashea, cobrado hoy, financiado y número de factura. El total se captura (pegado o escrito) y el formulario calcula cobrado hoy + financiado para verificarlo contra él. |
+| D-04 | Se registran cinco datos por orden, todos obligatorios: número de orden, total de la orden Cashea, Inicial, financiado y número de factura. El total se captura (pegado o escrito) y el formulario calcula Inicial + financiado para verificarlo contra él. |
 | D-05 | El cierre de caja descuenta del **Total producido** lo que quedó **por cobrar a Cashea** y lo muestra como «Por cobrar Cashea». El Total producido conserva su nombre y su significado (cifra real resultante en caja); no se crea otra cifra para el dinero en caja. No se tocan las funciones de períodos del dashboard, que trabajan con Total facturado. |
 | D-06 | Los cierres de caja ya generados no se recalculan (coherente con `docs/adr/0001-ventas-con-identidad-sin-reconstruir-el-historico.md`). |
 | D-07 | Las comisiones (servicio y adelanto) son **editables por negocio** en Ajustes; no se fijan en código. |
@@ -70,7 +70,7 @@ depósitos que Cashea hace (en bolívares y netos de comisiones).
 | D-11 | Fuera de alcance: ligar las devoluciones a la venta original (el reembolso de una Venta Cashea se compensa anulando su orden con el motivo «Devolución del cliente», D-14), método de pago del cliente, conciliación bancaria automática, exportaciones PDF o Excel, comparaciones entre negocios. |
 | D-12 | Los importes de un cierre de caja no cambian nunca (D-06), pero la tabla de cierres muestra además un **indicador Cashea por día** que sí es estado vivo: cambia cuando se registran depósitos, anulaciones o ajustes. Ver REQ-010. |
 | D-13 | **Tasa.** Cashea opera con la tasa BCV; el negocio fija su propia tasa cada día, que coincide o casi con la BCV. Se asume que un dólar de Cashea equivale a un dólar de la tienda. Los equivalentes en Bs. de lo financiado usan la **tasa de la venta**, nunca la tasa del día en que se consulta. No se requiere una tasa BCV automática: en el depósito, el Administrador escribe los bolívares recibidos y el sistema calcula la tasa implícita (D-08). |
-| D-14 | **Anulación con motivo.** Toda anulación indica «Devolución del cliente» o «Error de registro». Si la devolución ocurre en un día posterior al de la venta, el cierre del día de la anulación suma lo financiado como «Cashea anulado por devolución»: la devolución resta el crédito completo, pero de caja solo sale lo cobrado hoy. Cashea no admite devoluciones parciales, así que la devolución siempre anula la orden completa. Ver REQ-007. |
+| D-14 | **Anulación con motivo.** Toda anulación indica «Devolución del cliente» o «Error de registro». Si la devolución ocurre en un día posterior al de la venta, el cierre del día de la anulación suma lo financiado como «Cashea anulado por devolución»: la devolución resta el crédito completo, pero de caja solo sale el reembolso de la Inicial. Cashea no admite devoluciones parciales, así que la devolución siempre anula la orden completa. Ver REQ-007. |
 | D-15 | **Una sola entrega.** No hay etapas de despliegue: el esquema se crea completo desde la primera migración y el trabajo se ordena en rebanadas verticales verificables (sección 8). |
 
 ## 3. Estado de la evidencia
@@ -97,7 +97,7 @@ Panel web de Cashea, rol cajero. «Crear orden» abre un stepper de 5 pasos:
 2. **Scan QR:** el cliente escanea el QR de la caja con la app.
 3. **Seguridad:** se verifica la cédula del cliente y su nombre. Es el único paso donde aparecen datos personales.
 4. **ID Factura:** número de la factura emitida (Full Calzado no emite factura fiscal; la hace otro sistema). Aquí ya aparece un resumen.
-5. **Confirmar:** muestra el resumen **«Debe pagar»** y pregunta cómo pagó el cliente lo cobrado hoy (Efectivo, Zelle, Otro; todo pago en bolívares es «Otro»).
+5. **Confirmar:** muestra el resumen **«Debe pagar»** y pregunta cómo pagó el cliente la Inicial (Efectivo, Zelle, Otro; todo pago en bolívares es «Otro»).
 
 Resumen «Debe pagar» (solo aparece en este paso, ordenado y fácil de leer; después la información queda dispersa):
 
@@ -123,11 +123,11 @@ Venta cuyo importe se paga en parte en la tienda y en parte mediante financiamie
 _Avoid_: Venta a crédito, venta a cuotas
 
 **Orden Cashea**:
-Registro en Full Calzado de la orden creada en el panel de Cashea para una Venta Cashea: número de orden, Total de la orden, Cobrado hoy, Monto financiado y número de factura.
+Registro en Full Calzado de la orden creada en el panel de Cashea para una Venta Cashea: número de orden, Total de la orden, Inicial, Monto financiado y número de factura.
 
-**Cobrado hoy**:
-Parte de una Venta Cashea que el cliente paga en la tienda en el momento de la compra. Es lo que entra a caja.
-_Avoid_: Inicial, anticipo
+**Inicial**:
+Importe que el cliente paga directamente a la tienda al realizar una Venta Cashea.
+_Avoid_: Cobrado hoy, anticipo
 
 **Monto financiado**:
 Parte de una Venta Cashea que Cashea adeuda a la tienda. Es una Cuenta por cobrar Cashea, no dinero en caja.
@@ -139,7 +139,7 @@ Monto financiado de una Orden Cashea mientras Cashea no lo haya depositado. Esta
 Etiqueta del cierre de caja: suma del Monto financiado de las Órdenes Cashea no anuladas de las Ventas del período, aunque Cashea las deposite después. Se descuenta del Total producido. También cuenta la orden anulada por «Devolución del cliente» en un día posterior al de su venta: su compensación se registra el día de la anulación (Cashea anulado por devolución).
 
 **Cashea anulado por devolución**:
-Etiqueta del cierre de caja: suma del Monto financiado de las Órdenes Cashea anuladas ese día con el motivo «Devolución del cliente» cuya Venta es de un día anterior. Se suma al Total producido para compensar que la Devolución resta el crédito completo aunque de caja solo salió lo Cobrado hoy.
+Etiqueta del cierre de caja: suma del Monto financiado de las Órdenes Cashea anuladas ese día con el motivo «Devolución del cliente» cuya Venta es de un día anterior. Se suma al Total producido para compensar que la Devolución resta el crédito completo aunque de caja solo salió el reembolso de la Inicial.
 
 **Depósito Cashea**:
 Pago agrupado que Cashea hace a la tienda, en bolívares y neto de comisiones, por una o varias Órdenes Cashea.
@@ -173,14 +173,14 @@ promedio y los períodos del dashboard) y añadir una cifra nueva para el dinero
 
 ### 6.1 Venta Cashea, pegado, comisiones y cierre de caja
 
-- **REQ-001 (Venta con Cashea):** En «Registrar Venta» (OutModal) existe la opción «Pago con Cashea». Al activarla se capturan cinco datos, todos obligatorios: número de orden (texto), total de la orden Cashea (USD), cobrado hoy (USD), monto financiado (USD) y número de factura (texto). El total se captura (pegado o escrito) y el formulario calcula cobrado hoy + financiado y lo muestra junto al total.
+- **REQ-001 (Venta con Cashea):** En «Registrar Venta» (OutModal) existe la opción «Pago con Cashea». Al activarla se capturan cinco datos, todos obligatorios: número de orden (texto), total de la orden Cashea (USD), Inicial (USD), monto financiado (USD) y número de factura (texto). El total se captura (pegado o escrito) y el formulario calcula Inicial + financiado y lo muestra junto al total.
   - Aceptación: no se puede confirmar la venta con alguno de esos cinco datos vacío. Con «Pago con Cashea» activo y datos incompletos o inválidos, ni el botón ni el atajo Shift + Enter abren la confirmación.
-  - Aceptación: los montos admiten como máximo dos decimales; total > 0, financiado > 0 y cobrado hoy ≥ 0.
-  - Aceptación: no se puede confirmar si cobrado hoy + financiado ≠ total de la orden Cashea (tolerancia de $0.01); el formulario muestra la suma calculada y la diferencia. Esta validación vive en el formulario y en el `check` de la base de datos, no en el parser.
+  - Aceptación: los montos admiten como máximo dos decimales; total > 0, financiado > 0 y Inicial ≥ 0.
+  - Aceptación: no se puede confirmar si Inicial + financiado ≠ total de la orden Cashea (tolerancia de $0.01); el formulario muestra la suma calculada y la diferencia. Esta validación vive en el formulario y en el `check` de la base de datos, no en el parser.
   - Aceptación: si el total de la orden Cashea difiere del total de la venta (suma de renglones) en más de $0.01, se muestra una advertencia y el cajero debe confirmarla; no bloquea. El total de la orden no se precarga con el total de la venta, para que la comparación siga siendo independiente.
   - Aceptación: si el monto financiado supera el total de la venta (suma de renglones), no se puede confirmar: el Total producido de esa venta quedaría negativo.
-  - Aceptación: el diálogo de confirmación muestra por separado «Entra a caja hoy» (cobrado hoy) y «Por cobrar a Cashea» (financiado). La suma no detecta dos montos intercambiados; esta lectura sí.
-  - Aceptación: el número de orden no puede repetirse entre las órdenes no anuladas del mismo negocio. El número de una orden anulada puede volver a usarse, y el mismo número puede existir en el otro negocio. Si se repite, el cajero ve el mensaje específico del servidor, no el error genérico de venta (hoy el toast usa `MODAL_SUBMISSION_ERROR_MESSAGES.sale`). La regla para distinguirlo de un fallo de red está en «Errores de regla de negocio» (7.2).
+  - Aceptación: el diálogo de confirmación muestra por separado la «Inicial» que paga el cliente y el «Monto financiado» por cobrar a Cashea. La suma no detecta dos montos intercambiados; esta lectura sí.
+  - Aceptación: el número de orden no puede repetirse entre las órdenes no anuladas del mismo negocio. El número de una orden anulada puede volver a usarse, y el mismo número puede existir en el otro negocio. Si se repite, el cajero ve el mensaje específico del servidor, no el error genérico de venta (el toast de venta ya aplica esa regla mediante `getSaleSubmissionErrorMessage`). La regla para distinguirlo de un fallo de red está en «Errores de regla de negocio» (7.2).
   - Aceptación: la RPC repite todas las validaciones anteriores; el formulario no es la autoridad.
   - Aceptación: la venta, la Orden Cashea y el descuento de inventario se registran en una sola transacción; si algo falla no queda nada a medias.
   - Aceptación: al cerrar el modal o registrar la venta, los datos Cashea se limpian igual que los renglones pendientes.
@@ -205,7 +205,7 @@ promedio y los períodos del dashboard) y añadir una cifra nueva para el dinero
 
 ### 6.2 Cuentas por cobrar, cobros y correcciones
 
-- **REQ-005 (Cuentas por cobrar):** Nueva página «Cashea» por negocio activo con la lista de Órdenes Cashea: número de orden, factura, fecha, total, cobrado hoy, financiado, neto esperado, estado y antigüedad en días (hoy en `America/Caracas` menos la fecha de la venta). Filtros por estado y rango de fechas (parámetros de búsqueda validados con zod). Se muestran dos totales de las órdenes Pendientes: **saldo pendiente** (suma de lo financiado) y **neto esperado** (lo que debería llegar después de comisiones).
+- **REQ-005 (Cuentas por cobrar):** Nueva página «Cashea» por negocio activo con la lista de Órdenes Cashea: número de orden, factura, fecha, total, Inicial, financiado, neto esperado, estado y antigüedad en días (hoy en `America/Caracas` menos la fecha de la venta). Filtros por estado y rango de fechas (parámetros de búsqueda validados con zod). Se muestran dos totales de las órdenes Pendientes: **saldo pendiente** (suma de lo financiado) y **neto esperado** (lo que debería llegar después de comisiones).
   - Aceptación: nunca muestra órdenes de otro negocio.
   - Aceptación: al entrar, la página muestra las órdenes Pendientes sin límite de fecha. Al filtrar por Cobrada, Anulada o todos los estados sin elegir rango, se aplican los últimos 30 días (como la lista de Ventas).
 - **REQ-006 (Cobro por depósito):** El Administrador selecciona una o varias órdenes Pendientes e indica bolívares recibidos, fecha, referencia y, opcionalmente, la tasa aplicada. El sistema calcula neto esperado total, tasa implícita (bolívares recibidos ÷ neto esperado) y, si hay tasa aplicada, el equivalente recibido en USD y la diferencia («comisiones y ajustes»).
@@ -315,7 +315,7 @@ Coherencia de estado (un `check`): `collected` exige `deposit_id` y `collected_a
 
 Un depósito revertido conserva sus importes como rastro; sus órdenes vuelven a `pending` con `deposit_id` en `null`.
 
-**`public.cashea_order_adjustments`** (auditoría): `id`, `business_id`, `order_id` (FK compuesta `(business_id, order_id)` a `cashea_orders`), valores anteriores y nuevos de total, cobrado hoy, financiado, número de orden y número de factura, `note` (obligatoria), `created_by`, `created_at`.
+**`public.cashea_order_adjustments`** (auditoría): `id`, `business_id`, `order_id` (FK compuesta `(business_id, order_id)` a `cashea_orders`), valores anteriores y nuevos de total, Inicial, financiado, número de orden y número de factura, `note` (obligatoria), `created_by`, `created_at`.
 
 **Ajustes por negocio:** añadir a `public.app_settings` (ya existe una fila por negocio, con `business_id` como clave primaria) las columnas `cashea_service_fee_pct` y `cashea_advance_fee_pct` (`numeric(5,2) not null default 4.00`, `check` entre 0 y 100). Verificado en `20260622153214_migrate_to_multi_business.sql`:
 
@@ -349,7 +349,7 @@ Reglas comunes, tomadas de las migraciones actuales:
 - Lectura: `if not private.has_business_access(p_business_id) then raise exception 'Negocio inexistente, inactivo o no autorizado'`, como `private.get_cash_close_summary`.
 - Permisos: `revoke all` de `private.*` a `public, anon, authenticated, service_role` y de `public.*` a `public, anon`; después `grant execute` de ambas a `authenticated, service_role`. Sin el `revoke`, una función nueva queda ejecutable por `anon`.
 - Fechas «de hoy» con `(now() at time zone 'America/Caracas')::date`, nunca `current_date`.
-- **Errores de regla de negocio:** las validaciones se lanzan con `raise exception` simple, que PostgREST entrega con `error.code = 'P0001'` (por verificar con una llamada real). El frontend muestra `error.message` tal cual solo cuando el código es `P0001`; en cualquier otro caso (fallo de red, error inesperado de base de datos) muestra el mensaje genérico. La violación de unicidad (`23505`) se convierte dentro de la RPC en un `raise exception` con mensaje propio. Aplica a las mutaciones Cashea y al registro de venta, con o sin Cashea, porque comparten el toast de `use-submit-sale.ts`: el cajero pasa a ver también mensajes que hoy quedan ocultos, como «Existencia insuficiente para el producto …».
+- **Errores de regla de negocio:** las validaciones se lanzan con `raise exception` simple, que PostgREST entrega con `error.code = 'P0001'` y el mensaje intacto (verificado el 2026-11-12 con una llamada real a `create_sale` en Supabase local: «Existencia insuficiente para el producto DC-40» llegó con `code: "P0001"`). Los servicios conservan el código al relanzar el error (`ServiceError` en `src/lib/errors.ts`). El frontend muestra `error.message` tal cual solo cuando el código es `P0001`; en cualquier otro caso (fallo de red, error inesperado de base de datos) muestra el mensaje genérico. La violación de unicidad (`23505`) se convierte dentro de la RPC en un `raise exception` con mensaje propio. Aplica a las mutaciones Cashea y al registro de venta, con o sin Cashea, porque comparten el toast de `use-submit-sale.ts`: el cajero pasa a ver también mensajes que hoy quedan ocultos, como «Existencia insuficiente para el producto …».
 
 **Por qué una función nueva y no un cuarto parámetro en `create_sale`:** cambiar la firma obliga a hacer `drop` de la función de tres parámetros (si quedaran las dos sobrecargas, la llamada con tres argumentos podría resultar ambigua), a rehacer sus permisos y a editar `supabase/tests/atomic_multi_line_sales.test.sql`, que la nombra por su firma `(uuid,jsonb,numeric)`. Componer deja intacto el camino de la venta normal y permite desplegar la migración antes que el frontend.
 
@@ -369,7 +369,7 @@ Respetar `AGENTS.md`: servicios como única vía a Supabase, hooks de React Quer
 
 | Área | Archivos | Cambio |
 |------|----------|--------|
-| Servicio | `src/services/casheaService.ts` (nuevo) | Lecturas y RPC de las secciones 7.1 y 7.2. `transactionsService.createSale` llama a `create_cashea_sale` cuando el payload trae `p_cashea` y a `create_sale` en caso contrario. Ambos servicios conservan `error.code` al lanzar el error (hoy `throw new Error(error.message)` lo pierde), para aplicar «Errores de regla de negocio» (7.2) |
+| Servicio | `src/services/casheaService.ts` (nuevo) | Lecturas y RPC de las secciones 7.1 y 7.2. `transactionsService.createSale` llama a `create_cashea_sale` cuando el payload trae `p_cashea` y a `create_sale` en caso contrario. Ambos servicios conservan `error.code` al lanzar el error con `toServiceError` (`src/lib/errors.ts`), para aplicar «Errores de regla de negocio» (7.2) |
 | Tipos | `src/types/index.ts` | `CasheaOrder`, `CasheaDeposit`, `CasheaOrderStatus`, `CasheaVoidReason`; añadir `p_cashea?` a `ProcessSalePayload`; ampliar `CashCloseSummary` (y `EMPTY_CASH_CLOSE_SUMMARY` en `cash-closes/page.tsx`) con `casheaReceivableUsd`, `casheaReceivableVes`, `casheaVoidedReturnUsd` y `casheaVoidedReturnVes` |
 | Registrar venta | `src/components/modals/out-modal/`, `src/features/cashea/components/cashea-order-fields.tsx` (nuevo) | Componente de campos Cashea con área de pegado (formulario con `useAppForm`), reutilizado por el diálogo de asociar (REQ-011) y el de ajuste (REQ-007); extender `index.tsx` (estado Cashea, limpieza al cerrar y condición del atajo Shift + Enter), `hooks/use-submit-sale.ts`, `components/confirm-sale-dialog.tsx`, `components/sales-summary-block.tsx` y `types/index.ts` |
 | Parser | `src/features/cashea/parse-cashea-summary.ts` (nuevo) + `.test.ts` | Función pura (sección 7.4) |
@@ -400,15 +400,15 @@ type CasheaParseResult = {
 Algoritmo:
 
 1. **Normalizar:** unificar saltos de línea, tabulaciones y espacios (incluido el espacio de no separación), recortar.
-2. **Etiquetas por campo** (sin distinguir mayúsculas ni acentos, con o sin «:» y «#»): número de orden («# Orden», «N° de orden», «Orden»), total («Monto Total», «Total»), cobrado hoy («Cobrar hoy», «Cobrado hoy», «Pago inicial»), financiado («Financiado») y factura («# de factura», «Factura», «ID»). Las etiquetas se buscan como palabras completas y de la más larga a la más corta: «ID» no debe coincidir dentro de otra palabra, ni «Total» ganarle a «Monto Total».
+2. **Etiquetas por campo** (sin distinguir mayúsculas ni acentos, con o sin «:» y «#»): número de orden («# Orden», «N° de orden», «Orden»), total («Monto Total», «Total»), Inicial («Pago inicial», «Cobrar hoy», «Cobrado hoy», «Inicial»), financiado («Financiado») y factura («# de factura», «Factura», «ID»). Las etiquetas se buscan como palabras completas y se prueban primero las más específicas: «ID» no debe coincidir dentro de otra palabra, ni «Total» ganarle a «Monto Total».
 3. **Valor de cada etiqueta:** primer valor **con la forma del campo** tras la etiqueta, ya esté en la misma línea, separado por tabulación o en la siguiente línea no vacía; sin importar el orden de los bloques. Formas: número de orden, solo dígitos; factura, letras, dígitos y guiones con al menos un dígito; montos, la regla del paso 4. Si lo que sigue a la etiqueta no tiene esa forma, se prueba la siguiente aparición de la etiqueta; si ninguna sirve, el campo queda en `null`. Así «Estado de la orden: En Progreso» no se toma como número de orden.
 4. **Montos:** aceptar `$ 185.6`, `$92.80`, `92,80`, `1.234,56` y `1,234.56`. Regla: si hay coma y punto, el último separador es el decimal; si hay un solo separador y le siguen uno o dos dígitos, es decimal; si le siguen exactamente tres, es de miles. Redondear a 2 decimales. Un monto negativo o igual a cero se ignora.
 5. **Derivación:** si hay total y pago inicial pero no financiado, `financedUsd = totalUsd - paidTodayUsd`, solo si el resultado es mayor que cero. No usar la suma de las cuotas del historial (puede redondear centavos).
 6. **Datos personales:** el parser ignora cualquier otra línea (nombre, cédula) y no las devuelve.
 
-No hay respaldo sin etiquetas. Deducir los montos por aritmética (buscar `a + b = c` entre los números del texto) no puede distinguir cobrado hoy de financiado, y un intercambio pasaría la validación de la suma sin que nadie lo note. Sin etiqueta, el campo queda vacío.
+No hay respaldo sin etiquetas. Deducir los montos por aritmética (buscar `a + b = c` entre los números del texto) no puede distinguir Inicial de financiado, y un intercambio pasaría la validación de la suma sin que nadie lo note. Sin etiqueta, el campo queda vacío.
 
-El parser devuelve lo leído tal cual: no valida la aritmética ni emite avisos. Esa validación (cobrado hoy + financiado contra el total, campos obligatorios) vive en el formulario (REQ-001).
+El parser devuelve lo leído tal cual: no valida la aritmética ni emite avisos. Esa validación (Inicial + financiado contra el total, campos obligatorios) vive en el formulario (REQ-001).
 
 UI: mostrar lo reconocido en los campos editables, dejar vacíos los no reconocidos y exigir la confirmación del cajero. Nunca guardar sin confirmación.
 
@@ -416,11 +416,11 @@ Casos de prueba mínimos (fixtures de `parse-cashea-summary.test.ts`):
 
 | Caso | Entrada (resumida) | Resultado esperado |
 |------|--------------------|--------------------|
-| A. Resumen «Debe pagar», etiqueta y valor en líneas separadas | `# Orden / 6400685 / Total / $ 185.6 / Cobrar hoy / $ 92.80 / Financiado / $ 92.80 / ID / 551-000738` | orden `6400685`, total 185.60, hoy 92.80, financiado 92.80, factura `551-000738` |
+| A. Resumen «Debe pagar», etiqueta y valor en líneas separadas | `# Orden / 6400685 / Total / $ 185.6 / Cobrar hoy / $ 92.80 / Financiado / $ 92.80 / ID / 551-000738` | orden `6400685`, total 185.60, Inicial 92.80, financiado 92.80, factura `551-000738` |
 | B. Igual, separado por tabulaciones | `# Orden\t6400685\nTotal\t$ 185.6 ...` | Igual que A |
 | C. Todo en una sola línea | `Debe pagar # Orden 6400685 Total $ 185.6 Cobrar hoy $ 92.80 Financiado $ 92.80 ID 551-000738` | Igual que A |
 | D. Coma decimal | `Total 185,60 Cobrar hoy 92,80 Financiado 92,80` | 185.60 / 92.80 / 92.80 |
-| E. Detalle de orden | `Monto Total: $92.80 ... Pago inicial ... $ 46.40 ... Segundo pago ... $ 15.47` | total 92.80, hoy 46.40, financiado 46.40 (derivado: total menos pago inicial) |
+| E. Detalle de orden | `Monto Total: $92.80 ... Pago inicial ... $ 46.40 ... Segundo pago ... $ 15.47` | total 92.80, Inicial 46.40, financiado 46.40 (derivado del total menos la Inicial) |
 | F. No cuadra | `Total $ 100 Cobrar hoy $ 40 Financiado $ 50` | valores leídos tal cual; el formulario (REQ-001) impide confirmar porque la suma no cuadra |
 | G. Irreconocible | `hola`, cadena vacía | todo `null`, sin excepción |
 | H. Con datos personales | Texto de A con nombre y cédula añadidos | Igual que A; el resultado no contiene datos personales |
@@ -492,7 +492,7 @@ Ninguno de estos pasos bloquea el inicio; reducen retrabajo.
 **Base de datos (pgTAP, `supabase/tests/`):** crear `cashea_orders.test.sql` y `cashea_deposits.test.sql`, y ampliar `multi_business_isolation.test.sql` (actualizar su `plan(n)`).
 
 - Unicidad de `order_number` entre órdenes no anuladas del negocio, su repetición permitida entre negocios y su reutilización después de anular. Una venta admite una sola orden no anulada y acepta otra después de anular la anterior.
-- `check` de suma (cobrado hoy + financiado = total), de total y financiado positivos y de cobrado hoy no negativo.
+- `check` de suma (Inicial + financiado = total), de total y financiado positivos y de Inicial no negativa.
 - Atomicidad de `create_cashea_sale` (si falla el Cashea, no queda venta ni stock descontado), rechazo de `p_cashea` mal formado y de un financiado mayor que el total de la venta. `create_sale` sigue pasando `atomic_multi_line_sales.test.sql` sin cambios.
 - Empleado: puede crear venta Cashea y leer órdenes y porcentajes; no puede cobrar, revertir, anular, ajustar ni cambiar comisiones, ni por RPC ni con `update` directo sobre `app_settings`. Sin sesión (`anon`) no puede ejecutar ninguna función nueva.
 - Aislamiento: usuario de un negocio no ve ni toca órdenes o depósitos del otro.
@@ -518,7 +518,7 @@ Ninguno de estos pasos bloquea el inicio; reducen retrabajo.
 | Q-04 | ¿Cashea aplica a ambos negocios o a uno solo? | Si es a uno, valorar una bandera por negocio que oculte la interfaz Cashea en el otro |
 | Q-05 | ¿Los porcentajes difieren entre negocios? | El diseño ya es por negocio |
 | Q-06 | Políticas RLS y permisos actuales de `app_settings` | **Resuelta** (7.1): lectura para todo usuario con acceso al negocio; las columnas nuevas no son actualizables desde el cliente |
-| Q-07 | Devoluciones de ventas Cashea | **Resuelta.** Confirmado por Anderson: Cashea no admite devoluciones parciales, y el reembolso opera como asume este documento (se cancela la orden en Cashea y se devuelve al cliente lo cobrado hoy). El Administrador registra la devolución y anula la orden con motivo «Devolución del cliente» (D-14, REQ-007). Ligar devoluciones a la venta original sigue fuera de alcance. Riesgo que queda: depende de que el Administrador haga los dos pasos |
+| Q-07 | Devoluciones de ventas Cashea | **Resuelta.** Confirmado por Anderson: Cashea no admite devoluciones parciales, y el reembolso opera como asume este documento (se cancela la orden en Cashea y se reembolsa la Inicial al cliente). El Administrador registra la devolución y anula la orden con motivo «Devolución del cliente» (D-14, REQ-007). Ligar devoluciones a la venta original sigue fuera de alcance. Riesgo que queda: depende de que el Administrador haga los dos pasos |
 | Q-08 | Si el depósito pudiera llegar en dólares | Hoy se asume siempre en bolívares |
 | Q-09 | Corte semanal (qué órdenes entran en cada depósito) | El Administrador las selecciona a mano; un reporte de Cashea con los números de orden simplificaría la conciliación |
 | Q-10 | Uso del logo de Cashea (marca de un tercero) dentro de la interfaz interna | Se asume uso interno para identificar el método de venta; confirmar si Cashea publica lineamientos de marca antes de producción |
@@ -529,7 +529,7 @@ Ninguno de estos pasos bloquea el inicio; reducen retrabajo.
 
 ## 11. Alcance acordado con el cliente (resumen)
 
-Incluye: venta con Cashea (número de orden, total de la orden, cobrado hoy, financiado y número de factura), pegar resumen, cierre de caja con
+Incluye: venta con Cashea (número de orden, total de la orden, Inicial, financiado y número de factura), pegar resumen, cierre de caja con
 separación e indicador del depósito Cashea por día en la tabla de cierres, configuración de comisiones por negocio con neto esperado, cuentas por cobrar con cobro individual, cobro por
 depósito en bolívares con tasa implícita y diferencia, reversión de un depósito mal registrado, anulación con motivo y nota (con compensación en el cierre cuando es por devolución del cliente), ajuste con nota (montos, número de orden y número de factura), asociación de una orden Cashea a una venta ya registrada, recálculo de comisiones en órdenes pendientes, filtros y antigüedad, tarjeta de
 saldo en el dashboard, pruebas, aislamiento entre negocios y despliegue. Soporte de 14 días.

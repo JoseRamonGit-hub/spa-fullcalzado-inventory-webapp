@@ -1,117 +1,168 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, History, TrendingUp } from "lucide-react";
-import { useExchangeRate, useExchangeRateHistory } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
-import { useUpdateExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateMutations";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useStore } from "@tanstack/react-form";
+import { History } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useBusinessStore } from "@/features/business/store/useBusinessStore";
+import { parseExchangeRateInput, toExchangeRateInput } from "@/features/exchange-rates/exchange-rate-input";
+import { useUpdateExchangeRate } from "@/features/exchange-rates/hooks/useExchangeRateMutations";
+import { useExchangeRate, useExchangeRateHistory } from "@/features/exchange-rates/hooks/useExchangeRateQueries";
+import { useAppForm } from "@/hooks/form";
+import { cn } from "@/lib/utils";
 import { formatCurrencyVES, formatDateTime } from "@/utils/formatters";
+import { SettingsGroup, SettingsRow } from "./settings-group";
+
+const SAVE_ERROR_MESSAGE = "No se pudo actualizar la tasa. Revisa la conexión e intenta de nuevo.";
 
 export function ExchangeRateSection() {
-  const { data: currentRate, isLoading: isExchangeRateLoading } = useExchangeRate();
-  const [newRate, setNewRate] = useState("");
-  const [showHistory, setShowHistory] = useState(false);
-  const { data: history } = useExchangeRateHistory({ enabled: showHistory });
-  const updateRate = useUpdateExchangeRate();
-  const user = useAuthStore((s) => s.user);
-  const hasExchangeRate = !!currentRate?.rate;
-  const exchangeRateDisplayValue = hasExchangeRate ? formatCurrencyVES(currentRate.rate) : "Sin tasa vigente";
-  const exchangeRateMessage = isExchangeRateLoading
-    ? "Cargando tasa de cambio vigente..."
-    : "No hay una tasa de cambio vigente. Actualizala en Ajustes para continuar.";
+  return (
+    <SettingsGroup title="Tasa de cambio">
+      <SettingsRow label="Tasa vigente" description="Bolívares por cada dólar" stackOnMobile>
+        <CurrentRateControl />
+      </SettingsRow>
+      <SettingsRow label="Historial de cambios">
+        <ExchangeRateHistory />
+      </SettingsRow>
+    </SettingsGroup>
+  );
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newRate || !user) return;
+function CurrentRateControl() {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+  const { data: currentRate, isLoading, isError, refetch } = useExchangeRate();
 
-    const rate = parseFloat(newRate);
-    if (isNaN(rate) || rate <= 0) {
-      toast.error("La tasa debe ser un número positivo");
-      return;
-    }
-
-    const promise = updateRate.mutateAsync(
-      { rate, source: "manual", updated_by: user.id },
-      { onSuccess: () => setNewRate("") },
+  if (isLoading) {
+    return (
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-36" />
+        <Skeleton className="h-9 w-20" />
+      </div>
     );
+  }
 
-    toast.promise(promise, {
-      loading: "Actualizando tasa de cambio...",
-      success: "Tasa actualizada correctamente",
-      error: "Error al actualizar la tasa",
-    });
-  };
+  if (isError && currentRate === undefined) {
+    return (
+      <p className="text-muted-foreground flex items-center gap-2 text-sm">
+        No se pudo cargar.
+        <Button variant="link" className="h-auto p-0" onClick={() => void refetch()}>
+          Reintentar
+        </Button>
+      </p>
+    );
+  }
+
+  // La clave reinicia el campo con la tasa nueva al guardar o al cambiar de negocio.
+  return <CurrentRateForm key={`${businessId}:${currentRate?.id ?? "none"}`} currentRate={currentRate?.rate ?? null} />;
+}
+
+const rateFieldOptions = {
+  validators: {
+    onChange: ({ value }: { value: string }) => {
+      const parsed = parseExchangeRateInput(value);
+      return "error" in parsed ? parsed.error : undefined;
+    },
+  },
+};
+
+function CurrentRateForm({ currentRate }: { currentRate: number | null }) {
+  const user = useAuthStore((s) => s.user);
+  const updateRate = useUpdateExchangeRate();
+  const form = useAppForm({
+    defaultValues: { rate: toExchangeRateInput(currentRate) },
+    onSubmit: ({ value }) => {
+      const parsed = parseExchangeRateInput(value.rate);
+      if (!("rate" in parsed) || !user) return;
+
+      updateRate.mutate(
+        { rate: parsed.rate, source: "manual", updated_by: user.id },
+        {
+          onSuccess: () => toast.success(`Tasa actualizada a ${formatCurrencyVES(parsed.rate)}`),
+          onError: () => toast.error(SAVE_ERROR_MESSAGE),
+        },
+      );
+    },
+  });
+
+  const parsed = parseExchangeRateInput(useStore(form.store, (state) => state.values.rate));
+  const nextRate = "rate" in parsed ? parsed.rate : null;
+  const canSubmit = nextRate !== null && nextRate !== currentRate && !!user;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="bg-primary/8 -mx-3 flex items-center gap-3 px-3 py-3 md:-mx-4 md:px-4">
-        <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
-          <DollarSign className="text-primary h-5 w-5" />
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
+      className="flex justify-end"
+    >
+      <fieldset disabled={updateRate.isPending} className="flex items-center gap-2">
+        <div className="w-36">
+          <form.AppField name="rate" {...rateFieldOptions}>
+            {(field) => (
+              <field.TextFieldGroup
+                label="Tasa vigente"
+                hideLabel
+                hideErrorMessage
+                compact
+                rightAddon="Bs."
+                inputMode="decimal"
+                autoComplete="off"
+                placeholder="Ej. 78,50"
+                className="font-medium tabular-nums"
+              />
+            )}
+          </form.AppField>
         </div>
-        <div className="flex-1">
-          <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">Tasa Activa</p>
-          {isExchangeRateLoading ? (
-            <Skeleton className="mt-2 h-8 w-36" />
-          ) : (
-            <p className="font-heading text-2xl font-bold tabular-nums">{exchangeRateDisplayValue}</p>
-          )}
-          {!isExchangeRateLoading && !hasExchangeRate && (
-            <p className="text-warning mt-1 text-xs">{exchangeRateMessage}</p>
-          )}
-        </div>
-        {currentRate?.source && hasExchangeRate && (
-          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
-            {currentRate.source}
-          </span>
-        )}
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
-          type="number"
-          step="0.0001"
-          min="0.01"
-          placeholder="Nueva tasa (ej. 78.50)"
-          value={newRate}
-          onChange={(e) => setNewRate(e.target.value)}
-          className="h-10 flex-1 text-sm tabular-nums"
-          required
-        />
-        <Button type="submit" disabled={updateRate.isPending || !newRate} className="h-10 gap-2 px-4">
-          <TrendingUp className="h-4 w-4" />
-          <span className="hidden sm:inline">Actualizar</span>
+        <Button type="submit" disabled={!canSubmit}>
+          {updateRate.isPending ? "Guardando..." : "Guardar"}
         </Button>
-      </form>
+      </fieldset>
+    </form>
+  );
+}
 
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowHistory(!showHistory)}
-          className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
-        >
-          <History className="h-3.5 w-3.5" />
-          {showHistory ? "Ocultar historial" : "Ver historial de cambios"}
-        </button>
+function ExchangeRateHistory() {
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: history, isLoading } = useExchangeRateHistory({ enabled: isOpen });
 
-        {showHistory && history && (
-          <div className="custom-scrollbar mt-2 max-h-48 divide-y overflow-y-auto rounded-md border">
-            {history.length === 0 && <div className="text-muted-foreground p-3 text-center text-xs">Sin historial</div>}
-            {history.map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-semibold tabular-nums">{formatCurrencyVES(entry.rate)}</span>
-                  <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium tracking-wider uppercase">
-                    {entry.source}
-                  </span>
-                </div>
-                <span className="text-muted-foreground text-[11px]">{formatDateTime(entry.updated_at!)}</span>
-              </div>
-            ))}
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" size="sm">
+          <History data-icon="inline-start" />
+          Ver historial
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-0">
+        <p className="text-muted-foreground border-b px-3 py-2 text-xs font-medium">Últimos cambios</p>
+        {isLoading ? (
+          <div className="flex flex-col gap-2 p-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
           </div>
+        ) : !history?.length ? (
+          <p className="text-muted-foreground px-3 py-4 text-center text-xs">Sin cambios registrados</p>
+        ) : (
+          <ol className="custom-scrollbar divide-border/60 max-h-72 divide-y overflow-y-auto">
+            {history.map((entry, index) => (
+              <li key={entry.id} className="flex items-center justify-between gap-3 px-3 py-1.5">
+                <span className="text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs">
+                  <span className="truncate tabular-nums">{formatDateTime(entry.updated_at)}</span>
+                  {entry.source === "bcv" && <Badge variant="outline">BCV</Badge>}
+                </span>
+                <span className={cn("shrink-0 text-[13px] tabular-nums", index === 0 && "font-semibold")}>
+                  {formatCurrencyVES(entry.rate)}
+                </span>
+              </li>
+            ))}
+          </ol>
         )}
-      </div>
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toServiceError } from "@/lib/errors";
 import type { ExchangeRate, ExchangeRateCreateInput } from "@/types/index";
 
 export const exchangeRatesService = {
@@ -11,7 +12,7 @@ export const exchangeRatesService = {
       .limit(1)
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -22,7 +23,7 @@ export const exchangeRatesService = {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 
@@ -34,7 +35,7 @@ export const exchangeRatesService = {
       .order("updated_at", { ascending: false })
       .limit(limit);
 
-    if (error) throw new Error(error.message);
+    if (error) throw toServiceError(error);
     return data;
   },
 };
