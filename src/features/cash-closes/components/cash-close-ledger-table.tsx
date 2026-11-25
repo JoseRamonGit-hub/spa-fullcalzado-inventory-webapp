@@ -204,6 +204,7 @@ export function CashCloseLedgerTable({
         <TableRow
           className={cn(
             "border-border/40",
+            isOperational && "max-md:[&>td]:h-9 max-md:[&>td]:py-0!",
             canExpand ? "cursor-pointer" : "hover:bg-transparent",
             expanded && canExpand && "bg-muted/75 hover:bg-muted border-transparent",
           )}
@@ -218,12 +219,19 @@ export function CashCloseLedgerTable({
             )}
           >
             <span
-              className={cn("inline-flex flex-wrap items-center gap-x-1.5", linkMovementLabel && "max-md:flex-nowrap")}
+              className={cn(
+                "inline-flex flex-wrap items-center gap-x-1.5",
+                isOperational && "max-md:align-middle",
+                linkMovementLabel && "max-md:flex-nowrap",
+              )}
             >
               {linkMovementLabel && movement && (
                 <span className="md:hidden">
                   <LedgerCountLink movement={movement} date={date} closedAt={closedAt}>
-                    <span className="inline-flex items-center gap-1.5">{label}</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      {isCashea && <CasheaLogoIcon className="size-3.5 shrink-0 rounded-[3px]" />}
+                      <span className="underline decoration-current underline-offset-2">{line.label}</span>
+                    </span>
                   </LedgerCountLink>
                 </span>
               )}
@@ -250,22 +258,28 @@ export function CashCloseLedgerTable({
                 </button>
               ) : showInlineSalesCount ? (
                 <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
-                  <span className="hidden @min-[26rem]/ledger:inline">{label}</span>
+                  <span className="hidden @min-[26rem]/ledger:md:inline">{label}</span>
                   <Link
                     {...salesDestination}
                     aria-label={`${line.label} · ${detail}`}
                     title={detail}
                     className={cn(
                       COUNT_LINK_CLASS_NAME,
-                      "@min-[26rem]/ledger:text-muted-foreground @min-[26rem]/ledger:text-xs @min-[26rem]/ledger:font-normal @min-[34rem]/ledger:hidden",
+                      "@min-[26rem]/ledger:md:text-muted-foreground max-md:decoration-current @min-[26rem]/ledger:md:text-xs @min-[26rem]/ledger:md:font-normal @min-[34rem]/ledger:md:hidden",
                     )}
                   >
-                    <span className="@min-[26rem]/ledger:hidden">{line.label}</span>
-                    <span className="hidden @min-[26rem]/ledger:inline">{detail}</span>
+                    <span className="@min-[26rem]/ledger:md:hidden">{line.label}</span>
+                    <span className="hidden @min-[26rem]/ledger:md:inline">{detail}</span>
                   </Link>
                 </span>
               ) : !salesLink && (line.id === "sales" || line.id === "sales-and-exchanges") ? (
-                <Link {...salesDestination} className={COUNT_LINK_CLASS_NAME}>
+                <Link
+                  {...salesDestination}
+                  className={cn(
+                    COUNT_LINK_CLASS_NAME,
+                    isOperational && (isZero ? "max-md:no-underline" : "max-md:decoration-current"),
+                  )}
+                >
                   {line.label}
                 </Link>
               ) : (
