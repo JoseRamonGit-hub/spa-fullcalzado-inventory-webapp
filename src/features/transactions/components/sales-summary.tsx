@@ -18,9 +18,19 @@ type SalesSummaryProps = {
 export function SalesSummary({ transactions, returns, cashea }: SalesSummaryProps) {
   const summary = getSalesSummary(transactions, returns, cashea);
   const metrics = [
-    { label: "Ventas", value: String(summary.salesCount), icon: ShoppingCart },
-    { label: "Total producido USD", value: formatCurrencyUSD(summary.netUsd), icon: CashStack },
-    { label: "Total producido Bs.", value: formatCurrencyVES(summary.netVes), icon: CashStack },
+    { label: "Ventas", mobileLabel: "Ventas", value: String(summary.salesCount), icon: ShoppingCart },
+    {
+      label: "Total producido USD",
+      mobileLabel: "T. Producido USD",
+      value: formatCurrencyUSD(summary.netUsd),
+      icon: CashStack,
+    },
+    {
+      label: "Total producido Bs.",
+      mobileLabel: "T. Producido Bs.",
+      value: formatCurrencyVES(summary.netVes),
+      icon: CashStack,
+    },
   ];
 
   return (
@@ -39,7 +49,10 @@ export function SalesSummary({ transactions, returns, cashea }: SalesSummaryProp
           >
             <div className="text-muted-foreground flex min-h-7 items-start gap-1.5">
               <metric.icon className="text-primary mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-              <p className="text-[10px] leading-tight font-semibold uppercase">{metric.label}</p>
+              <p className="text-[10px] leading-tight font-semibold uppercase">
+                <span className="md:hidden">{metric.mobileLabel}</span>
+                <span className="hidden md:inline">{metric.label}</span>
+              </p>
             </div>
             <p className="mt-0.5 text-sm leading-tight font-semibold tabular-nums">{metric.value}</p>
           </div>

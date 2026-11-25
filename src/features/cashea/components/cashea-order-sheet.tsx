@@ -1,7 +1,8 @@
 import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { getCasheaOrderAmountRows } from "./cashea-order-amount-rows";
 import { useRef } from "react";
-import { Ban, Check, Clock, FileText, Pencil, Undo2, X, type LucideIcon } from "lucide-react";
+import { Ban, Check, Pencil, Undo2, X } from "lucide-react";
+import { ActivityTimeline } from "@/components/ui/activity-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -192,7 +193,6 @@ function CasheaOrderAmounts({ order }: { order: CasheaOrder }) {
 
 type HistoryEvent = {
   label: string;
-  icon: LucideIcon;
   date?: string;
   note?: string | null;
   age?: string;
@@ -200,17 +200,16 @@ type HistoryEvent = {
 };
 
 function getHistoryEvents(order: CasheaOrder): HistoryEvent[] {
-  const events: HistoryEvent[] = [{ label: "Orden registrada", icon: FileText, date: order.created_at }];
+  const events: HistoryEvent[] = [{ label: "Orden registrada", date: order.created_at }];
 
   if (order.status === "collected" && order.collected_at) {
-    events.push({ label: "Cobrada en un Depósito Cashea", icon: Check, date: order.collected_at });
+    events.push({ label: "Cobrada en un Depósito Cashea", date: order.collected_at });
   }
 
   if (order.status === "voided" && order.voided_at) {
     const reason = order.void_reason && casheaVoidReasonLabels[order.void_reason];
     events.push({
       label: reason ? `Anulada · ${reason}` : "Anulada",
-      icon: Ban,
       date: order.voided_at,
       note: order.void_note,
     });
@@ -220,7 +219,6 @@ function getHistoryEvents(order: CasheaOrder): HistoryEvent[] {
     const ageDays = getCasheaOrderAgeDays(order.sale_date);
     events.push({
       label: "Esperando Depósito Cashea",
-      icon: Clock,
       age: formatCasheaAgeDays(ageDays),
       isLate: isCasheaOrderLate(order, ageDays),
     });
@@ -231,29 +229,21 @@ function getHistoryEvents(order: CasheaOrder): HistoryEvent[] {
 
 function CasheaOrderHistory({ order }: { order: CasheaOrder }) {
   return (
-    <section className="mt-6">
-      <h3 className="font-heading mb-2 text-sm font-semibold">Actividad de la orden</h3>
-      <ol className="divide-border/50 divide-y">
-        {getHistoryEvents(order).map(({ icon: Icon, ...event }) => (
-          <li
-            key={event.label}
-            className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-2 gap-y-0.5 py-2 text-xs @sm:grid-cols-[auto_minmax(0,1fr)_auto]"
-          >
-            <Icon aria-hidden="true" className="text-muted-foreground mt-0.5 size-3.5 self-start" />
-            <span className="font-medium">{event.label}</span>
-            <div className="tabular-value text-muted-foreground col-start-2 @sm:col-start-auto @sm:text-end">
-              {event.date && <time dateTime={event.date}>{formatDateTime(event.date)}</time>}
-              {event.age && (event.isLate ? <Badge variant="warning">{event.age}</Badge> : event.age)}
-            </div>
-            {event.note && (
-              <p className="text-muted-foreground col-start-2 col-end-[-1] [overflow-wrap:anywhere] whitespace-pre-wrap">
-                {event.note}
-              </p>
-            )}
-          </li>
-        ))}
-      </ol>
-    </section>
+    <ActivityTimeline
+      title="Actividad de la orden"
+      events={getHistoryEvents(order).map((event) => ({
+        id: event.label,
+        label: event.label,
+        metadata: event.date ? (
+          <time dateTime={event.date}>{formatDateTime(event.date)}</time>
+        ) : event.isLate ? (
+          <Badge variant="warning">{event.age}</Badge>
+        ) : (
+          event.age
+        ),
+        note: event.note,
+      }))}
+    />
   );
 }
 

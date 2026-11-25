@@ -1,7 +1,7 @@
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { useBusinessStore } from "@/features/business/store/useBusinessStore";
 import { casheaService } from "@/services/casheaService";
-import type { CalendarDateRange, CasheaOrdersFilter } from "@/types";
+import type { CalendarDateRange, CasheaOrder, CasheaOrdersFilter } from "@/types";
 import { formatDateForBackend } from "@/utils/formatters";
 import { casheaStatusFilters, resolveCasheaOrdersFilter, type CasheaStatusFilter } from "../cashea-receivables";
 
@@ -11,6 +11,8 @@ export const casheaKeys = {
   orders: (businessId: string | null) => [...casheaKeys.business(businessId), "orders"] as const,
   orderList: (businessId: string | null, filter: CasheaOrdersFilter) =>
     [...casheaKeys.orders(businessId), filter] as const,
+  orderDetail: (businessId: string | null, orderId?: string) =>
+    [...casheaKeys.orders(businessId), "detail", orderId] as const,
   cashCloseOrders: (businessId: string | null, date?: string, closedAt?: string) =>
     [...casheaKeys.orders(businessId), "cash-close", { date, closedAt }] as const,
   orderCounts: (businessId: string | null, filters: Record<CasheaStatusFilter, CasheaOrdersFilter>) =>
@@ -23,6 +25,16 @@ export const casheaKeys = {
     [...casheaKeys.business(businessId), "deposit", depositId] as const,
   settings: (businessId: string | null) => [...casheaKeys.business(businessId), "settings"] as const,
 };
+
+export function useCasheaOrder(orderId?: string, listOrder?: CasheaOrder) {
+  const businessId = useBusinessStore((state) => state.activeBusinessId);
+
+  return useQuery({
+    queryKey: casheaKeys.orderDetail(businessId, orderId),
+    queryFn: businessId && orderId ? ({ signal }) => casheaService.getOrder(businessId, orderId, signal) : skipToken,
+    placeholderData: listOrder,
+  });
+}
 
 export function useCasheaOrders(filter: CasheaOrdersFilter, enabled = true) {
   const businessId = useBusinessStore((state) => state.activeBusinessId);

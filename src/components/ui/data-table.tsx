@@ -43,7 +43,7 @@ const columnAlignmentClasses = {
 function isNestedInteractiveTarget(target: EventTarget | null, row: HTMLTableRowElement) {
   if (!(target instanceof Element)) return false;
   const interactiveTarget = target.closest(INTERACTIVE_ROW_TARGET_SELECTOR);
-  return interactiveTarget !== null && interactiveTarget !== row;
+  return interactiveTarget !== null && interactiveTarget !== row && row.contains(interactiveTarget);
 }
 
 type DataTableProps<TData, TValue> = {
@@ -55,8 +55,11 @@ type DataTableProps<TData, TValue> = {
   meta?: Record<string, unknown>;
   isLoading?: boolean;
   getRowId?: (originalRow: TData, index: number) => string;
+  getSubRows?: (row: TData) => TData[] | undefined;
   renderSubRow?: (row: Row<TData>) => React.ReactNode;
   pageSize?: number;
+  paginationNoun?: string;
+  initialSorting?: SortingState;
   hidePagination?: boolean;
   autoExpandRowId?: string;
   expanded?: ExpandedState;
@@ -86,8 +89,11 @@ export function DataTable<TData, TValue>({
   meta,
   isLoading,
   getRowId,
+  getSubRows,
   renderSubRow,
   pageSize = 20,
+  paginationNoun,
+  initialSorting = [],
   hidePagination,
   autoExpandRowId,
   expanded,
@@ -119,7 +125,7 @@ export function DataTable<TData, TValue>({
   }, [isMobile, columns]);
 
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize });
-  const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] = useState<SortingState>(initialSorting);
   const [internalExpanded, setInternalExpanded] = useState<ExpandedState>({});
   const lastAutoExpandedRowIdRef = useRef<string | undefined>(undefined);
 
@@ -160,13 +166,15 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    ...(renderSubRow ? { getExpandedRowModel: getExpandedRowModel(), getRowCanExpand: () => true } : {}),
+    ...(renderSubRow || getSubRows ? { getExpandedRowModel: getExpandedRowModel() } : {}),
+    ...(renderSubRow ? { getRowCanExpand: () => true } : {}),
+    ...(getSubRows ? { getSubRows, paginateExpandedRows: false } : {}),
     enableMultiSort: false,
     state: {
       columnVisibility,
       pagination,
       sorting: sortingState,
-      ...(renderSubRow ? { expanded: expandedState } : {}),
+      ...(renderSubRow || getSubRows ? { expanded: expandedState } : {}),
     },
     onPaginationChange: setPagination,
     autoResetPageIndex: true,
@@ -174,12 +182,13 @@ export function DataTable<TData, TValue>({
       handleSortingChange(updater);
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     },
-    ...(renderSubRow ? { onExpandedChange: handleExpandedChange } : {}),
+    ...(renderSubRow || getSubRows ? { onExpandedChange: handleExpandedChange } : {}),
     meta,
     getRowId,
   });
 
   const rows = table.getRowModel().rows;
+  let parentIndex = -1;
   const visibleColumnCount = Math.max(1, table.getVisibleFlatColumns().length);
   const showPagination = !hidePagination && !isLoading && table.getPageCount() > 1;
 
@@ -236,6 +245,7 @@ export function DataTable<TData, TValue>({
               <TableSkeleton columnCount={visibleColumnCount} rowCount={skeletonRowCount} density={density} />
             ) : rows.length ? (
               rows.map((row, index) => {
+                if (!row.depth) parentIndex++;
                 const rowLabel = getRowAriaLabel?.(row.original);
                 const subRowId = `${tableId}-${row.id}-details`;
                 const rowActionLabel =
@@ -253,14 +263,17 @@ export function DataTable<TData, TValue>({
                       aria-controls={renderSubRow && row.getIsExpanded() ? subRowId : undefined}
                       className={cn(
                         "border-border/40 hover:bg-table-hover border-b transition-colors",
-                        index % 2 === 1 && "bg-table-stripe",
+                        !row.depth && parentIndex % 2 === 1 && "bg-table-stripe",
+                        getSubRows && row.getCanExpand() && "cursor-pointer",
                         (onRowClick || renderSubRow) &&
                           "focus-visible:ring-ring/50 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-inset",
                         getRowClassName?.(row, index),
                       )}
                       onClick={(event) => {
+                        // React propagates clicks from portals even when they render outside the row.
+                        if (!(event.target instanceof Node) || !event.currentTarget.contains(event.target)) return;
                         if (isNestedInteractiveTarget(event.target, event.currentTarget)) return;
-                        if (renderSubRow) row.toggleExpanded();
+                        if (renderSubRow || (getSubRows && row.getCanExpand())) row.toggleExpanded();
                         onRowClick?.(row.original);
                       }}
                       onKeyDown={(event) => {
@@ -312,6 +325,7 @@ export function DataTable<TData, TValue>({
       </ScrollShadow>
       {showPagination && (
         <DataTablePagination
+          noun={paginationNoun}
           table={table}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}

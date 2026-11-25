@@ -1,36 +1,28 @@
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/login/hooks/useLogout";
 import { useTheme } from "next-themes";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Moon, Sun, LogOut } from "lucide-react";
+import { ChevronRight, Moon, Sun, LogOut } from "lucide-react";
 import { BusinessSwitcher } from "@/features/business/components/business-switcher";
 import { OverflowTooltip } from "@/components/ui/overflow-tooltip";
 import { cn } from "@/lib/utils";
 import {
+  DASHBOARD_NAV_ITEM,
   MOBILE_PRIMARY_NAV,
   NAV_SECTIONS,
   RECEIVABLES_NAV,
   SETTINGS_NAV_ITEM,
   USERS_NAV_ITEM,
-  type NavSection,
+  type NavItem,
 } from "./navigation";
 
 const primaryUrls = new Set(MOBILE_PRIMARY_NAV.map((item) => item.url));
 
-const MOBILE_SECTIONS: readonly NavSection[] = [
-  ...NAV_SECTIONS.map((section) => ({
-    ...section,
-    items: section.items.filter((item) => !primaryUrls.has(item.url)),
-  })).filter((section) => section.items.length > 0),
-  {
-    label: RECEIVABLES_NAV.sectionLabel,
-    items: RECEIVABLES_NAV.items.map((item) => ({
-      ...item,
-      title: `${RECEIVABLES_NAV.title} ${item.title}`,
-      icon: RECEIVABLES_NAV.icon,
-    })),
-  },
+const MOBILE_NAV_ITEMS: readonly NavItem[] = [
+  DASHBOARD_NAV_ITEM,
+  ...NAV_SECTIONS.flatMap((section) => section.items.filter((item) => !primaryUrls.has(item.url))),
 ];
 
 const sectionHeadingClassName = "text-muted-foreground mb-2 text-xs font-semibold";
@@ -42,7 +34,7 @@ function MobileNavLink({
   currentPath,
   onNavigate,
 }: {
-  item: NavSection["items"][number];
+  item: NavItem;
   currentPath: string;
   onNavigate: () => void;
 }) {
@@ -103,30 +95,64 @@ export function MobileMenuSheet({ open, onOpenChange }: { open: boolean; onOpenC
             <BusinessSwitcher variant="mobile" onBusinessChanged={() => onOpenChange(false)} />
           </div>
 
-          <nav aria-label="Navegación">
-            {MOBILE_SECTIONS.map((section) => (
-              <div key={section.label} className="px-4 py-2">
-                <h4 className={sectionHeadingClassName}>{section.label}</h4>
-                <div className="flex flex-col gap-1">
-                  {section.items.map((item) => (
-                    <MobileNavLink
-                      key={item.url}
-                      item={item}
-                      currentPath={currentPath}
-                      onNavigate={() => onOpenChange(false)}
+          <nav aria-label="Navegación" className="px-4 py-2">
+            <h4 className={sectionHeadingClassName}>Navegación</h4>
+            <div className="flex flex-col gap-1">
+              {MOBILE_NAV_ITEMS.map((item) => (
+                <MobileNavLink
+                  key={item.url}
+                  item={item}
+                  currentPath={currentPath}
+                  onNavigate={() => onOpenChange(false)}
+                />
+              ))}
+              <Collapsible defaultOpen className="group/receivables">
+                <CollapsibleTrigger asChild>
+                  <button
+                    className={cn(
+                      menuRowClassName,
+                      "hover:bg-accent text-sm font-medium",
+                      currentPath.startsWith(RECEIVABLES_NAV.url) ? "text-primary" : "text-foreground",
+                    )}
+                  >
+                    <RECEIVABLES_NAV.icon className="size-5 shrink-0" />
+                    <span>{RECEIVABLES_NAV.title}</span>
+                    <ChevronRight
+                      aria-hidden="true"
+                      className="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/receivables:rotate-90"
                     />
-                  ))}
-                </div>
-              </div>
-            ))}
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="border-border ml-5 flex flex-col gap-1 border-l pl-3">
+                    {RECEIVABLES_NAV.items.map((item) => (
+                      <Link
+                        key={item.url}
+                        to={item.url}
+                        onClick={() => onOpenChange(false)}
+                        className={cn(
+                          menuRowClassName,
+                          "text-sm",
+                          currentPath.startsWith(item.url)
+                            ? "bg-primary/10 text-primary font-semibold"
+                            : "text-foreground hover:bg-accent font-medium",
+                        )}
+                      >
+                        {item.title}
+                      </Link>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+              {user?.role === "admin" ? (
+                <MobileNavLink item={USERS_NAV_ITEM} currentPath={currentPath} onNavigate={() => onOpenChange(false)} />
+              ) : null}
+            </div>
           </nav>
 
           <div className="mt-2 border-t px-4 pt-4 pb-2">
             <h4 className={sectionHeadingClassName}>Sistema</h4>
             <div className="flex flex-col gap-1">
-              {user?.role === "admin" ? (
-                <MobileNavLink item={USERS_NAV_ITEM} currentPath={currentPath} onNavigate={() => onOpenChange(false)} />
-              ) : null}
               <MobileNavLink
                 item={SETTINGS_NAV_ITEM}
                 currentPath={currentPath}

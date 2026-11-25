@@ -26,12 +26,9 @@ export function ReturnsSummary({ date, returns }: ReturnsSummaryProps) {
           <div
             key={metric.label}
             className={cn(
-              "min-w-0 px-3",
-              index % 2 === 1 && "border-l",
-              index > 1 && "mt-2 border-t pt-2",
-              index === 0 || index === 2 ? "pl-0" : "",
-              "md:mt-0 md:border-t-0 md:pt-0",
-              index > 0 && "md:border-l md:pl-4",
+              "min-w-0 pr-3 md:pr-4",
+              index < 2 ? "border-b pb-2 md:border-b-0 md:pb-0" : "pt-2 md:pt-0",
+              index === 0 ? "pl-0" : index % 2 === 1 ? "border-l pl-3 md:pl-4" : "pl-0 md:border-l md:pl-4",
             )}
           >
             <p className="text-muted-foreground text-[10px] font-semibold uppercase">{metric.label}</p>
@@ -47,7 +44,7 @@ export function ReturnsSummary({ date, returns }: ReturnsSummaryProps) {
           </div>
         ))}
 
-        <div className="mt-2 min-w-0 border-t border-l px-3 pt-2 pr-0 md:mt-0 md:border-t-0 md:pt-0 md:pl-4">
+        <div className="min-w-0 border-l pt-2 pl-3 md:pt-0 md:pl-4">
           <p className="text-muted-foreground text-[10px] font-semibold uppercase">Crédito generado</p>
           <CurrencyStack usd={summary.creditUsd} ves={summary.creditVes} />
         </div>

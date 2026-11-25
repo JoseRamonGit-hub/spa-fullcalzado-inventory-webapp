@@ -217,6 +217,23 @@
     @apply max-w-[280px] md:max-w-sm;
   }
 
+  .sale-line-branch {
+    @apply border-muted-foreground/50 absolute top-1/2 -left-3 h-7 w-2 -translate-y-1/2 border-l;
+  }
+
+  .sale-line-branch::after {
+    @apply absolute top-1/2 w-full border-t border-inherit;
+    content: "";
+  }
+
+  .sale-line:not(:has(+ .sale-line)) > td {
+    @apply border-border border-b pb-1;
+  }
+
+  .sale-line:not(:has(+ .sale-line)) .sale-line-branch {
+    clip-path: inset(0 0 calc(50% - 1px) 0);
+  }
+
   .topbar-height {
     @apply h-(--topbar-height);
   }

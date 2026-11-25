@@ -39,6 +39,19 @@ function filterOrders<TQuery extends FilterableOrdersQuery<TQuery>>(
 }
 
 export const casheaService = {
+  getOrder: async (businessId: string, orderId: string, signal: AbortSignal): Promise<CasheaOrder | null> => {
+    const { data, error } = await supabase
+      .from("cashea_orders")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("id", orderId)
+      .abortSignal(signal)
+      .maybeSingle();
+
+    if (error) throw toServiceError(error);
+    return data;
+  },
+
   getOrders: async (businessId: string, filter: CasheaOrdersFilter): Promise<CasheaOrder[]> => {
     const query = filterOrders(supabase.from("cashea_orders").select("*"), businessId, filter)
       .order("sale_date", { ascending: false })

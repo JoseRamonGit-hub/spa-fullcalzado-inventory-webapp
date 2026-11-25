@@ -27,6 +27,7 @@ export function Topbar({ date, type, hasDirectedView, onDateChange, onTypeChange
       </BusinessModuleTitle>
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <NativeSelect
+          size="sm"
           aria-label="Tipo de movimiento"
           value={type ?? ""}
           onChange={({ target: { value } }) =>

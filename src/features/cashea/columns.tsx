@@ -1,26 +1,19 @@
 import { CasheaOrderNumber } from "@/features/cashea/components/cashea-order-number";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import { Ban, Check, Ellipsis, Pencil, Undo2 } from "lucide-react";
+import { Ban, Check, Pencil, Undo2 } from "lucide-react";
 import type { CasheaOrder } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
-import { narrowActionsColumn } from "@/components/ui/data-table-actions-column";
-import { formatCalendarDateString, formatCurrencyUSD } from "@/utils/formatters";
+import { Separator } from "@/components/ui/separator";
+import { formatCurrencyUSD, formatDateTime } from "@/utils/formatters";
 import { formatCasheaAgeDays, getCasheaOrderAgeDays, isCasheaOrderLate } from "./cashea-receivables";
 import { CasheaOrderStatusBadge } from "./components/cashea-order-status-badge";
 
 const columnHelper = createColumnHelper<CasheaOrder>();
 
 export type CasheaTableMeta = {
-  isAdmin: boolean;
   selectedOrderIds: ReadonlySet<string>;
   onSelectOrders: (orders: CasheaOrder[], selected: boolean) => void;
   onCollectOrder: (order: CasheaOrder) => void;
@@ -34,7 +27,11 @@ function amountColumn(key: "total_usd" | "paid_today_usd" | "financed_usd" | "ex
     enableSorting: true,
     meta: { align: "right" },
     header: ({ column }) => <DataTableColumnHeader column={column} title={title} />,
-    cell: ({ getValue }) => <span className="data-value">{formatCurrencyUSD(getValue())}</span>,
+    cell: ({ getValue }) => (
+      <span className={key === "paid_today_usd" ? "data-value font-bold" : "data-value"}>
+        {formatCurrencyUSD(getValue())}
+      </span>
+    ),
   });
 }
 
@@ -84,11 +81,11 @@ const dataColumns = [
     header: "Factura",
     cell: ({ getValue }) => <span className="product-code text-muted-foreground">{getValue()}</span>,
   }),
-  columnHelper.accessor("sale_date", {
+  columnHelper.accessor("created_at", {
     enableSorting: true,
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha y hora" />,
     cell: ({ getValue }) => (
-      <span className="tabular-value text-muted-foreground">{formatCalendarDateString(getValue()) || "—"}</span>
+      <span className="tabular-value text-muted-foreground text-xs">{formatDateTime(getValue()) || "—"}</span>
     ),
   }),
   amountColumn("total_usd", "Total"),
@@ -125,12 +122,20 @@ const ageColumn = columnHelper.accessor((order) => getCasheaOrderAgeDays(order.s
   },
 });
 
-const actionsColumn = narrowActionsColumn<CasheaOrder, CasheaTableMeta>((order, meta) =>
-  meta.isAdmin && order.status !== "voided" ? <OrderActions order={order} meta={meta} /> : null,
-);
+const actionsColumn = columnHelper.display({
+  id: "actions",
+  header: "Acciones",
+  meta: { align: "center", hideOnMobile: true },
+  cell: ({ row, table }) => {
+    const order = row.original;
+    const meta = table.options.meta as CasheaTableMeta;
+
+    return order.status === "voided" ? null : <OrderActions order={order} meta={meta} />;
+  },
+});
 
 type CasheaColumnsOptions = {
-  /** Casillas para Registrar depósito y menú de acciones. */
+  /** Casillas para Registrar depósito y columna de acciones. */
   isAdmin: boolean;
 };
 
@@ -140,41 +145,61 @@ export function getCasheaColumns({ isAdmin }: CasheaColumnsOptions) {
     ...dataColumns,
     statusColumn,
     ageColumn,
-    actionsColumn,
+    ...(isAdmin ? [actionsColumn] : []),
   ] as ColumnDef<CasheaOrder>[];
 }
 
 function OrderActions({ order, meta }: { order: CasheaOrder; meta: CasheaTableMeta }) {
+  const orderLabel = `orden Cashea ${order.order_number}`;
+
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-xs" aria-label={`Acciones de la orden Cashea ${order.order_number}`}>
-          <Ellipsis aria-hidden="true" />
+    <div className="flex items-center justify-center gap-1">
+      {order.status === "collected" ? (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="text-muted-foreground hover:text-destructive"
+          aria-label={`Revertir depósito de la ${orderLabel}`}
+          title="Revertir depósito"
+          onClick={() => meta.onRevertDeposit(order)}
+        >
+          <Undo2 data-icon="inline-start" aria-hidden="true" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-40">
-        {order.status === "collected" ? (
-          <DropdownMenuItem variant="destructive" onSelect={() => meta.onRevertDeposit(order)}>
-            <Undo2 aria-hidden="true" />
-            Revertir depósito
-          </DropdownMenuItem>
-        ) : (
-          <>
-            <DropdownMenuItem onSelect={() => meta.onCollectOrder(order)}>
-              <Check aria-hidden="true" />
-              Cobrar orden
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => meta.onAdjustOrder(order)}>
-              <Pencil aria-hidden="true" />
-              Ajustar orden
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onSelect={() => meta.onVoidOrder(order)}>
-              <Ban aria-hidden="true" />
-              Anular orden
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      ) : (
+        <>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground hover:text-primary"
+            aria-label={`Cobrar ${orderLabel}`}
+            title="Cobrar orden"
+            onClick={() => meta.onCollectOrder(order)}
+          >
+            <Check data-icon="inline-start" aria-hidden="true" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground hover:text-primary"
+            aria-label={`Ajustar ${orderLabel}`}
+            title="Ajustar orden"
+            onClick={() => meta.onAdjustOrder(order)}
+          >
+            <Pencil data-icon="inline-start" aria-hidden="true" />
+          </Button>
+          <Separator orientation="vertical" className="mx-0.5 data-[orientation=vertical]:h-4" />
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground hover:text-destructive"
+            aria-label={`Anular ${orderLabel}`}
+            title="Anular orden"
+            onClick={() => meta.onVoidOrder(order)}
+          >
+            <Ban data-icon="inline-start" aria-hidden="true" />
+          </Button>
+        </>
+      )}
+    </div>
   );
 }

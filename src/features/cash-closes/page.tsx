@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCasheaCollectionStatus } from "@/features/cashea/hooks/useCasheaQueries";
-import { useDialogTarget } from "@/hooks/use-dialog-target";
 import { Route } from "@/routes/_app/cash-closes";
 import { formatDate, formatDateForBackend } from "@/utils/formatters";
 import {
@@ -28,11 +27,27 @@ const OPEN_ROW_CLASS_NAME = "bg-primary/8 hover:bg-primary/10 shadow-[inset_2px_
 const UNCLOSED_ROW_CLASS_NAME = "bg-warning/10 hover:bg-warning/15 shadow-[inset_2px_0_0_var(--color-warning)]";
 
 export function CashClosesPage() {
-  const { date } = Route.useSearch();
+  const { date, cashCloseId } = Route.useSearch();
   const navigate = useNavigate({ from: "/cash-closes" });
   const user = useAuthStore((s) => s.user);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const detailSheet = useDialogTarget<CashCloseHistoryRow>();
+
+  const setDetailSheetOpen = (isOpen: boolean) => {
+    if (!isOpen && cashCloseId) {
+      void navigate({
+        replace: true,
+        resetScroll: false,
+        search: (prev) => ({ ...prev, cashCloseId: undefined }),
+      });
+    }
+  };
+
+  const openDetailSheet = (row: CashCloseHistoryRow) => {
+    void navigate({
+      resetScroll: false,
+      search: (prev) => ({ ...prev, cashCloseId: row.id }),
+    });
+  };
 
   const { data: cashCloses, isLoading, isError, isFetching, refetch } = useCashCloses(date);
   const summaryQuery = useCashCloseSummary(date);
@@ -56,6 +71,7 @@ export function CashClosesPage() {
     unclosedDays: date ? unclosedDays.filter((day) => day.date === date) : unclosedDays,
     casheaStatuses: casheaStatuses ?? [],
   });
+  const detailRow = rows.find((row) => row.id === cashCloseId) ?? null;
 
   const figures = summaryQuery.data ? getSummaryFigures(summaryQuery.data) : null;
   const dayState: DayCloseState | null =
@@ -105,6 +121,8 @@ export function CashClosesPage() {
     }
   };
 
+  const isHistoryLoading = isLoading || unclosedQuery.isLoading;
+  const isHistoryFetching = isFetching || unclosedQuery.isFetching;
   const hasHistoryError = (isError && !cashCloses) || (unclosedQuery.isError && !unclosedQuery.data);
   const retryHistory = () => {
     if (isError) refetch();
@@ -163,21 +181,21 @@ export function CashClosesPage() {
           tableClassName="[&_td]:px-2 [&_th]:px-2 [&_:is(th,td):nth-child(5)]:ps-6 [&_:is(th,td):first-child]:ps-3 md:[&_:is(th,td):first-child]:ps-4 md:[&_:is(th,td):last-child]:ps-4 [&_th_button]:leading-tight [&_th_button]:whitespace-nowrap [&_th_svg]:shrink-0"
           columns={columns}
           data={rows}
-          isLoading={isLoading || unclosedQuery.isLoading}
+          isLoading={isHistoryLoading}
           errorState={
             hasHistoryError
               ? {
                   title: "No pudimos cargar los cierres de caja",
                   onRetry: retryHistory,
-                  isRetrying: isFetching || unclosedQuery.isFetching,
+                  isRetrying: isHistoryFetching,
                 }
               : undefined
           }
           getRowId={(row) => row.id}
           emptyMessage={date ? "Este día no tiene cierre de caja." : "Todavía no hay cierres de caja."}
-          onRowClick={detailSheet.open}
+          onRowClick={openDetailSheet}
           getRowClassName={(row) => {
-            if (detailSheet.isOpen && detailSheet.target?.id === row.id) return OPEN_ROW_CLASS_NAME;
+            if (cashCloseId === row.id) return OPEN_ROW_CLASS_NAME;
             return row.original.kind === "unclosed" ? UNCLOSED_ROW_CLASS_NAME : undefined;
           }}
           getRowAriaLabel={(row) =>
@@ -202,9 +220,22 @@ export function CashClosesPage() {
       )}
 
       <CashCloseSheet
-        row={rows.find((row) => row.id === detailSheet.target?.id) ?? detailSheet.target}
-        isOpen={detailSheet.isOpen}
-        onOpenChange={detailSheet.setIsOpen}
+        row={detailRow}
+        isOpen={Boolean(cashCloseId)}
+        onOpenChange={setDetailSheetOpen}
+        unavailable={
+          cashCloseId && !detailRow
+            ? {
+                message: isHistoryLoading
+                  ? "Cargando detalle…"
+                  : hasHistoryError
+                    ? "No pudimos cargar el detalle."
+                    : "No encontramos este detalle en el historial.",
+                onRetry: hasHistoryError ? retryHistory : undefined,
+                isRetrying: isHistoryFetching,
+              }
+            : undefined
+        }
       />
     </main>
   );

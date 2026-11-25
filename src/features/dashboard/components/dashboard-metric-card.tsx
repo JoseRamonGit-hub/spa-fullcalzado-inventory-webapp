@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 type DashboardMetricCardProps = {
   title: ReactNode;
   value: string;
-  description?: string;
+  description?: ReactNode;
   icon?: LucideIcon;
   emphasis?: "primary" | "warning";
   actionLabel?: string;
   onAction?: () => void;
   inline?: boolean;
+  mobileValueIcon?: ReactNode;
+  mobileValueLabel?: string;
   className?: string;
 };
 
@@ -78,6 +80,8 @@ export function DashboardMetricCard({
   actionLabel,
   onAction,
   inline,
+  mobileValueIcon,
+  mobileValueLabel,
   className,
 }: DashboardMetricCardProps) {
   const action = actionLabel && onAction ? { label: actionLabel, onAction } : null;
@@ -87,13 +91,24 @@ export function DashboardMetricCard({
     return (
       <Card className={cn("@container", cardClassName)}>
         <div className={INLINE_ROW_CLASS_NAME}>
-          <div className="flex min-w-0 items-center gap-3">
+          <div className={cn("flex min-w-0 items-center gap-3", mobileValueIcon && "max-md:sr-only")}>
             {icon ? <MetricIcon icon={icon} emphasis={emphasis} /> : null}
             <MetricTitle>{title}</MetricTitle>
           </div>
-          <MetricValue className="shrink-0">{value}</MetricValue>
+          <div className="flex min-w-0 items-center gap-2 md:contents">
+            {mobileValueIcon ? <span className="shrink-0 md:hidden">{mobileValueIcon}</span> : null}
+            <MetricValue className="shrink-0 [text-box:trim-both_cap_alphabetic]">{value}</MetricValue>
+            {mobileValueLabel ? (
+              <span
+                aria-hidden="true"
+                className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase md:hidden"
+              >
+                {mobileValueLabel}
+              </span>
+            ) : null}
+          </div>
           {description ? (
-            <CardDescription className="min-w-0 text-xs leading-relaxed @2xl:flex-1 @2xl:border-l @2xl:pl-4">
+            <CardDescription className="min-w-0 text-xs leading-relaxed [text-box:trim-both_cap_alphabetic] @2xl:flex-1 @2xl:border-l @2xl:py-1 @2xl:pl-4">
               {description}
             </CardDescription>
           ) : null}

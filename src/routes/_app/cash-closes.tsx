@@ -4,6 +4,7 @@ import { z } from "zod";
 
 const searchSchema = z.object({
   date: z.string().optional(),
+  cashCloseId: z.string().min(1).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_app/cash-closes")({

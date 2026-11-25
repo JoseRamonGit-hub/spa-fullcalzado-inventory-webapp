@@ -1,16 +1,9 @@
-import { DatePickerFilter } from "@/components/ui/date-picker-filter";
 import { BusinessModuleTitle } from "@/features/business/components/business-module-title";
 
-type TopbarProps = {
-  date?: string;
-  onDateChange: (value: string | undefined) => void;
-};
-
-export function Topbar({ date, onDateChange }: TopbarProps) {
+export function Topbar() {
   return (
     <header className="topbar-height bg-background flex items-center justify-between gap-2 border-b px-3 md:px-4">
       <BusinessModuleTitle title="Ventas" />
-      <DatePickerFilter value={date} onChange={onDateChange} placeholder="Últimos 30 días" />
     </header>
   );
 }

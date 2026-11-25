@@ -6,6 +6,9 @@ import { z } from "zod";
 const calendarDate = z.string().refine(isCalendarDate).optional().catch(undefined);
 
 const searchSchema = z.object({
+  orderId: z.uuid().optional().catch(undefined),
+  onlyOrder: z.literal(true).optional().catch(undefined),
+  sheet: z.literal("closed").optional().catch(undefined),
   status: z.enum(casheaStatusFilters).optional().catch(undefined),
   from: calendarDate,
   to: calendarDate,

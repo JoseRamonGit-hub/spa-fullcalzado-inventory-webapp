@@ -166,7 +166,7 @@ export type TransactionWithRelations = Transaction & {
   products: Pick<Product, "code" | "description">;
   users: Pick<User, "fullname">;
   /** Venta del Renglón con sus Órdenes Cashea; `null` en Renglones sin Venta (históricos o de un Cambio). */
-  sales: { cashea_orders: Pick<CasheaOrder, "order_number" | "status">[] } | null;
+  sales: { cashea_orders: Pick<CasheaOrder, "id" | "order_number" | "status">[] } | null;
 };
 
 export type InventoryMovementWithRelations = InventoryMovement & {

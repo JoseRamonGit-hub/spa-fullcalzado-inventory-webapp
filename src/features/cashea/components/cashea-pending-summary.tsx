@@ -24,25 +24,19 @@ export function CasheaPendingSummary() {
   return (
     <section
       aria-label="Saldo pendiente Cashea"
-      className="grid shrink-0 grid-cols-2 gap-y-2 border-b px-3 py-2.5 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-4"
+      className="grid shrink-0 grid-cols-2 border-b px-3 py-2.5 md:grid-cols-4 md:px-4"
     >
       {metrics.map((metric, index) => (
         <div
           key={metric.label}
           className={cn(
             "min-w-0 pr-3 md:pr-4",
+            index < 2 ? "border-b pb-2 md:border-b-0 md:pb-0" : "pt-2 md:pt-0",
             index === 0 ? "pl-0" : index % 2 === 1 ? "border-l pl-3 md:pl-4" : "pl-0 md:border-l md:pl-4",
           )}
         >
           <p className="text-muted-foreground truncate text-[10px] font-semibold uppercase">{metric.label}</p>
-          <p
-            className={cn(
-              "mt-1 truncate leading-tight font-semibold tabular-nums",
-              index === 0 ? "font-heading text-xl font-bold tracking-tight" : "text-sm",
-            )}
-          >
-            {metric.value}
-          </p>
+          <p className="mt-1 truncate text-sm leading-tight font-semibold tabular-nums">{metric.value}</p>
         </div>
       ))}
     </section>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
-import { CircleCheck, RefreshCw } from "lucide-react";
+import { ActivityTimeline } from "@/components/ui/activity-timeline";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   formatCalendarDateString,
@@ -19,14 +20,33 @@ type CashCloseSheetProps = {
   row: CashCloseHistoryRow | null;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  unavailable?: { message: string; onRetry?: () => void; isRetrying: boolean };
 };
 
 /** El detalle de una fila del historial: un cierre, o un día con ventas que nadie cerró. */
-export function CashCloseSheet({ row, isOpen, onOpenChange }: CashCloseSheetProps) {
+export function CashCloseSheet({ row, isOpen, onOpenChange, unavailable }: CashCloseSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="@container w-full gap-0 motion-reduce:animate-none max-sm:border-l-0 sm:max-w-[32rem]">
-        {row && <CashCloseDetail row={row} />}
+        {row ? (
+          <CashCloseDetail row={row} />
+        ) : (
+          <SheetHeader className="border-b px-4 py-4 pe-12 @sm:ps-6">
+            <SheetTitle>Cierre de caja</SheetTitle>
+            <SheetDescription role="status">{unavailable?.message}</SheetDescription>
+          </SheetHeader>
+        )}
+        {!row && unavailable?.onRetry && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mx-4 mt-4 self-start @sm:mx-6"
+            onClick={unavailable.onRetry}
+            disabled={unavailable.isRetrying}
+          >
+            Reintentar
+          </Button>
+        )}
       </SheetContent>
     </Sheet>
   );
@@ -34,7 +54,7 @@ export function CashCloseSheet({ row, isOpen, onOpenChange }: CashCloseSheetProp
 
 function DetailRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="border-border/40 flex min-h-8 items-center justify-between gap-3 border-b px-4 text-xs @sm:px-6">
+    <div className="border-border flex min-h-8 items-center justify-between gap-3 border-b px-4 text-xs @sm:px-6">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="data-value min-w-0 text-right font-medium [overflow-wrap:anywhere]">{children}</dd>
     </div>
@@ -111,42 +131,29 @@ function CashCloseDetail({ row }: { row: CashCloseHistoryRow }) {
         </dl>
 
         {cashClose && (
-          <section className="mt-6 px-4 @sm:px-6">
-            <h3 className="font-heading mb-2 text-sm font-semibold">Actividad del cierre</h3>
-            <ol className="divide-border/50 divide-y">
-              {versions.map((version, index) => {
-                const isOriginal = index === versions.length - 1;
-                const Icon = isOriginal ? CircleCheck : RefreshCw;
-                return (
-                  <li
-                    key={`${index === 0 ? "current" : "previous"}-${version.id}`}
-                    className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-baseline gap-x-2 gap-y-0.5 py-2 text-xs @sm:grid-cols-[auto_auto_minmax(0,1fr)_auto]"
-                  >
-                    <Icon
-                      aria-hidden="true"
-                      className="text-muted-foreground col-start-1 row-start-1 size-3.5 self-center"
-                    />
-                    <span className="col-start-2 row-start-1 font-medium">
-                      {isOriginal ? "Cerrado" : "Actualizado"}
-                    </span>
-                    <span className="text-muted-foreground col-span-2 col-start-2 row-start-2 min-w-0 break-words @sm:col-span-1 @sm:col-start-3 @sm:row-start-1">
+          <div className="px-4 @sm:px-6">
+            <ActivityTimeline
+              title="Actividad del cierre"
+              events={versions.map((version, index) => ({
+                id: `${index === 0 ? "current" : "previous"}-${version.id}`,
+                label: (
+                  <>
+                    <span>{index === versions.length - 1 ? "Cerrado" : "Actualizado"}</span>{" "}
+                    <span className="text-muted-foreground font-normal">
                       {version.users?.fullname || "Responsable sin registrar"}
                     </span>
-                    {version.closed_at && (
-                      <time
-                        dateTime={version.closed_at}
-                        className="tabular-value text-muted-foreground col-start-3 row-start-1 text-right @sm:col-start-4"
-                      >
-                        {formatDateForBackend(version.closed_at) === row.date
-                          ? formatTime(version.closed_at)
-                          : formatDateTime(version.closed_at)}
-                      </time>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
+                  </>
+                ),
+                metadata: version.closed_at && (
+                  <time dateTime={version.closed_at}>
+                    {formatDateForBackend(version.closed_at) === row.date
+                      ? formatTime(version.closed_at)
+                      : formatDateTime(version.closed_at)}
+                  </time>
+                ),
+              }))}
+            />
+          </div>
         )}
       </div>
     </>
